@@ -12,25 +12,20 @@ import {
 } from "react-icons/fa";
 import "./Auth.css";
 
-// === IMPORT GAMBAR LOGO ===
-// Pastikan nama file sesuai dengan yang ada di folder src/pictures/
+// === IMPORT ASET ===
 import logoPelindo from "../pictures/pelindo2.png";
+import batikImg from "../pictures/batik.png";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const navigate = useNavigate();
 
-  const toggleMode = () => {
-    setIsLogin(!isLogin);
-  };
+  const toggleMode = () => setIsLogin(!isLogin);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Form submitted");
-
-    if (isLogin) {
-      navigate("/dashboard");
-    } else {
+    if (isLogin) navigate("/dashboard");
+    else {
       alert("Registrasi berhasil! Silakan login.");
       setIsLogin(true);
     }
@@ -38,29 +33,22 @@ const Auth = () => {
 
   return (
     <div className="auth-fullscreen-container">
-      {/* Hiasan Batik di Background */}
-      <div className="auth-batik-decoration"></div>
-
-      {/* Overlay Gelap */}
+      {/* Background & Overlay */}
+      <div className="auth-batik-decoration" style={{ backgroundImage: `url(${batikImg})` }}></div>
       <div className="auth-gradient-overlay"></div>
 
-      {/* Layout Wrapper: Kiri (Card) & Kanan (Logo Image) */}
       <div className="auth-layout-wrapper">
-        {/* BAGIAN KIRI: FORM CARD */}
         <div className="auth-card-section">
           <div className="auth-floating-card">
             <div className="auth-header">
-              <h2>{isLogin ? "Selamat Datang" : "Registrasi Akun"}</h2>
-              <p>
-                {isLogin
-                  ? "Sistem Inventory Pelindo"
-                  : "Lengkapi data diri Anda"}
-              </p>
+              <h2>{isLogin ? "Selamat Datang" : "Registrasi"}</h2>
+              <p>{isLogin ? "Sistem Inventory Pelindo" : "Lengkapi data diri Anda"}</p>
             </div>
 
             <form onSubmit={handleSubmit} className="auth-form">
               {!isLogin && (
                 <>
+                  {/* Nama Lengkap */}
                   <div className="form-group">
                     <label>Nama Lengkap</label>
                     <div className="input-wrapper">
@@ -69,6 +57,7 @@ const Auth = () => {
                     </div>
                   </div>
 
+                  {/* NIP & Username */}
                   <div className="form-row">
                     <div className="form-group half">
                       <label>NIP</label>
@@ -86,6 +75,7 @@ const Auth = () => {
                     </div>
                   </div>
 
+                  {/* No Telepon */}
                   <div className="form-group">
                     <label>No. Telepon</label>
                     <div className="input-wrapper">
@@ -94,28 +84,26 @@ const Auth = () => {
                     </div>
                   </div>
 
+                  {/* Role */}
                   <div className="form-group">
                     <label>Role / Peran</label>
                     <div className="input-wrapper">
                       <FaUserTag className="input-icon" />
                       <select required defaultValue="">
-                        <option value="" disabled>
-                          Pilih Role
-                        </option>
+                        <option value="" disabled>Pilih Role</option>
                         <option value="admin">Admin</option>
                         <option value="user">User / Pegawai</option>
                       </select>
                     </div>
                   </div>
 
+                  {/* Entitas */}
                   <div className="form-group">
                     <label>Entitas</label>
                     <div className="input-wrapper">
                       <FaBuilding className="input-icon" />
                       <select required defaultValue="">
-                        <option value="" disabled>
-                          Pilih Entitas
-                        </option>
+                        <option value="" disabled>Pilih Entitas</option>
                         <option value="pmt">PT Pelindo Multi Terminal</option>
                         <option value="pelindo_pusat">Pelindo Pusat</option>
                         <option value="spmt">SPMT</option>
@@ -124,19 +112,16 @@ const Auth = () => {
                     </div>
                   </div>
 
+                  {/* Cabang */}
                   <div className="form-group">
                     <label>Cabang / Branch</label>
                     <div className="input-wrapper">
                       <FaMapMarkerAlt className="input-icon" />
                       <select required defaultValue="">
-                        <option value="" disabled>
-                          Pilih Cabang
-                        </option>
+                        <option value="" disabled>Pilih Cabang</option>
                         <option value="belawan">Belawan</option>
                         <option value="dumai">Dumai</option>
                         <option value="tanjung_intan">Tanjung Intan</option>
-                        <option value="bumiharjo">Bumiharjo</option>
-                        <option value="trisakti">Trisakti</option>
                         <option value="pusat">Kantor Pusat</option>
                       </select>
                     </div>
@@ -144,15 +129,12 @@ const Auth = () => {
                 </>
               )}
 
+              {/* Email & Password (Common) */}
               <div className="form-group">
                 <label>Email</label>
                 <div className="input-wrapper">
                   <FaEnvelope className="input-icon" />
-                  <input
-                    type="email"
-                    placeholder="email@pelindo.co.id"
-                    required
-                  />
+                  <input type="email" placeholder="email@pelindo.co.id" required />
                 </div>
               </div>
 
@@ -164,16 +146,13 @@ const Auth = () => {
                 </div>
               </div>
 
+              {/* Konfirmasi Password (Hanya Register) */}
               {!isLogin && (
                 <div className="form-group">
                   <label>Konfirmasi Password</label>
                   <div className="input-wrapper">
                     <FaLock className="input-icon" />
-                    <input
-                      type="password"
-                      placeholder="Ulangi password"
-                      required
-                    />
+                    <input type="password" placeholder="Ulangi password" required />
                   </div>
                 </div>
               )}
@@ -184,9 +163,7 @@ const Auth = () => {
                     <input type="checkbox" />
                     <span>Ingat Saya</span>
                   </label>
-                  <a href="#" className="forgot-password">
-                    Lupa Password?
-                  </a>
+                  <a href="#" className="forgot-password">Lupa Password?</a>
                 </div>
               )}
 
@@ -206,19 +183,9 @@ const Auth = () => {
           </div>
         </div>
 
-        {/* BAGIAN KANAN: GAMBAR LOGO */}
+        {/* Logo Section */}
         <div className="auth-logo-section">
-          <img
-            src={logoPelindo}
-            alt="Pelindo Logo"
-            className="big-logo-image"
-            onError={(e) => {
-              e.target.style.display = "none";
-              console.error(
-                "Gambar logo tidak ditemukan di src/pictures/pelindo.png",
-              );
-            }}
-          />
+          <img src={logoPelindo} alt="Pelindo Logo" className="big-logo-image" />
         </div>
       </div>
     </div>

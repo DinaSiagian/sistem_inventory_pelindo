@@ -8,6 +8,7 @@
 body {
   margin: 0;
   font-family: "Inter", "Segoe UI", Roboto, sans-serif;
+  overflow: hidden;
 }
 
 /* =========================================
@@ -19,11 +20,8 @@ body {
   height: 100vh;
   display: flex;
   align-items: center;
-  /* Padding kiri agar Card tidak mepet layar kiri */
   padding-left: 10%;
   padding-right: 5%;
-
-  /* Background Foto Utama */
   background-image: url("../pictures/bglogin.jpg");
   background-size: cover;
   background-position: center;
@@ -38,40 +36,33 @@ body {
   position: relative;
   z-index: 10;
   width: 100%;
-
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-
-  padding-right: 50px;
 }
 
 /* =========================================
-   DEKORASI BATIK
+   DEKORASI BATIK (MASKING FADE)
    ========================================= */
 .auth-batik-decoration {
   position: absolute;
   top: 0;
   left: 0;
   bottom: 0;
-  width: 50%; /* Lebar area batik */
+  width: 35%;
   z-index: 2;
-  opacity: 0.4;
-
-  background-image: url("../pictures/batik.png");
+  opacity: 0.2;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-
-  /* Masking fade-out ke kanan */
-  mask-image: linear-gradient(to right, black 40%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to right, black 40%, transparent 100%);
+  mask-image: linear-gradient(to right, black 30%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, black 30%, transparent 100%);
   pointer-events: none;
 }
 
 /* =========================================
-   OVERLAY GRADASI (UPDATED: AGAK PUTIH DI KANAN)
+   OVERLAY GRADASI
    ========================================= */
 .auth-gradient-overlay {
   position: absolute;
@@ -79,114 +70,75 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-
-  /* Gradasi: Hitam -> Biru -> Putih Tipis -> Bening */
   background: linear-gradient(
     to right,
-    rgba(0, 0, 0, 1) 0%,
-    /* Hitam Pekat di Bawah */ rgba(5, 30, 62, 0.95) 25%,
-    /* Biru Dongker Gelap */ rgba(0, 68, 148, 0.7) 50%,
-    /* Biru Pelindo */ rgba(0, 68, 148, 0.3) 75%,
-    /* Biru Tipis */ rgba(255, 255, 255, 0) 100% /* Bening di Atas */
+    rgba(0, 0, 0, 1) 0%,           
+    rgba(5, 30, 62, 0.95) 25%,     
+    rgba(0, 45, 95, 0.85) 38%,     
+    rgba(0, 68, 148, 0.7) 50%,     
+    rgba(0, 68, 148, 0.1) 85%,     
+    rgba(255, 255, 255, 0.5) 100%  
   );
-
   z-index: 1;
 }
 
 /* =========================================
-   BAGIAN KIRI: CARD
+   CARD LOGIN (COMPACT PREMIUM GLASS)
    ========================================= */
 .auth-card-section {
   flex: 0 0 auto;
-  width: 450px;
+  width: 380px; /* Diatur agar tetap ramping tapi muat semua input */
 }
 
 .auth-floating-card {
   width: 100%;
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.96); 
   backdrop-filter: blur(15px);
-  padding: 2.5rem;
-  border-radius: 12px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-  border-top: 4px solid #ffffff; /* Sesuai request (Putih) */
-
-  max-height: 85vh;
+  -webkit-backdrop-filter: blur(15px);
+  padding: 2rem 1.8rem;
+  border-radius: 24px;
+  box-shadow: 0 10px 1px rgba(0, 0, 0, 0.05), 0 20px 40px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  max-height: 90vh;
   overflow-y: auto;
   scrollbar-width: none;
 }
+
 .auth-floating-card::-webkit-scrollbar {
   display: none;
 }
 
 .auth-header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
+
 .auth-header h2 {
   color: #002b5c;
-  margin: 0 0 0.5rem 0;
-  font-size: 1.8rem;
-  font-weight: 700;
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin-bottom: 0.2rem;
 }
+
 .auth-header p {
-  color: #6c757d;
-  margin: 0;
-  font-size: 0.9rem;
+  color: #475569;
+  font-size: 0.85rem;
 }
 
 /* =========================================
-   BAGIAN KANAN: LOGO GAMBAR
+   INPUT & ICON ALIGNMENT
    ========================================= */
-.auth-logo-section {
-  flex: 0 0 auto;
-  display: flex;
-  justify-content: flex-end; /* Rata kanan */
-  align-items: center;
-  animation: fadeInRight 1s ease-out;
-}
-
-.big-logo-image {
-  max-width: 100%;
-  width: 800px;
-  height: auto;
-  object-fit: contain;
-  filter: drop-shadow(0 15px 30px rgba(0, 0, 0, 0.4));
-}
-
-@keyframes fadeInRight {
-  from {
-    opacity: 0;
-    transform: translateX(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-/* =========================================
-   INPUT & FORM
-   ========================================= */
-.auth-form {
-  width: 100%;
-}
-.form-group {
+.auth-form .form-group {
   margin-bottom: 1rem;
 }
-.form-row {
-  display: flex;
-  gap: 12px;
-}
-.form-group.half {
-  flex: 1;
-}
 
-.form-group label {
+.auth-form label {
   display: block;
   margin-bottom: 0.3rem;
   font-weight: 600;
-  color: #343a40;
-  font-size: 0.85rem;
+  color: #1e293b;
+  font-size: 0.8rem;
+  padding-left: 2px;
 }
 
 .input-wrapper {
@@ -197,114 +149,151 @@ body {
 
 .input-icon {
   position: absolute;
-  left: 12px;
-  color: #adb5bd;
+  left: 14px;
+  color: #94a3b8;
   font-size: 0.9rem;
-  z-index: 2;
+  z-index: 10;
 }
 
 .input-wrapper input,
 .input-wrapper select {
   width: 100%;
-  padding: 10px 12px 10px 38px;
-  border: 1px solid #ced4da;
-  border-radius: 6px;
+  padding: 8px 12px 8px 40px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
   font-size: 0.9rem;
-  color: #495057;
-  background-color: #f8f9fa;
-  transition: all 0.3s ease;
-  height: 40px;
+  color: #1e293b;
+  background-color: #f8fafc;
+  height: 44px;
+  transition: all 0.2s ease;
 }
 
 .input-wrapper input:focus,
 .input-wrapper select:focus {
   outline: none;
-  border-color: #00b5e2;
-  background-color: #fff;
-  box-shadow: 0 0 0 3px rgba(0, 181, 226, 0.15);
+  border-color: #004494;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(0, 68, 148, 0.1);
 }
 
-.input-wrapper input:focus + .input-icon {
-  color: #00b5e2;
+.form-row {
+  display: flex;
+  gap: 10px;
 }
+.form-group.half { flex: 1; }
 
 /* =========================================
-   TOMBOL
+   FORM ACTIONS (INGAT SAYA)
    ========================================= */
 .form-actions {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.2rem;
-  font-size: 0.85rem;
-  color: #495057;
+  margin: 1rem 0;
 }
 
+/* =========================================
+   FIX: SEJAJARKAN KOTAK & TEKS (HORIZONTAL)
+   ========================================= */
+.remember-me {
+  display: flex !important;       /* Pastikan menggunakan flexbox */
+  flex-direction: row !important;  /* PAKSA sejajar ke samping kanan */
+  align-items: center !important;  /* Rata tengah secara vertikal */
+  gap: 10px;                      /* Jarak antara kotak dan teks */
+  cursor: pointer;
+  color: #1e293b;
+  font-size: 0.85rem;
+  font-weight: 500;
+  user-select: none;
+  white-space: nowrap;            /* Mencegah teks turun ke baris bawah */
+}
+
+/* Kotak Putih Custom */
+.remember-me input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  background-color: #ffffff;      /* Warna kotak putih */
+  border: 2px solid #cbd5e1;
+  border-radius: 4px;
+  margin: 0;                      /* Hapus margin bawaan browser */
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;                 /* Mencegah kotak jadi gepeng */
+  transition: all 0.2s ease;
+}
+
+/* Efek saat Ditekan (Berubah Biru) */
+.remember-me input[type="checkbox"]:checked {
+  background-color: #004494;      /* Biru Pelindo */
+  border-color: #004494;
+}
+
+/* Simbol Centang Putih */
+.remember-me input[type="checkbox"]:checked::after {
+  content: "✔";
+  color: white;
+  font-size: 11px;
+  font-weight: bold;
+}
+/* =========================================
+   TOMBOL & LOGO
+   ========================================= */
 .auth-button {
   width: 100%;
   padding: 12px;
-  background: linear-gradient(135deg, #002b5c 0%, #004494 100%);
+  background: linear-gradient(135deg, #004494 0%, #00b5e2 100%);
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 12px;
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  transition:
-    transform 0.2s,
-    box-shadow 0.2s;
+  box-shadow: 0 8px 15px rgba(0, 68, 148, 0.2);
+  transition: all 0.2s ease;
 }
 
 .auth-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 68, 148, 0.4);
+  transform: translateY(-1px);
+  filter: brightness(1.05);
 }
 
 .auth-footer {
-  margin-top: 1.5rem;
+  margin-top: 1.2rem;
   text-align: center;
-  font-size: 0.85rem;
-  color: #6c757d;
+  font-size: 0.8rem;
+  color: #64748b;
 }
 
 .toggle-link {
   color: #004494;
-  font-weight: 700;
+  font-weight: 800;
   cursor: pointer;
 }
 
-/* =========================================
-   RESPONSIF
-   ========================================= */
+.auth-logo-section {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.big-logo-image {
+  max-width: 100%;
+  width: 700px;
+  height: auto;
+  filter: drop-shadow(0 15px 15px rgba(0, 0, 0, 0.7)) 
+          drop-shadow(0 35px 70px rgba(0, 0, 0, 0.5));
+}
+
+/* RESPONSIF */
 @media (max-width: 900px) {
-  .auth-fullscreen-container {
-    padding: 20px;
-    justify-content: center;
-  }
-
-  .auth-layout-wrapper {
-    flex-direction: column-reverse; /* Logo pindah ke atas di HP */
-    gap: 30px;
-    justify-content: center;
-    padding-right: 0;
-  }
-
-  .auth-logo-section {
-    justify-content: center;
-    width: 100%;
-  }
-
-  .big-logo-image {
-    width: 250px;
-  }
-
-  .auth-card-section {
-    width: 100%;
-    max-width: 400px;
-  }
-
-  .auth-batik-decoration {
-    width: 100%;
-    opacity: 0.2;
-  }
+  .auth-fullscreen-container { padding: 20px; justify-content: center; }
+  .auth-layout-wrapper { flex-direction: column-reverse; gap: 20px; padding-right: 0; }
+  .auth-logo-section { justify-content: center; width: 100%; }
+  .big-logo-image { width: 220px; }
+  .auth-card-section { width: 100%; }
 }
