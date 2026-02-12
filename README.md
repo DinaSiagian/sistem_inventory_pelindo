@@ -23,7 +23,7 @@ Sistem dikembangkan dengan arsitektur **frontend–backend terpisah**, menggunak
   Menangani logika bisnis, validasi, autentikasi, dan keamanan sistem melalui RESTful API.
 
 ### 🗄️ Database
-- **MySQL (XAMPP)**  
+- **MySQL (PostgreSQL)**  
   Menyimpan data aset, spesifikasi, transaksi, kondisi barang, serta audit log.
 
 ### 🏗️ Arsitektur
