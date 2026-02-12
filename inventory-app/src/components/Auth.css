@@ -7,106 +7,165 @@
 
 body {
   margin: 0;
-  font-family: "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: "Inter", "Segoe UI", Roboto, sans-serif;
 }
 
 /* =========================================
-   LAYOUT FULL SCREEN & BACKGROUND
+   LAYOUT UTAMA
    ========================================= */
 .auth-fullscreen-container {
   position: relative;
   width: 100vw;
   height: 100vh;
   display: flex;
+  align-items: center;
+  /* Padding kiri agar Card tidak mepet layar kiri */
+  padding-left: 10%;
+  padding-right: 5%;
 
-  /* --- PERUBAHAN UTAMA (POSISI KIRI) --- */
-  justify-content: flex-start; /* Isi konten rata kiri */
-  align-items: center; /* Tengah secara vertikal */
-  padding-left: 250px; /* Jarak kartu dari sisi kiri layar (Sesuai Request) */
-  /* --------------------------------------------- */
-
-  /* Pastikan path ini sesuai dengan lokasi gambarmu */
-  background-image: url("../pictures/bglogin.png");
+  /* Background Foto Utama */
+  background-image: url("../pictures/bglogin.jpg");
   background-size: cover;
-
-  /* --- POSISI GAMBAR --- */
-  /* "right center" berarti kunci gambar di KANAN agar Logo di kanan aman */
-  background-position: right center;
+  background-position: center;
   background-repeat: no-repeat;
-
   overflow: hidden;
 }
 
 /* =========================================
-   GRADASI WARNA (SESUAI REQUEST)
+   WRAPPER FLEX
+   ========================================= */
+.auth-layout-wrapper {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+
+  padding-right: 50px;
+}
+
+/* =========================================
+   DEKORASI BATIK
+   ========================================= */
+.auth-batik-decoration {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 50%; /* Lebar area batik */
+  z-index: 2;
+  opacity: 0.4;
+
+  background-image: url("../pictures/batik.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  /* Masking fade-out ke kanan */
+  mask-image: linear-gradient(to right, black 40%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, black 40%, transparent 100%);
+  pointer-events: none;
+}
+
+/* =========================================
+   OVERLAY GRADASI (UPDATED: AGAK PUTIH DI KANAN)
    ========================================= */
 .auth-gradient-overlay {
   position: absolute;
   top: 0;
-  right: 0;
-  bottom: 0;
   left: 0;
-  /* Gradasi dibuat agak gelap di kiri agar tulisan form terbaca, 
-     dan agak transparan di kanan agar logo background terlihat */
+  width: 100%;
+  height: 100%;
+
+  /* Gradasi: Hitam -> Biru -> Putih Tipis -> Bening */
   background: linear-gradient(
     to right,
-    rgba(0, 30, 80, 0.85) 0%,
-    /* Kiri: Gelap (belakang form) */ rgba(0, 43, 92, 0.4) 60%,
-    /* Tengah: Transparan */ rgba(0, 0, 0, 0.1) 100%
-      /* Kanan: Sangat transparan (logo) */
+    rgba(0, 0, 0, 1) 0%,
+    /* Hitam Pekat di Bawah */ rgba(5, 30, 62, 0.95) 25%,
+    /* Biru Dongker Gelap */ rgba(0, 68, 148, 0.7) 50%,
+    /* Biru Pelindo */ rgba(0, 68, 148, 0.3) 75%,
+    /* Biru Tipis */ rgba(255, 255, 255, 0) 100% /* Bening di Atas */
   );
+
   z-index: 1;
 }
 
-/* Wrapper Konten */
-.auth-content-center {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  display: flex;
-  /* Pastikan wrapper juga rata kiri */
-  justify-content: flex-start;
+/* =========================================
+   BAGIAN KIRI: CARD
+   ========================================= */
+.auth-card-section {
+  flex: 0 0 auto;
+  width: 450px;
 }
 
-/* =========================================
-   KARTU MENGAMBANG (FLOATING CARD)
-   ========================================= */
 .auth-floating-card {
   width: 100%;
-  max-width: 500px; /* Lebar kartu disesuaikan jadi 500px */
-  background: rgba(255, 255, 255, 1); /* Putih solid */
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(15px);
   padding: 2.5rem;
-  border-radius: 16px;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  border-top: 4px solid #ffffff; /* Sesuai request (Putih) */
 
-  /* Agar bisa discroll jika form panjang */
-  max-height: 90vh;
+  max-height: 85vh;
   overflow-y: auto;
   scrollbar-width: none;
-  -ms-overflow-style: none;
 }
-
 .auth-floating-card::-webkit-scrollbar {
   display: none;
 }
 
-.auth-header h2 {
-  color: #004494;
-  margin: 0 0 0.5rem 0;
-  font-size: 1.6rem;
-  font-weight: 700;
+.auth-header {
   text-align: center;
+  margin-bottom: 2rem;
 }
-
+.auth-header h2 {
+  color: #002b5c;
+  margin: 0 0 0.5rem 0;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
 .auth-header p {
   color: #6c757d;
-  margin: 0 0 2rem 0;
-  font-size: 0.95rem;
-  text-align: center;
+  margin: 0;
+  font-size: 0.9rem;
 }
 
 /* =========================================
-   STYLING FORM (INPUT RAMPING)
+   BAGIAN KANAN: LOGO GAMBAR
+   ========================================= */
+.auth-logo-section {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: flex-end; /* Rata kanan */
+  align-items: center;
+  animation: fadeInRight 1s ease-out;
+}
+
+.big-logo-image {
+  max-width: 100%;
+  width: 800px;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 15px 30px rgba(0, 0, 0, 0.4));
+}
+
+@keyframes fadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* =========================================
+   INPUT & FORM
    ========================================= */
 .auth-form {
   width: 100%;
@@ -141,9 +200,7 @@ body {
   left: 12px;
   color: #adb5bd;
   font-size: 0.9rem;
-  pointer-events: none;
   z-index: 2;
-  transition: color 0.3s ease;
 }
 
 .input-wrapper input,
@@ -157,35 +214,22 @@ body {
   background-color: #f8f9fa;
   transition: all 0.3s ease;
   height: 40px;
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-}
-
-.input-wrapper select {
-  cursor: pointer;
-  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23004494%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 10px;
 }
 
 .input-wrapper input:focus,
 .input-wrapper select:focus {
   outline: none;
-  border-color: #004494;
+  border-color: #00b5e2;
   background-color: #fff;
-  box-shadow: 0 0 0 3px rgba(0, 68, 148, 0.1);
+  box-shadow: 0 0 0 3px rgba(0, 181, 226, 0.15);
 }
 
-.input-wrapper input:focus + .input-icon,
-.input-wrapper select:focus + .input-icon,
-.input-wrapper:focus-within .input-icon {
-  color: #004494;
+.input-wrapper input:focus + .input-icon {
+  color: #00b5e2;
 }
 
 /* =========================================
-   TOMBOL & FOOTER
+   TOMBOL
    ========================================= */
 .form-actions {
   display: flex;
@@ -196,36 +240,24 @@ body {
   color: #495057;
 }
 
-.remember-me {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-}
-
-.forgot-password {
-  color: #004494;
-  text-decoration: none;
-  font-weight: 600;
-}
-
 .auth-button {
   width: 100%;
   padding: 12px;
-  background: linear-gradient(135deg, #004494 0%, #002b5c 100%);
+  background: linear-gradient(135deg, #002b5c 0%, #004494 100%);
   color: white;
   border: none;
   border-radius: 6px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  margin-top: 5px;
-  transition: transform 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 }
 
 .auth-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0, 68, 148, 0.3);
+  box-shadow: 0 8px 20px rgba(0, 68, 148, 0.4);
 }
 
 .auth-footer {
@@ -239,27 +271,40 @@ body {
   color: #004494;
   font-weight: 700;
   cursor: pointer;
-  margin-left: 4px;
 }
 
 /* =========================================
-   RESPONSIF (MOBILE)
+   RESPONSIF
    ========================================= */
 @media (max-width: 900px) {
   .auth-fullscreen-container {
-    /* Di HP, kembali ke tengah agar rapi */
-    justify-content: center;
-    padding-left: 1rem;
-    padding-right: 1rem;
-    background-position: center;
-  }
-
-  .auth-content-center {
+    padding: 20px;
     justify-content: center;
   }
 
-  .auth-floating-card {
-    max-width: 100%;
-    padding: 1.5rem;
+  .auth-layout-wrapper {
+    flex-direction: column-reverse; /* Logo pindah ke atas di HP */
+    gap: 30px;
+    justify-content: center;
+    padding-right: 0;
+  }
+
+  .auth-logo-section {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .big-logo-image {
+    width: 250px;
+  }
+
+  .auth-card-section {
+    width: 100%;
+    max-width: 400px;
+  }
+
+  .auth-batik-decoration {
+    width: 100%;
+    opacity: 0.2;
   }
 }
