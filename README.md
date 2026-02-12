@@ -83,7 +83,7 @@ Sistem dikembangkan dengan arsitektur **frontend–backend terpisah**, menggunak
 
 - Frontend React berkomunikasi dengan Backend Lumen melalui RESTful API
 - Backend bertanggung jawab penuh terhadap validasi dan konsistensi data
-- Database MySQL (XAMPP) digunakan sebagai penyimpanan terpusat
+- Database MySQL (PostgreSQL) digunakan sebagai penyimpanan terpusat
 - Struktur database dirancang fleksibel tanpa mengorbankan integritas data
 
 ---
