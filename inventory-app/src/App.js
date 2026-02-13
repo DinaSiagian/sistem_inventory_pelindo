@@ -8,10 +8,13 @@ function App() {
   return (
     <Router>
       <Routes>
+        {/* Layout utama */}
         <Route path="/" element={<Layout />}>
+          {/* Default halaman ke dashboard */}
           <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
-          {/* INI YANG BIKIN ERROR TADI: Pastikan path-nya 'assets' */}
+          
+          {/* INI PERBAIKANNYA: Jalur untuk halaman aset */}
           <Route path="assets" element={<ViewAsset />} />
         </Route>
       </Routes>
