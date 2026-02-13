@@ -1,72 +1,103 @@
-import React from "react";
-import { Outlet, useNavigate } from "react-router-dom"; // Outlet untuk konten dinamis
-import {
-  FaHome,
-  FaBox,
-  FaExchangeAlt,
-  FaUsers,
-  FaSignOutAlt,
-  FaBars,
+import React, { useState, useEffect } from "react";
+import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
+import { 
+  FaHome, FaBox, FaMoneyBillWave, 
+  FaChartBar, FaUsers, FaSignOutAlt, 
+  FaBuilding, FaServer, FaChevronLeft, FaChevronRight, FaBars 
 } from "react-icons/fa";
 import "./Layout.css";
 
+// === IMPORT ASET ===
+import logoPelindo from "../pictures/pelindo2.png"; 
+import batikImg from "../pictures/batik.png"; 
+
 const Layout = () => {
+  const [collapsed, setCollapsed] = useState(false);
+  const [pageTitle, setPageTitle] = useState("Dashboard");
+  const location = useLocation();
   const navigate = useNavigate();
 
+  const menuItems = [
+    { path: "/dashboard", label: "Dashboard Utama", icon: <FaHome /> },
+    { category: "Manajemen Aset" },
+    { path: "/assets", label: "Inventory Aset", icon: <FaBox /> },
+    { path: "/monitoring", label: "Monitoring IT", icon: <FaServer /> },
+    { category: "Keuangan & Proyek" },
+    { path: "/budget", label: "Anggaran (CAPEX/OPEX)", icon: <FaMoneyBillWave /> },
+    { path: "/projects", label: "Daftar Pekerjaan", icon: <FaBuilding /> },
+    { category: "Administrasi" },
+    { path: "/users", label: "User Management", icon: <FaUsers /> },
+    { path: "/reports", label: "Laporan Eksekutif", icon: <FaChartBar /> },
+  ];
+
+  useEffect(() => {
+    const currentMenu = menuItems.find(item => item.path === location.pathname);
+    setPageTitle(currentMenu ? currentMenu.label : "Sistem Inventory");
+  }, [location]);
+
   const handleLogout = () => {
-    // Hapus sesi/token disini jika ada
-    navigate("/"); // Kembali ke login
+    if (window.confirm("Keluar dari aplikasi?")) navigate("/");
   };
 
   return (
-    <div className="layout-container">
-      {/* --- SIDEBAR KIRI --- */}
-      <aside className="sidebar">
+    <div className="layout-wrapper">
+      <aside 
+        className={`sidebar ${collapsed ? "collapsed" : ""}`}
+        style={{ "--batik-url": `url(${batikImg})` }} 
+      >
         <div className="sidebar-header">
-          <h2>INVENTORY</h2>
-          <p>Pelindo Multi Terminal</p>
+          <img src={logoPelindo} alt="Pelindo" className="sidebar-logo-img" />
         </div>
 
-        <nav className="sidebar-menu">
-          <a href="/dashboard" className="menu-item active">
-            <FaHome className="icon" /> <span>Dashboard</span>
-          </a>
-          <a href="/inventory" className="menu-item">
-            <FaBox className="icon" /> <span>Data Barang</span>
-          </a>
-          <a href="/transactions" className="menu-item">
-            <FaExchangeAlt className="icon" /> <span>Transaksi</span>
-          </a>
-          <a href="/users" className="menu-item">
-            <FaUsers className="icon" /> <span>Manajemen User</span>
-          </a>
-        </nav>
-
-        <div className="sidebar-footer">
-          <button onClick={handleLogout} className="logout-btn">
-            <FaSignOutAlt className="icon" /> <span>Keluar</span>
-          </button>
+        {/* Container Menu Kaca */}
+        <div className="sidebar-menu">
+          {menuItems.map((item, index) => (
+            item.category ? (
+              !collapsed && <div key={index} className="menu-category">{item.category}</div>
+            ) : (
+              <Link 
+                key={index} 
+                to={item.path} 
+                className={`menu-item ${location.pathname === item.path ? "active" : ""}`}
+                title={collapsed ? item.label : ""}
+              >
+                <div className="menu-icon">{item.icon}</div>
+                <span className="menu-text">{item.label}</span>
+              </Link>
+            )
+          ))}
+          
+          {/* Tombol Logout: Sekarang akan didorong ke bawah (margin-top: auto)
+              tapi naik sedikit karena ada padding-bottom di container */}
+          <div className="menu-item logout" onClick={handleLogout}>
+            <div className="menu-icon"><FaSignOutAlt /></div>
+            {!collapsed && <span className="menu-text">Sign Out</span>}
+          </div>
         </div>
       </aside>
 
-      {/* --- KONTEN KANAN --- */}
       <div className="main-content">
-        {/* Header Atas */}
-        <header className="top-header">
-          <button className="toggle-btn">
-            <FaBars />
-          </button>
-          <div className="user-info">
-            <span>
-              Halo, <strong>Admin Pelindo</strong>
-            </span>
-            <div className="avatar">AP</div>
+        <header className="topbar">
+          <div style={{display: 'flex', alignItems: 'center'}}>
+            <button className="toggle-btn" onClick={() => setCollapsed(!collapsed)}>
+              {collapsed ? <FaChevronRight /> : <FaChevronLeft />}
+            </button>
+            <div className="breadcrumb">
+              <span>Pelindo</span> / <span className="active">{pageTitle}</span>
+            </div>
+          </div>
+
+          <div className="user-profile">
+            <div className="user-info">
+              <span className="user-name">Joy Silalahi</span>
+              <span className="user-role">Super Admin</span>
+            </div>
+            <div className="user-avatar">JS</div>
           </div>
         </header>
 
-        {/* Area Konten Berubah-ubah di sini */}
-        <main className="content-area">
-          <Outlet />
+        <main className="page-content">
+          <Outlet /> 
         </main>
       </div>
     </div>

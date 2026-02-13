@@ -239,8 +239,9 @@ body {
   font-size: 11px;
   font-weight: bold;
 }
+
 /* =========================================
-   TOMBOL & LOGO
+   TOMBOL & FOOTER
    ========================================= */
 .auth-button {
   width: 100%;
@@ -274,22 +275,52 @@ body {
   cursor: pointer;
 }
 
+/* =========================================
+   ANIMASI LOGO (KEYFRAMES) - KANAN KE KIRI
+   ========================================= */
+@keyframes fadeInRight {
+  0% {
+    opacity: 0;
+    /* Mulai dari posisi 80px di sebelah kanan */
+    transform: translateX(80px); 
+  }
+  100% {
+    opacity: 1;
+    /* Berakhir di posisi normal */
+    transform: translateX(0); 
+  }
+}
+
+/* =========================================
+   LOGO SECTION
+   ========================================= */
 .auth-logo-section {
   flex: 0 0 auto;
   display: flex;
   justify-content: flex-end;
   align-items: center;
+  /* Opsional: tambahkan ini agar saat masuk dari kanan tidak membuat scrollbar horizontal */
+  /* overflow-x: hidden; */ 
 }
 
 .big-logo-image {
   max-width: 100%;
   width: 700px;
   height: auto;
+  
+  /* Filter Bayangan */
   filter: drop-shadow(0 15px 15px rgba(0, 0, 0, 0.7)) 
           drop-shadow(0 35px 70px rgba(0, 0, 0, 0.5));
+
+  /* Animasi Masuk dari Kanan */
+  opacity: 0; /* Mulai transparan agar tidak flicker */
+  /* Menggunakan 'fadeInRight' dengan durasi 1.2s dan efek halus */
+  animation: fadeInRight 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
-/* RESPONSIF */
+/* =========================================
+   RESPONSIF
+   ========================================= */
 @media (max-width: 900px) {
   .auth-fullscreen-container { padding: 20px; justify-content: center; }
   .auth-layout-wrapper { flex-direction: column-reverse; gap: 20px; padding-right: 0; }
