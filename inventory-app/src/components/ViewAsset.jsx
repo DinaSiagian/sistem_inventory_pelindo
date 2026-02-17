@@ -1,14 +1,24 @@
-import React, { useState, useEffect } from "react";
-import { 
-  FaSearch, FaFilter, FaPlus, FaEllipsisV, FaFileDownload, 
-  FaTimes, FaSave, FaTrash, FaDatabase, FaMapMarkerAlt, FaCogs, 
-  FaInfoCircle, FaMagic, FaBarcode 
+import React, { useState } from "react";
+import {
+  FaSearch,
+  FaFilter,
+  FaPlus,
+  FaEllipsisV,
+  FaFileDownload,
+  FaTimes,
+  FaSave,
+  FaTrash,
+  FaDatabase,
+  FaMapMarkerAlt,
+  FaCogs,
+  FaInfoCircle,
+  FaMagic,
+  FaBarcode,
 } from "react-icons/fa";
 import "./ViewAsset.css";
 
 const ViewAsset = () => {
   // --- 1. DATA BRANCH (Simulasi Database) ---
-  // Nanti ini bisa diganti dengan axios.get('/api/branches')
   const branchList = [
     { name: "Pelindo Belawan", code: "BLW" },
     { name: "Pelindo Dumai", code: "DMI" },
@@ -18,58 +28,69 @@ const ViewAsset = () => {
     { name: "Pelindo Gunung Sitoli", code: "GNS" },
     { name: "Pelindo Kuala Tanjung", code: "KTJ" },
     { name: "Pelindo Sibolga", code: "SBG" },
-    { name: "Pelindo Pekanbaru", code: "PKB" }
+    { name: "Pelindo Pekanbaru", code: "PKB" },
   ];
 
   // --- MOCK DATA ASET (Tabel Utama) ---
   const [assets] = useState([
-    { id: "PLD-BLW-IT-2026-001", name: "MacBook Pro M2", category: "IT Equipment", status: "Tersedia", branch: "Pelindo Belawan", zona: "Zona Kantor", value: "Rp 25.000.000" },
-    { id: "PLD-DMI-AB-2025-042", name: "Excavator CAT", category: "Alat Berat", status: "Maintenance", branch: "Pelindo Dumai", zona: "Dermaga Curah", value: "Rp 1.200.000.000" },
+    {
+      id: "PLD-BLW-IT-2026-001",
+      name: "MacBook Pro M2",
+      category: "IT Equipment",
+      status: "Tersedia",
+      branch: "Pelindo Belawan",
+      zona: "Zona Kantor",
+      value: "Rp 25.000.000",
+    },
+    {
+      id: "PLD-DMI-AB-2025-042",
+      name: "Excavator CAT",
+      category: "Alat Berat",
+      status: "Maintenance",
+      branch: "Pelindo Dumai",
+      zona: "Dermaga Curah",
+      value: "Rp 1.200.000.000",
+    },
   ]);
 
   const [showModal, setShowModal] = useState(false);
-  
+
   // State Form Input
   const [formData, setFormData] = useState({
-    assetId: "",      
+    assetId: "",
     name: "",
-    branch: "",       
-    branchCode: "",   
+    branch: "",
+    branchCode: "",
     zona: "",
     subzona: "",
     category: "",
     status: "Tersedia",
     condition: "Baik",
     value: "",
-    budgetType: "",   // CAPEX / OPEX
+    budgetType: "", // CAPEX / OPEX
   });
 
-  const [templateSpecs, setTemplateSpecs] = useState([]); 
-  const [customSpecs, setCustomSpecs] = useState([]); 
+  const [templateSpecs, setTemplateSpecs] = useState([]);
+  const [customSpecs, setCustomSpecs] = useState([]);
 
   // --- LOGIKA GENERATE KODE OTOMATIS ---
   const handleGenerateCode = () => {
-    // Validasi: Harus pilih Branch dan Kategori dulu
     if (!formData.category || !formData.branch) {
       alert("Mohon pilih Branch dan Kategori terlebih dahulu!");
       return;
     }
 
     const prefix = "PLD";
-    const brCode = formData.branchCode || "HO"; // Default jika kosong
+    const brCode = formData.branchCode || "HO";
     const year = new Date().getFullYear();
-    
-    // Kode Kategori Singkat
-    let catCode = "GEN"; 
+
+    let catCode = "GEN";
     if (formData.category === "IT Equipment") catCode = "IT";
-    if (formData.category === "Kendaraan") catCode = "VH"; 
-    if (formData.category === "Alat Berat") catCode = "AB"; 
+    if (formData.category === "Kendaraan") catCode = "VH";
+    if (formData.category === "Alat Berat") catCode = "AB";
     if (formData.category === "Furniture") catCode = "FUR";
 
-    // Random Sequence (Simulasi Auto Increment)
     const randomSeq = Math.floor(1000 + Math.random() * 9000);
-
-    // Format: PLD - CABANG - KATEGORI - TAHUN - URUTAN
     const generated = `${prefix}-${brCode}-${catCode}-${year}-${randomSeq}`;
     setFormData({ ...formData, assetId: generated });
   };
@@ -77,12 +98,12 @@ const ViewAsset = () => {
   // --- HANDLE PERUBAHAN INPUT ---
   const handleBranchChange = (e) => {
     const selectedName = e.target.value;
-    const selectedData = branchList.find(b => b.name === selectedName);
-    
+    const selectedData = branchList.find((b) => b.name === selectedName);
+
     setFormData({
       ...formData,
       branch: selectedName,
-      branchCode: selectedData ? selectedData.code : "" 
+      branchCode: selectedData ? selectedData.code : "",
     });
   };
 
@@ -106,19 +127,20 @@ const ViewAsset = () => {
         { key: "merk", label: "Merk / Brand", value: "" },
       ]);
     } else if (category === "Furniture") {
-       setTemplateSpecs([
+      setTemplateSpecs([
         { key: "material", label: "Bahan Material", value: "" },
         { key: "dimensi", label: "Dimensi (PxLxT)", value: "" },
         { key: "warna", label: "Warna Dominan", value: "" },
-      ]);     
+      ]);
     } else {
       setTemplateSpecs([]);
     }
   };
 
+  // [FIX] Menggunakan spread operator agar state terupdate dengan benar (Immutability)
   const handleTemplateSpecChange = (index, val) => {
     const newSpecs = [...templateSpecs];
-    newSpecs[index].value = val;
+    newSpecs[index] = { ...newSpecs[index], value: val }; // Deep copy item
     setTemplateSpecs(newSpecs);
   };
 
@@ -133,10 +155,19 @@ const ViewAsset = () => {
     setCustomSpecs(newSpecs);
   };
 
+  // [FIX] Menggunakan spread operator untuk update custom spec
   const handleCustomSpecChange = (index, field, val) => {
     const newSpecs = [...customSpecs];
-    newSpecs[index][field] = val;
+    newSpecs[index] = { ...newSpecs[index], [field]: val }; // Deep copy item
     setCustomSpecs(newSpecs);
+  };
+
+  // [FIX] Handle Submit agar tidak refresh halaman
+  const handleSave = (e) => {
+    e.preventDefault(); // Mencegah reload
+    console.log("Data to save:", { formData, templateSpecs, customSpecs });
+    alert("Data berhasil disimpan (Simulasi)");
+    setShowModal(false);
   };
 
   return (
@@ -159,8 +190,12 @@ const ViewAsset = () => {
           <input type="text" placeholder="Cari ID, nama aset, atau branch..." />
         </div>
         <div className="filter-actions">
-          <button className="control-btn"><FaFilter /> Filter</button>
-          <button className="control-btn"><FaFileDownload /> Export</button>
+          <button className="control-btn">
+            <FaFilter /> Filter
+          </button>
+          <button className="control-btn">
+            <FaFileDownload /> Export
+          </button>
         </div>
       </div>
 
@@ -187,10 +222,22 @@ const ViewAsset = () => {
                   <div className="loc-text">{asset.branch}</div>
                   <div className="sub-loc-text">{asset.zona}</div>
                 </td>
-                <td><span className="cat-badge">{asset.category}</span></td>
-                <td><span className={`status-badge ${asset.status.toLowerCase().replace(" ", "-")}`}>{asset.status}</span></td>
+                <td>
+                  <span className="cat-badge">{asset.category}</span>
+                </td>
+                <td>
+                  <span
+                    className={`status-badge ${asset.status.toLowerCase().replace(" ", "-")}`}
+                  >
+                    {asset.status}
+                  </span>
+                </td>
                 <td>{asset.value}</td>
-                <td><button className="action-dot-btn"><FaEllipsisV /></button></td>
+                <td>
+                  <button className="action-dot-btn">
+                    <FaEllipsisV />
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -202,35 +249,51 @@ const ViewAsset = () => {
         <div className="modal-overlay">
           <div className="modal-content large-modal">
             <div className="modal-header">
-              <h3><FaDatabase /> Input Data Aset Lengkap</h3>
-              <button className="close-btn" onClick={() => setShowModal(false)}><FaTimes /></button>
+              <h3>
+                <FaDatabase /> Input Data Aset Lengkap
+              </h3>
+              <button className="close-btn" onClick={() => setShowModal(false)}>
+                <FaTimes />
+              </button>
             </div>
-            
-            <form className="asset-form-scroll">
-              
+
+            {/* [FIX] Tambahkan onSubmit preventDefault */}
+            <form
+              className="asset-form-scroll"
+              onSubmit={(e) => e.preventDefault()}
+            >
               {/* SECTION 1: LOKASI & HIERARKI */}
               <div className="form-section">
-                <h4 className="section-label"><FaMapMarkerAlt /> 1. Lokasi & Hierarki</h4>
+                <h4 className="section-label">
+                  <FaMapMarkerAlt /> 1. Lokasi & Hierarki
+                </h4>
                 <div className="form-row-3">
                   <div className="form-group">
                     <label>Branch (Cabang)</label>
-                    <select 
-                      onChange={handleBranchChange} 
+                    <select
+                      onChange={handleBranchChange}
                       value={formData.branch}
                       style={{
-                        borderColor: formData.branch ? '#cbd5e1' : '#00b5e2', 
-                        background: formData.branch ? 'white' : '#f0f9ff'
+                        borderColor: formData.branch ? "#cbd5e1" : "#00b5e2",
+                        background: formData.branch ? "white" : "#f0f9ff",
                       }}
                     >
                       <option value="">-- Pilih Branch --</option>
                       {branchList.map((branch, index) => (
-                        <option key={index} value={branch.name}>{branch.name}</option>
+                        <option key={index} value={branch.name}>
+                          {branch.name}
+                        </option>
                       ))}
                     </select>
                   </div>
                   <div className="form-group">
                     <label>Zona</label>
-                    <select value={formData.zona} onChange={(e) => setFormData({...formData, zona: e.target.value})}>
+                    <select
+                      value={formData.zona}
+                      onChange={(e) =>
+                        setFormData({ ...formData, zona: e.target.value })
+                      }
+                    >
                       <option value="">Pilih Zona...</option>
                       <option>Zona 1 (Terminal Peti Kemas)</option>
                       <option>Zona 2 (Perkantoran)</option>
@@ -246,18 +309,19 @@ const ViewAsset = () => {
 
               {/* SECTION 2: INFORMASI UTAMA & GENERATE CODE */}
               <div className="form-section">
-                <h4 className="section-label"><FaBarcode /> 2. Identitas & Informasi Aset</h4>
-                
-                {/* Baris Kategori & Auto Generate */}
+                <h4 className="section-label">
+                  <FaBarcode /> 2. Identitas & Informasi Aset
+                </h4>
+
                 <div className="form-row">
-                   <div className="form-group">
+                  <div className="form-group">
                     <label>Kategori (Wajib Pilih Dulu)</label>
-                    <select 
-                      onChange={handleCategoryChange} 
-                      value={formData.category} 
+                    <select
+                      onChange={handleCategoryChange}
+                      value={formData.category}
                       style={{
-                        borderColor: formData.category ? '#cbd5e1' : '#00b5e2', 
-                        background: formData.category ? 'white' : '#f0f9ff'
+                        borderColor: formData.category ? "#cbd5e1" : "#00b5e2",
+                        background: formData.category ? "white" : "#f0f9ff",
                       }}
                     >
                       <option value="">-- PILIH KATEGORI --</option>
@@ -271,14 +335,18 @@ const ViewAsset = () => {
                   <div className="form-group">
                     <label>Kode Aset (Auto Generate)</label>
                     <div className="input-group-generate">
-                      <input 
-                        type="text" 
-                        placeholder="PLD-XXX-KAT-YYYY-..." 
+                      <input
+                        type="text"
+                        placeholder="PLD-XXX-KAT-YYYY-..."
                         value={formData.assetId}
-                        readOnly 
+                        readOnly
                         className="input-code"
                       />
-                      <button type="button" className="btn-generate" onClick={handleGenerateCode}>
+                      <button
+                        type="button"
+                        className="btn-generate"
+                        onClick={handleGenerateCode}
+                      >
                         <FaMagic /> Generate
                       </button>
                     </div>
@@ -287,56 +355,83 @@ const ViewAsset = () => {
 
                 <div className="form-group">
                   <label>Nama Aset</label>
-                  <input type="text" placeholder="Contoh: Laptop Thinkpad X1 Carbon Gen 10" />
+                  <input
+                    type="text"
+                    placeholder="Contoh: Laptop Thinkpad X1 Carbon Gen 10"
+                    value={formData.name}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
+                  />
                 </div>
 
-                {/* Baris Status, Nilai, Budget Type */}
                 <div className="form-row-3">
-                    <div className="form-group">
-                        <label>Status</label>
-                        <select>
-                            <option>Tersedia</option>
-                            <option>Dipinjam</option>
-                            <option>Maintenance</option>
-                            <option>Rusak (Write-off)</option>
-                        </select>
-                    </div>
-                    <div className="form-group">
-                        <label>Nilai Aset (IDR)</label>
-                        <input type="number" placeholder="Rp 0" />
-                    </div>
-                    <div className="form-group">
-                        <label>Budget Type <span style={{color:'#ef4444'}}>*</span></label>
-                        <select 
-                          value={formData.budgetType} 
-                          onChange={(e) => setFormData({...formData, budgetType: e.target.value})}
-                        >
-                            <option value="">Pilih...</option>
-                            <option value="CAPEX">CAPEX (Investasi)</option>
-                            <option value="OPEX">OPEX (Operasional)</option>
-                        </select>
-                    </div>
+                  <div className="form-group">
+                    <label>Status</label>
+                    <select
+                      value={formData.status}
+                      onChange={(e) =>
+                        setFormData({ ...formData, status: e.target.value })
+                      }
+                    >
+                      <option>Tersedia</option>
+                      <option>Dipinjam</option>
+                      <option>Maintenance</option>
+                      <option>Rusak (Write-off)</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Nilai Aset (IDR)</label>
+                    <input
+                      type="number"
+                      placeholder="Rp 0"
+                      value={formData.value}
+                      onChange={(e) =>
+                        setFormData({ ...formData, value: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>
+                      Budget Type <span style={{ color: "#ef4444" }}>*</span>
+                    </label>
+                    <select
+                      value={formData.budgetType}
+                      onChange={(e) =>
+                        setFormData({ ...formData, budgetType: e.target.value })
+                      }
+                    >
+                      <option value="">Pilih...</option>
+                      <option value="CAPEX">CAPEX (Investasi)</option>
+                      <option value="OPEX">OPEX (Operasional)</option>
+                    </select>
+                  </div>
                 </div>
               </div>
 
               {/* SECTION 3: SPESIFIKASI TEMPLATE */}
               <div className="form-section bg-blue">
-                <h4 className="section-label"><FaCogs /> 3. Spesifikasi Teknis</h4>
-                
+                <h4 className="section-label">
+                  <FaCogs /> 3. Spesifikasi Teknis
+                </h4>
+
                 {!formData.category ? (
-                   <div className="empty-state-spec">
-                     <FaInfoCircle /> Silakan pilih <b>Kategori</b> di atas untuk menampilkan kolom spesifikasi.
-                   </div>
+                  <div className="empty-state-spec">
+                    <FaInfoCircle /> Silakan pilih <b>Kategori</b> di atas untuk
+                    menampilkan kolom spesifikasi.
+                  </div>
                 ) : (
                   <div className="form-grid-2">
                     {templateSpecs.map((spec, index) => (
                       <div className="form-group" key={index}>
                         <label>{spec.label}</label>
-                        <input 
-                          type="text" 
+                        <input
+                          type="text"
                           placeholder={`Isi ${spec.label}...`}
                           value={spec.value}
-                          onChange={(e) => handleTemplateSpecChange(index, e.target.value)}
+                          onChange={(e) =>
+                            handleTemplateSpecChange(index, e.target.value)
+                          }
                         />
                       </div>
                     ))}
@@ -344,42 +439,68 @@ const ViewAsset = () => {
                 )}
               </div>
 
-              {/* SECTION 4: CUSTOM SPEC (FLEXBOX FIX) */}
+              {/* SECTION 4: CUSTOM SPEC */}
               <div className="form-section">
                 <div className="flex-between">
-                  <h4 className="section-label">4. Spesifikasi Tambahan (Opsional)</h4>
-                  <button type="button" className="btn-small-add" onClick={addCustomSpec}>
+                  <h4 className="section-label">
+                    4. Spesifikasi Tambahan (Opsional)
+                  </h4>
+                  <button
+                    type="button"
+                    className="btn-small-add"
+                    onClick={addCustomSpec}
+                  >
                     <FaPlus /> Tambah
                   </button>
                 </div>
-                {customSpecs.length === 0 && <p className="empty-text">Tambahkan spesifikasi unik jika tidak ada di template.</p>}
-                
+                {customSpecs.length === 0 && (
+                  <p className="empty-text">
+                    Tambahkan spesifikasi unik jika tidak ada di template.
+                  </p>
+                )}
+
                 {customSpecs.map((spec, index) => (
                   <div className="custom-spec-row" key={index}>
-                    <input 
-                      type="text" 
-                      placeholder="Nama Spec (Cth: Warna)" 
+                    <input
+                      type="text"
+                      placeholder="Nama Spec (Cth: Warna)"
                       value={spec.key}
-                      onChange={(e) => handleCustomSpecChange(index, "key", e.target.value)}
+                      onChange={(e) =>
+                        handleCustomSpecChange(index, "key", e.target.value)
+                      }
                     />
-                    <input 
-                      type="text" 
-                      placeholder="Nilai (Cth: Hitam Glossy)" 
+                    <input
+                      type="text"
+                      placeholder="Nilai (Cth: Hitam Glossy)"
                       value={spec.value}
-                      onChange={(e) => handleCustomSpecChange(index, "value", e.target.value)}
+                      onChange={(e) =>
+                        handleCustomSpecChange(index, "value", e.target.value)
+                      }
                     />
-                    <button type="button" className="btn-trash" onClick={() => removeCustomSpec(index)}>
+                    <button
+                      type="button"
+                      className="btn-trash"
+                      onClick={() => removeCustomSpec(index)}
+                    >
                       <FaTrash />
                     </button>
                   </div>
                 ))}
               </div>
-
             </form>
 
             <div className="modal-footer sticky-footer">
-              <button className="btn-cancel" onClick={() => setShowModal(false)}>Batal</button>
-              <button className="btn-save"><FaSave /> Simpan Data</button>
+              <button
+                type="button"
+                className="btn-cancel"
+                onClick={() => setShowModal(false)}
+              >
+                Batal
+              </button>
+              {/* [FIX] Type button agar tidak submit form default */}
+              <button type="button" className="btn-save" onClick={handleSave}>
+                <FaSave /> Simpan Data
+              </button>
             </div>
           </div>
         </div>

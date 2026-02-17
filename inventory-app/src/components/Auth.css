@@ -72,12 +72,12 @@ body {
   height: 100%;
   background: linear-gradient(
     to right,
-    rgba(0, 0, 0, 1) 0%,           
-    rgba(5, 30, 62, 0.95) 25%,     
-    rgba(0, 45, 95, 0.85) 38%,     
-    rgba(0, 68, 148, 0.7) 50%,     
-    rgba(0, 68, 148, 0.1) 85%,     
-    rgba(255, 255, 255, 0.5) 100%  
+    rgba(0, 0, 0, 1) 0%,
+    rgba(5, 30, 62, 0.95) 25%,
+    rgba(0, 45, 95, 0.85) 38%,
+    rgba(0, 68, 148, 0.7) 50%,
+    rgba(0, 68, 148, 0.1) 85%,
+    rgba(255, 255, 255, 0.5) 100%
   );
   z-index: 1;
 }
@@ -92,12 +92,14 @@ body {
 
 .auth-floating-card {
   width: 100%;
-  background: rgba(255, 255, 255, 0.96); 
+  background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
   padding: 2rem 1.8rem;
   border-radius: 24px;
-  box-shadow: 0 10px 1px rgba(0, 0, 0, 0.05), 0 20px 40px rgba(0, 0, 0, 0.3);
+  box-shadow:
+    0 10px 1px rgba(0, 0, 0, 0.05),
+    0 20px 40px rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.5);
   max-height: 90vh;
   overflow-y: auto;
@@ -180,7 +182,9 @@ body {
   display: flex;
   gap: 10px;
 }
-.form-group.half { flex: 1; }
+.form-group.half {
+  flex: 1;
+}
 
 /* =========================================
    FORM ACTIONS (INGAT SAYA)
@@ -196,16 +200,16 @@ body {
    FIX: SEJAJARKAN KOTAK & TEKS (HORIZONTAL)
    ========================================= */
 .remember-me {
-  display: flex !important;       /* Pastikan menggunakan flexbox */
-  flex-direction: row !important;  /* PAKSA sejajar ke samping kanan */
-  align-items: center !important;  /* Rata tengah secara vertikal */
-  gap: 10px;                      /* Jarak antara kotak dan teks */
+  display: flex !important; /* Pastikan menggunakan flexbox */
+  flex-direction: row !important; /* PAKSA sejajar ke samping kanan */
+  align-items: center !important; /* Rata tengah secara vertikal */
+  gap: 10px; /* Jarak antara kotak dan teks */
   cursor: pointer;
   color: #1e293b;
   font-size: 0.85rem;
   font-weight: 500;
   user-select: none;
-  white-space: nowrap;            /* Mencegah teks turun ke baris bawah */
+  white-space: nowrap; /* Mencegah teks turun ke baris bawah */
 }
 
 /* Kotak Putih Custom */
@@ -214,21 +218,21 @@ body {
   -webkit-appearance: none;
   width: 18px;
   height: 18px;
-  background-color: #ffffff;      /* Warna kotak putih */
+  background-color: #ffffff; /* Warna kotak putih */
   border: 2px solid #cbd5e1;
   border-radius: 4px;
-  margin: 0;                      /* Hapus margin bawaan browser */
+  margin: 0; /* Hapus margin bawaan browser */
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;                 /* Mencegah kotak jadi gepeng */
+  flex-shrink: 0; /* Mencegah kotak jadi gepeng */
   transition: all 0.2s ease;
 }
 
 /* Efek saat Ditekan (Berubah Biru) */
 .remember-me input[type="checkbox"]:checked {
-  background-color: #004494;      /* Biru Pelindo */
+  background-color: #004494; /* Biru Pelindo */
   border-color: #004494;
 }
 
@@ -282,12 +286,12 @@ body {
   0% {
     opacity: 0;
     /* Mulai dari posisi 80px di sebelah kanan */
-    transform: translateX(80px); 
+    transform: translateX(80px);
   }
   100% {
     opacity: 1;
     /* Berakhir di posisi normal */
-    transform: translateX(0); 
+    transform: translateX(0);
   }
 }
 
@@ -300,17 +304,17 @@ body {
   justify-content: flex-end;
   align-items: center;
   /* Opsional: tambahkan ini agar saat masuk dari kanan tidak membuat scrollbar horizontal */
-  /* overflow-x: hidden; */ 
+  /* overflow-x: hidden; */
 }
 
 .big-logo-image {
   max-width: 100%;
   width: 700px;
   height: auto;
-  
+
   /* Filter Bayangan */
-  filter: drop-shadow(0 15px 15px rgba(0, 0, 0, 0.7)) 
-          drop-shadow(0 35px 70px rgba(0, 0, 0, 0.5));
+  filter: drop-shadow(0 15px 15px rgba(0, 0, 0, 0.7))
+    drop-shadow(0 35px 70px rgba(0, 0, 0, 0.5));
 
   /* Animasi Masuk dari Kanan */
   opacity: 0; /* Mulai transparan agar tidak flicker */
@@ -322,9 +326,23 @@ body {
    RESPONSIF
    ========================================= */
 @media (max-width: 900px) {
-  .auth-fullscreen-container { padding: 20px; justify-content: center; }
-  .auth-layout-wrapper { flex-direction: column-reverse; gap: 20px; padding-right: 0; }
-  .auth-logo-section { justify-content: center; width: 100%; }
-  .big-logo-image { width: 220px; }
-  .auth-card-section { width: 100%; }
+  .auth-fullscreen-container {
+    padding: 20px;
+    justify-content: center;
+  }
+  .auth-layout-wrapper {
+    flex-direction: column-reverse;
+    gap: 20px;
+    padding-right: 0;
+  }
+  .auth-logo-section {
+    justify-content: center;
+    width: 100%;
+  }
+  .big-logo-image {
+    width: 220px;
+  }
+  .auth-card-section {
+    width: 100%;
+  }
 }
