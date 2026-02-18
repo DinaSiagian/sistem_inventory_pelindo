@@ -4,13 +4,11 @@ import {
   FaHome,
   FaBox,
   FaMoneyBillWave,
-  FaChartBar,
   FaUsers,
   FaSignOutAlt,
-  FaBuilding,
+  FaPlusCircle,
   FaChevronLeft,
   FaChevronRight,
-  FaPlusCircle, // BARU: Icon untuk input anggaran
 } from "react-icons/fa";
 import "./Layout.css";
 
@@ -34,11 +32,9 @@ const Layout = () => {
       label: "Anggaran (CAPEX/OPEX)",
       icon: <FaMoneyBillWave />,
     },
-    { path: "/budget/input", label: "Input Anggaran", icon: <FaPlusCircle /> }, // BARU
-    { path: "/projects", label: "Daftar Pekerjaan", icon: <FaBuilding /> },
+    { path: "/budget/input", label: "Input Anggaran", icon: <FaPlusCircle /> },
     { category: "Administrasi" },
     { path: "/users", label: "User Management", icon: <FaUsers /> },
-    { path: "/reports", label: "Laporan Eksekutif", icon: <FaChartBar /> },
   ];
 
   useEffect(() => {

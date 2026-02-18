@@ -433,6 +433,9 @@
 .text-green {
   color: #10b981 !important;
 }
+.text-blue {
+  color: #1d4ed8 !important;
+}
 
 /* ── Actions ─────────────────────────────────────────────────── */
 .bi-actions {
@@ -482,6 +485,86 @@
   border-color: #94a3b8;
 }
 
+/* ================================================================
+   CAPEX Assets Section — Daftar Aset per Pekerjaan
+   ================================================================ */
+
+/* ── Container utama section aset dalam project item ──────────── */
+.bi-capex-assets {
+  margin-top: 1.5rem;
+  border-top: 1.5px dashed #cbd5e1;
+  padding-top: 1.2rem;
+}
+
+/* ── Header row: judul + tombol tambah ───────────────────────── */
+.bi-capex-assets-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.bi-capex-assets-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #1d4ed8;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ── Badge jumlah aset ───────────────────────────────────────── */
+.bi-asset-count-badge {
+  background: #dbeafe;
+  color: #1d4ed8;
+  padding: 2px 8px;
+  border-radius: 50px;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+/* ── Variant tombol tambah yang lebih kecil ──────────────────── */
+.bi-btn-add--sm {
+  padding: 5px 10px !important;
+  font-size: 0.72rem !important;
+  background: linear-gradient(135deg, #0369a1 0%, #0ea5e9 100%) !important;
+}
+
+.bi-btn-add--sm:hover {
+  box-shadow: 0 4px 12px rgba(3, 105, 161, 0.4) !important;
+}
+
+/* ── Empty state ─────────────────────────────────────────────── */
+.bi-capex-assets-empty {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  background: #f8fafc;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 10px;
+  color: #94a3b8;
+  font-size: 0.8rem;
+  font-style: italic;
+}
+
+/* ── Asset item khusus CAPEX — warna biru langit ─────────────── */
+.bi-asset-item--capex {
+  background: #f0f9ff !important;
+  border-color: #bae6fd !important;
+}
+
+.bi-asset-item--capex .bi-asset-header {
+  border-bottom-color: #bae6fd;
+}
+
+/* ── Badge nomor aset berwarna biru langit untuk CAPEX ───────── */
+.bi-asset-num--capex {
+  color: #0369a1 !important;
+}
+
 /* ── Responsive ──────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .bi-form-grid {
@@ -510,5 +593,11 @@
   .bi-btn {
     width: 100%;
     justify-content: center;
+  }
+
+  .bi-capex-assets-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.8rem;
   }
 }

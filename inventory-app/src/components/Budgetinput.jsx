@@ -14,6 +14,7 @@ import {
   CheckCircle,
   ArrowLeft,
   Package,
+  Layers,
 } from "lucide-react";
 import "./BudgetInput.css";
 
@@ -71,6 +72,8 @@ const BudgetInput = () => {
       no_sp3: "",
       tgl_sp3: "",
       tgl_bamk: "",
+      // ── BARU: setiap pekerjaan punya daftar aset sendiri ──
+      assets: [],
     },
   ]);
 
@@ -83,7 +86,7 @@ const BudgetInput = () => {
     { code: "5060700000", name: "Beban Sumber Daya Pihak Ketiga Peralatan" },
   ];
 
-  // ── Handlers ──────────────────────────────────────────────────
+  // ── Handlers OPEX ─────────────────────────────────────────────
   const addOpexAsset = () => {
     setOpexAssets([
       ...opexAssets,
@@ -111,6 +114,7 @@ const BudgetInput = () => {
     );
   };
 
+  // ── Handlers CAPEX Projects ───────────────────────────────────
   const addCapexProject = () => {
     setCapexProjects([
       ...capexProjects,
@@ -127,6 +131,7 @@ const BudgetInput = () => {
         no_sp3: "",
         tgl_sp3: "",
         tgl_bamk: "",
+        assets: [],
       },
     ]);
   };
@@ -143,6 +148,57 @@ const BudgetInput = () => {
     );
   };
 
+  // ── Handlers CAPEX Assets (per project) ──────────────────────
+  const addCapexAsset = (projectId) => {
+    setCapexProjects(
+      capexProjects.map((p) =>
+        p.id === projectId
+          ? {
+              ...p,
+              assets: [
+                ...p.assets,
+                {
+                  id: Date.now(),
+                  asset_code: "",
+                  name: "",
+                  brand: "",
+                  model: "",
+                  serial_number: "",
+                  procurement_date: new Date().toISOString().split("T")[0],
+                },
+              ],
+            }
+          : p,
+      ),
+    );
+  };
+
+  const removeCapexAsset = (projectId, assetId) => {
+    setCapexProjects(
+      capexProjects.map((p) =>
+        p.id === projectId
+          ? { ...p, assets: p.assets.filter((a) => a.id !== assetId) }
+          : p,
+      ),
+    );
+  };
+
+  const updateCapexAsset = (projectId, assetId, field, value) => {
+    setCapexProjects(
+      capexProjects.map((p) =>
+        p.id === projectId
+          ? {
+              ...p,
+              assets: p.assets.map((a) =>
+                a.id === assetId ? { ...a, [field]: value } : a,
+              ),
+            }
+          : p,
+      ),
+    );
+  };
+
+  // ── Submit ────────────────────────────────────────────────────
   const handleSubmit = () => {
     if (budgetType === "opex") {
       console.log("Submit OPEX:", { budget: opexForm, assets: opexAssets });
@@ -152,7 +208,7 @@ const BudgetInput = () => {
         budget: capexForm,
         projects: capexProjects,
       });
-      // POST ke API: /api/budget-annual-capex + /api/budget-projects
+      // POST ke API: /api/budget-annual-capex + /api/budget-projects + /api/assets
     }
 
     alert(`Data ${budgetType.toUpperCase()} berhasil disimpan!`);
@@ -219,9 +275,9 @@ const BudgetInput = () => {
               <h3>OPEX</h3>
               <p>Anggaran Operasional</p>
               <ul>
-                <li>Pemeliharaan & Lisensi Software</li>
-                <li>Jaringan & Koneksi Data</li>
-                <li>Sewa Peralatan & Jasa</li>
+                <li>Pemeliharaan &amp; Lisensi Software</li>
+                <li>Jaringan &amp; Koneksi Data</li>
+                <li>Sewa Peralatan &amp; Jasa</li>
               </ul>
             </div>
 
@@ -746,6 +802,119 @@ const BudgetInput = () => {
                     />
                   </div>
                 </div>
+
+                {/* ── BARU: Daftar Aset per Pekerjaan CAPEX ── */}
+                <div className="bi-capex-assets">
+                  <div className="bi-capex-assets-header">
+                    <div className="bi-capex-assets-title">
+                      <Layers size={15} />
+                      <span>
+                        Daftar Aset Pekerjaan #{idx + 1}
+                      </span>
+                      <span className="bi-asset-count-badge">
+                        {proj.assets.length} aset
+                      </span>
+                    </div>
+                    <button
+                      className="bi-btn-add bi-btn-add--sm"
+                      onClick={() => addCapexAsset(proj.id)}
+                    >
+                      <Plus size={14} /> Tambah Aset
+                    </button>
+                  </div>
+
+                  {proj.assets.length === 0 ? (
+                    <div className="bi-capex-assets-empty">
+                      <Package size={20} strokeWidth={1.4} />
+                      <span>Belum ada aset — klik "Tambah Aset" untuk menambahkan</span>
+                    </div>
+                  ) : (
+                    proj.assets.map((asset, aIdx) => (
+                      <div key={asset.id} className="bi-asset-item bi-asset-item--capex">
+                        <div className="bi-asset-header">
+                          <span className="bi-asset-num bi-asset-num--capex">
+                            Aset #{aIdx + 1}
+                          </span>
+                          <button
+                            className="bi-btn-remove"
+                            onClick={() => removeCapexAsset(proj.id, asset.id)}
+                          >
+                            <Trash2 size={14} /> Hapus
+                          </button>
+                        </div>
+
+                        <div className="bi-form-grid">
+                          <div className="bi-form-group">
+                            <label>Kode Aset *</label>
+                            <input
+                              value={asset.asset_code}
+                              onChange={(e) =>
+                                updateCapexAsset(proj.id, asset.id, "asset_code", e.target.value)
+                              }
+                              placeholder="AST-CPX-XXXX"
+                            />
+                          </div>
+
+                          <div className="bi-form-group">
+                            <label>Tgl Pengadaan *</label>
+                            <input
+                              type="date"
+                              value={asset.procurement_date}
+                              onChange={(e) =>
+                                updateCapexAsset(proj.id, asset.id, "procurement_date", e.target.value)
+                              }
+                            />
+                          </div>
+
+                          <div className="bi-form-group full">
+                            <label>Nama Aset *</label>
+                            <input
+                              value={asset.name}
+                              onChange={(e) =>
+                                updateCapexAsset(proj.id, asset.id, "name", e.target.value)
+                              }
+                              placeholder="Server / Switch / CCTV..."
+                            />
+                          </div>
+
+                          <div className="bi-form-group">
+                            <label>Brand</label>
+                            <input
+                              value={asset.brand}
+                              onChange={(e) =>
+                                updateCapexAsset(proj.id, asset.id, "brand", e.target.value)
+                              }
+                              placeholder="Cisco"
+                            />
+                          </div>
+
+                          <div className="bi-form-group">
+                            <label>Model</label>
+                            <input
+                              value={asset.model}
+                              onChange={(e) =>
+                                updateCapexAsset(proj.id, asset.id, "model", e.target.value)
+                              }
+                              placeholder="Catalyst 2960-X"
+                            />
+                          </div>
+
+                          <div className="bi-form-group full">
+                            <label>Serial Number</label>
+                            <input
+                              value={asset.serial_number}
+                              onChange={(e) =>
+                                updateCapexAsset(proj.id, asset.id, "serial_number", e.target.value)
+                              }
+                              placeholder="SN-XXXX-XXXX"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+                {/* ── END: Daftar Aset per Pekerjaan ── */}
               </div>
             ))}
 
@@ -777,6 +946,12 @@ const BudgetInput = () => {
                         0,
                       ),
                   )}
+                </strong>
+              </div>
+              <div className="bi-summary-item">
+                <span>Total Aset Terdaftar</span>
+                <strong className="text-blue">
+                  {capexProjects.reduce((s, p) => s + p.assets.length, 0)} aset
                 </strong>
               </div>
             </div>

@@ -87,7 +87,7 @@ body {
    ========================================= */
 .auth-card-section {
   flex: 0 0 auto;
-  width: 380px; /* Diatur agar tetap ramping tapi muat semua input */
+  width: 380px;
 }
 
 .auth-floating-card {
@@ -197,46 +197,43 @@ body {
 }
 
 /* =========================================
-   FIX: SEJAJARKAN KOTAK & TEKS (HORIZONTAL)
+   REMEMBER ME CHECKBOX
    ========================================= */
 .remember-me {
-  display: flex !important; /* Pastikan menggunakan flexbox */
-  flex-direction: row !important; /* PAKSA sejajar ke samping kanan */
-  align-items: center !important; /* Rata tengah secara vertikal */
-  gap: 10px; /* Jarak antara kotak dan teks */
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 10px;
   cursor: pointer;
   color: #1e293b;
   font-size: 0.85rem;
   font-weight: 500;
   user-select: none;
-  white-space: nowrap; /* Mencegah teks turun ke baris bawah */
+  white-space: nowrap;
 }
 
-/* Kotak Putih Custom */
 .remember-me input[type="checkbox"] {
   appearance: none;
   -webkit-appearance: none;
   width: 18px;
   height: 18px;
-  background-color: #ffffff; /* Warna kotak putih */
+  background-color: #ffffff;
   border: 2px solid #cbd5e1;
   border-radius: 4px;
-  margin: 0; /* Hapus margin bawaan browser */
+  margin: 0;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0; /* Mencegah kotak jadi gepeng */
+  flex-shrink: 0;
   transition: all 0.2s ease;
 }
 
-/* Efek saat Ditekan (Berubah Biru) */
 .remember-me input[type="checkbox"]:checked {
-  background-color: #004494; /* Biru Pelindo */
+  background-color: #004494;
   border-color: #004494;
 }
 
-/* Simbol Centang Putih */
 .remember-me input[type="checkbox"]:checked::after {
   content: "✔";
   color: white;
@@ -259,6 +256,9 @@ body {
   cursor: pointer;
   box-shadow: 0 8px 15px rgba(0, 68, 148, 0.2);
   transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .auth-button:hover {
@@ -279,20 +279,48 @@ body {
   cursor: pointer;
 }
 
+.forgot-password {
+  color: #004494;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.forgot-password:hover {
+  color: #00b5e2;
+  text-decoration: underline;
+}
+
 /* =========================================
-   ANIMASI LOGO (KEYFRAMES) - KANAN KE KIRI
+   ANIMASI
    ========================================= */
 @keyframes fadeInRight {
   0% {
     opacity: 0;
-    /* Mulai dari posisi 80px di sebelah kanan */
     transform: translateX(80px);
   }
   100% {
     opacity: 1;
-    /* Berakhir di posisi normal */
     transform: translateX(0);
   }
+}
+
+@keyframes fp-fade-up {
+  0% {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fp-success-pop {
+  0%   { transform: scale(0.6); opacity: 0; }
+  70%  { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1);   opacity: 1; }
 }
 
 /* =========================================
@@ -303,22 +331,15 @@ body {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  /* Opsional: tambahkan ini agar saat masuk dari kanan tidak membuat scrollbar horizontal */
-  /* overflow-x: hidden; */
 }
 
 .big-logo-image {
   max-width: 100%;
   width: 700px;
   height: auto;
-
-  /* Filter Bayangan */
   filter: drop-shadow(0 15px 15px rgba(0, 0, 0, 0.7))
     drop-shadow(0 35px 70px rgba(0, 0, 0, 0.5));
-
-  /* Animasi Masuk dari Kanan */
-  opacity: 0; /* Mulai transparan agar tidak flicker */
-  /* Menggunakan 'fadeInRight' dengan durasi 1.2s dan efek halus */
+  opacity: 0;
   animation: fadeInRight 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
@@ -345,4 +366,128 @@ body {
   .auth-card-section {
     width: 100%;
   }
+}
+
+/* =========================================================
+   LUPA KATA SANDI
+   ========================================================= */
+
+.fp-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: fp-fade-up 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ── Heading & deskripsi ─────────────────────────────────── */
+.fp-heading {
+  text-align: center;
+  margin-bottom: 1.8rem;
+}
+
+.fp-heading h2 {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #002b5c;
+  margin: 0 0 0.5rem;
+  letter-spacing: -0.3px;
+}
+
+.fp-heading p {
+  font-size: 0.83rem;
+  color: #64748b;
+  line-height: 1.6;
+  margin: 0;
+  padding: 0 0.5rem;
+}
+
+/* ── Form ────────────────────────────────────────────────── */
+.fp-form {
+  width: 100%;
+}
+
+.fp-submit-btn {
+  margin-top: 0.4rem;
+}
+
+/* ── Link kembali ke login ───────────────────────────────── */
+.fp-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 1.4rem;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  letter-spacing: 0.1px;
+}
+
+.fp-back-link:hover {
+  color: #004494;
+}
+
+/* ── State sukses email terkirim ─────────────────────────── */
+.fp-success {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  animation: fp-fade-up 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.fp-success-icon {
+  font-size: 3rem;
+  color: #10b981;
+  margin-bottom: 1.2rem;
+  animation: fp-success-pop 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.fp-success h2 {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #002b5c;
+  margin: 0 0 0.5rem;
+  letter-spacing: -0.3px;
+}
+
+.fp-success > p {
+  font-size: 0.83rem;
+  color: #64748b;
+  margin: 0 0 0.8rem;
+}
+
+.fp-email-chip {
+  display: inline-block;
+  background: #eff6ff;
+  border: 1.5px solid #bfdbfe;
+  color: #1d4ed8;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 6px 16px;
+  border-radius: 50px;
+  margin-bottom: 1.2rem;
+  letter-spacing: 0.1px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fp-note {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  line-height: 1.6;
+  margin-bottom: 1.6rem !important;
+  padding: 0 0.5rem;
+}
+
+.fp-note strong {
+  color: #64748b;
+  font-weight: 700;
 }
