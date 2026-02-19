@@ -1692,3 +1692,162 @@
   letter-spacing: 0.5px;
   gap: 2px;
 }
+
+/* =========================================
+   13. SVG ICON OVERRIDES
+   ========================================= */
+
+/* Ensure SVG icons inherit color and display properly */
+.kpi-icon svg,
+.action-dropdown button svg,
+.control-btn svg,
+.modal-header h3 svg,
+.fsc-title svg,
+.barcode-result-header svg,
+.btn-generate svg,
+.btn-save svg,
+.btn-cancel svg,
+.btn-barcode svg,
+.btn-print svg,
+.btn-small-add svg,
+.btn-delete-confirm svg,
+.add-asset-btn svg,
+.nomor-auto-label svg {
+  display: block;
+  flex-shrink: 0;
+}
+
+/* Search icon span wrapper */
+span.search-icon {
+  position: absolute;
+  left: 17px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+/* Barcode hint icon span */
+.barcode-hint-icon {
+  color: var(--cyan);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+/* Barcode result icon span */
+.barcode-result-icon {
+  color: #16a34a;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+/* KPI card — slightly refined with light blue accent line */
+.kpi-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 16px 0 0 16px;
+  opacity: 0;
+  transition: opacity 0.22s;
+}
+.kpi-total::before {
+  background: #3b82f6;
+}
+.kpi-tersedia::before {
+  background: #22c55e;
+}
+.kpi-dipinjam::before {
+  background: #eab308;
+}
+.kpi-maintenance::before {
+  background: #ef4444;
+}
+.kpi-nilai::before {
+  background: var(--cyan);
+}
+.kpi-card:hover::before {
+  opacity: 1;
+}
+
+/* Modal header icon — light blue tint instead of dark navy */
+.modal-header-icon {
+  width: 42px;
+  height: 42px;
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #2563eb;
+  font-size: 17px;
+  flex-shrink: 0;
+}
+
+/* View header icon — also update to lighter blue */
+.view-header-icon {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #2563eb;
+  font-size: 20px;
+  flex-shrink: 0;
+  box-shadow: 0 6px 18px -6px rgba(37, 99, 235, 0.25);
+}
+
+/* Confirm icon - amber */
+.confirm-icon {
+  font-size: 2.4rem;
+  color: #f59e0b;
+  margin-bottom: 14px;
+  display: flex;
+  justify-content: center;
+}
+.confirm-icon svg {
+  stroke: #f59e0b;
+}
+
+/* Step numbers in form - updated lighter */
+.form-step-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  color: #2563eb;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0.3px;
+}
+
+/* Section step colors updated */
+.fsc-step {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  color: #2563eb;
+}
+.fsc-step--teal {
+  background: linear-gradient(135deg, #a5f3fc 0%, #67e8f9 100%);
+  color: #0e7490;
+}
+.fsc-step--gray {
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  color: #64748b;
+}
+.fsc-step--indigo {
+  background: linear-gradient(135deg, #c7d2fe 0%, #a5b4fc 100%);
+  color: #4338ca;
+}
