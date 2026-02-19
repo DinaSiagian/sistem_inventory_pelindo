@@ -105,8 +105,8 @@ const Layout = () => {
             </div>
           </div>
 
+          {/* Tahun Anggaran badge dihapus dari sini — sudah ada selector di Dashboard */}
           <div className="topbar-right">
-            <span className="dashboard-year-badge">Tahun Anggaran: 2026</span>
             <div className="user-profile">
               <div className="user-info">
                 <span className="user-name">Joy Silalahi</span>
