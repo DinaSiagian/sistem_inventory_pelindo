@@ -8,7 +8,7 @@
 Proyek ini merupakan **Sistem Informasi Manajemen Inventaris dan Aset** yang dikembangkan dalam rangka **Program Magang di PT Pelindo Multi Terminal**.  
 Sistem ini dirancang untuk membantu perusahaan dalam melakukan **pendataan, pelacakan, peminjaman, pengembalian**, serta **pemantauan kondisi dan riwayat perawatan aset** secara terpusat dan terdokumentasi.
 
-Sistem dikembangkan dengan arsitektur **frontend–backend terpisah**, menggunakan **React** sebagai frontend, **Lumen (Laravel Micro Framework)** sebagai backend berbasis **RESTful API**, serta **MySQL (PostgreSQL)** sebagai basis data. Pendekatan ini membuat sistem terstruktur, mudah dikembangkan, dan siap digunakan dalam skala organisasi.
+Sistem dikembangkan dengan arsitektur **frontend–backend terpisah**, menggunakan **React** sebagai frontend, **Lumen (Laravel Micro Framework)** sebagai backend berbasis **RESTful API**, serta **PostgreSQL** sebagai basis data. Pendekatan ini membuat sistem terstruktur, mudah dikembangkan, dan siap digunakan dalam skala organisasi.
 
 ---
 
@@ -23,7 +23,7 @@ Sistem dikembangkan dengan arsitektur **frontend–backend terpisah**, menggunak
   Menangani logika bisnis, validasi, autentikasi, dan keamanan sistem melalui RESTful API.
 
 ### 🗄️ Database
-- **MySQL (PostgreSQL)**  
+- **PostgreSQL**  
   Menyimpan data aset, spesifikasi, transaksi, kondisi barang, serta audit log.
 
 ### 🏗️ Arsitektur
@@ -83,7 +83,7 @@ Sistem dikembangkan dengan arsitektur **frontend–backend terpisah**, menggunak
 
 - Frontend React berkomunikasi dengan Backend Lumen melalui RESTful API
 - Backend bertanggung jawab penuh terhadap validasi dan konsistensi data
-- Database MySQL (PostgreSQL) digunakan sebagai penyimpanan terpusat
+- Database PostgreSQL digunakan sebagai penyimpanan terpusat
 - Struktur database dirancang fleksibel tanpa mengorbankan integritas data
 
 ---
