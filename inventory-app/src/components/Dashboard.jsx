@@ -65,38 +65,85 @@ const totalKondisi = dataKondisi.reduce((sum, d) => sum + d.value, 0);
 
 // Custom legend untuk kondisi aset (seperti referensi gambar)
 const CustomKondisiLegend = () => (
-  <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "16px" }}>
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      gap: "8px",
+      marginTop: "16px",
+    }}
+  >
     {dataKondisi.map((item) => {
       const pct = ((item.value / totalKondisi) * 100).toFixed(1);
       return (
-        <div key={item.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div
+          key={item.name}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <div style={{
-              width: "12px", height: "12px", borderRadius: "50%",
-              background: item.color, flexShrink: 0
-            }} />
-            <span style={{ fontSize: "0.82rem", color: "#555", fontWeight: 500 }}>{item.name}</span>
+            <div
+              style={{
+                width: "12px",
+                height: "12px",
+                borderRadius: "50%",
+                background: item.color,
+                flexShrink: 0,
+              }}
+            />
+            <span
+              style={{ fontSize: "0.82rem", color: "#555", fontWeight: 500 }}
+            >
+              {item.name}
+            </span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <span style={{
-              fontSize: "0.82rem", fontWeight: 700, color: "#2c3e50",
-              minWidth: "32px", textAlign: "right"
-            }}>{item.value.toLocaleString()}</span>
-            <span style={{
-              fontSize: "0.75rem", color: "white", fontWeight: 700,
-              background: item.color, padding: "2px 7px",
-              borderRadius: "10px", minWidth: "42px", textAlign: "center"
-            }}>{pct}%</span>
+            <span
+              style={{
+                fontSize: "0.82rem",
+                fontWeight: 700,
+                color: "#2c3e50",
+                minWidth: "32px",
+                textAlign: "right",
+              }}
+            >
+              {item.value.toLocaleString()}
+            </span>
+            <span
+              style={{
+                fontSize: "0.75rem",
+                color: "white",
+                fontWeight: 700,
+                background: item.color,
+                padding: "2px 7px",
+                borderRadius: "10px",
+                minWidth: "42px",
+                textAlign: "center",
+              }}
+            >
+              {pct}%
+            </span>
           </div>
         </div>
       );
     })}
     {/* Total row */}
-    <div style={{
-      display: "flex", alignItems: "center", justifyContent: "space-between",
-      borderTop: "1px solid #f1f2f6", paddingTop: "8px", marginTop: "4px"
-    }}>
-      <span style={{ fontSize: "0.82rem", color: "#2c3e50", fontWeight: 700 }}>Total Aset</span>
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        borderTop: "1px solid #f1f2f6",
+        paddingTop: "8px",
+        marginTop: "4px",
+      }}
+    >
+      <span style={{ fontSize: "0.82rem", color: "#2c3e50", fontWeight: 700 }}>
+        Total Aset
+      </span>
       <span style={{ fontSize: "0.9rem", fontWeight: 800, color: "#2c3e50" }}>
         {totalKondisi.toLocaleString()} Unit
       </span>
@@ -109,10 +156,24 @@ const CustomDonutLabel = ({ viewBox }) => {
   const { cx, cy } = viewBox;
   return (
     <g>
-      <text x={cx} y={cy - 8} textAnchor="middle" fill="#2c3e50" fontSize="1.3rem" fontWeight="800">
+      <text
+        x={cx}
+        y={cy - 8}
+        textAnchor="middle"
+        fill="#2c3e50"
+        fontSize="1.3rem"
+        fontWeight="800"
+      >
         {totalKondisi.toLocaleString()}
       </text>
-      <text x={cx} y={cy + 14} textAnchor="middle" fill="#95a5a6" fontSize="0.72rem" fontWeight="600">
+      <text
+        x={cx}
+        y={cy + 14}
+        textAnchor="middle"
+        fill="#95a5a6"
+        fontSize="0.72rem"
+        fontWeight="600"
+      >
         TOTAL ASET
       </text>
     </g>
@@ -122,7 +183,8 @@ const CustomDonutLabel = ({ viewBox }) => {
 const Dashboard = () => {
   const [filterTren, setFilterTren] = useState("bulanan");
   const [tahunAnggaran, setTahunAnggaran] = useState("2026");
-  const dataTren = filterTren === "harian" ? dataPeminjamanHarian : dataPeminjamanBulanan;
+  const dataTren =
+    filterTren === "harian" ? dataPeminjamanHarian : dataPeminjamanBulanan;
   const tahunOptions = ["2023", "2024", "2025", "2026"];
 
   return (
@@ -135,11 +197,36 @@ const Dashboard = () => {
             Monitoring Aset & Anggaran PT Pelindo Multi Terminal
           </p>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "4px" }}>
-          <span style={{ fontSize: "0.75rem", color: "#95a5a6", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-end",
+            gap: "4px",
+          }}
+        >
+          <span
+            style={{
+              fontSize: "0.75rem",
+              color: "#95a5a6",
+              fontWeight: 600,
+              textTransform: "uppercase",
+              letterSpacing: "0.5px",
+            }}
+          >
             Tahun Anggaran
           </span>
-          <div style={{ display: "flex", background: "white", borderRadius: "12px", padding: "4px", gap: "4px", boxShadow: "0 2px 10px rgba(0,0,0,0.08)", border: "1px solid #e8ecf0" }}>
+          <div
+            style={{
+              display: "flex",
+              background: "white",
+              borderRadius: "12px",
+              padding: "4px",
+              gap: "4px",
+              boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
+              border: "1px solid #e8ecf0",
+            }}
+          >
             {tahunOptions.map((t) => (
               <button
                 key={t}
@@ -151,11 +238,15 @@ const Dashboard = () => {
                   cursor: "pointer",
                   fontSize: "0.88rem",
                   fontWeight: tahunAnggaran === t ? 700 : 500,
-                  background: tahunAnggaran === t
-                    ? "linear-gradient(135deg, #004494, #0066cc)"
-                    : "transparent",
+                  background:
+                    tahunAnggaran === t
+                      ? "linear-gradient(135deg, #004494, #0066cc)"
+                      : "transparent",
                   color: tahunAnggaran === t ? "white" : "#7f8c8d",
-                  boxShadow: tahunAnggaran === t ? "0 3px 10px rgba(0,68,148,0.35)" : "none",
+                  boxShadow:
+                    tahunAnggaran === t
+                      ? "0 3px 10px rgba(0,68,148,0.35)"
+                      : "none",
                   transition: "all 0.2s ease",
                   transform: tahunAnggaran === t ? "translateY(-1px)" : "none",
                 }}
@@ -216,12 +307,25 @@ const Dashboard = () => {
       <div className="chart-grid">
         {/* Tren Peminjaman - Multi Category */}
         <div className="dashboard-card">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "4px",
+            }}
+          >
             <h3 className="section-title">Tren Peminjaman per Kategori</h3>
             {/* Filter Toggle */}
-            <div style={{
-              display: "flex", background: "#f1f2f6", borderRadius: "8px", padding: "3px", gap: "2px"
-            }}>
+            <div
+              style={{
+                display: "flex",
+                background: "#f1f2f6",
+                borderRadius: "8px",
+                padding: "3px",
+                gap: "2px",
+              }}
+            >
               {["harian", "bulanan"].map((f) => (
                 <button
                   key={f}
@@ -235,7 +339,8 @@ const Dashboard = () => {
                     fontWeight: 700,
                     background: filterTren === f ? "white" : "transparent",
                     color: filterTren === f ? "#004494" : "#95a5a6",
-                    boxShadow: filterTren === f ? "0 1px 4px rgba(0,0,0,0.1)" : "none",
+                    boxShadow:
+                      filterTren === f ? "0 1px 4px rgba(0,0,0,0.1)" : "none",
                     transition: "all 0.2s",
                     textTransform: "capitalize",
                   }}
@@ -247,11 +352,36 @@ const Dashboard = () => {
           </div>
 
           {/* Category Legend */}
-          <div style={{ display: "flex", gap: "14px", flexWrap: "wrap", marginBottom: "4px" }}>
+          <div
+            style={{
+              display: "flex",
+              gap: "14px",
+              flexWrap: "wrap",
+              marginBottom: "4px",
+            }}
+          >
             {kategoriLines.map((k) => (
-              <div key={k.key} style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                <div style={{ width: "10px", height: "10px", borderRadius: "50%", background: k.color }} />
-                <span style={{ fontSize: "0.78rem", color: "#555", fontWeight: 500 }}>{k.key}</span>
+              <div
+                key={k.key}
+                style={{ display: "flex", alignItems: "center", gap: "5px" }}
+              >
+                <div
+                  style={{
+                    width: "10px",
+                    height: "10px",
+                    borderRadius: "50%",
+                    background: k.color,
+                  }}
+                />
+                <span
+                  style={{
+                    fontSize: "0.78rem",
+                    color: "#555",
+                    fontWeight: 500,
+                  }}
+                >
+                  {k.key}
+                </span>
               </div>
             ))}
           </div>
@@ -260,10 +390,23 @@ const Dashboard = () => {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={dataTren}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="name" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
+                <XAxis
+                  dataKey="name"
+                  tick={{ fontSize: 12 }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  tick={{ fontSize: 12 }}
+                  axisLine={false}
+                  tickLine={false}
+                />
                 <Tooltip
-                  contentStyle={{ borderRadius: "8px", border: "none", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
+                  contentStyle={{
+                    borderRadius: "8px",
+                    border: "none",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                  }}
                 />
                 {kategoriLines.map((k) => (
                   <Line
@@ -289,18 +432,36 @@ const Dashboard = () => {
               <PieChart>
                 <Pie
                   data={dataKondisi}
-                  cx="50%" cy="50%"
-                  innerRadius={65} outerRadius={90}
-                  paddingAngle={4} dataKey="value"
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={65}
+                  outerRadius={90}
+                  paddingAngle={4}
+                  dataKey="value"
                   labelLine={false}
-                  label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
+                  label={({
+                    cx,
+                    cy,
+                    midAngle,
+                    innerRadius,
+                    outerRadius,
+                    percent,
+                  }) => {
                     const RADIAN = Math.PI / 180;
-                    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+                    const radius =
+                      innerRadius + (outerRadius - innerRadius) * 0.5;
                     const x = cx + radius * Math.cos(-midAngle * RADIAN);
                     const y = cy + radius * Math.sin(-midAngle * RADIAN);
                     return percent > 0.05 ? (
-                      <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central"
-                        fontSize="0.72rem" fontWeight="700">
+                      <text
+                        x={x}
+                        y={y}
+                        fill="white"
+                        textAnchor="middle"
+                        dominantBaseline="central"
+                        fontSize="0.72rem"
+                        fontWeight="700"
+                      >
                         {(percent * 100).toFixed(1)}%
                       </text>
                     ) : null;
@@ -314,9 +475,13 @@ const Dashboard = () => {
                 <Tooltip
                   formatter={(value, name) => [
                     `${value.toLocaleString()} unit (${((value / totalKondisi) * 100).toFixed(1)}%)`,
-                    name
+                    name,
                   ]}
-                  contentStyle={{ borderRadius: "8px", border: "none", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
+                  contentStyle={{
+                    borderRadius: "8px",
+                    border: "none",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                  }}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -335,14 +500,16 @@ const Dashboard = () => {
 
         <AlertItem
           icon={<FaExclamationTriangle />}
-          bg="#fdecea" color="#e74c3c"
+          bg="#fdecea"
+          color="#e74c3c"
           title="Aset Sering Rusak"
           text="Laptop Lenovo Thinkpad (SN: 99283) telah rusak 3x. Pertimbangkan penggantian (CAPEX)."
         />
 
         <AlertItem
           icon={<FaClipboardList />}
-          bg="#fef5e7" color="#f39c12"
+          bg="#fef5e7"
+          color="#f39c12"
           title="Jadwal Maintenance CCTV"
           text="50 Unit CCTV di Zona Belawan belum dimaintenance selama 6 bulan."
           btnText="Buat Jadwal"
@@ -355,13 +522,18 @@ const Dashboard = () => {
 // --- KOMPONEN KECIL ---
 const StatsCard = ({ title, value, icon, color, sub }) => (
   <div className="stats-card" style={{ borderLeftColor: color }}>
-    <div className="stats-icon-wrapper" style={{ background: `${color}15`, color: color }}>
+    <div
+      className="stats-icon-wrapper"
+      style={{ background: `${color}15`, color: color }}
+    >
       {icon}
     </div>
     <div className="stats-content">
       <p>{title}</p>
       <h3>{value}</h3>
-      <span className="stats-sub" style={{ color: color }}>{sub}</span>
+      <span className="stats-sub" style={{ color: color }}>
+        {sub}
+      </span>
     </div>
   </div>
 );
@@ -373,17 +545,31 @@ const BudgetCard = ({ title, current, target, percent, color, desc }) => (
       <span className="section-subtitle">Realisasi vs RKAP</span>
     </div>
     <div className="budget-value-row">
-      <h2 className="current-value" style={{ color: color }}>{current}</h2>
+      <h2 className="current-value" style={{ color: color }}>
+        {current}
+      </h2>
       <span className="target-value">/ {target}</span>
     </div>
     <div className="progress-bar-bg">
-      <div className="progress-fill" style={{ width: `${percent}%`, background: color }}></div>
+      <div
+        className="progress-fill"
+        style={{ width: `${percent}%`, background: color }}
+      ></div>
     </div>
-    <p className="budget-summary-text"><strong>{percent}%</strong> {desc}</p>
+    <p className="budget-summary-text">
+      <strong>{percent}%</strong> {desc}
+    </p>
   </div>
 );
 
-const AlertItem = ({ icon, bg, color, title, text, btnText = "Cek Detail" }) => (
+const AlertItem = ({
+  icon,
+  bg,
+  color,
+  title,
+  text,
+  btnText = "Cek Detail",
+}) => (
   <div className="alert-item">
     <div className="alert-icon-circle" style={{ background: bg, color: color }}>
       {icon}
@@ -395,6 +581,5 @@ const AlertItem = ({ icon, bg, color, title, text, btnText = "Cek Detail" }) => 
     <button className="alert-action-btn">{btnText}</button>
   </div>
 );
-
 
 export default Dashboard;

@@ -283,6 +283,7 @@
   font-size: 0.75rem;
   font-weight: 700;
   cursor: pointer;
+  font-family: inherit;
   transition: all 0.2s;
 }
 
@@ -342,6 +343,14 @@
   min-height: 60px;
 }
 
+/* read-only styling */
+.bi-form-group input.bi-readonly,
+.bi-form-group .bi-readonly {
+  background: #f8fafc;
+  color: #64748b;
+  cursor: default;
+}
+
 .bi-helper {
   font-size: 0.75rem;
   color: #10b981;
@@ -387,12 +396,33 @@
   font-size: 0.72rem;
   font-weight: 700;
   cursor: pointer;
+  font-family: inherit;
   transition: all 0.2s;
 }
 
 .bi-btn-remove:hover {
   background: #fecaca;
   transform: translateY(-1px);
+}
+
+/* ── Inventory badge ─────────────────────────────────────────── */
+.bi-inventory-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #86efac;
+  border-radius: 99px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.bi-inventory-badge--capex {
+  background: #dbeafe;
+  color: #1d4ed8;
+  border-color: #93c5fd;
 }
 
 /* ── Summary ─────────────────────────────────────────────────── */
@@ -437,6 +467,21 @@
   color: #1d4ed8 !important;
 }
 
+/* ── Mini summary per pekerjaan ──────────────────────────────── */
+.bi-project-asset-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding: 8px 14px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #475569;
+}
+
 /* ── Actions ─────────────────────────────────────────────────── */
 .bi-actions {
   display: flex;
@@ -460,6 +505,7 @@
   font-size: 0.88rem;
   font-weight: 700;
   cursor: pointer;
+  font-family: inherit;
   transition: all 0.2s;
 }
 
@@ -486,17 +532,14 @@
 }
 
 /* ================================================================
-   CAPEX Assets Section — Daftar Aset per Pekerjaan
+   CAPEX Assets Section
    ================================================================ */
-
-/* ── Container utama section aset dalam project item ──────────── */
 .bi-capex-assets {
   margin-top: 1.5rem;
   border-top: 1.5px dashed #cbd5e1;
   padding-top: 1.2rem;
 }
 
-/* ── Header row: judul + tombol tambah ───────────────────────── */
 .bi-capex-assets-header {
   display: flex;
   align-items: center;
@@ -515,7 +558,6 @@
   letter-spacing: 0.5px;
 }
 
-/* ── Badge jumlah aset ───────────────────────────────────────── */
 .bi-asset-count-badge {
   background: #dbeafe;
   color: #1d4ed8;
@@ -525,7 +567,6 @@
   font-weight: 700;
 }
 
-/* ── Variant tombol tambah yang lebih kecil ──────────────────── */
 .bi-btn-add--sm {
   padding: 5px 10px !important;
   font-size: 0.72rem !important;
@@ -536,7 +577,6 @@
   box-shadow: 0 4px 12px rgba(3, 105, 161, 0.4) !important;
 }
 
-/* ── Empty state ─────────────────────────────────────────────── */
 .bi-capex-assets-empty {
   display: flex;
   align-items: center;
@@ -550,7 +590,6 @@
   font-style: italic;
 }
 
-/* ── Asset item khusus CAPEX — warna biru langit ─────────────── */
 .bi-asset-item--capex {
   background: #f0f9ff !important;
   border-color: #bae6fd !important;
@@ -560,9 +599,585 @@
   border-bottom-color: #bae6fd;
 }
 
-/* ── Badge nomor aset berwarna biru langit untuk CAPEX ───────── */
 .bi-asset-num--capex {
   color: #0369a1 !important;
+}
+
+/* ================================================================
+   ASET SEARCH DROPDOWN
+   ================================================================ */
+.bi-aset-search-wrap {
+  position: relative;
+  width: 100%;
+}
+
+/* Trigger button */
+.bi-aset-trigger {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 14px;
+  border: 1.5px dashed #93c5fd;
+  border-radius: 10px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.bi-aset-trigger:hover {
+  border-color: #1d4ed8;
+  background: #dbeafe;
+}
+
+.bi-aset-trigger.open {
+  border-style: solid;
+  border-color: #1d4ed8;
+  background: #dbeafe;
+  box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.1);
+}
+
+.bi-aset-trigger span {
+  flex: 1;
+}
+
+.bi-chevron {
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+
+.bi-chevron.flipped {
+  transform: rotate(180deg);
+}
+
+/* Overlay (close on click outside) */
+.bi-aset-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99;
+}
+
+/* Dropdown panel */
+.bi-aset-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  z-index: 100;
+  overflow: hidden;
+}
+
+/* Search input inside dropdown */
+.bi-aset-search-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid #e2e8f0;
+  color: #94a3b8;
+  background: #f8fafc;
+}
+
+.bi-aset-search-input input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  font-size: 0.85rem;
+  color: #0f172a;
+  background: transparent;
+}
+
+/* Scrollable list */
+.bi-aset-list-scroll {
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+/* Each option row */
+.bi-aset-option {
+  padding: 10px 14px;
+  cursor: pointer;
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.15s;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bi-aset-option:last-child {
+  border-bottom: none;
+}
+
+.bi-aset-option:hover {
+  background: #eff6ff;
+}
+
+.bi-aset-option-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.bi-aset-option-name {
+  font-weight: 600;
+  font-size: 0.84rem;
+  color: #0f172a;
+}
+
+.bi-aset-option-sub {
+  display: flex;
+  gap: 16px;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.bi-aset-nilai {
+  color: #dc2626;
+  font-weight: 700;
+}
+
+.bi-aset-code {
+  font-family: "JetBrains Mono", "Courier New", monospace;
+  font-size: 0.72rem;
+  background: #dbeafe;
+  color: #1d4ed8;
+  padding: 2px 7px;
+  border-radius: 4px;
+  border: 1px solid #93c5fd;
+  white-space: nowrap;
+}
+
+.bi-aset-empty {
+  padding: 1.5rem;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.83rem;
+  font-style: italic;
+}
+
+/* ================================================================
+   MATA ANGGARAN: Selected state + Custom form
+   ================================================================ */
+
+/* Selected display */
+.bi-mata-selected {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 14px;
+  background: #eff6ff;
+  border: 1.5px solid #93c5fd;
+  border-radius: 10px;
+  gap: 12px;
+}
+
+.bi-mata-selected-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.bi-mata-selected-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.bi-mata-selected-nama {
+  font-weight: 600;
+  font-size: 0.86rem;
+  color: #0f172a;
+}
+
+.bi-btn-change {
+  padding: 5px 12px;
+  background: white;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.bi-btn-change:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+/* Custom badge */
+.bi-custom-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  background: #fef9c3;
+  color: #a16207;
+  border: 1px solid #fde047;
+  border-radius: 99px;
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+/* "Tambah custom" row at bottom of dropdown */
+.bi-add-custom-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 14px;
+  background: #fffbeb;
+  border-top: 1px solid #fde047;
+  color: #a16207;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.bi-add-custom-row:hover {
+  background: #fef9c3;
+}
+
+/* Inline custom-add form */
+.bi-custom-form {
+  padding: 12px 14px;
+  background: #fffbeb;
+  border-top: 1px solid #fde047;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bi-custom-form-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #a16207;
+  margin-bottom: 2px;
+}
+
+.bi-custom-form input {
+  padding: 7px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 7px;
+  font-family: inherit;
+  font-size: 0.83rem;
+  color: #0f172a;
+  outline: none;
+  transition: border-color 0.2s;
+  background: white;
+  width: 100%;
+}
+
+.bi-custom-form input:focus {
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+}
+
+.bi-custom-form-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* ── Loaded mini badge di dropdown list ───────────────────────── */
+.bi-loaded-mini {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #86efac;
+  border-radius: 99px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  white-space: nowrap;
+  margin-left: 4px;
+}
+
+.bi-loaded-mini--capex {
+  background: #e0e7ff;
+  color: #3730a3;
+  border-color: #a5b4fc;
+}
+
+/* ── Autofill banner ──────────────────────────────────────────── */
+.bi-autofill-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  border-radius: 10px;
+  margin-bottom: 18px;
+  font-size: 0.82rem;
+  color: #15803d;
+  line-height: 1.5;
+}
+
+.bi-autofill-banner svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.bi-autofill-banner--capex {
+  background: #eff2ff;
+  border-color: #a5b4fc;
+  color: #3730a3;
+}
+
+/* ── Manual badge ─────────────────────────────────────────────── */
+.bi-manual-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
+  border-radius: 99px;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+/* ── Danger hapus button ──────────────────────────────────────── */
+.bi-btn-remove--danger {
+  background: #fff1f2 !important;
+  color: #dc2626 !important;
+  border: 1px solid #fecaca !important;
+}
+
+.bi-btn-remove--danger:hover {
+  background: #fee2e2 !important;
+  border-color: #f87171 !important;
+}
+
+/* ── Confirm Dialog ───────────────────────────────────────────── */
+.bi-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.bi-confirm-box {
+  background: white;
+  border-radius: 18px;
+  padding: 32px 28px;
+  max-width: 380px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.bi-confirm-icon {
+  width: 52px;
+  height: 52px;
+  background: #fff7ed;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f97316;
+}
+
+.bi-confirm-msg {
+  font-size: 0.95rem;
+  color: #1e293b;
+  font-weight: 500;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.bi-confirm-actions {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  justify-content: center;
+}
+
+.bi-btn-danger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 9px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+
+.bi-btn-danger:hover {
+  background: #b91c1c;
+}
+
+/* ── Loaded badge (data existing dimuat otomatis) ──────────────── */
+.bi-loaded-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #86efac;
+  border-radius: 99px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* ── Hint ketika belum pilih pos anggaran ─────────────────────── */
+.bi-no-anggaran-hint {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 2.5rem;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+/* ================================================================
+   CAPEX DROPDOWN VARIANTS
+   ================================================================ */
+
+/* Trigger warna biru tua untuk CAPEX */
+.bi-aset-trigger--capex {
+  border-color: #a5b4fc;
+  background: #eff2ff;
+  color: #3730a3;
+}
+
+.bi-aset-trigger--capex:hover {
+  border-color: #4f46e5;
+  background: #e0e7ff;
+}
+
+.bi-aset-trigger--capex.open {
+  border-color: #4f46e5;
+  background: #e0e7ff;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+}
+
+/* Kode badge warna indigo untuk CAPEX */
+.bi-aset-code--capex {
+  background: #e0e7ff !important;
+  color: #3730a3 !important;
+  border-color: #a5b4fc !important;
+}
+
+/* Custom badge warna indigo untuk CAPEX */
+.bi-custom-badge--capex {
+  background: #e0e7ff;
+  color: #3730a3;
+  border-color: #a5b4fc;
+}
+
+/* Selected state CAPEX */
+.bi-mata-selected--capex {
+  background: #eff2ff !important;
+  border-color: #a5b4fc !important;
+}
+
+/* Meta line di selected CAPEX */
+.bi-mata-selected-meta {
+  display: flex;
+  gap: 14px;
+  margin-top: 3px;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.bi-mata-selected-nilai {
+  color: #dc2626;
+  font-weight: 700;
+}
+
+/* "Tambah custom CAPEX" row */
+.bi-add-custom-row--capex {
+  background: #eff2ff !important;
+  border-top-color: #a5b4fc !important;
+  color: #3730a3 !important;
+}
+
+.bi-add-custom-row--capex:hover {
+  background: #e0e7ff !important;
+}
+
+/* Custom form CAPEX */
+.bi-custom-form--capex {
+  background: #eff2ff !important;
+  border-top-color: #a5b4fc !important;
+}
+
+.bi-custom-form--capex .bi-custom-form-title {
+  color: #3730a3 !important;
+}
+
+.bi-custom-form--capex input:focus {
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
+}
+
+/* Label di atas input dalam custom CAPEX form */
+.bi-custom-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.bi-custom-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #3730a3;
+}
+
+.bi-req {
+  color: #dc2626;
+}
+
+/* 2-column grid inside custom capex form */
+.bi-custom-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.bi-custom-form-hint {
+  font-size: 0.73rem;
+  color: #10b981;
+  font-weight: 600;
 }
 
 /* ── Responsive ──────────────────────────────────────────────── */
@@ -599,5 +1214,19 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 0.8rem;
+  }
+
+  .bi-mata-selected {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .bi-aset-option-sub {
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .bi-custom-form-grid {
+    grid-template-columns: 1fr;
   }
 }
