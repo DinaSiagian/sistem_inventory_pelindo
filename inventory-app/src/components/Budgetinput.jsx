@@ -471,13 +471,18 @@ function MataAnggaranDropdown({
   onSelect,
   customMasters,
   onAddCustom,
+  deletedIds,
+  onDeleteMaster,
 }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState(null);
   const [form, setForm] = useState({ kode: "", nama: "", nilai_kontrak: "" });
 
-  const allMasters = [...defaultOpexMasters, ...customMasters];
+  const allMasters = [...defaultOpexMasters, ...customMasters].filter(
+    (m) => !deletedIds.includes(m.id),
+  );
   const selected = allMasters.find((m) => m.id === selectedId);
   const filtered = allMasters.filter(
     (m) =>
@@ -502,8 +507,68 @@ function MataAnggaranDropdown({
     setForm({ kode: "", nama: "", nilai_kontrak: "" });
   };
 
+  const handleConfirmDelete = () => {
+    if (!pendingDeleteId) return;
+    if (pendingDeleteId === selectedId) onSelect(null);
+    onDeleteMaster(pendingDeleteId);
+    setPendingDeleteId(null);
+  };
+
+  const pendingItem = pendingDeleteId
+    ? [...defaultOpexMasters, ...customMasters].find(
+        (m) => m.id === pendingDeleteId,
+      )
+    : null;
+
   return (
     <div className="bi-aset-search-wrap">
+      {pendingDeleteId && (
+        <div
+          className="bi-confirm-overlay"
+          onClick={() => setPendingDeleteId(null)}
+        >
+          <div className="bi-confirm-box" onClick={(e) => e.stopPropagation()}>
+            <div className="bi-confirm-icon">
+              <AlertTriangle size={26} />
+            </div>
+            <p className="bi-confirm-msg">
+              Hapus mata anggaran{" "}
+              <strong>
+                "{pendingItem?.kode} — {pendingItem?.nama}"
+              </strong>{" "}
+              dari daftar?
+              {pendingItem?.aset?.length > 0 && (
+                <span
+                  style={{
+                    display: "block",
+                    marginTop: 6,
+                    color: "#ef4444",
+                    fontSize: "0.82rem",
+                  }}
+                >
+                  ⚠ Mata anggaran ini memiliki {pendingItem.aset.length} aset
+                  terdaftar.
+                </span>
+              )}
+            </p>
+            <div className="bi-confirm-actions">
+              <button
+                className="bi-btn bi-btn-secondary"
+                onClick={() => setPendingDeleteId(null)}
+              >
+                Batal
+              </button>
+              <button
+                className="bi-btn bi-btn-danger"
+                onClick={handleConfirmDelete}
+              >
+                <Trash2 size={14} /> Hapus
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {selected ? (
         <div className="bi-mata-selected">
           <div className="bi-mata-selected-info">
@@ -568,29 +633,108 @@ function MataAnggaranDropdown({
                   {filtered.map((m) => (
                     <div
                       key={m.id}
-                      className="bi-aset-option"
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        padding: "10px 10px 10px 14px",
+                        borderBottom: "1px solid #f1f5f9",
+                        cursor: "pointer",
+                        transition: "background 0.15s",
+                        gap: 8,
+                      }}
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.background = "#eff6ff")
+                      }
+                      onMouseLeave={(e) =>
+                        (e.currentTarget.style.background = "transparent")
+                      }
                       onClick={() => {
                         onSelect(m.id);
                         setOpen(false);
                       }}
                     >
-                      <div className="bi-aset-option-top">
-                        <code className="bi-aset-code">{m.kode}</code>
-                        <span className="bi-aset-option-name">{m.nama}</span>
-                        {m.isCustom && (
-                          <span className="bi-custom-badge">Custom</span>
-                        )}
-                        {m.aset?.length > 0 && (
-                          <span className="bi-loaded-mini">
-                            {m.aset.length} aset terdaftar
+                      <div
+                        style={{
+                          flex: 1,
+                          minWidth: 0,
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 3,
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 6,
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          <code className="bi-aset-code">{m.kode}</code>
+                          <span
+                            style={{
+                              fontWeight: 600,
+                              fontSize: "0.84rem",
+                              color: "#0f172a",
+                            }}
+                          >
+                            {m.nama}
                           </span>
+                          {m.isCustom && (
+                            <span className="bi-custom-badge">Custom</span>
+                          )}
+                          {m.aset?.length > 0 && (
+                            <span className="bi-loaded-mini">
+                              {m.aset.length} aset terdaftar
+                            </span>
+                          )}
+                        </div>
+                        {m.nilai_kontrak > 0 && (
+                          <div
+                            style={{ fontSize: "0.75rem", color: "#64748b" }}
+                          >
+                            Nilai Kontrak:{" "}
+                            <span style={{ color: "#dc2626", fontWeight: 700 }}>
+                              Rp {fmt(m.nilai_kontrak)}
+                            </span>
+                          </div>
                         )}
                       </div>
-                      {m.nilai_kontrak > 0 && (
-                        <div className="bi-aset-option-sub">
-                          <span>Nilai Kontrak: Rp {fmt(m.nilai_kontrak)}</span>
-                        </div>
-                      )}
+                      <button
+                        title="Hapus dari daftar"
+                        style={{
+                          flexShrink: 0,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          width: 34,
+                          height: 34,
+                          borderRadius: 8,
+                          border: "1px solid #fca5a5",
+                          background: "#fee2e2",
+                          color: "#dc2626",
+                          cursor: "pointer",
+                          transition: "all 0.15s",
+                          fontSize: "16px",
+                          lineHeight: 1,
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = "#dc2626";
+                          e.currentTarget.style.color = "#ffffff";
+                          e.currentTarget.style.borderColor = "#dc2626";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = "#fee2e2";
+                          e.currentTarget.style.color = "#dc2626";
+                          e.currentTarget.style.borderColor = "#fca5a5";
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPendingDeleteId(m.id);
+                        }}
+                      >
+                        🗑
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -677,10 +821,13 @@ function AnggaranCapexDropdown({
   onSelect,
   customCapexMasters,
   onAddCustom,
+  deletedIds,
+  onDeleteMaster,
 }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState(null);
   const [form, setForm] = useState({
     kode: "",
     nama: "",
@@ -689,7 +836,9 @@ function AnggaranCapexDropdown({
     nilai_rkap: "",
   });
 
-  const allCapex = [...defaultCapexMasters, ...customCapexMasters];
+  const allCapex = [...defaultCapexMasters, ...customCapexMasters].filter(
+    (c) => !deletedIds.includes(c.id),
+  );
   const selected = allCapex.find((c) => c.id === selectedId);
   const filtered = allCapex.filter(
     (c) =>
@@ -722,8 +871,71 @@ function AnggaranCapexDropdown({
     });
   };
 
+  const handleConfirmDelete = () => {
+    if (!pendingDeleteId) return;
+    // Jika yang dihapus sedang terpilih, reset pilihan
+    if (pendingDeleteId === selectedId) onSelect(null);
+    onDeleteMaster(pendingDeleteId);
+    setPendingDeleteId(null);
+  };
+
+  // Item yang mau dihapus (untuk tampil nama di konfirmasi)
+  const pendingItem = pendingDeleteId
+    ? [...defaultCapexMasters, ...customCapexMasters].find(
+        (c) => c.id === pendingDeleteId,
+      )
+    : null;
+
   return (
     <div className="bi-aset-search-wrap">
+      {/* Mini confirm inline di dalam dropdown */}
+      {pendingDeleteId && (
+        <div
+          className="bi-confirm-overlay"
+          onClick={() => setPendingDeleteId(null)}
+        >
+          <div className="bi-confirm-box" onClick={(e) => e.stopPropagation()}>
+            <div className="bi-confirm-icon">
+              <AlertTriangle size={26} />
+            </div>
+            <p className="bi-confirm-msg">
+              Hapus pos anggaran{" "}
+              <strong>
+                "{pendingItem?.kode} — {pendingItem?.nama}"
+              </strong>{" "}
+              dari daftar?
+              {pendingItem?.pekerjaan?.length > 0 && (
+                <span
+                  style={{
+                    display: "block",
+                    marginTop: 6,
+                    color: "#ef4444",
+                    fontSize: "0.82rem",
+                  }}
+                >
+                  ⚠ Pos ini memiliki {pendingItem.pekerjaan.length} pekerjaan
+                  terdaftar.
+                </span>
+              )}
+            </p>
+            <div className="bi-confirm-actions">
+              <button
+                className="bi-btn bi-btn-secondary"
+                onClick={() => setPendingDeleteId(null)}
+              >
+                Batal
+              </button>
+              <button
+                className="bi-btn bi-btn-danger"
+                onClick={handleConfirmDelete}
+              >
+                <Trash2 size={14} /> Hapus
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {selected ? (
         <div className="bi-mata-selected bi-mata-selected--capex">
           <div className="bi-mata-selected-info">
@@ -795,36 +1007,121 @@ function AnggaranCapexDropdown({
                     filtered.map((c) => (
                       <div
                         key={c.id}
-                        className="bi-aset-option"
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          padding: "10px 10px 10px 14px",
+                          borderBottom: "1px solid #f1f5f9",
+                          cursor: "pointer",
+                          transition: "background 0.15s",
+                          gap: 8,
+                        }}
+                        className="bi-aset-option-row"
+                        onMouseEnter={(e) =>
+                          (e.currentTarget.style.background = "#eff6ff")
+                        }
+                        onMouseLeave={(e) =>
+                          (e.currentTarget.style.background = "transparent")
+                        }
                         onClick={() => {
                           onSelect(c.id);
                           setOpen(false);
                         }}
                       >
-                        <div className="bi-aset-option-top">
-                          <code className="bi-aset-code bi-aset-code--capex">
-                            {c.kode}
-                          </code>
-                          <span className="bi-aset-option-name">{c.nama}</span>
-                          {c.isCustom && (
-                            <span className="bi-custom-badge bi-custom-badge--capex">
-                              Custom
+                        {/* Konten utama */}
+                        <div
+                          style={{
+                            flex: 1,
+                            minWidth: 0,
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 3,
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 6,
+                              flexWrap: "wrap",
+                            }}
+                          >
+                            <code className="bi-aset-code bi-aset-code--capex">
+                              {c.kode}
+                            </code>
+                            <span
+                              style={{
+                                fontWeight: 600,
+                                fontSize: "0.84rem",
+                                color: "#0f172a",
+                              }}
+                            >
+                              {c.nama}
                             </span>
-                          )}
-                          {c.pekerjaan?.length > 0 && (
-                            <span className="bi-loaded-mini bi-loaded-mini--capex">
-                              {c.pekerjaan.length} pekerjaan
+                            {c.isCustom && (
+                              <span className="bi-custom-badge bi-custom-badge--capex">
+                                Custom
+                              </span>
+                            )}
+                            {c.pekerjaan?.length > 0 && (
+                              <span className="bi-loaded-mini bi-loaded-mini--capex">
+                                {c.pekerjaan.length} pekerjaan
+                              </span>
+                            )}
+                          </div>
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: 14,
+                              fontSize: "0.75rem",
+                              color: "#64748b",
+                            }}
+                          >
+                            <span>
+                              RKAP {c.thn_rkap_awal}–{c.thn_rkap_akhir}
                             </span>
-                          )}
+                            <span style={{ color: "#dc2626", fontWeight: 700 }}>
+                              Rp {fmt(c.nilai_rkap)}
+                            </span>
+                          </div>
                         </div>
-                        <div className="bi-aset-option-sub">
-                          <span>
-                            RKAP {c.thn_rkap_awal}–{c.thn_rkap_akhir}
-                          </span>
-                          <span className="bi-aset-nilai">
-                            Rp {fmt(c.nilai_rkap)}
-                          </span>
-                        </div>
+                        {/* Tombol hapus */}
+                        <button
+                          title="Hapus dari daftar"
+                          style={{
+                            flexShrink: 0,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            width: 34,
+                            height: 34,
+                            borderRadius: 8,
+                            border: "1px solid #fca5a5",
+                            background: "#fee2e2",
+                            color: "#dc2626",
+                            cursor: "pointer",
+                            transition: "all 0.15s",
+                            fontSize: "16px",
+                            lineHeight: 1,
+                            fontFamily: "sans-serif",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = "#dc2626";
+                            e.currentTarget.style.color = "#ffffff";
+                            e.currentTarget.style.borderColor = "#dc2626";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = "#fee2e2";
+                            e.currentTarget.style.color = "#dc2626";
+                            e.currentTarget.style.borderColor = "#fca5a5";
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setPendingDeleteId(c.id);
+                          }}
+                        >
+                          🗑
+                        </button>
                       </div>
                     ))
                   )}
@@ -953,7 +1250,15 @@ const BudgetInput = () => {
   const [confirm, setConfirm] = useState(null); // { message, onConfirm }
 
   const [customMasters, setCustomMasters] = useState([]);
+  const [deletedOpexIds, setDeletedOpexIds] = useState([]);
+  const handleDeleteOpexMaster = (id) =>
+    setDeletedOpexIds((prev) => [...prev, id]);
   const [customCapexMasters, setCustomCapexMasters] = useState([]);
+  const [deletedCapexIds, setDeletedCapexIds] = useState([]);
+
+  const handleDeleteCapexMaster = (id) => {
+    setDeletedCapexIds((prev) => [...prev, id]);
+  };
 
   // ── OPEX ─────────────────────────────────────────────────────
   const [selectedOpexId, setSelectedOpexId] = useState(null);
@@ -967,10 +1272,15 @@ const BudgetInput = () => {
   const [capexProjects, setCapexProjects] = useState([]);
 
   // ── Derived ───────────────────────────────────────────────────
-  const allMasters = [...defaultOpexMasters, ...customMasters];
+  const allMasters = [...defaultOpexMasters, ...customMasters].filter(
+    (m) => !deletedOpexIds.includes(m.id),
+  );
   const selectedOpexMaster = allMasters.find((m) => m.id === selectedOpexId);
 
-  const allCapexMasters = [...defaultCapexMasters, ...customCapexMasters];
+  const allCapexMasters = [
+    ...defaultCapexMasters,
+    ...customCapexMasters,
+  ].filter((c) => !deletedCapexIds.includes(c.id));
   const selectedCapexMaster = allCapexMasters.find(
     (c) => c.id === selectedCapexId,
   );
@@ -1290,6 +1600,8 @@ const BudgetInput = () => {
                 onSelect={handleSelectOpex}
                 customMasters={customMasters}
                 onAddCustom={(o) => setCustomMasters([...customMasters, o])}
+                deletedIds={deletedOpexIds}
+                onDeleteMaster={handleDeleteOpexMaster}
               />
             </div>
 
@@ -1551,6 +1863,8 @@ const BudgetInput = () => {
                 onAddCustom={(o) =>
                   setCustomCapexMasters([...customCapexMasters, o])
                 }
+                deletedIds={deletedCapexIds}
+                onDeleteMaster={handleDeleteCapexMaster}
               />
             </div>
 
