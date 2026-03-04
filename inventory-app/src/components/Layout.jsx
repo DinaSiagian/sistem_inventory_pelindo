@@ -9,10 +9,10 @@ import {
   FaPlusCircle,
   FaChevronLeft,
   FaChevronRight,
+  FaHandHolding, // ← Peminjaman & Pengembalian
 } from "react-icons/fa";
 import "./Layout.css";
 
-// === IMPORT ASET GAMBAR ===
 import logoPelindo from "../pictures/pelindo2.png";
 import batikImg from "../pictures/batik.png";
 
@@ -26,6 +26,11 @@ const Layout = () => {
     { path: "/dashboard", label: "Dashboard Utama", icon: <FaHome /> },
     { category: "Manajemen Aset" },
     { path: "/assets", label: "Inventory Aset", icon: <FaBox /> },
+    {
+      path: "/peminjaman",
+      label: "Peminjaman & Pengembalian Aset",
+      icon: <FaHandHolding />,
+    },
     { category: "Keuangan & Proyek" },
     {
       path: "/budget",
@@ -41,15 +46,11 @@ const Layout = () => {
     const currentMenu = menuItems.find(
       (item) => item.path === location.pathname,
     );
-    if (currentMenu) {
-      setPageTitle(currentMenu.label);
-    }
+    if (currentMenu) setPageTitle(currentMenu.label);
   }, [location]);
 
   const handleLogout = () => {
-    if (window.confirm("Apakah Anda yakin ingin keluar?")) {
-      navigate("/");
-    }
+    if (window.confirm("Apakah Anda yakin ingin keluar?")) navigate("/");
   };
 
   return (
@@ -105,7 +106,6 @@ const Layout = () => {
             </div>
           </div>
 
-          {/* Tahun Anggaran badge dihapus dari sini — sudah ada selector di Dashboard */}
           <div className="topbar-right">
             <div className="user-profile">
               <div className="user-info">

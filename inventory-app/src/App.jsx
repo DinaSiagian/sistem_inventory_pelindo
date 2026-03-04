@@ -10,7 +10,9 @@ import Dashboard from "./components/Dashboard";
 import ViewAsset from "./components/ViewAsset";
 import Auth from "./components/Auth";
 import BudgetManagement from "./components/BudgetManagement";
-import BudgetInput from "./components/BudgetInput";
+import Budgetinput from "./components/Budgetinput";
+import Peminjaman from "./components/Peminjaman";
+import UserManagement from "./components/UserManagement";
 
 function App() {
   return (
@@ -27,10 +29,11 @@ function App() {
 
           {/* Manajemen Aset */}
           <Route path="/assets" element={<ViewAsset />} />
+          <Route path="/peminjaman" element={<Peminjaman />} />
 
           {/* Keuangan & Proyek - URUTAN PENTING! */}
           {/* Route yang lebih spesifik HARUS di atas yang lebih general */}
-          <Route path="/budget/input" element={<BudgetInput />} />
+          <Route path="/budget/input" element={<Budgetinput />} />
           <Route path="/budget" element={<BudgetManagement />} />
           <Route
             path="/projects"
@@ -42,14 +45,7 @@ function App() {
           />
 
           {/* Administrasi */}
-          <Route
-            path="/users"
-            element={
-              <div style={{ padding: "2rem" }}>
-                Halaman User Management (Coming Soon)
-              </div>
-            }
-          />
+          <Route path="/users" element={<UserManagement />} />
           <Route
             path="/reports"
             element={
