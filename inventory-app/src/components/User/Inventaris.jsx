@@ -1,5 +1,5 @@
 // ============================================================
-// Inventaris.jsx — redesign with asset photos
+// Inventaris.jsx — with dispose card support
 // ============================================================
 import { useState, useMemo } from "react";
 import {
@@ -13,7 +13,6 @@ import AssetDetailModal from "./AssetDetailModal";
 import BorrowModal from "./BorrowModal";
 import "./Inventaris.css";
 
-// ── Foto aset berdasarkan kategori (Unsplash CDN) ────────────
 const ASSET_PHOTOS = {
   LAPTOP: [
     "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&q=80",
@@ -48,93 +47,33 @@ function getAssetPhoto(asset) {
   return pool[idx];
 }
 
+const isDisposedStatus = (s) =>
+  ["DISPOSE", "DIHAPUS", "DISPOSED", "HAPUS", "DELETE", "DELETED"].includes(
+    (s || "").toUpperCase()
+  );
+
 const Ico = ({ n, s = 18, c }) => {
   const paths = {
-    search: (
-      <>
-        <circle cx="11" cy="11" r="8" />
-        <line x1="21" y1="21" x2="16.65" y2="16.65" />
-      </>
-    ),
-    laptop: (
-      <>
-        <rect x="2" y="3" width="20" height="14" rx="2" />
-        <line x1="8" y1="21" x2="16" y2="21" />
-        <line x1="12" y1="17" x2="12" y2="21" />
-      </>
-    ),
-    server: (
-      <>
-        <rect x="2" y="2" width="20" height="8" rx="2" />
-        <rect x="2" y="14" width="20" height="8" rx="2" />
-      </>
-    ),
-    monitor: (
-      <>
-        <rect x="2" y="3" width="20" height="14" rx="2" />
-        <line x1="8" y1="21" x2="16" y2="21" />
-        <line x1="12" y1="17" x2="12" y2="21" />
-        <path d="M7 8h10M7 12h6" />
-      </>
-    ),
-    network: (
-      <>
-        <circle cx="12" cy="5" r="3" />
-        <circle cx="19" cy="19" r="3" />
-        <circle cx="5" cy="19" r="3" />
-        <line x1="12" y1="8" x2="5.5" y2="16" />
-        <line x1="12" y1="8" x2="18.5" y2="16" />
-      </>
-    ),
-    battery: (
-      <>
-        <rect x="1" y="6" width="18" height="12" rx="2" />
-        <line x1="23" y1="11" x2="23" y2="13" />
-      </>
-    ),
-    cube: (
-      <>
-        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-      </>
-    ),
-    x: (
-      <>
-        <line x1="18" y1="6" x2="6" y2="18" />
-        <line x1="6" y1="6" x2="18" y2="18" />
-      </>
-    ),
-    pin: (
-      <>
-        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-        <circle cx="12" cy="10" r="3" />
-      </>
-    ),
-    eye: (
-      <>
-        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-        <circle cx="12" cy="12" r="3" />
-      </>
-    ),
+    search: (<><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></>),
+    laptop: (<><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></>),
+    server: (<><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/></>),
+    monitor: (<><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/><path d="M7 8h10M7 12h6"/></>),
+    network: (<><circle cx="12" cy="5" r="3"/><circle cx="19" cy="19" r="3"/><circle cx="5" cy="19" r="3"/><line x1="12" y1="8" x2="5.5" y2="16"/><line x1="12" y1="8" x2="18.5" y2="16"/></>),
+    battery: (<><rect x="1" y="6" width="18" height="12" rx="2"/><line x1="23" y1="11" x2="23" y2="13"/></>),
+    cube: (<><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></>),
+    x: (<><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></>),
+    pin: (<><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></>),
+    eye: (<><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></>),
+    ban: (<><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></>),
   };
   const catIcons = {
-    LAPTOP: "laptop",
-    SERVER: "server",
-    DESKTOP: "monitor",
-    NETWORK: "network",
-    UPS: "battery",
-    OTHER: "cube",
+    LAPTOP: "laptop", SERVER: "server", DESKTOP: "monitor",
+    NETWORK: "network", UPS: "battery", OTHER: "cube",
   };
   return (
-    <svg
-      width={s}
-      height={s}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke={c || "currentColor"}
-      strokeWidth="1.9"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
+    <svg width={s} height={s} viewBox="0 0 24 24" fill="none"
+      stroke={c || "currentColor"} strokeWidth="1.9"
+      strokeLinecap="round" strokeLinejoin="round">
       {paths[catIcons[n] || n]}
     </svg>
   );
@@ -167,6 +106,11 @@ export default function Inventaris({ loans, setLoans }) {
       }),
     [search, catFilter, statusFilter],
   );
+
+  const handleCardClick = (a) => {
+    if (isDisposedStatus(a.status)) return;
+    setSelected(a);
+  };
 
   return (
     <div className="inventaris">
@@ -202,9 +146,7 @@ export default function Inventaris({ loans, setLoans }) {
         >
           <option value="">Semua Kategori</option>
           {Object.entries(categoryConf).map(([k, v]) => (
-            <option key={k} value={k}>
-              {v.label}
-            </option>
+            <option key={k} value={k}>{v.label}</option>
           ))}
         </select>
         <select
@@ -214,9 +156,7 @@ export default function Inventaris({ loans, setLoans }) {
         >
           <option value="">Semua Status</option>
           {Object.entries(statusConf).map(([k, v]) => (
-            <option key={k} value={k}>
-              {v.label}
-            </option>
+            <option key={k} value={k}>{v.label}</option>
           ))}
         </select>
         <span className="inv-count">{filtered.length} aset</span>
@@ -234,11 +174,14 @@ export default function Inventaris({ loans, setLoans }) {
             const st = statusConf[a.status];
             const photo = getAssetPhoto(a);
             const hasErr = imgErr[a.id];
+            const isDisposed = isDisposedStatus(a.status);
+
             return (
               <div
                 key={a.id}
-                className="inv-card card"
-                onClick={() => setSelected(a)}
+                className={`inv-card card${isDisposed ? " is-disposed" : ""}`}
+                onClick={() => handleCardClick(a)}
+                title={isDisposed ? "Aset ini sudah di-dispose dan tidak dapat diakses" : undefined}
               >
                 {/* ── Foto ── */}
                 <div className="inv-card-photo">
@@ -257,37 +200,46 @@ export default function Inventaris({ loans, setLoans }) {
                       <Ico n={a.category} s={44} />
                     </div>
                   )}
-                  {/* overlay gradient */}
                   <div className="inv-photo-gradient" />
 
-                  {/* status badge */}
+                  {/* Status badge */}
                   <span
                     className="inv-status-badge"
                     style={{ background: st.bg, color: st.color }}
                   >
-                    <span
-                      className="badge-dot"
-                      style={{ background: st.dot }}
-                    />
+                    <span className="badge-dot" style={{ background: st.dot }} />
                     {st.label}
                   </span>
 
-                  {/* kategori chip bottom-left */}
-                  <span
-                    className="inv-cat-chip"
-                    style={{ background: cat.color }}
-                  >
+                  {/* Kategori chip */}
+                  <span className="inv-cat-chip" style={{ background: cat.color }}>
                     <Ico n={a.category} s={10} c="#fff" />
                     {cat.label}
                   </span>
+
+                  {/* Disposed overlay — hanya jika disposed */}
+                  {isDisposed && (
+                    <div className="inv-disposed-overlay">
+                      <div className="inv-disposed-badge">
+                        <Ico n="ban" s={12} c="#f1f5f9" />
+                        Aset Disposed
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Hover overlay — hanya jika bukan disposed */}
+                  {!isDisposed && (
+                    <div className="inv-hover-overlay">
+                      <Ico n="eye" s={18} c="#fff" />
+                      <span>Lihat Detail</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* ── Body ── */}
                 <div className="inv-card-body">
                   <p className="inv-card-name">{a.name}</p>
-                  <p className="inv-card-brand">
-                    {a.brand} · {a.model}
-                  </p>
+                  <p className="inv-card-brand">{a.brand} · {a.model}</p>
                   <div className="inv-card-loc">
                     <Ico n="pin" s={11} c="var(--gray-400)" />
                     <span>{a.location}</span>
@@ -295,18 +247,10 @@ export default function Inventaris({ loans, setLoans }) {
                   <div className="inv-card-price">{fmtIDR(a.price)}</div>
                   <div className="inv-card-footer">
                     <span className="inv-serial">{a.serial}</span>
-                    <span
-                      className={`inv-budget ${a.budget_type === "CAPEX" ? "capex" : "opex"}`}
-                    >
+                    <span className={`inv-budget ${a.budget_type === "CAPEX" ? "capex" : "opex"}`}>
                       {a.budget_type}
                     </span>
                   </div>
-                </div>
-
-                {/* hover overlay */}
-                <div className="inv-hover-overlay">
-                  <Ico n="eye" s={18} c="#fff" />
-                  <span>Lihat Detail</span>
                 </div>
               </div>
             );

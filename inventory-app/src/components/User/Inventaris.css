@@ -138,6 +138,63 @@
   transform: scale(1.06);
 }
 
+/* ── Disposed card ── */
+.inv-card.is-disposed {
+  cursor: not-allowed;
+}
+.inv-card.is-disposed:hover {
+  transform: none;
+  box-shadow: none;
+}
+.inv-card.is-disposed .inv-hover-overlay {
+  display: none;
+}
+.inv-card.is-disposed .inv-card-img {
+  transform: none !important;
+  filter: grayscale(100%) brightness(0.85);
+}
+.inv-card.is-disposed .inv-card-img-fallback {
+  filter: grayscale(100%);
+  opacity: 0.5;
+}
+
+/* Teks body card disposed — fade signifikan */
+.inv-card.is-disposed .inv-card-name  { color: var(--gray-400); }
+.inv-card.is-disposed .inv-card-brand { color: var(--gray-300); }
+.inv-card.is-disposed .inv-card-price { color: var(--gray-400); }
+.inv-card.is-disposed .inv-card-loc   { color: var(--gray-300); }
+.inv-card.is-disposed .inv-serial     { color: var(--gray-300); }
+.inv-card.is-disposed .inv-budget     { opacity: 0.35; }
+
+/* Overlay solid pada foto disposed */
+.inv-disposed-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(75, 85, 99, 0.52);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  pointer-events: none;
+  border-radius: 0;
+}
+.inv-disposed-badge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(15, 23, 42, 0.75);
+  color: #f1f5f9;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: inherit;
+  padding: 6px 14px;
+  border-radius: 8px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
 /* Photo */
 .inv-card-photo {
   position: relative;
