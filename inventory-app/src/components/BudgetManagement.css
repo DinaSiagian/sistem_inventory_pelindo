@@ -1,5 +1,5 @@
 /* ================================================================
-   BudgetManagement.css
+   BudgetManagement.css — with Year Filter (Dashboard-consistent)
    ================================================================ */
 
 @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap");
@@ -96,10 +96,12 @@
   margin-top: 3px;
 }
 
-/* ── header ── */
+/* ═══════════════════════════════════════════
+   HEADER
+   ═══════════════════════════════════════════ */
 .bm-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 1rem;
@@ -117,6 +119,70 @@
   margin-top: 3px;
 }
 
+/* ── RIGHT side: year filter + tab group ── */
+.bm-header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+/* ─────────────────────────────────────────
+   YEAR FILTER  (matches Dashboard style)
+   ───────────────────────────────────────── */
+.bm-year-filter-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+}
+
+.bm-year-filter-label {
+  font-size: 0.72rem;
+  color: var(--ink3);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.bm-year-pills {
+  display: flex;
+  background: white;
+  border-radius: 12px;
+  padding: 4px;
+  gap: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--border);
+}
+
+.bm-year-pill {
+  padding: 7px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 500;
+  background: transparent;
+  color: var(--ink3);
+  transition: all 0.2s ease;
+  font-family: var(--font);
+  transform: none;
+}
+
+.bm-year-pill:hover:not(.active) {
+  background: var(--bg);
+  color: var(--ink2);
+}
+
+.bm-year-pill.active {
+  font-weight: 700;
+  background: linear-gradient(135deg, #1d4ed8, #2563eb);
+  color: white;
+  box-shadow: 0 3px 10px rgba(29, 78, 216, 0.35);
+  transform: translateY(-1px);
+}
+
+/* ── CAPEX / OPEX tabs ── */
 .bm-tabs {
   display: flex;
   gap: 4px;
@@ -151,7 +217,9 @@
   box-shadow: 0 2px 8px rgba(29, 78, 216, 0.3);
 }
 
-/* ── KPI ── */
+/* ═══════════════════════════════════════════
+   KPI CARDS
+   ═══════════════════════════════════════════ */
 .bm-kpis {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -243,7 +311,9 @@
   transition: width 0.6s ease;
 }
 
-/* ── banner ── */
+/* ═══════════════════════════════════════════
+   BANNER
+   ═══════════════════════════════════════════ */
 .bm-banner {
   display: flex;
   align-items: center;
@@ -257,7 +327,9 @@
   margin-bottom: 1.25rem;
 }
 
-/* ── table wrapper ── */
+/* ═══════════════════════════════════════════
+   TABLE SECTION
+   ═══════════════════════════════════════════ */
 .bm-table-wrap {
   background: var(--surface);
   border-radius: var(--r-lg);
@@ -300,7 +372,6 @@
   outline: none;
   width: 220px;
 }
-
 .bm-table-scroll {
   overflow-x: auto;
 }
@@ -424,7 +495,9 @@
   color: var(--red);
 }
 
-/* ── drill row ── */
+/* ═══════════════════════════════════════════
+   DRILL ROW
+   ═══════════════════════════════════════════ */
 .bm-drill-row > td {
   padding: 0;
   border-bottom: 1px solid var(--border);
@@ -445,7 +518,6 @@
   color: var(--ink2);
   margin-bottom: 0.9rem;
 }
-
 .bm-btn-add-realisasi {
   margin-left: auto;
   display: inline-flex;
@@ -470,7 +542,9 @@
   box-shadow: 0 4px 12px rgba(29, 78, 216, 0.4);
 }
 
-/* ── sub table ── */
+/* ═══════════════════════════════════════════
+   SUB TABLE
+   ═══════════════════════════════════════════ */
 .bm-sub-table {
   width: 100%;
   border-collapse: collapse;
@@ -514,7 +588,6 @@
 .bm-sub-table--sm td {
   padding: 6px 10px;
 }
-
 .bm-date-cell {
   display: flex;
   align-items: center;
@@ -539,7 +612,9 @@
   font-style: italic;
 }
 
-/* ── project cards ── */
+/* ═══════════════════════════════════════════
+   PROJECT CARDS
+   ═══════════════════════════════════════════ */
 .bm-projects {
   display: flex;
   flex-direction: column;
@@ -611,12 +686,6 @@
   font-family: var(--mono);
   font-size: 0.68rem;
 }
-.bm-proj-dates {
-  display: flex;
-  gap: 12px;
-  font-size: 0.7rem;
-  color: var(--ink3);
-}
 .bm-proj-right {
   display: flex;
   align-items: center;
@@ -660,11 +729,9 @@
   gap: 5px;
 }
 
-/* ================================================================
+/* ═══════════════════════════════════════════
    BALANCE BADGE & BAR
-   ================================================================ */
-
-/* Badge kecil di project row */
+   ═══════════════════════════════════════════ */
 .bm-balance-badge {
   display: inline-flex;
   align-items: center;
@@ -676,7 +743,6 @@
   letter-spacing: 0.3px;
   white-space: nowrap;
 }
-
 .bm-balance-badge--balanced {
   background: var(--green-lt);
   color: var(--green);
@@ -698,18 +764,15 @@
   border: 1px solid var(--border);
 }
 
-/* Balance bar di bawah tabel aset */
 .bm-balance-bar {
   display: flex;
   align-items: center;
-  gap: 0;
   margin-top: 8px;
   border-radius: var(--r-sm);
   border: 1px solid;
   overflow: hidden;
   font-size: 0.78rem;
 }
-
 .bm-balance-bar--balanced {
   background: #f0fdf4;
   border-color: #86efac;
@@ -722,13 +785,10 @@
   background: #fff1f2;
   border-color: #fca5a5;
 }
-
 .bm-balance-bar-left {
   flex: 1;
   display: flex;
-  gap: 0;
 }
-
 .bm-balance-row {
   flex: 1;
   display: flex;
@@ -736,7 +796,6 @@
   gap: 2px;
   padding: 10px 14px;
 }
-
 .bm-balance-row span {
   font-size: 0.65rem;
   font-weight: 700;
@@ -749,7 +808,6 @@
   font-weight: 700;
   color: var(--ink);
 }
-
 .bm-balance-divider {
   width: 1px;
   align-self: stretch;
@@ -763,7 +821,6 @@
 .bm-balance-bar--unbalanced .bm-balance-divider {
   background: #fca5a5;
 }
-
 .bm-balance-bar-right {
   padding: 10px 16px;
   display: flex;
@@ -772,7 +829,6 @@
   gap: 2px;
   min-width: 160px;
 }
-
 .bm-balance-selisih-label {
   font-size: 0.65rem;
   font-weight: 700;
@@ -780,7 +836,6 @@
   letter-spacing: 0.5px;
   color: var(--ink3);
 }
-
 .bm-balance-selisih-val {
   font-size: 0.92rem;
   font-weight: 800;
@@ -794,14 +849,13 @@
 .bm-balance-selisih-val--unbalanced {
   color: var(--red);
 }
-
 .bm-balance-selisih-pct {
   font-size: 0.68rem;
   color: var(--ink3);
   font-weight: 500;
 }
 
-/* ── asset sub ── */
+/* asset sub */
 .bm-asset-sub {
   background: var(--bg2);
   border-top: 1px solid #e0e7ff;
@@ -832,7 +886,7 @@
   color: var(--ink);
 }
 
-/* ── empty ── */
+/* empty */
 .bm-empty {
   display: flex;
   flex-direction: column;
@@ -849,7 +903,7 @@
   font-size: 0.76rem;
 }
 
-/* ── misc ── */
+/* misc */
 .bm-pill {
   display: inline-flex;
   align-items: center;
@@ -901,9 +955,9 @@
   }
 }
 
-/* ================================================================
+/* ═══════════════════════════════════════════
    MODAL REALISASI OPEX
-   ================================================================ */
+   ═══════════════════════════════════════════ */
 .bm-modal-overlay {
   position: fixed;
   inset: 0;
@@ -945,7 +999,6 @@
     transform: translateY(0) scale(1);
   }
 }
-
 .bm-modal-header {
   display: flex;
   align-items: center;
@@ -999,7 +1052,6 @@
   border-color: #fecaca;
   color: var(--red);
 }
-
 .bm-modal-body {
   padding: 20px 22px;
   display: flex;
@@ -1032,7 +1084,6 @@
   font-weight: 800;
   color: var(--ink);
 }
-
 .bm-form-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -1101,7 +1152,6 @@
   color: var(--red);
   margin-left: 1px;
 }
-
 .bm-modal-footer {
   display: flex;
   align-items: center;
@@ -1150,13 +1200,21 @@
   box-shadow: 0 5px 14px rgba(29, 78, 216, 0.4);
 }
 
-/* ── responsive ── */
+/* ═══════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════ */
 @media (max-width: 768px) {
   .bm-root {
     padding: 1rem;
   }
   .bm-header {
     flex-direction: column;
+    align-items: flex-start;
+  }
+  .bm-header-right {
+    align-items: flex-start;
+  }
+  .bm-year-filter-wrap {
     align-items: flex-start;
   }
   .bm-search input {

@@ -34,14 +34,6 @@ const fmt = (num) =>
     maximumFractionDigits: 0,
   }).format(num || 0);
 
-const fmtShort = (num) => {
-  if (!num) return "—";
-  if (num >= 1_000_000_000)
-    return `${(num / 1_000_000_000).toFixed(2).replace(".", ",")} M`;
-  if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(0)} jt`;
-  return new Intl.NumberFormat("id-ID").format(num);
-};
-
 const fmtDate = (d) => {
   if (!d) return "—";
   return new Date(d).toLocaleDateString("id-ID", {
@@ -64,8 +56,6 @@ const statusLabel = (pct) => {
   return "Aman";
 };
 
-// ── Balance helper: bandingkan SUM(acquisition_value) vs nilai_kontrak ──
-// Mengembalikan: { status, selisih, pct, label, icon }
 const getBalanceInfo = (assets, nilaiKontrak) => {
   if (!assets || assets.length === 0) {
     return {
@@ -87,7 +77,6 @@ const getBalanceInfo = (assets, nilaiKontrak) => {
   const selisih = nilaiKontrak - sumAset;
   const pctSelisih =
     nilaiKontrak > 0 ? Math.abs(selisih / nilaiKontrak) * 100 : 0;
-
   if (selisih === 0)
     return {
       status: "balanced",
@@ -236,7 +225,7 @@ function ModalRealisasiOpex({ anggaran, onClose, onSave }) {
               </label>
               <input
                 type="text"
-                placeholder="Kosongkan jika tidak ada aset — contoh: SPMT-BLW-DTC-PKR-01"
+                placeholder="Kosongkan jika tidak ada aset"
                 value={form.id_aset}
                 onChange={(e) => setForm({ ...form, id_aset: e.target.value })}
               />
@@ -259,7 +248,6 @@ function ModalRealisasiOpex({ anggaran, onClose, onSave }) {
   );
 }
 
-// ── Balance Badge ─────────────────────────────────────────────────
 function BalanceBadge({ assets, nilaiKontrak }) {
   const info = getBalanceInfo(assets, nilaiKontrak);
   return (
@@ -273,11 +261,9 @@ function BalanceBadge({ assets, nilaiKontrak }) {
   );
 }
 
-// ── Balance Detail Bar (di dalam asset sub-table) ─────────────────
 function BalanceBar({ assets, nilaiKontrak }) {
   const info = getBalanceInfo(assets, nilaiKontrak);
   if (info.status === "empty") return null;
-
   return (
     <div className={`bm-balance-bar bm-balance-bar--${info.status}`}>
       <div className="bm-balance-bar-left">
@@ -320,7 +306,16 @@ export default function BudgetManagement() {
   const [search, setSearch] = useState("");
   const [realisasiOpex, setRealisasiOpex] = useState(mockRealisasiOpex);
   const [modalRealisasi, setModalRealisasi] = useState(null);
-  const year = 2026;
+
+  // ── NEW: Year filter state (sama persis dengan Dashboard style) ──
+  const currentYear = new Date().getFullYear();
+  const tahunOptions = [
+    String(currentYear - 3),
+    String(currentYear - 2),
+    String(currentYear - 1),
+    String(currentYear),
+  ];
+  const [tahunAnggaran, setTahunAnggaran] = useState(String(currentYear));
 
   const data = useMemo(() => {
     const raw = activeTab === "capex" ? mockCapex : mockOpex;
@@ -548,16 +543,7 @@ export default function BudgetManagement() {
                             <span className="bm-ref">SP3: {p.no_sp3}</span>
                           )}
                         </div>
-                        {p.tgl_sp3 && (
-                          <div className="bm-proj-dates">
-                            <span>SP3: {fmtDate(p.tgl_sp3)}</span>
-                            {p.tgl_bamk && (
-                              <span>BA-MK: {fmtDate(p.tgl_bamk)}</span>
-                            )}
-                          </div>
-                        )}
                       </div>
-
                       <div className="bm-proj-right">
                         <div className="bm-proj-vals">
                           <div className="bm-val-block">
@@ -572,7 +558,6 @@ export default function BudgetManagement() {
                               {p.nilai_kontrak ? fmt(p.nilai_kontrak) : "—"}
                             </span>
                           </div>
-                          {/* Nilai aset total */}
                           {balanceInfo.sumAset > 0 && (
                             <div className="bm-val-block">
                               <span className="bm-val-lbl">Nilai Aset</span>
@@ -583,7 +568,6 @@ export default function BudgetManagement() {
                           )}
                         </div>
                         <div className="bm-proj-actions">
-                          {/* Badge balance */}
                           <BalanceBadge
                             assets={p.assets}
                             nilaiKontrak={p.nilai_kontrak}
@@ -597,7 +581,6 @@ export default function BudgetManagement() {
                         </div>
                       </div>
                     </div>
-
                     {open && (
                       <div className="bm-asset-sub anim-in">
                         <div className="bm-asset-sub-title">
@@ -650,7 +633,6 @@ export default function BudgetManagement() {
                                   </tr>
                                 ))}
                               </tbody>
-                              {/* Subtotal nilai aset */}
                               <tfoot>
                                 <tr className="bm-sub-total">
                                   <td colSpan="5" className="ta-r fw-bold">
@@ -669,7 +651,6 @@ export default function BudgetManagement() {
                                 </tr>
                               </tfoot>
                             </table>
-                            {/* Balance bar */}
                             <BalanceBar
                               assets={p.assets}
                               nilaiKontrak={p.nilai_kontrak}
@@ -706,29 +687,50 @@ export default function BudgetManagement() {
 
   return (
     <div className="bm-root">
-      {/* Header */}
+      {/* ── Header ── */}
       <header className="bm-header">
         <div className="bm-header-text">
           <h1>Anggaran &amp; Realisasi</h1>
           <p>
             Monitoring{" "}
             {activeTab === "capex" ? "Investasi (CAPEX)" : "Operasional (OPEX)"}
-            &ensp;·&ensp;Tahun {year}
+            &ensp;·&ensp;Tahun {tahunAnggaran}
           </p>
         </div>
-        <div className="bm-tabs">
-          <button
-            className={`bm-tab ${activeTab === "capex" ? "active" : ""}`}
-            onClick={() => switchTab("capex")}
-          >
-            <Briefcase size={15} /> CAPEX
-          </button>
-          <button
-            className={`bm-tab ${activeTab === "opex" ? "active" : ""}`}
-            onClick={() => switchTab("opex")}
-          >
-            <Monitor size={15} /> OPEX
-          </button>
+
+        {/* ── RIGHT SIDE: year selector + CAPEX/OPEX tabs ── */}
+        <div className="bm-header-right">
+          {/* Year filter — same style as Dashboard */}
+          <div className="bm-year-filter-wrap">
+            <span className="bm-year-filter-label">Tahun Anggaran</span>
+            <div className="bm-year-pills">
+              {tahunOptions.map((t) => (
+                <button
+                  key={t}
+                  className={`bm-year-pill ${tahunAnggaran === t ? "active" : ""}`}
+                  onClick={() => setTahunAnggaran(t)}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* CAPEX / OPEX tabs */}
+          <div className="bm-tabs">
+            <button
+              className={`bm-tab ${activeTab === "capex" ? "active" : ""}`}
+              onClick={() => switchTab("capex")}
+            >
+              <Briefcase size={15} /> CAPEX
+            </button>
+            <button
+              className={`bm-tab ${activeTab === "opex" ? "active" : ""}`}
+              onClick={() => switchTab("opex")}
+            >
+              <Monitor size={15} /> OPEX
+            </button>
+          </div>
         </div>
       </header>
 
