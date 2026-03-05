@@ -1,0 +1,432 @@
+/* ============================================================
+   ScanBarcode.css — Complete styles termasuk kamera modal
+   ============================================================ */
+
+.scan-page {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.scan-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--gray-800);
+  margin-bottom: 4px;
+}
+.scan-sub {
+  font-size: 13.5px;
+  color: var(--gray-500);
+}
+
+/* ── Scanner box ── */
+.scan-box {
+  padding: 28px;
+}
+
+.scan-cam-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.scan-cam-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  font-size: 14px;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+  transition: all 0.2s;
+}
+.scan-cam-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+}
+.scan-or-divider {
+  font-size: 13px;
+  color: var(--gray-400);
+  font-weight: 500;
+}
+
+.scan-success-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #dcfce7;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.scan-input-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.scan-input-wrap {
+  flex: 1;
+  min-width: 220px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 10px;
+  padding: 0 14px;
+  background: var(--gray-50);
+  transition: border-color 0.15s;
+}
+.scan-input-wrap:focus-within {
+  border-color: var(--primary-400);
+  background: #fff;
+}
+.scan-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 12px 0;
+  font-size: 13.5px;
+  font-family: inherit;
+  color: var(--gray-800);
+  outline: none;
+}
+.scan-clear {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--gray-400);
+  padding: 4px;
+  display: flex;
+}
+.scan-btn {
+  min-width: 110px;
+}
+
+.scan-examples {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+.scan-examples-label {
+  font-size: 12px;
+  color: var(--gray-400);
+  font-weight: 600;
+}
+.scan-example-chip {
+  border: 1px solid var(--gray-200);
+  background: #fff;
+  padding: 4px 12px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-family: monospace;
+  color: var(--primary-700);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.scan-example-chip:hover {
+  border-color: var(--primary-300);
+  background: var(--primary-50);
+}
+
+/* ── Camera overlay ── */
+.cam-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.88);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.cam-modal {
+  width: 100%;
+  max-width: 460px;
+  background: #111827;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
+}
+
+.cam-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+.cam-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+}
+.cam-btn-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(239, 68, 68, 0.2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.cam-btn-close:hover {
+  background: rgba(239, 68, 68, 0.5);
+}
+
+.cam-body {
+  min-height: 300px;
+  position: relative;
+  background: #000;
+}
+
+/* html5-qrcode injects its own video — override its styles */
+.cam-body #html5qr-reader {
+  border: none !important;
+  padding: 0 !important;
+  background: #000 !important;
+}
+.cam-body #html5qr-reader video {
+  width: 100% !important;
+  border-radius: 0 !important;
+}
+.cam-body #html5qr-reader__scan_region {
+  background: #000 !important;
+}
+/* Hide the ugly default UI buttons from the library */
+.cam-body #html5qr-reader__dashboard {
+  display: none !important;
+}
+
+/* Loading state */
+.cam-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 60px 24px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13.5px;
+}
+.cam-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(255, 255, 255, 0.15);
+  border-top-color: #00b5e2;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Error state */
+.cam-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 48px 24px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.cam-hint {
+  padding: 12px 18px;
+  text-align: center;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* ── Not found ── */
+.scan-notfound {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 24px;
+  text-align: center;
+}
+.scan-notfound h3 {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--gray-800);
+}
+.scan-notfound p {
+  font-size: 13.5px;
+  color: var(--gray-500);
+}
+
+/* ── Result ── */
+.scan-result-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.scan-result-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--gray-500);
+}
+.scan-result-card {
+  overflow: hidden;
+}
+
+.scan-result-hero {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 24px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--gray-100);
+}
+.scan-result-hero-icon {
+  flex-shrink: 0;
+}
+.scan-result-hero-info {
+  flex: 1;
+  min-width: 0;
+}
+.scan-result-name {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--gray-800);
+}
+.scan-result-sub {
+  font-size: 13px;
+  color: var(--gray-500);
+  margin: 2px 0 8px;
+}
+.scan-result-badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.scan-info-section {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--gray-50);
+}
+.scan-info-section:last-child {
+  border-bottom: none;
+}
+.section-title-sm {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--gray-400);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 14px;
+}
+.scan-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 14px;
+}
+.scan-info-key {
+  font-size: 11px;
+  color: var(--gray-400);
+  font-weight: 600;
+  margin-bottom: 3px;
+}
+.scan-info-val {
+  font-size: 13.5px;
+  color: var(--gray-800);
+  font-weight: 600;
+}
+
+.scan-spec-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+}
+.scan-spec-item {
+  background: var(--gray-50);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.scan-spec-key {
+  font-size: 9.5px;
+  font-weight: 800;
+  color: var(--gray-400);
+  letter-spacing: 0.8px;
+  margin-bottom: 3px;
+}
+.scan-spec-val {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-700);
+}
+
+.scan-history {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.scan-history-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  background: var(--gray-50);
+  border-radius: 10px;
+}
+.scan-history-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+.scan-history-info {
+  flex: 1;
+}
+.scan-history-user {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gray-800);
+}
+.scan-history-meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11.5px;
+  color: var(--gray-400);
+  margin: 2px 0;
+}
+.scan-history-purpose {
+  font-size: 12px;
+  color: var(--gray-500);
+}
+
+.badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 4px;
+  flex-shrink: 0;
+}

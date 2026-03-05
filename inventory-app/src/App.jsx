@@ -1,4 +1,4 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -14,25 +14,28 @@ import Budgetinput from "./components/Budgetinput";
 import Peminjaman from "./components/Peminjaman";
 import UserManagement from "./components/UserManagement";
 
+// === User pages (lazy) ===
+const UserLayout = lazy(() => import("./components/User/Userlayout"));
+const UserDashboard = lazy(() => import("./components/User/Dashboard"));
+const Inventaris = lazy(() => import("./components/User/Inventaris"));
+const UserPeminjaman = lazy(() => import("./components/User/Peminjaman"));
+const ScanBarcode = lazy(() => import("./components/User/ScanBarcode"));
+const Profil = lazy(() => import("./components/User/Profil"));
+
+const Loader = () => <div style={{ padding: "2rem" }}>Loading...</div>;
+
 function App() {
   return (
     <Router>
       <Routes>
-        {/* 1. Halaman Login (Auth) berada di luar Layout agar tampil full screen */}
         <Route path="/" element={<Auth />} />
         <Route path="/login" element={<Auth />} />
 
-        {/* 2. Halaman Internal yang menggunakan Sidebar & Header (Layout) */}
+        {/* Admin */}
         <Route element={<Layout />}>
-          {/* Dashboard */}
           <Route path="/dashboard" element={<Dashboard />} />
-
-          {/* Manajemen Aset */}
           <Route path="/assets" element={<ViewAsset />} />
           <Route path="/peminjaman" element={<Peminjaman />} />
-
-          {/* Keuangan & Proyek - URUTAN PENTING! */}
-          {/* Route yang lebih spesifik HARUS di atas yang lebih general */}
           <Route path="/budget/input" element={<Budgetinput />} />
           <Route path="/budget" element={<BudgetManagement />} />
           <Route
@@ -43,8 +46,6 @@ function App() {
               </div>
             }
           />
-
-          {/* Administrasi */}
           <Route path="/users" element={<UserManagement />} />
           <Route
             path="/reports"
@@ -56,7 +57,56 @@ function App() {
           />
         </Route>
 
-        {/* 3. Catch-all route - redirect ke login jika route tidak ditemukan */}
+        {/* User */}
+        <Route
+          element={
+            <Suspense fallback={<Loader />}>
+              <UserLayout />
+            </Suspense>
+          }
+        >
+          <Route
+            path="/user/dashboard"
+            element={
+              <Suspense fallback={<Loader />}>
+                <UserDashboard />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/user/inventaris"
+            element={
+              <Suspense fallback={<Loader />}>
+                <Inventaris />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/user/peminjaman"
+            element={
+              <Suspense fallback={<Loader />}>
+                <UserPeminjaman />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/user/scan"
+            element={
+              <Suspense fallback={<Loader />}>
+                <ScanBarcode />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/user/profil"
+            element={
+              <Suspense fallback={<Loader />}>
+                <Profil />
+              </Suspense>
+            }
+          />
+        </Route>
+
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </Router>
