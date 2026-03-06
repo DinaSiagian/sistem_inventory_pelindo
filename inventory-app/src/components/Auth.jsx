@@ -11,6 +11,7 @@ import {
   FaUserTag,
   FaArrowLeft,
   FaCheckCircle,
+  FaSitemap,
 } from "react-icons/fa";
 import "./Auth.css";
 
@@ -19,9 +20,70 @@ import logoPelindo from "../pictures/pelindo2.png";
 import batikImg from "../pictures/batik.png";
 
 // ================================================================
+// DATA CASCADING: Entitas → Cabang → Divisi
+// Divisi masih placeholder — edit sesuai kebutuhan nyata
+// ================================================================
+const DIVISI_PLACEHOLDER = [
+  "Operasional",
+  "Keuangan",
+  "SDM & Umum",
+  "IT & Sistem",
+  "HSE",
+  "Komersial",
+];
+
+const ENTITAS_DATA = {
+  PTP: {
+    label: "PT Pelabuhan Indonesia",
+    cabang: {
+      BTN: { label: "Banten",         divisi: DIVISI_PLACEHOLDER },
+      TPN: { label: "Tanjung Pandan", divisi: DIVISI_PLACEHOLDER },
+      TBR: { label: "Teluk Bayur",    divisi: DIVISI_PLACEHOLDER },
+      BKL: { label: "Bengkulu",       divisi: DIVISI_PLACEHOLDER },
+      PTK: { label: "Pontianak",      divisi: DIVISI_PLACEHOLDER },
+      TJP: { label: "Tanjung Priok",  divisi: DIVISI_PLACEHOLDER },
+      CRB: { label: "Cirebon",        divisi: DIVISI_PLACEHOLDER },
+      PJG: { label: "Panjang",        divisi: DIVISI_PLACEHOLDER },
+      PLB: { label: "Palembang",      divisi: DIVISI_PLACEHOLDER },
+      JMB: { label: "Jambi",          divisi: DIVISI_PLACEHOLDER },
+    },
+  },
+  SPMT: {
+    label: "Pelindo Multi Terminal",
+    cabang: {
+      BLW: { label: "Belawan",       divisi: DIVISI_PLACEHOLDER },
+      GRK: { label: "Gresik",        divisi: DIVISI_PLACEHOLDER },
+      LBR: { label: "Lembar Badas",  divisi: DIVISI_PLACEHOLDER },
+      TJI: { label: "Tanjung Intan", divisi: DIVISI_PLACEHOLDER },
+      DMI: { label: "Dumai",         divisi: DIVISI_PLACEHOLDER },
+      SBG: { label: "Sibolga",       divisi: DIVISI_PLACEHOLDER },
+      JNR: { label: "Janirah",       divisi: DIVISI_PLACEHOLDER },
+      BGD: { label: "Bagendang",     divisi: DIVISI_PLACEHOLDER },
+      MLH: { label: "Malahayati",    divisi: DIVISI_PLACEHOLDER },
+      LHK: { label: "Lhokseumawe",  divisi: DIVISI_PLACEHOLDER },
+      TJE: { label: "Tanjung Emas",  divisi: DIVISI_PLACEHOLDER },
+      BLP: { label: "Balikpapan",    divisi: DIVISI_PLACEHOLDER },
+      BDS: { label: "Bima Badas",    divisi: DIVISI_PLACEHOLDER },
+      GRG: { label: "Garongkong",    divisi: DIVISI_PLACEHOLDER },
+      BMH: { label: "Bumihajo",      divisi: DIVISI_PLACEHOLDER },
+      MLB: { label: "Meulaboh",      divisi: DIVISI_PLACEHOLDER },
+      TJW: { label: "Tanjung Wangi", divisi: DIVISI_PLACEHOLDER },
+      MKS: { label: "Makassar",      divisi: DIVISI_PLACEHOLDER },
+      BJM: { label: "Trisaki",       divisi: DIVISI_PLACEHOLDER },
+      PRP: { label: "Parepare",      divisi: DIVISI_PLACEHOLDER },
+      KLS: { label: "Kuala Langsa",  divisi: DIVISI_PLACEHOLDER },
+    },
+  },
+  IKT: {
+    label: "Indonesia Kendaraan Terminal",
+    cabang: {
+      JKT: { label: "Jakarta", divisi: DIVISI_PLACEHOLDER },
+    },
+  },
+};
+
+// ================================================================
 // DUMMY USERS — nanti diganti koneksi ke backend MySQL
-// role: "admin"  → redirect ke /dashboard
-// role: "user"   → redirect ke /user/dashboard
 // ================================================================
 const DUMMY_USERS = [
   {
@@ -33,8 +95,9 @@ const DUMMY_USERS = [
     role: "admin",
     nip: "199001010001",
     telepon: "081234567890",
-    entitas: "PT Pelindo Multi Terminal",
-    cabang: "Kantor Pusat",
+    entitas: "SPMT",
+    cabang: "BLW",
+    divisi: "IT & Sistem",
     avatar: "JS",
   },
   {
@@ -46,8 +109,9 @@ const DUMMY_USERS = [
     role: "user",
     nip: "199205152002",
     telepon: "082345678901",
-    entitas: "PT Pelindo Multi Terminal",
-    cabang: "Belawan",
+    entitas: "SPMT",
+    cabang: "BLW",
+    divisi: "Operasional",
     avatar: "BS",
   },
   {
@@ -60,11 +124,15 @@ const DUMMY_USERS = [
     nip: "199308202003",
     telepon: "083456789012",
     entitas: "SPMT",
-    cabang: "Dumai",
+    cabang: "DMI",
+    divisi: "Keuangan",
     avatar: "SR",
   },
 ];
 
+// ================================================================
+// KOMPONEN AUTH
+// ================================================================
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
@@ -72,7 +140,6 @@ const Auth = () => {
   const [forgotSent, setForgotSent] = useState(false);
   const [loginError, setLoginError] = useState("");
 
-  // Form register state
   const [registerData, setRegisterData] = useState({
     nama: "",
     nip: "",
@@ -81,12 +148,42 @@ const Auth = () => {
     role: "",
     entitas: "",
     cabang: "",
+    divisi: "",
     email: "",
     password: "",
     konfirmasi: "",
   });
 
   const navigate = useNavigate();
+
+  // ── Cascading options ─────────────────────────────────────────
+  const cabangOptions = registerData.entitas
+    ? Object.entries(ENTITAS_DATA[registerData.entitas].cabang).map(
+        ([code, val]) => ({ code, label: val.label })
+      )
+    : [];
+
+  const divisiOptions =
+    registerData.entitas && registerData.cabang
+      ? ENTITAS_DATA[registerData.entitas].cabang[registerData.cabang].divisi
+      : [];
+
+  const handleEntitasChange = (e) => {
+    setRegisterData({
+      ...registerData,
+      entitas: e.target.value,
+      cabang: "",
+      divisi: "",
+    });
+  };
+
+  const handleCabangChange = (e) => {
+    setRegisterData({
+      ...registerData,
+      cabang: e.target.value,
+      divisi: "",
+    });
+  };
 
   const toggleMode = () => {
     setIsLogin(!isLogin);
@@ -104,7 +201,6 @@ const Auth = () => {
     setForgotSent(false);
   };
 
-  // ── LOGIN dengan cek dummy user ──────────────────────────────
   const handleSubmit = (e) => {
     e.preventDefault();
     setLoginError("");
@@ -114,7 +210,7 @@ const Auth = () => {
       const passwordInput = e.target.password.value;
 
       const found = DUMMY_USERS.find(
-        (u) => u.email === emailInput && u.password === passwordInput,
+        (u) => u.email === emailInput && u.password === passwordInput
       );
 
       if (!found) {
@@ -122,24 +218,21 @@ const Auth = () => {
         return;
       }
 
-      // Simpan info user ke sessionStorage (sementara, sebelum ada backend)
       sessionStorage.setItem("currentUser", JSON.stringify(found));
 
-      // Redirect berdasarkan role
       if (found.role === "admin") {
         navigate("/dashboard");
       } else {
         navigate("/user/dashboard");
       }
     } else {
-      // Register — validasi konfirmasi password
       if (registerData.password !== registerData.konfirmasi) {
         setLoginError("Password dan konfirmasi password tidak cocok.");
         return;
       }
       // TODO: kirim ke backend MySQL
       alert(
-        `Registrasi berhasil!\nAkun untuk ${registerData.nama} (${registerData.role}) telah dibuat.\nSilakan login.`,
+        `Registrasi berhasil!\nAkun untuk ${registerData.nama} (${registerData.role}) telah dibuat.\nSilakan login.`
       );
       setIsLogin(true);
       setLoginError("");
@@ -187,10 +280,7 @@ const Auth = () => {
                         </div>
                       </div>
 
-                      <button
-                        type="submit"
-                        className="auth-button fp-submit-btn"
-                      >
+                      <button type="submit" className="auth-button fp-submit-btn">
                         Kirim Instruksi Reset
                       </button>
                     </form>
@@ -235,6 +325,7 @@ const Auth = () => {
                 <form onSubmit={handleSubmit} className="auth-form">
                   {!isLogin && (
                     <>
+                      {/* Nama Lengkap */}
                       <div className="form-group">
                         <label>Nama Lengkap</label>
                         <div className="input-wrapper">
@@ -244,16 +335,14 @@ const Auth = () => {
                             placeholder="Nama Lengkap"
                             value={registerData.nama}
                             onChange={(e) =>
-                              setRegisterData({
-                                ...registerData,
-                                nama: e.target.value,
-                              })
+                              setRegisterData({ ...registerData, nama: e.target.value })
                             }
                             required
                           />
                         </div>
                       </div>
 
+                      {/* NIP & Username */}
                       <div className="form-row">
                         <div className="form-group half">
                           <label>NIP</label>
@@ -264,10 +353,7 @@ const Auth = () => {
                               placeholder="NIP"
                               value={registerData.nip}
                               onChange={(e) =>
-                                setRegisterData({
-                                  ...registerData,
-                                  nip: e.target.value,
-                                })
+                                setRegisterData({ ...registerData, nip: e.target.value })
                               }
                               required
                             />
@@ -282,10 +368,7 @@ const Auth = () => {
                               placeholder="Username"
                               value={registerData.username}
                               onChange={(e) =>
-                                setRegisterData({
-                                  ...registerData,
-                                  username: e.target.value,
-                                })
+                                setRegisterData({ ...registerData, username: e.target.value })
                               }
                               required
                             />
@@ -293,6 +376,7 @@ const Auth = () => {
                         </div>
                       </div>
 
+                      {/* No. Telepon */}
                       <div className="form-group">
                         <label>No. Telepon</label>
                         <div className="input-wrapper">
@@ -302,16 +386,14 @@ const Auth = () => {
                             placeholder="08xxxxxxxxxx"
                             value={registerData.telepon}
                             onChange={(e) =>
-                              setRegisterData({
-                                ...registerData,
-                                telepon: e.target.value,
-                              })
+                              setRegisterData({ ...registerData, telepon: e.target.value })
                             }
                             required
                           />
                         </div>
                       </div>
 
+                      {/* Role */}
                       <div className="form-group">
                         <label>Role / Peran</label>
                         <div className="input-wrapper">
@@ -319,76 +401,92 @@ const Auth = () => {
                           <select
                             value={registerData.role}
                             onChange={(e) =>
-                              setRegisterData({
-                                ...registerData,
-                                role: e.target.value,
-                              })
+                              setRegisterData({ ...registerData, role: e.target.value })
                             }
                             required
                           >
-                            <option value="" disabled>
-                              Pilih Role
-                            </option>
+                            <option value="" disabled>Pilih Role</option>
                             <option value="admin">Admin</option>
                             <option value="user">User / Pegawai</option>
                           </select>
                         </div>
                       </div>
 
+                      {/* Entitas */}
                       <div className="form-group">
                         <label>Entitas</label>
                         <div className="input-wrapper">
                           <FaBuilding className="input-icon" />
                           <select
                             value={registerData.entitas}
-                            onChange={(e) =>
-                              setRegisterData({
-                                ...registerData,
-                                entitas: e.target.value,
-                              })
-                            }
+                            onChange={handleEntitasChange}
                             required
                           >
-                            <option value="" disabled>
-                              Pilih Entitas
-                            </option>
-                            <option value="pmt">
-                              PT Pelindo Multi Terminal
-                            </option>
-                            <option value="pelindo_pusat">Pelindo Pusat</option>
-                            <option value="spmt">SPMT</option>
-                            <option value="other">Lainnya</option>
+                            <option value="" disabled>Pilih Entitas</option>
+                            {Object.entries(ENTITAS_DATA).map(([code, val]) => (
+                              <option key={code} value={code}>
+                                {val.label}
+                              </option>
+                            ))}
                           </select>
                         </div>
                       </div>
 
+                      {/* Cabang — disabled sampai entitas dipilih */}
                       <div className="form-group">
                         <label>Cabang / Branch</label>
                         <div className="input-wrapper">
                           <FaMapMarkerAlt className="input-icon" />
                           <select
                             value={registerData.cabang}
-                            onChange={(e) =>
-                              setRegisterData({
-                                ...registerData,
-                                cabang: e.target.value,
-                              })
-                            }
+                            onChange={handleCabangChange}
                             required
+                            disabled={!registerData.entitas}
                           >
                             <option value="" disabled>
-                              Pilih Cabang
+                              {registerData.entitas
+                                ? "Pilih Cabang"
+                                : "Pilih Entitas dahulu"}
                             </option>
-                            <option value="belawan">Belawan</option>
-                            <option value="dumai">Dumai</option>
-                            <option value="tanjung_intan">Tanjung Intan</option>
-                            <option value="pusat">Kantor Pusat</option>
+                            {cabangOptions.map(({ code, label }) => (
+                              <option key={code} value={code}>
+                                {label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Divisi — disabled sampai cabang dipilih */}
+                      <div className="form-group">
+                        <label>Divisi</label>
+                        <div className="input-wrapper">
+                          <FaSitemap className="input-icon" />
+                          <select
+                            value={registerData.divisi}
+                            onChange={(e) =>
+                              setRegisterData({ ...registerData, divisi: e.target.value })
+                            }
+                            required
+                            disabled={!registerData.cabang}
+                          >
+                            <option value="" disabled>
+                              {registerData.cabang
+                                ? "Pilih Divisi"
+                                : "Pilih Cabang dahulu"}
+                            </option>
+                            {divisiOptions.map((div) => (
+                              <option key={div} value={div}>
+                                {div}
+                              </option>
+                            ))}
                           </select>
                         </div>
                       </div>
                     </>
                   )}
 
+                  {/* Email */}
                   <div className="form-group">
                     <label>Email</label>
                     <div className="input-wrapper">
@@ -402,6 +500,7 @@ const Auth = () => {
                     </div>
                   </div>
 
+                  {/* Password */}
                   <div className="form-group">
                     <label>Password</label>
                     <div className="input-wrapper">
@@ -415,6 +514,7 @@ const Auth = () => {
                     </div>
                   </div>
 
+                  {/* Konfirmasi Password */}
                   {!isLogin && (
                     <div className="form-group">
                       <label>Konfirmasi Password</label>
@@ -425,10 +525,7 @@ const Auth = () => {
                           placeholder="Ulangi password"
                           value={registerData.konfirmasi}
                           onChange={(e) =>
-                            setRegisterData({
-                              ...registerData,
-                              konfirmasi: e.target.value,
-                            })
+                            setRegisterData({ ...registerData, konfirmasi: e.target.value })
                           }
                           required
                         />
@@ -436,6 +533,7 @@ const Auth = () => {
                     </div>
                   )}
 
+                  {/* Ingat Saya & Lupa Password */}
                   {isLogin && (
                     <div className="form-actions">
                       <label className="remember-me">

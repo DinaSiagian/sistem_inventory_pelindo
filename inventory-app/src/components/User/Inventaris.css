@@ -1,5 +1,5 @@
 /* ============================================================
-   Inventaris.css — with white select dropdowns
+   Inventaris.css — Refined, no price display
    ============================================================ */
 
 .inventaris {
@@ -8,10 +8,22 @@
   gap: 22px;
 }
 
+/* ── Header ── */
+.inv-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.inv-header-text {}
+
 .inv-title {
   font-size: 22px;
   font-weight: 800;
   color: var(--gray-800);
+  letter-spacing: -0.4px;
 }
 .inv-sub {
   font-size: 13.5px;
@@ -21,6 +33,34 @@
 .inv-sub strong {
   color: var(--primary-600);
 }
+
+/* Quick-stat pills on header */
+.inv-header-stat {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.inv-stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--gray-600);
+  background: #fff;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 99px;
+  padding: 5px 12px;
+}
+.inv-stat-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.inv-stat-dot--green { background: #22c55e; }
+.inv-stat-dot--amber { background: #f59e0b; }
 
 /* ── Filter bar ── */
 .inv-filterbar {
@@ -40,13 +80,12 @@
   border: 1.5px solid var(--gray-200);
   border-radius: 10px;
   padding: 9px 14px;
-  transition:
-    border-color 0.15s,
-    background 0.15s;
+  transition: border-color 0.15s, background 0.15s;
 }
 .inv-search-wrap:focus-within {
   border-color: var(--primary-400);
   background: #fff;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08);
 }
 .inv-search {
   flex: 1;
@@ -57,6 +96,7 @@
   color: var(--gray-800);
   outline: none;
 }
+.inv-search::placeholder { color: var(--gray-400); }
 .inv-search-clear {
   border: none;
   background: none;
@@ -64,35 +104,45 @@
   color: var(--gray-400);
   display: flex;
   padding: 0;
+  transition: color 0.15s;
+}
+.inv-search-clear:hover { color: var(--gray-600); }
+
+.inv-filters-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
-/* ── SELECT: putih, bukan hitam browser default ── */
-.inv-select {
-  width: 170px;
-  padding: 9px 36px 9px 14px;
+/* Select with icon wrapper */
+.inv-select-wrap {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: #fff;
   border: 1.5px solid var(--gray-200);
   border-radius: 10px;
-  font-size: 13.5px;
+  padding: 0 12px;
+  height: 40px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.inv-select-wrap:focus-within {
+  border-color: var(--primary-400);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08);
+}
+.inv-select {
+  border: none;
+  background: transparent;
+  font-size: 13px;
   font-family: inherit;
   color: var(--gray-700);
-  background-color: #fff;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
+  outline: none;
+  cursor: pointer;
+  padding: 0;
   appearance: none;
   -webkit-appearance: none;
-  cursor: pointer;
-  outline: none;
-  transition:
-    border-color 0.15s,
-    box-shadow 0.15s;
-}
-.inv-select:focus {
-  border-color: var(--primary-400);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-.inv-select:hover {
-  border-color: var(--gray-300);
+  min-width: 130px;
 }
 
 .inv-count {
@@ -100,17 +150,49 @@
   color: var(--primary-600);
   font-weight: 700;
   background: var(--primary-50);
-  padding: 4px 12px;
+  padding: 5px 14px;
   border-radius: 99px;
   border: 1px solid var(--primary-100);
-  margin-left: auto;
   white-space: nowrap;
+}
+
+/* ── Empty state ── */
+.inv-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 60px 24px;
+  text-align: center;
+  border: 2px dashed var(--gray-200) !important;
+  background: #fafbfc !important;
+  box-shadow: none !important;
+  border-radius: 20px !important;
+}
+.inv-empty-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+.inv-empty-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--gray-600);
+}
+.inv-empty-sub {
+  font-size: 13px;
+  color: var(--gray-400);
 }
 
 /* ── Grid ── */
 .inv-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 18px;
 }
 
@@ -119,36 +201,28 @@
   overflow: hidden;
   cursor: pointer;
   position: relative;
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
-  padding: 0;
   display: flex;
   flex-direction: column;
-  border-radius: 16px;
+  border-radius: 18px !important;
+  border: 1px solid var(--gray-100) !important;
+  padding: 0 !important;
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+  background: #fff;
 }
 .inv-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
+  transform: translateY(-5px);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.11) !important;
 }
-.inv-card:hover .inv-hover-overlay {
-  opacity: 1;
-}
-.inv-card:hover .inv-card-img {
-  transform: scale(1.06);
-}
+.inv-card:hover .inv-hover-overlay { opacity: 1; }
+.inv-card:hover .inv-card-img { transform: scale(1.07); }
 
-/* ── Disposed card ── */
-.inv-card.is-disposed {
-  cursor: not-allowed;
-}
+/* Disposed card */
+.inv-card.is-disposed { cursor: not-allowed; }
 .inv-card.is-disposed:hover {
   transform: none;
-  box-shadow: none;
+  box-shadow: none !important;
 }
-.inv-card.is-disposed .inv-hover-overlay {
-  display: none;
-}
+.inv-card.is-disposed .inv-hover-overlay { display: none; }
 .inv-card.is-disposed .inv-card-img {
   transform: none !important;
   filter: grayscale(100%) brightness(0.85);
@@ -157,49 +231,17 @@
   filter: grayscale(100%);
   opacity: 0.5;
 }
-
-/* Teks body card disposed — fade signifikan */
 .inv-card.is-disposed .inv-card-name  { color: var(--gray-400); }
 .inv-card.is-disposed .inv-card-brand { color: var(--gray-300); }
-.inv-card.is-disposed .inv-card-price { color: var(--gray-400); }
 .inv-card.is-disposed .inv-card-loc   { color: var(--gray-300); }
 .inv-card.is-disposed .inv-serial     { color: var(--gray-300); }
 .inv-card.is-disposed .inv-budget     { opacity: 0.35; }
 
-/* Overlay solid pada foto disposed */
-.inv-disposed-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(75, 85, 99, 0.52);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  pointer-events: none;
-  border-radius: 0;
-}
-.inv-disposed-badge {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  background: rgba(15, 23, 42, 0.75);
-  color: #f1f5f9;
-  font-size: 11px;
-  font-weight: 700;
-  font-family: inherit;
-  padding: 6px 14px;
-  border-radius: 8px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-}
-
-/* Photo */
+/* Photo area */
 .inv-card-photo {
   position: relative;
   width: 100%;
-  height: 170px;
+  height: 165px;
   overflow: hidden;
   background: #f1f5f9;
 }
@@ -221,10 +263,12 @@
   bottom: 0;
   left: 0;
   right: 0;
-  height: 70px;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.35), transparent);
+  height: 80px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.4), transparent);
   pointer-events: none;
 }
+
+/* Status badge — top right */
 .inv-status-badge {
   position: absolute;
   top: 10px;
@@ -232,13 +276,17 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 700;
   padding: 4px 10px;
   border-radius: 99px;
-  backdrop-filter: blur(4px);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  letter-spacing: 0.2px;
 }
+
+/* Kategori chip — bottom left */
 .inv-cat-chip {
   position: absolute;
   bottom: 10px;
@@ -249,44 +297,93 @@
   font-size: 10.5px;
   font-weight: 700;
   color: #fff;
-  padding: 3px 9px;
-  border-radius: 6px;
+  padding: 4px 10px;
+  border-radius: 7px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  letter-spacing: 0.2px;
 }
+
+/* Hover overlay */
 .inv-hover-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(15, 30, 80, 0.55);
+  background: rgba(10, 20, 60, 0.52);
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
   opacity: 0;
   transition: opacity 0.2s ease;
+  border-radius: 0;
+}
+.inv-hover-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
   color: #fff;
   font-size: 13px;
-  font-weight: 600;
-  border-radius: 16px;
+  font-weight: 700;
+  font-family: inherit;
+  padding: 9px 18px;
+  border-radius: 99px;
+  backdrop-filter: blur(4px);
+  letter-spacing: 0.2px;
 }
 
-/* Body */
+/* Disposed overlay */
+.inv-disposed-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(75, 85, 99, 0.52);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.inv-disposed-badge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(15, 23, 42, 0.75);
+  color: #f1f5f9;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: inherit;
+  padding: 6px 14px;
+  border-radius: 8px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Card body */
 .inv-card-body {
   padding: 14px 16px 16px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
   flex: 1;
 }
+
+.inv-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .inv-card-name {
   font-size: 14px;
   font-weight: 700;
   color: var(--gray-800);
   line-height: 1.35;
+  flex: 1;
 }
 .inv-card-brand {
   font-size: 12px;
   color: var(--gray-500);
+  font-weight: 500;
 }
 .inv-card-loc {
   display: flex;
@@ -301,13 +398,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.inv-card-price {
-  font-size: 15px;
-  font-weight: 800;
-  color: var(--primary-700);
-  font-family: var(--font-mono);
-  margin-top: 6px;
-}
+
 .inv-card-footer {
   display: flex;
   align-items: center;
@@ -320,12 +411,15 @@
   font-size: 11px;
   color: var(--gray-400);
   font-family: var(--font-mono);
+  background: var(--gray-50);
+  padding: 2px 8px;
+  border-radius: 5px;
 }
 .inv-budget {
   font-size: 10.5px;
   font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 5px;
+  padding: 3px 9px;
+  border-radius: 6px;
   letter-spacing: 0.4px;
 }
 .inv-budget.capex {

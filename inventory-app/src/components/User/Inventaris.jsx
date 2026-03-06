@@ -1,5 +1,5 @@
 // ============================================================
-// Inventaris.jsx — with dispose card support
+// Inventaris.jsx — no price display, refined UI
 // ============================================================
 import { useState, useMemo } from "react";
 import {
@@ -7,7 +7,6 @@ import {
   assetsMock,
   categoryConf,
   statusConf,
-  fmtIDR,
 } from "./data";
 import AssetDetailModal from "./AssetDetailModal";
 import BorrowModal from "./BorrowModal";
@@ -65,6 +64,8 @@ const Ico = ({ n, s = 18, c }) => {
     pin: (<><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></>),
     eye: (<><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></>),
     ban: (<><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></>),
+    filter: (<><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></>),
+    tag: (<><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></>),
   };
   const catIcons = {
     LAPTOP: "laptop", SERVER: "server", DESKTOP: "monitor",
@@ -88,7 +89,7 @@ export default function Inventaris({ loans, setLoans }) {
   const [imgErr, setImgErr] = useState({});
 
   const branchAssets = assetsMock.filter(
-    (a) => a.branch_code === currentUser.branch_code,
+    (a) => a.branch_code === currentUser.branch_code
   );
 
   const filtered = useMemo(
@@ -104,7 +105,7 @@ export default function Inventaris({ loans, setLoans }) {
           (!statusFilter || a.status === statusFilter)
         );
       }),
-    [search, catFilter, statusFilter],
+    [search, catFilter, statusFilter]
   );
 
   const handleCardClick = (a) => {
@@ -114,16 +115,28 @@ export default function Inventaris({ loans, setLoans }) {
 
   return (
     <div className="inventaris">
+      {/* ── Header ── */}
       <div className="inv-header">
-        <div>
+        <div className="inv-header-text">
           <h1 className="inv-title">Inventaris Aset</h1>
           <p className="inv-sub">
-            Aset di {currentUser.branch_name} —{" "}
-            <strong>{branchAssets.length}</strong> total aset
+            {currentUser.branch_name} —{" "}
+            <strong>{branchAssets.length}</strong> total aset terdaftar
           </p>
+        </div>
+        <div className="inv-header-stat">
+          <div className="inv-stat-pill">
+            <span className="inv-stat-dot inv-stat-dot--green" />
+            <span>{branchAssets.filter(a => a.status === "AVAILABLE").length} Tersedia</span>
+          </div>
+          <div className="inv-stat-pill">
+            <span className="inv-stat-dot inv-stat-dot--amber" />
+            <span>{branchAssets.filter(a => a.status === "BORROWED").length} Dipinjam</span>
+          </div>
         </div>
       </div>
 
+      {/* ── Filter bar ── */}
       <div className="inv-filterbar card">
         <div className="inv-search-wrap">
           <Ico n="search" s={15} c="var(--gray-400)" />
@@ -139,33 +152,48 @@ export default function Inventaris({ loans, setLoans }) {
             </button>
           )}
         </div>
-        <select
-          className="form-control inv-select"
-          value={catFilter}
-          onChange={(e) => setCatFilter(e.target.value)}
-        >
-          <option value="">Semua Kategori</option>
-          {Object.entries(categoryConf).map(([k, v]) => (
-            <option key={k} value={k}>{v.label}</option>
-          ))}
-        </select>
-        <select
-          className="form-control inv-select"
-          value={statusFilter}
-          onChange={(e) => setStatus(e.target.value)}
-        >
-          <option value="">Semua Status</option>
-          {Object.entries(statusConf).map(([k, v]) => (
-            <option key={k} value={k}>{v.label}</option>
-          ))}
-        </select>
-        <span className="inv-count">{filtered.length} aset</span>
+
+        <div className="inv-filters-right">
+          <div className="inv-select-wrap">
+            <Ico n="tag" s={13} c="var(--gray-400)" />
+            <select
+              className="inv-select"
+              value={catFilter}
+              onChange={(e) => setCatFilter(e.target.value)}
+            >
+              <option value="">Semua Kategori</option>
+              {Object.entries(categoryConf).map(([k, v]) => (
+                <option key={k} value={k}>{v.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="inv-select-wrap">
+            <Ico n="filter" s={13} c="var(--gray-400)" />
+            <select
+              className="inv-select"
+              value={statusFilter}
+              onChange={(e) => setStatus(e.target.value)}
+            >
+              <option value="">Semua Status</option>
+              {Object.entries(statusConf).map(([k, v]) => (
+                <option key={k} value={k}>{v.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <span className="inv-count">{filtered.length} aset</span>
+        </div>
       </div>
 
+      {/* ── Grid / Empty ── */}
       {filtered.length === 0 ? (
-        <div className="card empty-state">
-          <Ico n="search" s={36} />
-          <p>Tidak ada aset yang sesuai filter</p>
+        <div className="card inv-empty">
+          <div className="inv-empty-icon">
+            <Ico n="search" s={28} c="#94a3b8" />
+          </div>
+          <p className="inv-empty-title">Tidak ada aset ditemukan</p>
+          <p className="inv-empty-sub">Coba ubah filter atau kata kunci pencarian</p>
         </div>
       ) : (
         <div className="inv-grid">
@@ -181,7 +209,7 @@ export default function Inventaris({ loans, setLoans }) {
                 key={a.id}
                 className={`inv-card card${isDisposed ? " is-disposed" : ""}`}
                 onClick={() => handleCardClick(a)}
-                title={isDisposed ? "Aset ini sudah di-dispose dan tidak dapat diakses" : undefined}
+                title={isDisposed ? "Aset ini sudah di-dispose" : undefined}
               >
                 {/* ── Foto ── */}
                 <div className="inv-card-photo">
@@ -217,7 +245,7 @@ export default function Inventaris({ loans, setLoans }) {
                     {cat.label}
                   </span>
 
-                  {/* Disposed overlay — hanya jika disposed */}
+                  {/* Disposed overlay */}
                   {isDisposed && (
                     <div className="inv-disposed-overlay">
                       <div className="inv-disposed-badge">
@@ -227,29 +255,32 @@ export default function Inventaris({ loans, setLoans }) {
                     </div>
                   )}
 
-                  {/* Hover overlay — hanya jika bukan disposed */}
+                  {/* Hover overlay */}
                   {!isDisposed && (
                     <div className="inv-hover-overlay">
-                      <Ico n="eye" s={18} c="#fff" />
-                      <span>Lihat Detail</span>
+                      <div className="inv-hover-btn">
+                        <Ico n="eye" s={16} c="#fff" />
+                        Lihat Detail
+                      </div>
                     </div>
                   )}
                 </div>
 
                 {/* ── Body ── */}
                 <div className="inv-card-body">
-                  <p className="inv-card-name">{a.name}</p>
+                  <div className="inv-card-top">
+                    <p className="inv-card-name">{a.name}</p>
+                    <span className={`inv-budget ${a.budget_type === "CAPEX" ? "capex" : "opex"}`}>
+                      {a.budget_type}
+                    </span>
+                  </div>
                   <p className="inv-card-brand">{a.brand} · {a.model}</p>
                   <div className="inv-card-loc">
                     <Ico n="pin" s={11} c="var(--gray-400)" />
                     <span>{a.location}</span>
                   </div>
-                  <div className="inv-card-price">{fmtIDR(a.price)}</div>
                   <div className="inv-card-footer">
                     <span className="inv-serial">{a.serial}</span>
-                    <span className={`inv-budget ${a.budget_type === "CAPEX" ? "capex" : "opex"}`}>
-                      {a.budget_type}
-                    </span>
                   </div>
                 </div>
               </div>
