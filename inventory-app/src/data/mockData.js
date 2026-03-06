@@ -188,7 +188,6 @@ export const mockCapex = [
         tgl_sp3: "2024-08-02",
         tgl_bamk: "2024-08-06",
         assets: [
-          // SUM = 350 + 350 + 500 = 1.200.000.000 ✅ balanced
           {
             asset_code: "SPMT-MLH-LPG-DMG-01",
             name: "CCTV Hikvision Malahayati",
@@ -235,7 +234,6 @@ export const mockCapex = [
         tgl_sp3: "2024-08-02",
         tgl_bamk: "2024-08-02",
         assets: [
-          // SUM = 490 + 490 = 980.000.000 ✅ balanced
           {
             asset_code: "SPMT-MLH-LPG-DMG-02",
             name: "Gate System Controller Malahayati",
@@ -273,7 +271,6 @@ export const mockCapex = [
         tgl_sp3: "2024-09-02",
         tgl_bamk: "2024-09-02",
         assets: [],
-        // kosong → status "Belum Diisi"
       },
     ],
   },
@@ -305,7 +302,6 @@ export const mockCapex = [
         tgl_sp3: "2024-08-02",
         tgl_bamk: "2024-08-09",
         assets: [
-          // SUM = 450+450+350 = 1.250.000.000 ⚠️ selisih 250jt dari kontrak (contoh tidak balance)
           {
             asset_code: "SPMT-MLH-DTC-PKR-02",
             name: "Core Switch Malahayati",
@@ -366,7 +362,6 @@ export const mockCapex = [
         tgl_sp3: "2025-06-30",
         tgl_bamk: "2025-07-01",
         assets: [
-          // SUM = 1400+1350+1200 = 3.950.000.000 ✅ balanced
           {
             asset_code: "SPMT-TJE-LPG-DMG-01",
             name: "Gate Controller Tanjung Emas",
@@ -413,7 +408,6 @@ export const mockCapex = [
         tgl_sp3: "2025-10-16",
         tgl_bamk: "2025-10-02",
         assets: [],
-        // kosong → status "Belum Diisi"
       },
     ],
   },
@@ -446,7 +440,6 @@ export const mockCapex = [
         tgl_sp3: "2025-07-22",
         tgl_bamk: "2025-08-01",
         assets: [
-          // SUM = 410+400 = 810.000.000 ✅ balanced
           {
             asset_code: "SPMT-TBK-DTC-PKR-01",
             name: "Core Switch Tanjung Balai Karimun",
@@ -470,3 +463,264 @@ export const mockCapex = [
     ],
   },
 ];
+
+// ================================================================
+// MOCK DATA PEMINJAMAN
+// Digunakan untuk alert: aset sering rusak & peminjaman overdue
+// ================================================================
+export const mockBorrows = [
+  {
+    id_peminjaman: 1,
+    asset_code: "SPMT-MLH-LPG-DMG-01",
+    asset_name: "CCTV Hikvision Malahayati",
+    borrower_name: "Andi Pratama",
+    borrow_date: "2026-01-10",
+    due_date: "2026-01-20",
+    is_returned: true,
+    return_date: "2026-01-19",
+    return_condition: "GOOD",
+  },
+  {
+    id_peminjaman: 2,
+    asset_code: "SPMT-MLH-LPG-DMG-01",
+    asset_name: "CCTV Hikvision Malahayati",
+    borrower_name: "Budi Santoso",
+    borrow_date: "2026-02-01",
+    due_date: "2026-02-15",
+    is_returned: true,
+    return_date: "2026-02-16",
+    return_condition: "MINOR_DAMAGE",
+  },
+  {
+    id_peminjaman: 3,
+    asset_code: "SPMT-MLH-LPG-DMG-01",
+    asset_name: "CCTV Hikvision Malahayati",
+    borrower_name: "Citra Dewi",
+    borrow_date: "2026-02-20",
+    due_date: "2026-03-01",
+    is_returned: true,
+    return_date: "2026-03-02",
+    return_condition: "DAMAGED",
+  },
+  {
+    id_peminjaman: 4,
+    asset_code: "SPMT-LHK-DTC-PKR-02",
+    asset_name: "Core Switch Lhokseumawe",
+    borrower_name: "Deni Kurniawan",
+    borrow_date: "2026-01-05",
+    due_date: "2026-01-20",
+    is_returned: false,
+    return_date: null,
+    return_condition: null,
+  },
+  {
+    id_peminjaman: 5,
+    asset_code: "SPMT-GRG-DTC-PKR-01",
+    asset_name: "Access Switch Garongkong",
+    borrower_name: "Eka Saputra",
+    borrow_date: "2026-02-10",
+    due_date: "2026-02-20",
+    is_returned: false,
+    return_date: null,
+    return_condition: null,
+  },
+  {
+    id_peminjaman: 6,
+    asset_code: "SPMT-TBK-DTC-PKR-01",
+    asset_name: "Core Switch Tanjung Balai Karimun",
+    borrower_name: "Fajar Hidayat",
+    borrow_date: "2026-02-25",
+    due_date: "2026-03-10",
+    is_returned: false,
+    return_date: null,
+    return_condition: null,
+  },
+  {
+    id_peminjaman: 7,
+    asset_code: "SPMT-LHK-LPG-DMG-01",
+    asset_name: "CCTV Hikvision Lhokseumawe",
+    borrower_name: "Gita Rahayu",
+    borrow_date: "2026-01-15",
+    due_date: "2026-01-30",
+    is_returned: true,
+    return_date: "2026-01-29",
+    return_condition: "MINOR_DAMAGE",
+  },
+  {
+    id_peminjaman: 8,
+    asset_code: "SPMT-LHK-LPG-DMG-01",
+    asset_name: "CCTV Hikvision Lhokseumawe",
+    borrower_name: "Hendra Wijaya",
+    borrow_date: "2026-02-15",
+    due_date: "2026-02-28",
+    is_returned: true,
+    return_date: "2026-03-01",
+    return_condition: "MINOR_DAMAGE",
+  },
+];
+
+// ================================================================
+// HELPER: Format rupiah
+// ================================================================
+export const formatRupiah = (value) =>
+  new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+  }).format(value);
+
+// ================================================================
+// calculateAlerts()
+// Menghitung semua smart alerts dari data mock di atas.
+// Return: array of alert objects, sorted by priority (high first).
+//
+// Alert types:
+//   1. FREQUENT_DAMAGE  — aset dikembalikan rusak ≥2x
+//   2. OVERDUE_BORROW   — peminjaman belum dikembalikan & sudah lewat due_date
+//   3. OPEX_CRITICAL    — serapan anggaran OPEX ≥ 80%
+//   4. CAPEX_NO_ASSET   — project CAPEX sudah kontrak tapi assets kosong
+//   5. CAPEX_IMBALANCE  — selisih SUM(acquisition_value) vs nilai_kontrak > 5%
+// ================================================================
+export const calculateAlerts = () => {
+  const alerts = [];
+  const today = new Date();
+
+  // ── 1. ASET SERING RUSAK ──────────────────────────────────────
+  const damageCount = {};
+  const damageAssetNames = {};
+
+  mockBorrows.forEach((b) => {
+    if (
+      b.is_returned &&
+      (b.return_condition === "MINOR_DAMAGE" ||
+        b.return_condition === "DAMAGED")
+    ) {
+      damageCount[b.asset_code] = (damageCount[b.asset_code] || 0) + 1;
+      damageAssetNames[b.asset_code] = b.asset_name;
+    }
+  });
+
+  Object.entries(damageCount).forEach(([code, count]) => {
+    if (count >= 2) {
+      alerts.push({
+        id: `damage-${code}`,
+        type: "FREQUENT_DAMAGE",
+        priority: "high",
+        title: "Aset Sering Rusak",
+        message: `${damageAssetNames[code]} (${code}) dikembalikan dalam kondisi rusak sebanyak ${count}x. Pertimbangkan pengecekan atau penggantian.`,
+        asset_code: code,
+        action_label: "Lihat Riwayat",
+        action_path: "/peminjaman",
+      });
+    }
+  });
+
+  // ── 2. PEMINJAMAN OVERDUE ─────────────────────────────────────
+  const overdueBorrows = mockBorrows.filter((b) => {
+    if (b.is_returned) return false;
+    return new Date(b.due_date) < today;
+  });
+
+  if (overdueBorrows.length > 0) {
+    alerts.push({
+      id: "overdue-summary",
+      type: "OVERDUE_BORROW",
+      priority: "medium",
+      title: "Peminjaman Melewati Jatuh Tempo",
+      message: `${overdueBorrows.length} aset melewati jatuh tempo pengembalian: ${overdueBorrows
+        .map((b) => b.asset_name)
+        .join(", ")}. Segera tindak lanjut.`,
+      count: overdueBorrows.length,
+      items: overdueBorrows,
+      action_label: "Cek Peminjaman",
+      action_path: "/peminjaman",
+    });
+  }
+
+  // ── 3. ANGGARAN OPEX KRITIS (≥80%) ───────────────────────────
+  mockOpex.forEach((opex) => {
+    const totalRealisasi = mockRealisasiOpex
+      .filter((r) => r.id_anggaran_tahunan === opex.id_anggaran_tahunan)
+      .reduce((sum, r) => sum + r.jumlah, 0);
+
+    const pct = (totalRealisasi / opex.nilai_anggaran_tahunan) * 100;
+
+    if (pct >= 80) {
+      const sisa = opex.nilai_anggaran_tahunan - totalRealisasi;
+      alerts.push({
+        id: `opex-critical-${opex.id_anggaran_tahunan}`,
+        type: "OPEX_CRITICAL",
+        priority: pct >= 100 ? "high" : "medium",
+        title: "Anggaran OPEX Kritis",
+        message: `${opex.nm_anggaran_master} telah terserap ${pct.toFixed(1)}% (${formatRupiah(
+          totalRealisasi,
+        )} dari ${formatRupiah(opex.nilai_anggaran_tahunan)}). Sisa: ${formatRupiah(sisa)}.`,
+        id_anggaran_tahunan: opex.id_anggaran_tahunan,
+        percentage: pct,
+        action_label: "Lihat Anggaran",
+        action_path: "/budget",
+      });
+    }
+  });
+
+  // ── 4. PROJECT CAPEX TANPA ASET ───────────────────────────────
+  mockCapex.forEach((capexItem) => {
+    capexItem.projects.forEach((proj) => {
+      if (!proj.assets || proj.assets.length === 0) {
+        alerts.push({
+          id: `capex-no-asset-${proj.id_pekerjaan}`,
+          type: "CAPEX_NO_ASSET",
+          priority: "medium",
+          title: "Data Aset CAPEX Belum Diisi",
+          message: `Pekerjaan "${proj.nm_pekerjaan.substring(0, 60)}..." (${
+            proj.no_kontrak
+          }) sudah kontrak senilai ${formatRupiah(proj.nilai_kontrak)} namun belum ada data aset.`,
+          id_pekerjaan: proj.id_pekerjaan,
+          no_kontrak: proj.no_kontrak,
+          action_label: "Input Aset",
+          action_path: "/budget",
+        });
+      }
+    });
+  });
+
+  // ── 5. CAPEX IMBALANCE (selisih > 5%) ─────────────────────────
+  mockCapex.forEach((capexItem) => {
+    capexItem.projects.forEach((proj) => {
+      if (!proj.assets || proj.assets.length === 0) return;
+
+      const sumAcquisition = proj.assets.reduce(
+        (sum, a) => sum + (a.acquisition_value || 0),
+        0,
+      );
+      const selisih = Math.abs(proj.nilai_kontrak - sumAcquisition);
+      const selisihPct = (selisih / proj.nilai_kontrak) * 100;
+
+      if (selisihPct > 5) {
+        alerts.push({
+          id: `capex-imbalance-${proj.id_pekerjaan}`,
+          type: "CAPEX_IMBALANCE",
+          priority: "medium",
+          title: "Nilai Aset vs Kontrak Tidak Sesuai",
+          message: `Pekerjaan "${proj.nm_pekerjaan.substring(0, 55)}..." memiliki selisih ${formatRupiah(
+            selisih,
+          )} (${selisihPct.toFixed(1)}%) antara nilai kontrak (${formatRupiah(
+            proj.nilai_kontrak,
+          )}) dan total perolehan aset (${formatRupiah(sumAcquisition)}).`,
+          id_pekerjaan: proj.id_pekerjaan,
+          no_kontrak: proj.no_kontrak,
+          selisih,
+          selisih_pct: selisihPct,
+          action_label: "Cek Detail",
+          action_path: "/budget",
+        });
+      }
+    });
+  });
+
+  // ── Sort: high → medium → low ─────────────────────────────────
+  const priorityOrder = { high: 0, medium: 1, low: 2 };
+  alerts.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+
+  return alerts;
+};

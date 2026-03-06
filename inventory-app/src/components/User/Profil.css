@@ -3,7 +3,6 @@
    ============================================================ */
 
 .profil {
-  /* Isi penuh tinggi viewport dikurangi topbar */
   min-height: calc(100vh - var(--topbar-h) - 48px);
   display: flex;
   flex-direction: column;
@@ -87,7 +86,6 @@
   background: #fff;
   border-radius: 50%;
 }
-/* Decorative dots on hero */
 .p-avatar-bg::before {
   content: "";
   position: absolute;
@@ -98,7 +96,6 @@
     transparent 60%
   );
 }
-
 .p-avatar-body {
   display: flex;
   flex-direction: column;
@@ -137,6 +134,19 @@
   color: var(--gray-500);
   margin-top: 3px;
 }
+
+/* ── Label divisi kecil di bawah email pada sidebar ── */
+.p-divisi-label {
+  font-size: 11px;
+  color: var(--primary-600);
+  font-weight: 600;
+  margin-top: 4px;
+  background: var(--primary-50);
+  border: 1px solid var(--primary-100);
+  padding: 3px 10px;
+  border-radius: 99px;
+}
+
 .p-role-badge {
   margin-top: 10px;
   background: var(--primary-600);
@@ -343,6 +353,21 @@
   margin-top: 3px;
 }
 
+/* ── Badge divisi di view mode pada field grid ── */
+.p-divisi-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--primary-50);
+  color: var(--primary-700);
+  border: 1px solid var(--primary-100);
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 99px;
+}
+
+/* ── Input & Select ── */
 .p-input {
   width: 100%;
   padding: 10px 14px;
@@ -354,10 +379,27 @@
   background: var(--primary-50);
   outline: none;
   transition: all 0.15s;
+  box-sizing: border-box;
 }
 .p-input:focus {
   border-color: var(--primary-500);
   background: #fff;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Dropdown khusus divisi — sama style dengan input tapi ada panah */
+.p-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+  cursor: pointer;
+}
+.p-select:focus {
+  border-color: var(--primary-500);
+  background-color: #fff;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 

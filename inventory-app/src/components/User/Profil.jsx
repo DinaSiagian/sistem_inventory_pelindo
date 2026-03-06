@@ -92,6 +92,14 @@ const Ico = ({ n, s = 18, c }) => {
         <line x1="12" y1="8" x2="12.01" y2="8" />
       </>
     ),
+    // ── icon divisi (layers / grid)
+    layers: (
+      <>
+        <polygon points="12 2 2 7 12 12 22 7 12 2" />
+        <polyline points="2 17 12 22 22 17" />
+        <polyline points="2 12 12 17 22 12" />
+      </>
+    ),
     star: (
       <>
         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
@@ -113,6 +121,20 @@ const Ico = ({ n, s = 18, c }) => {
     </svg>
   );
 };
+
+// Daftar pilihan divisi
+const DIVISI_OPTIONS = [
+  "Teknologi Informasi",
+  "Keuangan & Akuntansi",
+  "Sumber Daya Manusia",
+  "Operasional Terminal",
+  "Pemasaran & Bisnis",
+  "Hukum & Kepatuhan",
+  "Pengadaan & Logistik",
+  "Manajemen Risiko",
+  "Perencanaan & Strategi",
+  "Keselamatan & Keamanan",
+];
 
 function Toast({ msg, type }) {
   if (!msg) return null;
@@ -163,6 +185,8 @@ export default function Profil() {
     nama: sessionUser.nama || "",
     email: sessionUser.email || "",
     telepon: sessionUser.telepon || "",
+    // ── field baru divisi ──
+    divisi: sessionUser.divisi || "",
   });
   const [editMode, setEditMode] = useState(false);
   const [pwForm, setPwForm] = useState({ old: "", new_: "", confirm: "" });
@@ -191,6 +215,7 @@ export default function Profil() {
       nama: sessionUser.nama || "",
       email: sessionUser.email || "",
       telepon: sessionUser.telepon || "",
+      divisi: sessionUser.divisi || "",
     });
     setEditMode(false);
   };
@@ -220,7 +245,7 @@ export default function Profil() {
     : "U";
   const roleLabel = sessionUser.role === "admin" ? "Admin" : "User";
 
-  // info fields
+  // ── Info fields — divisi masuk di antara telepon & entitas ──
   const fields = [
     {
       icon: "user",
@@ -228,6 +253,7 @@ export default function Profil() {
       key: "nama",
       val: form.nama,
       editable: true,
+      type: "text",
     },
     {
       icon: "id",
@@ -235,6 +261,7 @@ export default function Profil() {
       key: "nip",
       val: sessionUser.nip || "—",
       editable: false,
+      type: "text",
     },
     {
       icon: "user",
@@ -242,6 +269,7 @@ export default function Profil() {
       key: "username",
       val: sessionUser.username || "—",
       editable: false,
+      type: "text",
     },
     {
       icon: "mail",
@@ -249,6 +277,7 @@ export default function Profil() {
       key: "email",
       val: form.email,
       editable: true,
+      type: "text",
     },
     {
       icon: "phone",
@@ -256,6 +285,15 @@ export default function Profil() {
       key: "telepon",
       val: form.telepon,
       editable: true,
+      type: "text",
+    },
+    {
+      icon: "layers",
+      label: "Divisi",
+      key: "divisi",
+      val: form.divisi || "—",
+      editable: true,
+      type: "select",
     },
     {
       icon: "building",
@@ -263,6 +301,7 @@ export default function Profil() {
       key: "entitas",
       val: sessionUser.entitas || "—",
       editable: false,
+      type: "text",
     },
     {
       icon: "building",
@@ -270,6 +309,7 @@ export default function Profil() {
       key: "cabang",
       val: sessionUser.cabang || "—",
       editable: false,
+      type: "text",
     },
     {
       icon: "shield",
@@ -277,6 +317,7 @@ export default function Profil() {
       key: "role",
       val: roleLabel,
       editable: false,
+      type: "text",
     },
   ];
 
@@ -284,13 +325,11 @@ export default function Profil() {
     <div className="profil">
       <Toast msg={toast.msg} type={toast.type} />
 
-      {/* ════ LAYOUT: sidebar kiri + konten kanan ════ */}
       <div className="p-layout">
         {/* ── Sidebar kiri ── */}
         <aside className="p-sidebar">
           {/* Card avatar */}
           <div className="p-avatar-card">
-            {/* background wave */}
             <div className="p-avatar-bg">
               <div className="p-avatar-wave" />
             </div>
@@ -300,6 +339,8 @@ export default function Profil() {
               </div>
               <h2 className="p-name">{form.nama || "—"}</h2>
               <p className="p-email">{form.email || "—"}</p>
+              {/* Tampilkan divisi di bawah email kalau sudah diisi */}
+              {form.divisi && <p className="p-divisi-label">{form.divisi}</p>}
               <span className="p-role-badge">{roleLabel}</span>
             </div>
           </div>
@@ -338,9 +379,10 @@ export default function Profil() {
             </div>
           </div>
 
-          {/* Info singkat */}
+          {/* Info singkat — tambah divisi */}
           <div className="p-sidebar-info">
             {[
+              { icon: "layers", label: "Divisi", val: form.divisi || "—" },
               {
                 icon: "building",
                 label: "Entitas",
@@ -423,21 +465,46 @@ export default function Profil() {
                       <Ico n={f.icon} s={12} c="var(--primary-500)" />
                       {f.label}
                     </label>
+
                     {editMode && f.editable ? (
-                      <input
-                        className="p-input"
-                        value={form[f.key] || ""}
-                        onChange={(e) =>
-                          setForm((p) => ({ ...p, [f.key]: e.target.value }))
-                        }
-                      />
+                      f.type === "select" ? (
+                        /* ── Dropdown untuk Divisi ── */
+                        <select
+                          className="p-input p-select"
+                          value={form[f.key] || ""}
+                          onChange={(e) =>
+                            setForm((p) => ({ ...p, [f.key]: e.target.value }))
+                          }
+                        >
+                          <option value="">— Pilih Divisi —</option>
+                          {DIVISI_OPTIONS.map((d) => (
+                            <option key={d} value={d}>
+                              {d}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input
+                          className="p-input"
+                          value={form[f.key] || ""}
+                          onChange={(e) =>
+                            setForm((p) => ({ ...p, [f.key]: e.target.value }))
+                          }
+                        />
+                      )
                     ) : (
                       <p
                         className={`p-val ${!f.editable && editMode ? "p-val--dim" : ""}`}
                       >
-                        {f.val || "—"}
+                        {/* Badge khusus untuk field Divisi saat view mode */}
+                        {f.key === "divisi" && f.val && f.val !== "—" ? (
+                          <span className="p-divisi-badge">{f.val}</span>
+                        ) : (
+                          f.val || "—"
+                        )}
                       </p>
                     )}
+
                     {!f.editable && editMode && (
                       <span className="p-note">Tidak dapat diedit</span>
                     )}
@@ -510,7 +577,6 @@ export default function Profil() {
                 />
               </div>
 
-              {/* Strength tips */}
               <div className="p-pw-tips">
                 <p className="p-tips-title">
                   <Ico n="key" s={13} c="var(--primary-500)" /> Syarat Password
@@ -524,7 +590,7 @@ export default function Profil() {
                       c={
                         pwForm.new_.length >= 8 ? "#16a34a" : "var(--gray-300)"
                       }
-                    />{" "}
+                    />
                     Minimal 8 karakter
                   </li>
                   <li className={/[A-Z]/.test(pwForm.new_) ? "met" : ""}>
@@ -536,7 +602,7 @@ export default function Profil() {
                           ? "#16a34a"
                           : "var(--gray-300)"
                       }
-                    />{" "}
+                    />
                     Mengandung huruf kapital
                   </li>
                   <li className={/[0-9]/.test(pwForm.new_) ? "met" : ""}>
@@ -548,7 +614,7 @@ export default function Profil() {
                           ? "#16a34a"
                           : "var(--gray-300)"
                       }
-                    />{" "}
+                    />
                     Mengandung angka
                   </li>
                 </ul>

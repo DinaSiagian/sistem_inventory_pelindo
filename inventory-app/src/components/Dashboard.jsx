@@ -1,10 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   FaBox,
   FaCheckCircle,
   FaTools,
   FaExclamationTriangle,
   FaClipboardList,
+  FaTimesCircle,
+  FaFileInvoiceDollar,
+  FaBalanceScale,
 } from "react-icons/fa";
 import {
   LineChart,
@@ -17,15 +21,15 @@ import {
   PieChart,
   Pie,
   Cell,
-  Legend,
   Label,
 } from "recharts";
 
 import "./Dashboard.css";
 
-// --- MOCK DATA ---
+// ================================================================
+// MOCK DATA — Tren Peminjaman
+// ================================================================
 
-// Data harian (7 hari terakhir)
 const dataPeminjamanHarian = [
   { name: "Sen", Laptop: 8, Proyektor: 3, Kamera: 2, Kendaraan: 1 },
   { name: "Sel", Laptop: 12, Proyektor: 5, Kamera: 4, Kendaraan: 2 },
@@ -36,7 +40,6 @@ const dataPeminjamanHarian = [
   { name: "Min", Laptop: 3, Proyektor: 1, Kamera: 1, Kendaraan: 0 },
 ];
 
-// Data bulanan
 const dataPeminjamanBulanan = [
   { name: "Jan", Laptop: 40, Proyektor: 20, Kamera: 15, Kendaraan: 10 },
   { name: "Feb", Laptop: 30, Proyektor: 18, Kamera: 12, Kendaraan: 8 },
@@ -53,7 +56,10 @@ const kategoriLines = [
   { key: "Kendaraan", color: "#8e44ad" },
 ];
 
-// Data kondisi aset
+// ================================================================
+// MOCK DATA — Kondisi Aset
+// ================================================================
+
 const dataKondisi = [
   { name: "Baik", value: 850, color: "#2ecc71" },
   { name: "Dalam Pemeliharaan", value: 80, color: "#3498db" },
@@ -63,7 +69,391 @@ const dataKondisi = [
 
 const totalKondisi = dataKondisi.reduce((sum, d) => sum + d.value, 0);
 
-// Custom legend untuk kondisi aset (seperti referensi gambar)
+// ================================================================
+// MOCK DATA — Anggaran OPEX
+// ================================================================
+
+const mockOpex = [
+  {
+    id_anggaran_tahunan: 1,
+    nm_anggaran_master: "Beban Pemeliharaan Software",
+    nilai_anggaran_tahunan: 500000000,
+  },
+  {
+    id_anggaran_tahunan: 2,
+    nm_anggaran_master: "Beban Jaringan dan Koneksi Data",
+    nilai_anggaran_tahunan: 600000000,
+  },
+  {
+    id_anggaran_tahunan: 3,
+    nm_anggaran_master: "Beban Perlengkapan Kantor",
+    nilai_anggaran_tahunan: 700000000,
+  },
+  {
+    id_anggaran_tahunan: 4,
+    nm_anggaran_master: "Beban Jasa Konsultan",
+    nilai_anggaran_tahunan: 800000000,
+  },
+  {
+    id_anggaran_tahunan: 5,
+    nm_anggaran_master: "Beban Sumber Daya Pihak Ketiga Peralatan",
+    nilai_anggaran_tahunan: 900000000,
+  },
+];
+
+const mockRealisasiOpex = [
+  { id_realisasi: 1, id_anggaran_tahunan: 2, jumlah: 120000000 },
+  { id_realisasi: 2, id_anggaran_tahunan: 2, jumlah: 120000000 },
+  { id_realisasi: 3, id_anggaran_tahunan: 1, jumlah: 85000000 },
+  { id_realisasi: 4, id_anggaran_tahunan: 3, jumlah: 45000000 },
+  { id_realisasi: 5, id_anggaran_tahunan: 4, jumlah: 200000000 },
+  { id_realisasi: 6, id_anggaran_tahunan: 4, jumlah: 200000000 },
+  { id_realisasi: 7, id_anggaran_tahunan: 5, jumlah: 150000000 },
+];
+
+// ================================================================
+// MOCK DATA — CAPEX Projects
+// ================================================================
+
+const mockCapex = [
+  {
+    projects: [
+      {
+        id_pekerjaan: 1,
+        nm_pekerjaan:
+          "Pekerjaan Implementasi dan Standarisasi IT Infrastruktur (Planning & Control, CCTV dan SD-WAN Branch Malahayati, Lhokseumawe, Lembar, ParePare dan Garongkong) PT Pelindo Multi Terminal",
+        nilai_kontrak: 1200000000,
+        no_kontrak: "SI.01/12/8/2/PPTI/TEKI/PLMT-24",
+        assets: [
+          { asset_code: "SPMT-MLH-LPG-DMG-01", acquisition_value: 350000000 },
+          { asset_code: "SPMT-LHK-LPG-DMG-01", acquisition_value: 350000000 },
+          { asset_code: "SPMT-MLH-DTC-PKR-01", acquisition_value: 500000000 },
+        ],
+      },
+      {
+        id_pekerjaan: 2,
+        nm_pekerjaan:
+          "Pekerjaan Implementasi dan Standarisasi IT Infrastruktur (Gate System Branch Malahayati, Lhokseumawe, Lembar, ParePare dan Garongkong) PT Pelindo Multi Terminal",
+        nilai_kontrak: 980000000,
+        no_kontrak: "SI.01/8/8/2/PPTI/TEKI/PLMT-24",
+        assets: [
+          { asset_code: "SPMT-MLH-LPG-DMG-02", acquisition_value: 490000000 },
+          { asset_code: "SPMT-GRG-LPG-DMG-01", acquisition_value: 490000000 },
+        ],
+      },
+      {
+        id_pekerjaan: 3,
+        nm_pekerjaan:
+          "Pekerjaan Implementasi dan Standarisasi IT Infrastruktur (Gate System dan Planning & Control Branch Balikpapan dan Bagendang) PT Pelindo Multi Terminal",
+        nilai_kontrak: 750000000,
+        no_kontrak: "SI.01/4/9/2/PPTI/TEKI/PLMT-24",
+        assets: [],
+      },
+    ],
+  },
+  {
+    projects: [
+      {
+        id_pekerjaan: 4,
+        nm_pekerjaan:
+          "Penyediaan Network di Branch SPMT (Malahayati, Lhokseumawe, Lembar, Parepare dan Garongkong)",
+        nilai_kontrak: 1500000000,
+        no_kontrak: "SI.01/15/8/5/PPTI/TEKI/PLMT-24",
+        assets: [
+          { asset_code: "SPMT-MLH-DTC-PKR-02", acquisition_value: 450000000 },
+          { asset_code: "SPMT-LHK-DTC-PKR-02", acquisition_value: 450000000 },
+          { asset_code: "SPMT-GRG-DTC-PKR-01", acquisition_value: 350000000 },
+        ],
+      },
+    ],
+  },
+  {
+    projects: [
+      {
+        id_pekerjaan: 5,
+        nm_pekerjaan:
+          "Pemenuhan Kebutuhan Gate System, Planning and Control dan Perangkat Pendukung Roro pada Branch (Lembar Gilimas, Tanjung Wangi, Tanjung Emas, Sibolga, Balikpapan, Parepare dan Tanjung Balai Karimun) PT Pelindo Multi Terminal",
+        nilai_kontrak: 3950000000,
+        no_kontrak: "SI.01/7/7/4/PPTI/TEKI/PLMT-25",
+        assets: [
+          { asset_code: "SPMT-TJE-LPG-DMG-01", acquisition_value: 1400000000 },
+          { asset_code: "SPMT-BLP-LPG-DMG-01", acquisition_value: 1350000000 },
+          { asset_code: "SPMT-TJE-DTC-PKR-01", acquisition_value: 1200000000 },
+        ],
+      },
+      {
+        id_pekerjaan: 6,
+        nm_pekerjaan:
+          "Penyediaan Kebutuhan Transformasi dan Digitalisasi (CCTV dan Public Announcer Traffic Monitoring pada Gate) Branch Belawan, Dumai, Malahayati, Lhokseumawe, Lembar, Makassar, Balikpapan PT Pelindo Multi Terminal",
+        nilai_kontrak: 2870000000,
+        no_kontrak: "PD.01/22/10/1/PPTI/TEKI/PLMT-25",
+        assets: [],
+      },
+    ],
+  },
+  {
+    projects: [
+      {
+        id_pekerjaan: 7,
+        nm_pekerjaan:
+          "Pemenuhan Kebutuhan Perangkat Network Branch Tanjung Balai Karimun Terminal Selat Panjang PT Pelindo Multi Terminal",
+        nilai_kontrak: 810000000,
+        no_kontrak: "PD.01/24/7/1/PPTI/TEKI/PLMT-25",
+        assets: [
+          { asset_code: "SPMT-TBK-DTC-PKR-01", acquisition_value: 410000000 },
+          { asset_code: "SPMT-TBK-DTC-PKR-02", acquisition_value: 400000000 },
+        ],
+      },
+    ],
+  },
+];
+
+// ================================================================
+// MOCK DATA — Peminjaman (untuk alert rusak & overdue)
+// ================================================================
+
+const mockBorrows = [
+  {
+    id_peminjaman: 1,
+    asset_code: "SPMT-MLH-LPG-DMG-01",
+    asset_name: "CCTV Hikvision Malahayati",
+    borrower_name: "Andi Pratama",
+    borrow_date: "2026-01-10",
+    due_date: "2026-01-20",
+    is_returned: true,
+    return_condition: "GOOD",
+  },
+  {
+    id_peminjaman: 2,
+    asset_code: "SPMT-MLH-LPG-DMG-01",
+    asset_name: "CCTV Hikvision Malahayati",
+    borrower_name: "Budi Santoso",
+    borrow_date: "2026-02-01",
+    due_date: "2026-02-15",
+    is_returned: true,
+    return_condition: "MINOR_DAMAGE",
+  },
+  {
+    id_peminjaman: 3,
+    asset_code: "SPMT-MLH-LPG-DMG-01",
+    asset_name: "CCTV Hikvision Malahayati",
+    borrower_name: "Citra Dewi",
+    borrow_date: "2026-02-20",
+    due_date: "2026-03-01",
+    is_returned: true,
+    return_condition: "DAMAGED",
+  },
+  {
+    id_peminjaman: 4,
+    asset_code: "SPMT-LHK-DTC-PKR-02",
+    asset_name: "Core Switch Lhokseumawe",
+    borrower_name: "Deni Kurniawan",
+    borrow_date: "2026-01-05",
+    due_date: "2026-01-20",
+    is_returned: false,
+    return_condition: null,
+  },
+  {
+    id_peminjaman: 5,
+    asset_code: "SPMT-GRG-DTC-PKR-01",
+    asset_name: "Access Switch Garongkong",
+    borrower_name: "Eka Saputra",
+    borrow_date: "2026-02-10",
+    due_date: "2026-02-20",
+    is_returned: false,
+    return_condition: null,
+  },
+  {
+    id_peminjaman: 6,
+    asset_code: "SPMT-TBK-DTC-PKR-01",
+    asset_name: "Core Switch Tanjung Balai Karimun",
+    borrower_name: "Fajar Hidayat",
+    borrow_date: "2026-02-25",
+    due_date: "2026-03-10",
+    is_returned: false,
+    return_condition: null,
+  },
+  {
+    id_peminjaman: 7,
+    asset_code: "SPMT-LHK-LPG-DMG-01",
+    asset_name: "CCTV Hikvision Lhokseumawe",
+    borrower_name: "Gita Rahayu",
+    borrow_date: "2026-01-15",
+    due_date: "2026-01-30",
+    is_returned: true,
+    return_condition: "MINOR_DAMAGE",
+  },
+  {
+    id_peminjaman: 8,
+    asset_code: "SPMT-LHK-LPG-DMG-01",
+    asset_name: "CCTV Hikvision Lhokseumawe",
+    borrower_name: "Hendra Wijaya",
+    borrow_date: "2026-02-15",
+    due_date: "2026-02-28",
+    is_returned: true,
+    return_condition: "MINOR_DAMAGE",
+  },
+];
+
+// ================================================================
+// HELPER
+// ================================================================
+
+const formatRupiah = (value) =>
+  new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+  }).format(value);
+
+// ================================================================
+// calculateAlerts()
+// ================================================================
+
+const calculateAlerts = () => {
+  const alerts = [];
+  const today = new Date();
+
+  // 1. Aset sering rusak (≥2x)
+  const damageCount = {};
+  const damageAssetNames = {};
+  mockBorrows.forEach((b) => {
+    if (
+      b.is_returned &&
+      (b.return_condition === "MINOR_DAMAGE" ||
+        b.return_condition === "DAMAGED")
+    ) {
+      damageCount[b.asset_code] = (damageCount[b.asset_code] || 0) + 1;
+      damageAssetNames[b.asset_code] = b.asset_name;
+    }
+  });
+  Object.entries(damageCount).forEach(([code, count]) => {
+    if (count >= 2) {
+      alerts.push({
+        id: `damage-${code}`,
+        type: "FREQUENT_DAMAGE",
+        priority: "high",
+        title: "Aset Sering Rusak",
+        message: `${damageAssetNames[code]} (${code}) dikembalikan dalam kondisi rusak sebanyak ${count}x. Pertimbangkan pengecekan atau penggantian.`,
+        action_label: "Lihat Riwayat",
+        action_path: "/peminjaman",
+      });
+    }
+  });
+
+  // 2. Peminjaman overdue
+  const overdueBorrows = mockBorrows.filter(
+    (b) => !b.is_returned && new Date(b.due_date) < today,
+  );
+  if (overdueBorrows.length > 0) {
+    alerts.push({
+      id: "overdue-summary",
+      type: "OVERDUE_BORROW",
+      priority: "medium",
+      title: "Peminjaman Melewati Jatuh Tempo",
+      message: `${overdueBorrows.length} aset melewati jatuh tempo: ${overdueBorrows.map((b) => b.asset_name).join(", ")}. Segera tindak lanjut.`,
+      action_label: "Cek Peminjaman",
+      action_path: "/peminjaman",
+    });
+  }
+
+  // 3. Anggaran OPEX kritis (≥80%)
+  mockOpex.forEach((opex) => {
+    const totalRealisasi = mockRealisasiOpex
+      .filter((r) => r.id_anggaran_tahunan === opex.id_anggaran_tahunan)
+      .reduce((sum, r) => sum + r.jumlah, 0);
+    const pct = (totalRealisasi / opex.nilai_anggaran_tahunan) * 100;
+    if (pct >= 80) {
+      alerts.push({
+        id: `opex-critical-${opex.id_anggaran_tahunan}`,
+        type: "OPEX_CRITICAL",
+        priority: pct >= 100 ? "high" : "medium",
+        title: "Anggaran OPEX Kritis",
+        message: `${opex.nm_anggaran_master} terserap ${pct.toFixed(1)}% (${formatRupiah(totalRealisasi)} dari ${formatRupiah(opex.nilai_anggaran_tahunan)}). Sisa: ${formatRupiah(opex.nilai_anggaran_tahunan - totalRealisasi)}.`,
+        action_label: "Lihat Anggaran",
+        action_path: "/budget",
+      });
+    }
+  });
+
+  // 4. Project CAPEX tanpa aset
+  mockCapex.forEach((capexItem) => {
+    capexItem.projects.forEach((proj) => {
+      if (!proj.assets || proj.assets.length === 0) {
+        alerts.push({
+          id: `capex-no-asset-${proj.id_pekerjaan}`,
+          type: "CAPEX_NO_ASSET",
+          priority: "medium",
+          title: "Data Aset CAPEX Belum Diisi",
+          message: `Pekerjaan "${proj.nm_pekerjaan.substring(0, 60)}..." (${proj.no_kontrak}) sudah kontrak senilai ${formatRupiah(proj.nilai_kontrak)} namun belum ada data aset.`,
+          action_label: "Input Aset",
+          action_path: "/budget",
+        });
+      }
+    });
+  });
+
+  // 5. CAPEX imbalance (selisih >5%)
+  mockCapex.forEach((capexItem) => {
+    capexItem.projects.forEach((proj) => {
+      if (!proj.assets || proj.assets.length === 0) return;
+      const sumAcquisition = proj.assets.reduce(
+        (sum, a) => sum + (a.acquisition_value || 0),
+        0,
+      );
+      const selisih = Math.abs(proj.nilai_kontrak - sumAcquisition);
+      const selisihPct = (selisih / proj.nilai_kontrak) * 100;
+      if (selisihPct > 5) {
+        alerts.push({
+          id: `capex-imbalance-${proj.id_pekerjaan}`,
+          type: "CAPEX_IMBALANCE",
+          priority: "medium",
+          title: "Nilai Aset vs Kontrak Tidak Sesuai",
+          message: `Pekerjaan "${proj.nm_pekerjaan.substring(0, 55)}..." selisih ${formatRupiah(selisih)} (${selisihPct.toFixed(1)}%) antara kontrak (${formatRupiah(proj.nilai_kontrak)}) dan total aset (${formatRupiah(sumAcquisition)}).`,
+          action_label: "Cek Detail",
+          action_path: "/budget",
+        });
+      }
+    });
+  });
+
+  const priorityOrder = { high: 0, medium: 1, low: 2 };
+  alerts.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+  return alerts;
+};
+
+// ================================================================
+// ALERT STYLE MAP
+// ================================================================
+
+const ALERT_STYLE = {
+  FREQUENT_DAMAGE: {
+    icon: <FaExclamationTriangle />,
+    bg: "#fdecea",
+    color: "#e74c3c",
+  },
+  OVERDUE_BORROW: {
+    icon: <FaClipboardList />,
+    bg: "#fef5e7",
+    color: "#f39c12",
+  },
+  OPEX_CRITICAL: {
+    icon: <FaFileInvoiceDollar />,
+    bg: "#fef5e7",
+    color: "#d35400",
+  },
+  CAPEX_NO_ASSET: { icon: <FaTimesCircle />, bg: "#eaf4fb", color: "#2980b9" },
+  CAPEX_IMBALANCE: {
+    icon: <FaBalanceScale />,
+    bg: "#f4ecf7",
+    color: "#8e44ad",
+  },
+};
+
+// ================================================================
+// SUB-COMPONENTS
+// ================================================================
+
 const CustomKondisiLegend = () => (
   <div
     style={{
@@ -130,7 +520,6 @@ const CustomKondisiLegend = () => (
         </div>
       );
     })}
-    {/* Total row */}
     <div
       style={{
         display: "flex",
@@ -151,7 +540,6 @@ const CustomKondisiLegend = () => (
   </div>
 );
 
-// Custom center label for donut
 const CustomDonutLabel = ({ viewBox }) => {
   const { cx, cy } = viewBox;
   return (
@@ -180,16 +568,91 @@ const CustomDonutLabel = ({ viewBox }) => {
   );
 };
 
+const StatsCard = ({ title, value, icon, color, sub }) => (
+  <div className="stats-card" style={{ borderLeftColor: color }}>
+    <div
+      className="stats-icon-wrapper"
+      style={{ background: `${color}15`, color }}
+    >
+      {icon}
+    </div>
+    <div className="stats-content">
+      <p>{title}</p>
+      <h3>{value}</h3>
+      <span className="stats-sub" style={{ color }}>
+        {sub}
+      </span>
+    </div>
+  </div>
+);
+
+const BudgetCard = ({ title, current, target, percent, color, desc }) => (
+  <div className="dashboard-card">
+    <div className="card-header">
+      <h3 className="section-title">{title}</h3>
+      <span className="section-subtitle">Realisasi vs RKAP</span>
+    </div>
+    <div className="budget-value-row">
+      <h2 className="current-value" style={{ color }}>
+        {current}
+      </h2>
+      <span className="target-value">/ {target}</span>
+    </div>
+    <div className="progress-bar-bg">
+      <div
+        className="progress-fill"
+        style={{ width: `${percent}%`, background: color }}
+      />
+    </div>
+    <p className="budget-summary-text">
+      <strong>{percent}%</strong> {desc}
+    </p>
+  </div>
+);
+
+const AlertItem = ({
+  icon,
+  bg,
+  color,
+  title,
+  text,
+  btnText = "Cek Detail",
+  onAction,
+}) => (
+  <div className="alert-item">
+    <div className="alert-icon-circle" style={{ background: bg, color }}>
+      {icon}
+    </div>
+    <div className="alert-content">
+      <h4>{title}</h4>
+      <p>{text}</p>
+    </div>
+    <button className="alert-action-btn" onClick={onAction}>
+      {btnText}
+    </button>
+  </div>
+);
+
+// ================================================================
+// MAIN DASHBOARD
+// ================================================================
+
 const Dashboard = () => {
   const [filterTren, setFilterTren] = useState("bulanan");
   const [tahunAnggaran, setTahunAnggaran] = useState("2026");
+  const navigate = useNavigate();
+
   const dataTren =
     filterTren === "harian" ? dataPeminjamanHarian : dataPeminjamanBulanan;
   const tahunOptions = ["2023", "2024", "2025", "2026"];
 
+  const alerts = useMemo(() => calculateAlerts(), []);
+  const highCount = alerts.filter((a) => a.priority === "high").length;
+  const totalCount = alerts.length;
+
   return (
     <div className="dashboard-wrapper">
-      {/* 1. HEADER SECTION */}
+      {/* 1. HEADER */}
       <div className="dashboard-header">
         <div>
           <h1 className="dashboard-title">Dashboard Overview</h1>
@@ -303,9 +766,9 @@ const Dashboard = () => {
         />
       </div>
 
-      {/* 4. CHARTS SECTION */}
+      {/* 4. CHARTS */}
       <div className="chart-grid">
-        {/* Tren Peminjaman - Multi Category */}
+        {/* Tren Peminjaman */}
         <div className="dashboard-card">
           <div
             style={{
@@ -316,7 +779,6 @@ const Dashboard = () => {
             }}
           >
             <h3 className="section-title">Tren Peminjaman per Kategori</h3>
-            {/* Filter Toggle */}
             <div
               style={{
                 display: "flex",
@@ -351,7 +813,6 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Category Legend */}
           <div
             style={{
               display: "flex",
@@ -424,7 +885,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Kondisi Aset - Donut + Detail */}
+        {/* Kondisi Aset */}
         <div className="dashboard-card">
           <h3 className="section-title">Kondisi Aset</h3>
           <div className="chart-container" style={{ height: "220px" }}>
@@ -486,100 +947,65 @@ const Dashboard = () => {
               </PieChart>
             </ResponsiveContainer>
           </div>
-          {/* Detail Legend */}
           <CustomKondisiLegend />
         </div>
       </div>
 
-      {/* 5. ALERTS SECTION */}
+      {/* 5. SMART ALERTS — dinamis dari calculateAlerts() */}
       <div className="dashboard-card">
         <div className="alert-header">
           <h3 className="section-title">⚠️ Smart Alerts</h3>
-          <span className="alert-badge">3 Perlu Tindakan</span>
+          {totalCount > 0 ? (
+            <span className="alert-badge">
+              {highCount > 0
+                ? `${highCount} Prioritas Tinggi · ${totalCount} Total`
+                : `${totalCount} Perlu Tindakan`}
+            </span>
+          ) : (
+            <span
+              className="alert-badge"
+              style={{ background: "#e8f8f0", color: "#27ae60" }}
+            >
+              Semua Normal ✓
+            </span>
+          )}
         </div>
 
-        <AlertItem
-          icon={<FaExclamationTriangle />}
-          bg="#fdecea"
-          color="#e74c3c"
-          title="Aset Sering Rusak"
-          text="Laptop Lenovo Thinkpad (SN: 99283) telah rusak 3x. Pertimbangkan penggantian (CAPEX)."
-        />
+        {totalCount === 0 && (
+          <p
+            style={{
+              color: "#95a5a6",
+              fontSize: "0.9rem",
+              textAlign: "center",
+              padding: "20px 0",
+            }}
+          >
+            Tidak ada alert saat ini. Semua kondisi normal.
+          </p>
+        )}
 
-        <AlertItem
-          icon={<FaClipboardList />}
-          bg="#fef5e7"
-          color="#f39c12"
-          title="Jadwal Maintenance CCTV"
-          text="50 Unit CCTV di Zona Belawan belum dimaintenance selama 6 bulan."
-          btnText="Buat Jadwal"
-        />
+        {alerts.map((alert) => {
+          const style = ALERT_STYLE[alert.type] ?? {
+            icon: <FaExclamationTriangle />,
+            bg: "#fdecea",
+            color: "#e74c3c",
+          };
+          return (
+            <AlertItem
+              key={alert.id}
+              icon={style.icon}
+              bg={style.bg}
+              color={style.color}
+              title={alert.title}
+              text={alert.message}
+              btnText={alert.action_label}
+              onAction={() => navigate(alert.action_path)}
+            />
+          );
+        })}
       </div>
     </div>
   );
 };
-
-// --- KOMPONEN KECIL ---
-const StatsCard = ({ title, value, icon, color, sub }) => (
-  <div className="stats-card" style={{ borderLeftColor: color }}>
-    <div
-      className="stats-icon-wrapper"
-      style={{ background: `${color}15`, color: color }}
-    >
-      {icon}
-    </div>
-    <div className="stats-content">
-      <p>{title}</p>
-      <h3>{value}</h3>
-      <span className="stats-sub" style={{ color: color }}>
-        {sub}
-      </span>
-    </div>
-  </div>
-);
-
-const BudgetCard = ({ title, current, target, percent, color, desc }) => (
-  <div className="dashboard-card">
-    <div className="card-header">
-      <h3 className="section-title">{title}</h3>
-      <span className="section-subtitle">Realisasi vs RKAP</span>
-    </div>
-    <div className="budget-value-row">
-      <h2 className="current-value" style={{ color: color }}>
-        {current}
-      </h2>
-      <span className="target-value">/ {target}</span>
-    </div>
-    <div className="progress-bar-bg">
-      <div
-        className="progress-fill"
-        style={{ width: `${percent}%`, background: color }}
-      ></div>
-    </div>
-    <p className="budget-summary-text">
-      <strong>{percent}%</strong> {desc}
-    </p>
-  </div>
-);
-
-const AlertItem = ({
-  icon,
-  bg,
-  color,
-  title,
-  text,
-  btnText = "Cek Detail",
-}) => (
-  <div className="alert-item">
-    <div className="alert-icon-circle" style={{ background: bg, color: color }}>
-      {icon}
-    </div>
-    <div className="alert-content">
-      <h4>{title}</h4>
-      <p>{text}</p>
-    </div>
-    <button className="alert-action-btn">{btnText}</button>
-  </div>
-);
 
 export default Dashboard;
