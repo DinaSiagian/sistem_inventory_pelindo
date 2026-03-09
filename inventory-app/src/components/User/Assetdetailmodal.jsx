@@ -1,5 +1,5 @@
 // ============================================================
-// AssetDetailModal.jsx — grouped sections + colored icon rows
+// AssetDetailModal.jsx — grouped sections + role badge in history
 // ============================================================
 import { useState } from "react";
 import {
@@ -10,6 +10,9 @@ import {
   transactionsMock,
   fmt,
   isOverdue,
+  roleConf,
+  usersMock,
+  maintenanceTypeConf,
 } from "./data";
 import "./AssetDetailModal.css";
 
@@ -159,11 +162,6 @@ const Ico = ({ n, s = 18, c }) => {
         <line x1="16" y1="3" x2="14" y2="21" />
       </>
     ),
-    barcode: (
-      <>
-        <path d="M3 5v14M7 5v14M11 5v14M15 5v14M19 5v14" />
-      </>
-    ),
     type: (
       <>
         <polyline points="4 7 4 4 20 4 20 7" />
@@ -176,6 +174,11 @@ const Ico = ({ n, s = 18, c }) => {
         <circle cx="12" cy="12" r="10" />
         <line x1="2" y1="12" x2="22" y2="12" />
         <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+      </>
+    ),
+    star: (
+      <>
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
       </>
     ),
   };
@@ -203,7 +206,7 @@ const Ico = ({ n, s = 18, c }) => {
   );
 };
 
-// ── Pool foto — IDENTIK dengan Inventaris.jsx agar foto card = foto modal ──
+// ── Pool foto — identik dengan Inventaris.jsx ──
 const PHOTO_POOLS = {
   LAPTOP: [
     "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=600&q=80&fm=webp",
@@ -255,18 +258,134 @@ const PHOTO_POOLS = {
   ],
 };
 
-// Sama persis dengan Inventaris.jsx → foto card = foto modal, dijamin
 function getPhoto(asset) {
   const pool = PHOTO_POOLS[asset?.category] || PHOTO_POOLS.OTHER;
   const num = parseInt((asset?.id || "").replace(/\D/g, "") || "0", 10);
   return pool[num % pool.length];
 }
-
-// Fallback picsum — kalau Unsplash gagal, tetap tampil foto bukan icon
 function getPhotoFallback(asset) {
   const cat = (asset?.category || "OTHER").toLowerCase();
   const num = parseInt((asset?.id || "").replace(/\D/g, "") || "0", 10);
   return `https://picsum.photos/seed/${cat}${num % 8}/600/400`;
+}
+
+// ── Helper: lookup role dari usersMock ──
+function getUserRole(userId) {
+  if (!userId) return "user";
+  const found = usersMock.find((u) => u.id === userId);
+  return found?.role || "user";
+}
+
+// ── Avatar — inisial nama, beda gaya untuk user vs superadmin ──
+function HistoryAvatar({ userId, userName }) {
+  const role = getUserRole(userId);
+  const isAdmin = role === "superadmin";
+  const initials = (userName || "?")
+    .split(" ")
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase();
+
+  if (isAdmin) {
+    // Super Admin: avatar ungu dengan bintang kecil, border khusus
+    return (
+      <div
+        className="adm-history-avatar adm-history-avatar--admin"
+        style={{
+          background: "linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)",
+          boxShadow: "0 2px 10px rgba(124,58,237,0.35)",
+          position: "relative",
+        }}
+        title="Super Admin"
+      >
+        {initials}
+        {/* Bintang kecil tanda admin di pojok kanan bawah */}
+        <span
+          style={{
+            position: "absolute",
+            bottom: -2,
+            right: -2,
+            width: 14,
+            height: 14,
+            borderRadius: "50%",
+            background: "#fbbf24",
+            border: "1.5px solid #fff",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Ico n="star" s={7} c="#92400e" />
+        </span>
+      </div>
+    );
+  }
+
+  // User biasa: avatar biru standar, tanpa ornamen
+  return (
+    <div
+      className="adm-history-avatar"
+      style={{
+        background: "linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)",
+        boxShadow: "0 2px 8px rgba(37,99,235,0.3)",
+      }}
+      title="User"
+    >
+      {initials}
+    </div>
+  );
+}
+
+// ── Badge role kecil di samping nama (User / Super Admin) ──
+function RoleBadge({ userId }) {
+  const role = getUserRole(userId);
+  const conf = roleConf[role] || roleConf.user;
+  const isAdmin = role === "superadmin";
+  return (
+    <span
+      style={{
+        fontSize: 10,
+        fontWeight: 700,
+        padding: "2px 7px",
+        borderRadius: 99,
+        color: conf.color,
+        background: conf.bg,
+        whiteSpace: "nowrap",
+        letterSpacing: "0.3px",
+        border: `1px solid ${isAdmin ? "#ddd6fe" : "#bfdbfe"}`,
+        verticalAlign: "middle",
+        marginLeft: 5,
+      }}
+    >
+      {isAdmin ? "Super Admin" : "User"}
+    </span>
+  );
+}
+
+// ── Badge konteks maintenance ──
+function MaintenanceContextBadge({ trx }) {
+  if (trx.type !== "MAINTENANCE" || !trx.maintenance_type) return null;
+  const conf = maintenanceTypeConf?.[trx.maintenance_type];
+  if (!conf) return null;
+  return (
+    <span
+      style={{
+        fontSize: 10,
+        fontWeight: 700,
+        padding: "2px 8px",
+        borderRadius: 6,
+        color: conf.color,
+        background: conf.bg,
+        whiteSpace: "nowrap",
+        letterSpacing: "0.2px",
+        marginLeft: 4,
+        border: `1px solid ${conf.color}22`,
+      }}
+    >
+      {conf.label}
+    </span>
+  );
 }
 
 function CondPill({ code }) {
@@ -360,7 +479,6 @@ export default function AssetDetailModal({
   const returnedLoans = assetLoans.filter((t) => t.status === "RETURNED");
   const maintLoans = assetLoans.filter((t) => t.type === "MAINTENANCE");
 
-  // Foto: pakai fungsi yang sama dengan Inventaris.jsx → dijamin foto card = foto modal
   const photo = getPhoto(asset);
 
   return (
@@ -383,7 +501,6 @@ export default function AssetDetailModal({
           </button>
           <div className="adm-hero-inner">
             <div className="adm-hero-photo">
-              {/* Foto: Unsplash gagal → picsum fallback, tidak pernah icon */}
               <img
                 src={!imgErr ? photo : getPhotoFallback(asset)}
                 alt={asset.name}
@@ -731,7 +848,7 @@ export default function AssetDetailModal({
                   },
                   {
                     val: maintLoans.length,
-                    label: "Maintenance",
+                    label: "Dalam Perbaikan",
                     color: "#dc2626",
                   },
                 ].map((s) => (
@@ -760,6 +877,12 @@ export default function AssetDetailModal({
                     const isMaint = t.type === "MAINTENANCE";
                     const trxConf =
                       trxTypeConf?.[t.type] || trxTypeConf?.BORROW;
+                    const role = getUserRole(t.user_id);
+                    const isAdmin = role === "superadmin";
+
+                    // Logika menyembunyikan badge redundan saat maintenance sedang aktif
+                    const hideRedundantLeft = isMaint && t.status === "ACTIVE";
+
                     const dotColor =
                       t.status === "RETURNED"
                         ? "#22c55e"
@@ -784,18 +907,30 @@ export default function AssetDetailModal({
                           : isMaint
                             ? "#dc2626"
                             : "#d97706";
+
                     const badgeLabel =
                       t.status === "RETURNED"
                         ? "Selesai"
                         : overdue
                           ? "Terlambat"
                           : isMaint
-                            ? "Maintenance"
+                            ? "Dalam Perbaikan"
                             : "Aktif";
+
                     return (
                       <div
                         key={t.id}
-                        className={`adm-history-item ${overdue ? "overdue" : ""} ${t.status === "RETURNED" ? "returned" : ""}`}
+                        className={`adm-history-item${overdue ? " overdue" : ""}${t.status === "RETURNED" ? " returned" : ""}`}
+                        style={{
+                          // Super Admin item: subtle left accent berbeda warna
+                          borderLeft: isAdmin
+                            ? `3px solid #7c3aed`
+                            : t.status === "RETURNED"
+                              ? "3px solid #22c55e"
+                              : overdue
+                                ? "3px solid #ef4444"
+                                : undefined,
+                        }}
                       >
                         <div
                           className="adm-history-dot"
@@ -803,39 +938,55 @@ export default function AssetDetailModal({
                         />
                         <div className="adm-history-content">
                           <div className="adm-history-top">
+                            {/* ── Kiri: Avatar + Nama + Badges ── */}
                             <div className="adm-history-user">
-                              <div
-                                className="adm-history-avatar"
-                                style={{
-                                  background: isMaint
-                                    ? "linear-gradient(135deg,#dc2626,#ef4444)"
-                                    : "linear-gradient(135deg,#2563eb,#7c3aed)",
-                                }}
-                              >
-                                {isMaint ? (
-                                  <Ico n="tool" s={14} c="#fff" />
-                                ) : (
-                                  (t.user_name || "?")[0].toUpperCase()
-                                )}
-                              </div>
+                              {/* Avatar: inisial, ungu+bintang untuk admin, biru untuk user */}
+                              <HistoryAvatar
+                                userId={t.user_id}
+                                userName={t.user_name}
+                              />
+
                               <div>
-                                <p className="adm-history-name">
-                                  {t.user_name || "—"}
-                                  <span
-                                    style={{
-                                      marginLeft: 8,
-                                      fontSize: 10,
-                                      fontWeight: 800,
-                                      padding: "2px 7px",
-                                      borderRadius: 5,
-                                      background: trxConf?.bg || "#dbeafe",
-                                      color: trxConf?.color || "#2563eb",
-                                      verticalAlign: "middle",
-                                    }}
-                                  >
-                                    {trxConf?.label || t.type}
-                                  </span>
+                                {/* Nama + Role Badge */}
+                                <p
+                                  className="adm-history-name"
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    flexWrap: "wrap",
+                                    gap: 0,
+                                  }}
+                                >
+                                  <span>{t.user_name || "—"}</span>
+
+                                  {/* ★ Badge role: User (biru) / Super Admin (ungu) */}
+                                  <RoleBadge userId={t.user_id} />
+
+                                  {/* Badge tipe transaksi (disembunyikan jika redundant dengan badge kanan) */}
+                                  {!hideRedundantLeft && (
+                                    <span
+                                      style={{
+                                        marginLeft: 5,
+                                        fontSize: 10,
+                                        fontWeight: 800,
+                                        padding: "2px 7px",
+                                        borderRadius: 5,
+                                        background: trxConf?.bg || "#dbeafe",
+                                        color: trxConf?.color || "#2563eb",
+                                        verticalAlign: "middle",
+                                        border: `1px solid ${trxConf?.color || "#2563eb"}22`,
+                                      }}
+                                    >
+                                      {trxConf?.label || t.type}
+                                    </span>
+                                  )}
+
+                                  {/* Badge konteks maintenance (Rutin / Teknis / Rusak dipinjam) */}
+                                  <MaintenanceContextBadge trx={t} />
+
+                                  {/* Badge status aset saat transaksi (disembunyikan jika redundant) */}
                                   {t.asset_status_snapshot &&
+                                    !hideRedundantLeft &&
                                     (() => {
                                       const snap =
                                         statusConf[t.asset_status_snapshot];
@@ -863,6 +1014,8 @@ export default function AssetDetailModal({
                                 </p>
                               </div>
                             </div>
+
+                            {/* ── Kanan: Status badge ── */}
                             <span
                               className="adm-history-badge"
                               style={{ background: badgeBg, color: badgeColor }}
@@ -874,6 +1027,8 @@ export default function AssetDetailModal({
                               {badgeLabel}
                             </span>
                           </div>
+
+                          {/* Tanggal */}
                           <div className="adm-history-dates">
                             <span>
                               <Ico n="clock" s={11} c="var(--gray-400)" />{" "}
@@ -897,6 +1052,8 @@ export default function AssetDetailModal({
                               </span>
                             )}
                           </div>
+
+                          {/* Kondisi */}
                           <div
                             style={{
                               marginTop: 10,
@@ -922,6 +1079,8 @@ export default function AssetDetailModal({
                               after={t.condition_after}
                             />
                           </div>
+
+                          {/* Return notes */}
                           {t.return_notes && (
                             <div
                               style={{
@@ -938,6 +1097,8 @@ export default function AssetDetailModal({
                               💬 {t.return_notes}
                             </div>
                           )}
+
+                          {/* Kode t.admin_reason dan t.admin_note sudah DIHAPUS sesuai permintaan */}
                         </div>
                       </div>
                     );
