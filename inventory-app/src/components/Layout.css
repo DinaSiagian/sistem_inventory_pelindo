@@ -25,9 +25,9 @@ body {
 
 .layout-wrapper {
   display: flex;
-  height: 100vh; /* Mengunci tinggi wrapper setinggi layar */
+  height: 100vh;
   width: 100vw;
-  overflow: hidden; /* Mencegah seluruh layar goyang saat scroll */
+  overflow: hidden;
 }
 
 /* =========================================
@@ -44,7 +44,7 @@ body {
   z-index: 50;
   box-shadow: 5px 0 30px rgba(0,0,0,0.25);
   overflow: hidden;
-  flex-shrink: 0; /* Sidebar tidak boleh menyusut */
+  flex-shrink: 0;
 }
 
 .sidebar::before {
@@ -177,8 +177,8 @@ body {
   display: flex;
   flex-direction: column;
   background-color: var(--bg-body);
-  height: 100vh; /* Memastikan content setinggi layar */
-  overflow: hidden; /* Mengunci agar scroll hanya terjadi di page-content */
+  height: 100vh;
+  overflow: hidden;
 }
 
 .topbar {
@@ -191,36 +191,40 @@ body {
   padding: 0 32px;
   border-bottom: 1px solid white;
   box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-  flex-shrink: 0; /* Topbar tidak boleh ikut tergulung */
+  flex-shrink: 0;
 }
 
-/* AREA INI YANG BISA DI-SCROLL */
 .page-content {
   flex: 1;
   padding: 32px;
-  
-  /* --- KUNCI UTAMA --- */
   overflow-y: auto; 
   scroll-behavior: smooth;
 }
 
-/* Mempercantik Scrollbar Page Content */
-.page-content::-webkit-scrollbar {
-  width: 8px;
-}
-.page-content::-webkit-scrollbar-track {
-  background: transparent;
-}
+.page-content::-webkit-scrollbar { width: 8px; }
+.page-content::-webkit-scrollbar-track { background: transparent; }
 .page-content::-webkit-scrollbar-thumb {
   background: rgba(0, 68, 148, 0.1);
   border-radius: 10px;
 }
-.page-content::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 68, 148, 0.2);
+.page-content::-webkit-scrollbar-thumb:hover { background: rgba(0, 68, 148, 0.2); }
+
+/* =========================================
+   5. TOPBAR ELEMENTS
+   ========================================= */
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
 }
 
-/* Topbar Elements */
-.topbar-left { display: flex; align-items: center; gap: 20px; }
+/* ✅ FIX: topbar-right sekarang punya flex + align-items center */
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .breadcrumb {
   font-size: 0.9rem;
   color: var(--text-grey);
@@ -252,6 +256,24 @@ body {
   box-shadow: 0 4px 15px rgba(0,0,0,0.05);
 }
 
+.user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.user-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  line-height: 1.2;
+}
+
+.user-role {
+  font-size: 0.72rem;
+  color: var(--text-grey);
+}
+
 .user-avatar {
   width: 40px; height: 40px;
   background: linear-gradient(135deg, #00b5e2 0%, #003675 100%);
@@ -261,7 +283,9 @@ body {
   font-weight: 700; border: 3px solid #f0f9ff;
 }
 
-/* Collapsed Mode */
+/* =========================================
+   6. COLLAPSED MODE
+   ========================================= */
 .sidebar.collapsed { width: 90px; }
 .sidebar.collapsed .sidebar-menu { margin: 10px 5px; padding: 20px 0; border-radius: 10px; }
 .sidebar.collapsed .sidebar-header { justify-content: center; padding: 0; }

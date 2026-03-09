@@ -65,6 +65,8 @@ const Ico = ({ n, s = 18, c }) => {
     network: (<><circle cx="12" cy="5" r="3" /><circle cx="19" cy="19" r="3" /><circle cx="5" cy="19" r="3" /><line x1="12" y1="8" x2="5.5" y2="16" /><line x1="12" y1="8" x2="18.5" y2="16" /></>),
     battery: (<><rect x="1" y="6" width="18" height="12" rx="2" /><line x1="23" y1="11" x2="23" y2="13" /></>),
     cube: (<><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" /></>),
+    // ✅ tambah "package" alias ke cube
+    package: (<><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" /><polyline points="3.27 6.96 12 12.01 20.73 6.96" /><line x1="12" y1="22.08" x2="12" y2="12" /></>),
     plus: (<><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></>),
     undo: (<><polyline points="1 4 1 10 7 10" /><path d="M3.51 15a9 9 0 1 0 .49-3.99" /></>),
     history: (<><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></>),
@@ -73,7 +75,7 @@ const Ico = ({ n, s = 18, c }) => {
     calendar: (<><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></>),
     tag: (<><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" /><line x1="7" y1="7" x2="7.01" y2="7" /></>),
     clock: (<><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></>),
-    arrow_right: (<><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></>) 
+    arrow_right: (<><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></>),
   };
   const catIcons = { LAPTOP:"laptop", SERVER:"server", DESKTOP:"monitor", NETWORK:"network", UPS:"battery", OTHER:"cube" };
   return (
@@ -169,16 +171,31 @@ export default function Peminjaman() {
       {/* ── Stats cards ── */}
       <div className="pem-stats">
         <div className="pem-stat-card">
-          <div className="pem-stat-icon pem-stat-icon--blue"><Ico n="package" s={22} c="#1d4ed8" /></div>
-          <div><p className="pem-stat-val">{myLoans.length + myHistory.length}</p><p className="pem-stat-label">Total Transaksi</p></div>
+          <div className="pem-stat-icon pem-stat-icon--blue">
+            <Ico n="package" s={22} c="#1d4ed8" />
+          </div>
+          <div>
+            <p className="pem-stat-val">{myLoans.length + myHistory.length}</p>
+            <p className="pem-stat-label">Total Transaksi</p>
+          </div>
         </div>
         <div className="pem-stat-card">
-          <div className="pem-stat-icon pem-stat-icon--amber"><Ico n="clock" s={22} c="#d97706" /></div>
-          <div><p className="pem-stat-val">{myLoans.length}</p><p className="pem-stat-label">Sedang Dipinjam</p></div>
+          <div className="pem-stat-icon pem-stat-icon--amber">
+            <Ico n="clock" s={22} c="#d97706" />
+          </div>
+          <div>
+            <p className="pem-stat-val">{myLoans.length}</p>
+            <p className="pem-stat-label">Sedang Dipinjam</p>
+          </div>
         </div>
         <div className="pem-stat-card">
-          <div className="pem-stat-icon pem-stat-icon--green"><Ico n="check_circle" s={22} c="#16a34a" /></div>
-          <div><p className="pem-stat-val">{myHistory.length}</p><p className="pem-stat-label">Dikembalikan</p></div>
+          <div className="pem-stat-icon pem-stat-icon--green">
+            <Ico n="check_circle" s={22} c="#16a34a" />
+          </div>
+          <div>
+            <p className="pem-stat-val">{myHistory.length}</p>
+            <p className="pem-stat-label">Dikembalikan</p>
+          </div>
         </div>
       </div>
 
@@ -226,7 +243,6 @@ export default function Peminjaman() {
                     style={isWarning && !overdue ? { background: "linear-gradient(to bottom,#f59e0b,#fbbf24)" } : {}}
                   />
 
-                  {/* PENYELARASAN SEMPURNA DI SINI (alignItems: "center") */}
                   <div className="pem-item-inner" style={{ alignItems: "center", padding: "20px 24px", gap: "16px" }}>
                     
                     {/* 1. KIRI: Informasi Aset */}
@@ -245,32 +261,23 @@ export default function Peminjaman() {
                       </div>
                     </div>
 
-                    {/* 2. TENGAH: Tanggal Simetris (Rapi Banget) */}
+                    {/* 2. TENGAH: Tanggal Simetris */}
                     <div style={{ flex: 1.5, display: "flex", alignItems: "center", justifyContent: "center", gap: "24px", minWidth: "280px" }}>
-                      
-                      {/* Tanggal Dipinjam (Rata Kanan) */}
                       <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "2px" }}>
                         <span style={{ fontSize: "11px", fontWeight: 700, color: "#94a3b8", letterSpacing: "0.5px" }}>DIPINJAM</span>
                         <span style={{ fontSize: "13.5px", fontWeight: 600, color: "#334155" }}>{fmt(t.date)}</span>
                       </div>
-
-                      {/* Panah Tengah */}
                       <div style={{ color: "#cbd5e1", marginTop: "4px" }}>
-                         <Ico n="arrow_right" s={20} />
+                        <Ico n="arrow_right" s={20} />
                       </div>
-
-                      {/* Tanggal Jatuh Tempo (Rata Kiri) */}
                       <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "2px" }}>
                         <span style={{ fontSize: "11px", fontWeight: 700, color: overdue ? "#ef4444" : isWarning ? "#d97706" : "#94a3b8", letterSpacing: "0.5px" }}>JATUH TEMPO</span>
                         <span style={{ fontSize: "13.5px", fontWeight: 800, color: overdue ? "#dc2626" : isWarning ? "#b45309" : "#0f172a" }}>{fmt(t.return_date)}</span>
                       </div>
-
                     </div>
 
-                    {/* 3. KANAN: Aksi & Peringatan Rata Kanan */}
+                    {/* 3. KANAN: Aksi & Peringatan */}
                     <div style={{ flexShrink: 0, minWidth: "150px", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "10px" }}>
-                      
-                      {/* Lencana Status */}
                       <div style={{ 
                         display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "12px", fontWeight: 700, padding: "5px 12px", borderRadius: "99px",
                         background: overdue ? "#fef2f2" : isWarning ? "#fffbeb" : "#eff6ff",
@@ -280,12 +287,9 @@ export default function Peminjaman() {
                         <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: overdue ? "#ef4444" : isWarning ? "#f59e0b" : "#3b82f6" }} />
                         {overdue ? `Terlambat ${Math.abs(days)} Hari` : isWarning ? (days === 0 ? "Jatuh Tempo Hari Ini" : `H-${days} Jatuh Tempo`) : "Status Aktif"}
                       </div>
-
-                      {/* Tombol Aksi */}
                       <button className="pem-return-btn" onClick={() => setReturn(t)}>
                         <Ico n="undo" s={13} /> Kembalikan
                       </button>
-
                     </div>
 
                   </div>
@@ -309,8 +313,6 @@ export default function Peminjaman() {
               return (
                 <div key={t.id} className="pem-item pem-item--returned">
                   <div className="pem-item-stripe pem-item-stripe--returned" />
-                  
-                  {/* Penyelarasan Sempurna (alignItems: "center") */}
                   <div className="pem-item-inner" style={{ alignItems: "center", padding: "18px 24px", gap: "16px" }}>
                     
                     {/* KIRI */}
@@ -327,22 +329,22 @@ export default function Peminjaman() {
                       </div>
                     </div>
 
-                    {/* TENGAH Simetris */}
+                    {/* TENGAH */}
                     <div style={{ flex: 1.5, display: "flex", alignItems: "center", justifyContent: "center", gap: "24px", minWidth: "280px" }}>
-                        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "2px" }}>
-                          <span style={{ fontSize: "11px", fontWeight: 700, color: "#94a3b8", letterSpacing: "0.5px" }}>DIPINJAM</span>
-                          <span style={{ fontSize: "13.5px", fontWeight: 600, color: "#64748b" }}>{fmt(t.date)}</span>
-                        </div>
-                        <div style={{ color: "#e2e8f0", marginTop: "4px" }}>
-                           <Ico n="arrow_right" s={20} />
-                        </div>
-                        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "2px" }}>
-                          <span style={{ fontSize: "11px", fontWeight: 700, color: "#16a34a", letterSpacing: "0.5px" }}>DIKEMBALIKAN</span>
-                          <span style={{ fontSize: "13.5px", fontWeight: 800, color: "#16a34a" }}>{fmt(t.returned_date)}</span>
-                        </div>
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "2px" }}>
+                        <span style={{ fontSize: "11px", fontWeight: 700, color: "#94a3b8", letterSpacing: "0.5px" }}>DIPINJAM</span>
+                        <span style={{ fontSize: "13.5px", fontWeight: 600, color: "#64748b" }}>{fmt(t.date)}</span>
+                      </div>
+                      <div style={{ color: "#e2e8f0", marginTop: "4px" }}>
+                        <Ico n="arrow_right" s={20} />
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "2px" }}>
+                        <span style={{ fontSize: "11px", fontWeight: 700, color: "#16a34a", letterSpacing: "0.5px" }}>DIKEMBALIKAN</span>
+                        <span style={{ fontSize: "13.5px", fontWeight: 800, color: "#16a34a" }}>{fmt(t.returned_date)}</span>
+                      </div>
                     </div>
 
-                    {/* KANAN Rata Kanan */}
+                    {/* KANAN */}
                     <div style={{ flexShrink: 0, minWidth: "150px", display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
                       <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "12px", fontWeight: 700, padding: "5px 12px", borderRadius: "99px", background: "#dcfce7", color: "#16a34a" }}>
                         <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#22c55e" }} />
