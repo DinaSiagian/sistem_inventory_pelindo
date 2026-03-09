@@ -1,6 +1,11 @@
 // ============================================================
 // data.js — Mock data & shared helpers for User Interface
 // ============================================================
+const _d = (n) => {
+  const d = new Date();
+  d.setDate(d.getDate() + n);
+  return d.toISOString().split("T")[0];
+};
 
 export const currentUser = {
   id: "u001",
@@ -1133,13 +1138,30 @@ export const transactionsMock = [
   {
     id: "trx007",
     asset_id: "ast002",
-    user_id: "u001",
+    user_id: "u002",        // Budi Santoso (DUMMY_USERS id:2 → u002)
     user_name: "Budi Santoso",
     type: "BORROW",
-    date: "2025-02-10",
-    return_date: "2025-02-20",
+    date: _d(-10),          // dipinjam 10 hari lalu
+    return_date: _d(1),     // jatuh tempo BESOK → ⚠️ WARNING kuning (H-1)
     returned_date: null,
     purpose: "Presentasi klien di luar kantor",
+    status: "ACTIVE",
+    condition_before: "GOOD",
+    condition_after: null,
+    notes: "",
+    return_notes: null,
+    asset_status_snapshot: "BORROWED",
+  },
+  {
+    id: "trx007b",
+    asset_id: "ast007",
+    user_id: "u002",        // Budi Santoso (DUMMY_USERS id:2 → u002)
+    user_name: "Budi Santoso",
+    type: "BORROW",
+    date: _d(-15),          // dipinjam 15 hari lalu
+    return_date: _d(-3),    // jatuh tempo 3 hari lalu → 🚨 OVERDUE merah
+    returned_date: null,
+    purpose: "Backup laptop rusak",
     status: "ACTIVE",
     condition_before: "GOOD",
     condition_after: null,
