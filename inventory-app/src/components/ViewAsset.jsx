@@ -425,6 +425,67 @@ const SUBZONA_LIST = [
 ];
 const ITEMS_PER_PAGE = 8;
 
+const SPEC_UNIT_OPTIONS = [
+  { group: "Penyimpanan", units: ["B", "KB", "MB", "GB", "TB"] },
+  { group: "Memori", units: ["MB RAM", "GB RAM"] },
+  { group: "Frekuensi", units: ["MHz", "GHz"] },
+  { group: "Kecepatan", units: ["Mbps", "Gbps", "Kbps", "RPM"] },
+  { group: "Daya", units: ["W", "kW", "VA"] },
+  { group: "Dimensi", units: ["mm", "cm", "m", "inch"] },
+  { group: "Berat", units: ["g", "kg", "ton"] },
+  { group: "Tegangan", units: ["V", "mV", "kV"] },
+  { group: "Suhu", units: ["°C", "°F"] },
+  { group: "Waktu", units: ["detik", "menit", "jam", "hari", "tahun"] },
+  { group: "Lainnya", units: ["unit", "pcs", "%", "-"] },
+];
+
+const SPEC_TEMPLATES_BY_CATEGORY = {
+  "IT Equipment": [
+    {
+      spec_label: "Processor (CPU)",
+      default_unit: "GHz",
+      input_type: "number",
+    },
+    { spec_label: "RAM", default_unit: "GB RAM", input_type: "number" },
+    { spec_label: "Storage", default_unit: "GB", input_type: "number" },
+    { spec_label: "Operating System", default_unit: "-", input_type: "text" },
+    { spec_label: "Resolusi Layar", default_unit: "inch", input_type: "text" },
+  ],
+  Kendaraan: [
+    { spec_label: "Plat Nomor", default_unit: "-", input_type: "text" },
+    { spec_label: "Nomor Mesin", default_unit: "-", input_type: "text" },
+    {
+      spec_label: "Tahun Pembuatan",
+      default_unit: "tahun",
+      input_type: "number",
+    },
+    { spec_label: "Merk / Brand", default_unit: "-", input_type: "text" },
+    { spec_label: "Kapasitas Mesin", default_unit: "cc", input_type: "number" },
+  ],
+  "Alat Berat": [
+    { spec_label: "Plat / Lambung", default_unit: "-", input_type: "text" },
+    { spec_label: "Nomor Mesin", default_unit: "-", input_type: "text" },
+    {
+      spec_label: "Tahun Pembuatan",
+      default_unit: "tahun",
+      input_type: "number",
+    },
+    {
+      spec_label: "Kapasitas Angkat",
+      default_unit: "ton",
+      input_type: "number",
+    },
+    { spec_label: "Daya Mesin", default_unit: "kW", input_type: "number" },
+  ],
+  Furniture: [
+    { spec_label: "Bahan Material", default_unit: "-", input_type: "text" },
+    { spec_label: "Panjang", default_unit: "cm", input_type: "number" },
+    { spec_label: "Lebar", default_unit: "cm", input_type: "number" },
+    { spec_label: "Tinggi", default_unit: "cm", input_type: "number" },
+    { spec_label: "Warna Dominan", default_unit: "-", input_type: "text" },
+  ],
+};
+
 // ── CODE128 BARCODE ───────────────────────────────────────────────────────────
 const C128 = {
   S_B: 104,
@@ -889,6 +950,7 @@ const Icon = {
       viewBox="0 0 14 14"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      style={{ display: "block" }}
     >
       <line
         x1="1"
@@ -1149,6 +1211,7 @@ const Icon = {
       stroke="currentColor"
       strokeWidth="2"
       strokeLinecap="round"
+      style={{ display: "block" }}
     >
       <polyline points="3 6 5 6 21 6" />
       <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
@@ -1448,7 +1511,6 @@ function PhotoUpload({ value, onChange }) {
 
 // ── BARCODE LABEL MODAL ───────────────────────────────────────────
 function BarcodeLabelModal({ asset, onClose, fmt, fmtDate }) {
-  const project = getProjectById(asset.id_pekerjaan);
   const handlePrint = () => {
     const w = window.open("", "_blank", "width=620,height=520");
     w.document
@@ -1479,7 +1541,24 @@ const bars=c.map(x=>P[x]).join('')+'11';const cv=document.createElement('canvas'
           <h3>
             <Icon.BarcodeModal /> Label Barcode Aset
           </h3>
-          <button className="close-btn" onClick={onClose}>
+          <button
+            onClick={onClose}
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 8,
+              border: "1.5px solid #e2e8f0",
+              background: "#f8fafc",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#64748b",
+              flexShrink: 0,
+              lineHeight: 0,
+              fontSize: 0,
+            }}
+          >
             <Icon.Times />
           </button>
         </div>
@@ -1686,8 +1765,472 @@ function ProjectBadge({ id_pekerjaan }) {
       title={project.nm_pekerjaan}
     >
       <Icon.Briefcase />
-      {isOpex ? "OPEX" : `P-${id_pekerjaan}`}
+      {isOpex ? "OPEX" : "CAPEX"}
     </span>
+  );
+}
+
+// ── EDIT SPECS SECTION — extracted for clarity ────────────────────
+// ✅ FIX: semua handler menggunakan functional update (p => ...) + .map()
+// sehingga React selalu mendapat state terbaru dan input bisa di-edit bebas
+function EditSpecsSection({ editSpecsData, setEditSpecsData }) {
+  // ── Template Specs handlers ──
+  const updateTemplateValue = (i, val) => {
+    setEditSpecsData((p) => ({
+      ...p,
+      specs: p.specs.map((s, idx) => (idx === i ? { ...s, value: val } : s)),
+    }));
+  };
+  const updateTemplateUnit = (i, val) => {
+    setEditSpecsData((p) => ({
+      ...p,
+      specs: p.specs.map((s, idx) =>
+        idx === i
+          ? {
+              ...s,
+              default_unit: val === "__custom__" ? "" : val,
+              _unitMode: val === "__custom__" ? "custom" : "pick",
+            }
+          : s,
+      ),
+    }));
+  };
+  const updateTemplateUnitText = (i, val) => {
+    setEditSpecsData((p) => ({
+      ...p,
+      specs: p.specs.map((s, idx) =>
+        idx === i ? { ...s, default_unit: val } : s,
+      ),
+    }));
+  };
+  const resetTemplateUnitMode = (i) => {
+    setEditSpecsData((p) => ({
+      ...p,
+      specs: p.specs.map((s, idx) =>
+        idx === i ? { ...s, _unitMode: "pick" } : s,
+      ),
+    }));
+  };
+
+  // ── Custom Specs handlers ──
+  const updateCustomLabel = (i, val) => {
+    setEditSpecsData((p) => ({
+      ...p,
+      customSpecs: p.customSpecs.map((s, idx) =>
+        idx === i ? { ...s, spec_label: val } : s,
+      ),
+    }));
+  };
+  const updateCustomValue = (i, val) => {
+    setEditSpecsData((p) => ({
+      ...p,
+      customSpecs: p.customSpecs.map((s, idx) =>
+        idx === i ? { ...s, value: val } : s,
+      ),
+    }));
+  };
+  const updateCustomUnit = (i, val) => {
+    setEditSpecsData((p) => ({
+      ...p,
+      customSpecs: p.customSpecs.map((s, idx) =>
+        idx === i
+          ? {
+              ...s,
+              default_unit: val === "__custom__" ? "" : val,
+              _unitMode: val === "__custom__" ? "custom" : "pick",
+            }
+          : s,
+      ),
+    }));
+  };
+  const updateCustomUnitText = (i, val) => {
+    setEditSpecsData((p) => ({
+      ...p,
+      customSpecs: p.customSpecs.map((s, idx) =>
+        idx === i ? { ...s, default_unit: val } : s,
+      ),
+    }));
+  };
+  const resetCustomUnitMode = (i) => {
+    setEditSpecsData((p) => ({
+      ...p,
+      customSpecs: p.customSpecs.map((s, idx) =>
+        idx === i ? { ...s, _unitMode: "pick" } : s,
+      ),
+    }));
+  };
+  const removeCustomSpec = (i) => {
+    setEditSpecsData((p) => ({
+      ...p,
+      customSpecs: p.customSpecs.filter((_, idx) => idx !== i),
+    }));
+  };
+  const addCustomSpec = () => {
+    setEditSpecsData((p) => ({
+      ...p,
+      customSpecs: [
+        ...p.customSpecs,
+        { spec_label: "", value: "", default_unit: "", _unitMode: "pick" },
+      ],
+    }));
+  };
+
+  const inputStyle = {
+    padding: "7px 10px",
+    border: "1.5px solid #e2e8f0",
+    borderRadius: 8,
+    fontSize: 13,
+    outline: "none",
+    background: "#fff",
+    width: "100%",
+    fontFamily: "var(--font)",
+    color: "#0f172a",
+  };
+  const selectStyle = (filled) => ({
+    padding: "7px 8px",
+    border: "1.5px solid #e2e8f0",
+    borderRadius: 8,
+    fontSize: 12,
+    fontWeight: 700,
+    color: filled ? "#0369a1" : "#94a3b8",
+    background: filled ? "#f0f9ff" : "#fff",
+    outline: "none",
+    width: "100%",
+    fontFamily: "var(--font)",
+  });
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      {/* Edit template specs */}
+      {editSpecsData.specs.length > 0 && (
+        <div>
+          <p
+            style={{
+              fontSize: 11,
+              fontWeight: 800,
+              color: "#64748b",
+              textTransform: "uppercase",
+              letterSpacing: "0.6px",
+              marginBottom: 10,
+            }}
+          >
+            Template Spesifikasi
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {editSpecsData.specs.map((sp, i) => (
+              <div
+                key={i}
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: 8,
+                  padding: "10px 12px",
+                  background: "#f8fafc",
+                  border: "1.5px solid #e2e8f0",
+                  borderRadius: 10,
+                }}
+              >
+                {/* Nilai */}
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 3 }}
+                >
+                  <span
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 700,
+                      color: "#94a3b8",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    {sp.spec_label}
+                  </span>
+                  <input
+                    type="text"
+                    value={sp.value}
+                    onChange={(e) => updateTemplateValue(i, e.target.value)}
+                    placeholder="Isi nilai..."
+                    style={inputStyle}
+                  />
+                </div>
+                {/* Satuan */}
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 3 }}
+                >
+                  <span
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 700,
+                      color: "#94a3b8",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    Satuan{" "}
+                    <span style={{ color: "#bfdbfe", fontWeight: 500 }}>
+                      (opsional)
+                    </span>
+                  </span>
+                  {sp._unitMode !== "custom" ? (
+                    <select
+                      value={sp.default_unit}
+                      onChange={(e) => updateTemplateUnit(i, e.target.value)}
+                      style={selectStyle(!!sp.default_unit)}
+                    >
+                      <option value="">— Tanpa Satuan —</option>
+                      {SPEC_UNIT_OPTIONS.map((g) => (
+                        <optgroup key={g.group} label={g.group}>
+                          {g.units.map((u) => (
+                            <option key={u} value={u}>
+                              {u}
+                            </option>
+                          ))}
+                        </optgroup>
+                      ))}
+                      <option value="__custom__">✏ Ketik satuan baru...</option>
+                    </select>
+                  ) : (
+                    <div style={{ display: "flex", gap: 4 }}>
+                      <input
+                        type="text"
+                        placeholder="Satuan baru..."
+                        value={sp.default_unit}
+                        onChange={(e) =>
+                          updateTemplateUnitText(i, e.target.value)
+                        }
+                        style={{
+                          ...inputStyle,
+                          flex: 1,
+                          borderColor: "var(--cyan)",
+                          background: "#f0f9ff",
+                          color: "#0369a1",
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => resetTemplateUnitMode(i)}
+                        style={{
+                          padding: "0 8px",
+                          border: "1.5px solid #e2e8f0",
+                          borderRadius: 8,
+                          background: "#f1f5f9",
+                          fontSize: 11,
+                          cursor: "pointer",
+                          color: "#64748b",
+                          fontWeight: 700,
+                        }}
+                      >
+                        List
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Edit custom specs */}
+      <div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 10,
+          }}
+        >
+          <p
+            style={{
+              fontSize: 11,
+              fontWeight: 800,
+              color: "#64748b",
+              textTransform: "uppercase",
+              letterSpacing: "0.6px",
+              margin: 0,
+            }}
+          >
+            Spesifikasi Tambahan
+          </p>
+          <button
+            type="button"
+            onClick={addCustomSpec}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 5,
+              padding: "5px 12px",
+              borderRadius: 8,
+              border: "1.5px solid #bfdbfe",
+              background: "#eff6ff",
+              color: "#2563eb",
+              fontSize: 11,
+              fontWeight: 700,
+              cursor: "pointer",
+            }}
+          >
+            <Icon.Plus /> Tambah
+          </button>
+        </div>
+        {editSpecsData.customSpecs.length === 0 && (
+          <p
+            style={{
+              fontSize: 12,
+              color: "#94a3b8",
+              textAlign: "center",
+              padding: "16px 0",
+            }}
+          >
+            Belum ada spesifikasi tambahan.
+          </p>
+        )}
+        {editSpecsData.customSpecs.map((sp, i) => (
+          <div
+            key={i}
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr 1fr auto",
+              gap: 8,
+              padding: "10px 12px",
+              background: "#f8fafc",
+              border: "1.5px solid #e2e8f0",
+              borderRadius: 10,
+              marginBottom: 8,
+              alignItems: "end",
+            }}
+          >
+            {/* Nama Atribut */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+              <span
+                style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: "#94a3b8",
+                  textTransform: "uppercase",
+                }}
+              >
+                Nama Atribut
+              </span>
+              <input
+                type="text"
+                placeholder="Contoh: Warna, Berat..."
+                value={sp.spec_label}
+                onChange={(e) => updateCustomLabel(i, e.target.value)}
+                style={inputStyle}
+              />
+            </div>
+            {/* Nilai */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+              <span
+                style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: "#94a3b8",
+                  textTransform: "uppercase",
+                }}
+              >
+                Nilai
+              </span>
+              <input
+                type="text"
+                placeholder="Isi nilai..."
+                value={sp.value}
+                onChange={(e) => updateCustomValue(i, e.target.value)}
+                style={inputStyle}
+              />
+            </div>
+            {/* Satuan */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+              <span
+                style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: "#94a3b8",
+                  textTransform: "uppercase",
+                }}
+              >
+                Satuan{" "}
+                <span style={{ color: "#bfdbfe", fontWeight: 500 }}>
+                  (opsional)
+                </span>
+              </span>
+              {sp._unitMode !== "custom" ? (
+                <select
+                  value={sp.default_unit}
+                  onChange={(e) => updateCustomUnit(i, e.target.value)}
+                  style={selectStyle(!!sp.default_unit)}
+                >
+                  <option value="">— Tanpa Satuan —</option>
+                  {SPEC_UNIT_OPTIONS.map((g) => (
+                    <optgroup key={g.group} label={g.group}>
+                      {g.units.map((u) => (
+                        <option key={u} value={u}>
+                          {u}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                  <option value="__custom__">✏ Ketik satuan baru...</option>
+                </select>
+              ) : (
+                <div style={{ display: "flex", gap: 4 }}>
+                  <input
+                    type="text"
+                    placeholder="Satuan baru..."
+                    value={sp.default_unit}
+                    onChange={(e) => updateCustomUnitText(i, e.target.value)}
+                    style={{
+                      ...inputStyle,
+                      flex: 1,
+                      borderColor: "var(--cyan)",
+                      background: "#f0f9ff",
+                      color: "#0369a1",
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => resetCustomUnitMode(i)}
+                    style={{
+                      padding: "0 8px",
+                      border: "1.5px solid #e2e8f0",
+                      borderRadius: 8,
+                      background: "#f1f5f9",
+                      fontSize: 11,
+                      cursor: "pointer",
+                      color: "#64748b",
+                      fontWeight: 700,
+                    }}
+                  >
+                    List
+                  </button>
+                </div>
+              )}
+            </div>
+            {/* Hapus */}
+            <button
+              type="button"
+              onClick={() => removeCustomSpec(i)}
+              style={{
+                width: 36,
+                height: 36,
+                border: "1.5px solid #fecaca",
+                borderRadius: 8,
+                background: "#fef2f2",
+                color: "#dc2626",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                lineHeight: 0,
+                fontSize: 0,
+                flexShrink: 0,
+              }}
+            >
+              <Icon.SmallTrash />
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -1696,7 +2239,7 @@ const ViewAsset = () => {
   const [assets, setAssets] = useState([
     {
       id: "SPMT-BLW-LPG-DMG-01",
-      name: "CCTV Hikvision BL 01",
+      name: "CCTV Hikvision DS-2CD2143G2-I",
       category: "IT Equipment",
       status: "Tersedia",
       entitas: "Pelindo Multi Terminal",
@@ -1707,6 +2250,13 @@ const ViewAsset = () => {
       id_pekerjaan: 1,
       procurementDate: "2026-01-28",
       photo: null,
+      specs: [
+        { spec_label: "Resolusi", value: "4", default_unit: "MP" },
+        { spec_label: "Lensa", value: "2.8", default_unit: "mm" },
+        { spec_label: "Night Vision", value: "30", default_unit: "m" },
+        { spec_label: "IP Rating", value: "IP67", default_unit: "" },
+      ],
+      customSpecs: [],
     },
     {
       id: "SPMT-DMI-GDG-DMG-01",
@@ -1721,6 +2271,19 @@ const ViewAsset = () => {
       id_pekerjaan: 3,
       procurementDate: "2025-06-15",
       photo: null,
+      specs: [
+        { spec_label: "Nomor Mesin", value: "C9.3B-2024", default_unit: "" },
+        { spec_label: "Kapasitas Angkat", value: "36", default_unit: "ton" },
+        { spec_label: "Daya Mesin", value: "270", default_unit: "kW" },
+        { spec_label: "Tahun Pembuatan", value: "2025", default_unit: "tahun" },
+      ],
+      customSpecs: [
+        {
+          spec_label: "Jam Kerja Saat Ini",
+          value: "1240",
+          default_unit: "jam",
+        },
+      ],
     },
     {
       id: "SPMT-LHK-DTC-PKR-01",
@@ -1735,6 +2298,24 @@ const ViewAsset = () => {
       id_pekerjaan: 5,
       procurementDate: "2025-03-22",
       photo: null,
+      specs: [
+        {
+          spec_label: "Processor (CPU)",
+          value: "2x Intel Xeon Gold 6230R",
+          default_unit: "",
+        },
+        { spec_label: "RAM", value: "128", default_unit: "GB RAM" },
+        { spec_label: "Storage", value: "4", default_unit: "TB" },
+        {
+          spec_label: "Operating System",
+          value: "Windows Server 2022",
+          default_unit: "",
+        },
+      ],
+      customSpecs: [
+        { spec_label: "Slot GPU", value: "2x PCIe 3.0 x16", default_unit: "" },
+        { spec_label: "PSU", value: "750", default_unit: "W" },
+      ],
     },
     {
       id: "SPMT-BLW-LPG-PKR-01",
@@ -1749,6 +2330,15 @@ const ViewAsset = () => {
       id_pekerjaan: "OPEX-5",
       procurementDate: "2024-08-01",
       photo: null,
+      specs: [
+        { spec_label: "Plat Nomor", value: "BK 1234 ZZ", default_unit: "" },
+        { spec_label: "Nomor Mesin", value: "1GD-0045221", default_unit: "" },
+        { spec_label: "Tahun Pembuatan", value: "2024", default_unit: "tahun" },
+        { spec_label: "Kapasitas Mesin", value: "2755", default_unit: "cc" },
+      ],
+      customSpecs: [
+        { spec_label: "Warna", value: "Silver Metallic", default_unit: "" },
+      ],
     },
     {
       id: "PTP-TJP-GDG-DMG-01",
@@ -1763,6 +2353,22 @@ const ViewAsset = () => {
       id_pekerjaan: "OPEX-3",
       procurementDate: "2026-02-14",
       photo: null,
+      specs: [
+        {
+          spec_label: "Bahan Material",
+          value: "MDF + Veneer Kayu Jati",
+          default_unit: "",
+        },
+        { spec_label: "Panjang", value: "180", default_unit: "cm" },
+        { spec_label: "Lebar", value: "80", default_unit: "cm" },
+        { spec_label: "Tinggi", value: "75", default_unit: "cm" },
+        {
+          spec_label: "Warna Dominan",
+          value: "Cokelat Walnut",
+          default_unit: "",
+        },
+      ],
+      customSpecs: [],
     },
     {
       id: "SPMT-MLH-DTC-PKR-01",
@@ -1777,6 +2383,24 @@ const ViewAsset = () => {
       id_pekerjaan: 4,
       procurementDate: "2025-09-05",
       photo: null,
+      specs: [
+        { spec_label: "Processor (CPU)", value: "1.0", default_unit: "GHz" },
+        { spec_label: "RAM", value: "256", default_unit: "MB RAM" },
+        { spec_label: "Storage", value: "128", default_unit: "MB" },
+        {
+          spec_label: "Operating System",
+          value: "Cisco IOS 15.2",
+          default_unit: "",
+        },
+      ],
+      customSpecs: [
+        {
+          spec_label: "Jumlah Port",
+          value: "48x GE + 4x SFP+",
+          default_unit: "",
+        },
+        { spec_label: "PoE Budget", value: "740", default_unit: "W" },
+      ],
     },
     {
       id: "SPMT-DMI-LPG-JLN-01",
@@ -1791,6 +2415,15 @@ const ViewAsset = () => {
       id_pekerjaan: "OPEX-5",
       procurementDate: "2024-11-20",
       photo: null,
+      specs: [
+        { spec_label: "Plat Nomor", value: "BM 8822 AB", default_unit: "" },
+        { spec_label: "Nomor Mesin", value: "4M50-0038872", default_unit: "" },
+        { spec_label: "Tahun Pembuatan", value: "2024", default_unit: "tahun" },
+        { spec_label: "Kapasitas Mesin", value: "4899", default_unit: "cc" },
+      ],
+      customSpecs: [
+        { spec_label: "Kapasitas Muatan", value: "8", default_unit: "ton" },
+      ],
     },
     {
       id: "SPMT-BLW-LPG-DMG-02",
@@ -1805,6 +2438,20 @@ const ViewAsset = () => {
       id_pekerjaan: 6,
       procurementDate: "2023-04-10",
       photo: null,
+      specs: [
+        {
+          spec_label: "Nomor Mesin",
+          value: "ZPMC-RTG-2023-007",
+          default_unit: "",
+        },
+        { spec_label: "Kapasitas Angkat", value: "41", default_unit: "ton" },
+        { spec_label: "Daya Mesin", value: "550", default_unit: "kW" },
+        { spec_label: "Tahun Pembuatan", value: "2023", default_unit: "tahun" },
+      ],
+      customSpecs: [
+        { spec_label: "Span", value: "23.47", default_unit: "m" },
+        { spec_label: "Tinggi Angkat", value: "18.2", default_unit: "m" },
+      ],
     },
     {
       id: "PTP-JMB-GDG-DMG-01",
@@ -1819,10 +2466,24 @@ const ViewAsset = () => {
       id_pekerjaan: "OPEX-3",
       procurementDate: "2025-07-30",
       photo: null,
+      specs: [
+        {
+          spec_label: "Bahan Material",
+          value: "Mesh Breathable + Busa HR40",
+          default_unit: "",
+        },
+        { spec_label: "Panjang", value: "65", default_unit: "cm" },
+        { spec_label: "Lebar", value: "65", default_unit: "cm" },
+        { spec_label: "Tinggi", value: "120", default_unit: "cm" },
+        { spec_label: "Warna Dominan", value: "Hitam", default_unit: "" },
+      ],
+      customSpecs: [
+        { spec_label: "Max Load", value: "120", default_unit: "kg" },
+      ],
     },
     {
       id: "IKT-JKT-GDG-PKR-01",
-      name: "CCTV Dahua JKT 01",
+      name: "CCTV Dahua IPC-HDW2831T-AS",
       category: "IT Equipment",
       status: "Tersedia",
       entitas: "Indonesia Kendaraan Terminal",
@@ -1833,6 +2494,13 @@ const ViewAsset = () => {
       id_pekerjaan: 1,
       procurementDate: "2026-01-28",
       photo: null,
+      specs: [
+        { spec_label: "Resolusi", value: "8", default_unit: "MP" },
+        { spec_label: "Lensa", value: "2.8", default_unit: "mm" },
+        { spec_label: "Night Vision", value: "30", default_unit: "m" },
+        { spec_label: "IP Rating", value: "IP67", default_unit: "" },
+      ],
+      customSpecs: [],
     },
   ]);
 
@@ -1849,12 +2517,16 @@ const ViewAsset = () => {
   const [detailTab, setDetailTab] = useState("info");
   const [editPhoto, setEditPhoto] = useState(null);
   const [editData, setEditData] = useState({});
+  const [editSpecsMode, setEditSpecsMode] = useState(false);
+  const [editSpecsData, setEditSpecsData] = useState({
+    specs: [],
+    customSpecs: [],
+  });
 
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
   const [filterBranch, setFilterBranch] = useState("");
-  // ── FILTER CASCADE: Anggaran → Pekerjaan ──
   const [filterAnggaran, setFilterAnggaran] = useState("");
   const [filterProject, setFilterProject] = useState("");
 
@@ -1908,7 +2580,6 @@ const ViewAsset = () => {
     [assets],
   );
 
-  // ── FILTERED LIST — now uses filterAnggaran + filterProject cascade ──
   const filtered = useMemo(
     () =>
       assets.filter((a) => {
@@ -1922,9 +2593,7 @@ const ViewAsset = () => {
           (!filterStatus || a.status === filterStatus) &&
           (!filterCategory || a.category === filterCategory) &&
           (!filterBranch || a.branch === filterBranch) &&
-          // Filter by anggaran (match kd_anggaran of the asset's project)
           (!filterAnggaran || proj?.kd_anggaran === filterAnggaran) &&
-          // Filter by specific pekerjaan (only active when CAPEX anggaran selected)
           (!filterProject || String(a.id_pekerjaan) === filterProject)
         );
       }),
@@ -1945,7 +2614,6 @@ const ViewAsset = () => {
     currentPage * ITEMS_PER_PAGE,
   );
 
-  // ── count both anggaran & project as separate active filters ──
   const activeFiltersCount = [
     filterStatus,
     filterCategory,
@@ -2068,27 +2736,8 @@ const ViewAsset = () => {
   const handleCategoryChange = (e) => {
     const category = e.target.value;
     setFormData((p) => ({ ...p, category }));
-    if (category === "IT Equipment")
-      setTemplateSpecs([
-        { key: "processor", label: "Processor (CPU)", value: "" },
-        { key: "ram", label: "RAM Capacity", value: "" },
-        { key: "storage", label: "Storage (SSD/HDD)", value: "" },
-        { key: "os", label: "Operating System", value: "" },
-      ]);
-    else if (["Kendaraan", "Alat Berat"].includes(category))
-      setTemplateSpecs([
-        { key: "plat", label: "Plat Nomor / Lambung", value: "" },
-        { key: "mesin", label: "Nomor Mesin", value: "" },
-        { key: "tahun", label: "Tahun Pembuatan", value: "" },
-        { key: "merk", label: "Merk / Brand", value: "" },
-      ]);
-    else if (category === "Furniture")
-      setTemplateSpecs([
-        { key: "material", label: "Bahan Material", value: "" },
-        { key: "dimensi", label: "Dimensi (PxLxT)", value: "" },
-        { key: "warna", label: "Warna Dominan", value: "" },
-      ]);
-    else setTemplateSpecs([]);
+    const tpl = SPEC_TEMPLATES_BY_CATEGORY[category] || [];
+    setTemplateSpecs(tpl.map((t) => ({ ...t, value: "", _unitMode: "pick" })));
   };
 
   const resetForm = () => {
@@ -2141,6 +2790,8 @@ const ViewAsset = () => {
           : null),
       procurementDate: formData.procurementDate,
       photo: formPhoto,
+      specs: templateSpecs.map(({ _unitMode, ...s }) => s),
+      customSpecs: customSpecs.map(({ _unitMode, ...s }) => s),
     };
     setAssets([newAsset, ...assets]);
     setShowModal(false);
@@ -2207,6 +2858,27 @@ const ViewAsset = () => {
     setShowEditModal(false);
   };
 
+  // ✅ FIX: handleSaveSpecs menggunakan editSpecsData langsung
+  const handleSaveSpecs = () => {
+    const cleanSpecs = editSpecsData.specs.map(({ _unitMode, ...s }) => s);
+    const cleanCustom = editSpecsData.customSpecs.map(
+      ({ _unitMode, ...s }) => s,
+    );
+    setAssets(
+      assets.map((x) =>
+        x.id === selectedAsset.id
+          ? { ...x, specs: cleanSpecs, customSpecs: cleanCustom }
+          : x,
+      ),
+    );
+    setSelectedAsset({
+      ...selectedAsset,
+      specs: cleanSpecs,
+      customSpecs: cleanCustom,
+    });
+    setEditSpecsMode(false);
+  };
+
   const handleExport = () => {
     const headers = [
       "ID Aset",
@@ -2264,10 +2936,6 @@ const ViewAsset = () => {
     !formData.zonaCode && "Zona",
     !formData.subzonaCode && "Sub Zona",
   ].filter(Boolean);
-  const getHistoryCount = (id) =>
-    MOCK_ALL_BORROWS.filter((b) => b.code === id).length;
-
-  // ── Helper: get the CAPEX entry for the currently selected filter anggaran ──
   const filterAnggaranCapexEntry = filterAnggaran
     ? CAPEX_ANGGARAN.find((a) => a.kd_anggaran === filterAnggaran)
     : null;
@@ -2394,11 +3062,10 @@ const ViewAsset = () => {
           </div>
         </div>
 
-        {/* ── FILTER PANEL — CASCADE Anggaran → Pekerjaan ── */}
+        {/* FILTER PANEL */}
         {showFilterPanel && (
           <div className="filter-panel">
             <div className="filter-panel-grid">
-              {/* Filter 1: Status */}
               <div className="filter-group">
                 <label>Status</label>
                 <select
@@ -2414,8 +3081,6 @@ const ViewAsset = () => {
                   <option>Maintenance</option>
                 </select>
               </div>
-
-              {/* Filter 2: Kategori */}
               <div className="filter-group">
                 <label>Kategori</label>
                 <select
@@ -2432,8 +3097,6 @@ const ViewAsset = () => {
                   <option>Furniture</option>
                 </select>
               </div>
-
-              {/* Filter 3: Branch */}
               <div className="filter-group">
                 <label>Branch</label>
                 <select
@@ -2454,11 +3117,8 @@ const ViewAsset = () => {
                     ))}
                 </select>
               </div>
-
-              {/* Filter 4 + 5: Cascade Nama Anggaran → Nama Pekerjaan dalam satu kolom */}
               <div className="filter-group">
                 <label>Nama Anggaran</label>
-                {/* Step 1 — Nama Anggaran (tanpa cascade-step-label agar sejajar dengan filter lain) */}
                 <select
                   value={filterAnggaran}
                   onChange={(e) => {
@@ -2484,8 +3144,6 @@ const ViewAsset = () => {
                     ))}
                   </optgroup>
                 </select>
-
-                {/* Step 2 — Nama Pekerjaan (hanya muncul jika anggaran CAPEX dipilih) */}
                 {filterAnggaranCapexEntry && (
                   <div style={{ marginTop: 8 }}>
                     <label
@@ -2501,8 +3159,7 @@ const ViewAsset = () => {
                         marginBottom: 6,
                       }}
                     >
-                      <span style={{ opacity: 0.7 }}>↳</span>
-                      Nama Pekerjaan
+                      <span style={{ opacity: 0.7 }}>↳</span> Nama Pekerjaan
                       <span
                         style={{
                           background: "#e0f2fe",
@@ -2552,7 +3209,6 @@ const ViewAsset = () => {
                 )}
               </div>
             </div>
-
             {activeFiltersCount > 0 && (
               <button className="filter-reset-btn" onClick={resetFilters}>
                 <Icon.Times /> Reset Filter
@@ -2934,202 +3590,1079 @@ const ViewAsset = () => {
         </div>
 
         {/* ── DETAIL MODAL ── */}
-        {showDetailModal && selectedAsset && (
-          <div
-            className="modal-overlay"
-            onClick={() => setShowDetailModal(false)}
-          >
-            <div
-              className="modal-content detail-modal"
-              onClick={(e) => e.stopPropagation()}
-            >
+        {showDetailModal &&
+          selectedAsset &&
+          (() => {
+            const a = selectedAsset;
+            const proj = getProjectById(a.id_pekerjaan);
+            const isOpexProj = proj?.jenis === "OPEX";
+            const catColors = {
+              "IT Equipment": {
+                bg: "#eff6ff",
+                color: "#2563eb",
+                dot: "#60a5fa",
+              },
+              "Alat Berat": { bg: "#fef3c7", color: "#d97706", dot: "#fbbf24" },
+              Kendaraan: { bg: "#f0fdf4", color: "#16a34a", dot: "#4ade80" },
+              Furniture: { bg: "#fdf4ff", color: "#9333ea", dot: "#c084fc" },
+            };
+            const cat = catColors[a.category] || {
+              bg: "#f1f5f9",
+              color: "#64748b",
+              dot: "#94a3b8",
+            };
+            const stColors = {
+              Tersedia: { bg: "#dcfce7", color: "#16a34a", dot: "#22c55e" },
+              Dipinjam: { bg: "#fef9c3", color: "#d97706", dot: "#fbbf24" },
+              Maintenance: { bg: "#fee2e2", color: "#dc2626", dot: "#ef4444" },
+            };
+            const st = stColors[a.status] || {
+              bg: "#f1f5f9",
+              color: "#64748b",
+              dot: "#94a3b8",
+            };
+            const catImg = {
+              "IT Equipment":
+                "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400&q=80",
+              "Alat Berat":
+                "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=400&q=80",
+              Kendaraan:
+                "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?w=400&q=80",
+              Furniture:
+                "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&q=80",
+            };
+            const imgSrc = a.photo?.dataUrl || catImg[a.category] || null;
+            const specPalettes = [
+              {
+                bg: "#eff6ff",
+                border: "#bfdbfe",
+                label: "#2563eb",
+                val: "#1e3a8a",
+              },
+              {
+                bg: "#f0fdf4",
+                border: "#bbf7d0",
+                label: "#16a34a",
+                val: "#14532d",
+              },
+              {
+                bg: "#fdf4ff",
+                border: "#e9d5ff",
+                label: "#9333ea",
+                val: "#581c87",
+              },
+              {
+                bg: "#fff7ed",
+                border: "#fed7aa",
+                label: "#ea580c",
+                val: "#7c2d12",
+              },
+              {
+                bg: "#fef2f2",
+                border: "#fecaca",
+                label: "#dc2626",
+                val: "#7f1d1d",
+              },
+              {
+                bg: "#f0f9ff",
+                border: "#bae6fd",
+                label: "#0284c7",
+                val: "#0c4a6e",
+              },
+              {
+                bg: "#fafaf9",
+                border: "#d6d3d1",
+                label: "#57534e",
+                val: "#1c1917",
+              },
+              {
+                bg: "#ecfdf5",
+                border: "#6ee7b7",
+                label: "#059669",
+                val: "#064e3b",
+              },
+            ];
+            const allSpecs = [...(a.specs || []), ...(a.customSpecs || [])];
+            const history = MOCK_ALL_BORROWS.filter(
+              (b) => b.code === a.id,
+            ).sort((x, y) => new Date(y.borrow_date) - new Date(x.borrow_date));
+            return (
               <div
-                className="modal-header"
-                style={{ position: "relative", zIndex: 10 }}
+                style={{
+                  position: "fixed",
+                  inset: 0,
+                  zIndex: 500,
+                  background: "rgba(10,15,35,0.72)",
+                  backdropFilter: "blur(8px)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: 16,
+                  animation: "fadeIn .25s ease",
+                }}
+                onClick={() => {
+                  setShowDetailModal(false);
+                  setEditSpecsMode(false);
+                }}
               >
-                <h3>
-                  <Icon.InfoCircle /> Detail Aset
-                </h3>
-                <button
-                  className="close-btn"
-                  onClick={() => setShowDetailModal(false)}
-                  style={{ flexShrink: 0 }}
+                <div
+                  style={{
+                    width: "100%",
+                    maxWidth: 740,
+                    maxHeight: "92vh",
+                    background: "#fff",
+                    borderRadius: 24,
+                    overflow: "hidden",
+                    display: "flex",
+                    flexDirection: "column",
+                    boxShadow:
+                      "0 0 0 1px rgba(0,0,0,0.06), 0 32px 80px rgba(0,0,0,0.28)",
+                  }}
+                  onClick={(e) => e.stopPropagation()}
                 >
-                  <Icon.Times />
-                </button>
-              </div>
-              <div className="detail-tab-bar">
-                <button
-                  className={`detail-tab-btn ${detailTab === "info" ? "detail-tab-btn--active" : ""}`}
-                  onClick={() => setDetailTab("info")}
-                >
-                  <Icon.InfoCircle /> Informasi Aset
-                </button>
-                <button
-                  className={`detail-tab-btn ${detailTab === "history" ? "detail-tab-btn--active detail-tab-btn--history" : ""}`}
-                  onClick={() => setDetailTab("history")}
-                >
-                  <Icon.History /> Riwayat Peminjaman
-                  {getHistoryCount(selectedAsset.id) > 0 && (
-                    <span className="detail-tab-badge">
-                      {getHistoryCount(selectedAsset.id)}
-                    </span>
-                  )}
-                </button>
-              </div>
-              {detailTab === "info" && (
-                <div className="detail-scroll">
-                  <div className="detail-img-hero">
-                    {(() => {
-                      const imgSrc = getAssetImage(selectedAsset);
-                      return imgSrc ? (
-                        <>
+                  {/* Hero */}
+                  <div
+                    style={{
+                      position: "relative",
+                      padding: "28px 28px 24px",
+                      flexShrink: 0,
+                      background: `linear-gradient(160deg, ${cat.bg} 0%, #f0f4ff 100%)`,
+                    }}
+                  >
+                    <button
+                      onClick={() => {
+                        setShowDetailModal(false);
+                        setEditSpecsMode(false);
+                      }}
+                      style={{
+                        position: "absolute",
+                        top: 16,
+                        right: 16,
+                        width: 34,
+                        height: 34,
+                        borderRadius: 10,
+                        border: "1.5px solid rgba(0,0,0,0.12)",
+                        background: "rgba(255,255,255,0.95)",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        zIndex: 10,
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                        lineHeight: 0,
+                        fontSize: 0,
+                        color: "#64748b",
+                      }}
+                    >
+                      <Icon.Times />
+                    </button>
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: 22,
+                        alignItems: "flex-start",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: 148,
+                          height: 116,
+                          flexShrink: 0,
+                          borderRadius: 16,
+                          overflow: "hidden",
+                          background: "rgba(255,255,255,0.7)",
+                          border: "2px solid rgba(255,255,255,0.9)",
+                          boxShadow: "0 4px 20px rgba(0,0,0,0.12)",
+                        }}
+                      >
+                        {imgSrc ? (
                           <img
                             src={imgSrc}
-                            alt={selectedAsset.name}
+                            alt={a.name}
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                            }}
                             onError={(e) => {
                               e.target.style.display = "none";
                             }}
                           />
-                          <div className="detail-img-overlay">
-                            <div className="detail-img-overlay-name">
-                              {selectedAsset.name}
-                            </div>
-                            <div className="detail-img-overlay-id">
-                              {selectedAsset.id}
-                            </div>
+                        ) : (
+                          <div
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              background: "rgba(255,255,255,0.5)",
+                            }}
+                          >
+                            <Icon.Photo />
                           </div>
-                        </>
-                      ) : (
-                        <div className="detail-img-placeholder">
-                          <Icon.Photo />
-                          <span>Belum ada foto untuk aset ini</span>
+                        )}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            flexWrap: "wrap",
+                            gap: 6,
+                            marginBottom: 10,
+                          }}
+                        >
+                          <span
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 5,
+                              fontSize: 11,
+                              fontWeight: 800,
+                              color: "#fff",
+                              padding: "4px 11px",
+                              borderRadius: 7,
+                              background: cat.color,
+                              letterSpacing: "0.2px",
+                            }}
+                          >
+                            <Icon.Tag /> {a.category}
+                          </span>
+                          <span
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 5,
+                              fontSize: 11.5,
+                              fontWeight: 700,
+                              padding: "4px 11px",
+                              borderRadius: 99,
+                              background: st.bg,
+                              color: st.color,
+                            }}
+                          >
+                            <span
+                              style={{
+                                width: 6,
+                                height: 6,
+                                borderRadius: "50%",
+                                background: st.dot,
+                                display: "inline-block",
+                              }}
+                            />
+                            {a.status}
+                          </span>
                         </div>
-                      );
-                    })()}
+                        <h2
+                          style={{
+                            fontSize: 21,
+                            fontWeight: 800,
+                            color: "#0f172a",
+                            lineHeight: 1.25,
+                            letterSpacing: "-0.3px",
+                            margin: 0,
+                          }}
+                        >
+                          {a.name}
+                        </h2>
+                        <p
+                          style={{
+                            fontSize: 13,
+                            color: "#64748b",
+                            marginTop: 3,
+                            fontWeight: 500,
+                          }}
+                        >
+                          {a.entitas}
+                        </p>
+                        <div
+                          style={{
+                            display: "flex",
+                            flexWrap: "wrap",
+                            gap: 12,
+                            marginTop: 10,
+                          }}
+                        >
+                          <span
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 5,
+                              fontSize: 12.5,
+                              color: "#64748b",
+                              fontWeight: 500,
+                            }}
+                          >
+                            <Icon.MapPin /> {a.branch} · {a.zona}/{a.subzona}
+                          </span>
+                          <span
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 5,
+                              fontSize: 12.5,
+                              color: "#64748b",
+                              fontWeight: 500,
+                            }}
+                          >
+                            <Icon.Calendar /> {fmtDate(a.procurementDate)}
+                          </span>
+                        </div>
+                        <div style={{ marginTop: 10 }}>
+                          <span
+                            style={{
+                              fontSize: 11,
+                              fontWeight: 700,
+                              padding: "3px 9px",
+                              borderRadius: 6,
+                              background: isOpexProj ? "#ede9fe" : "#dbeafe",
+                              color: isOpexProj ? "#7c3aed" : "#1d4ed8",
+                            }}
+                          >
+                            {isOpexProj ? "OPEX" : "CAPEX"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="detail-body">
-                    <div className="detail-hero">
-                      <div className="detail-hero-name">
-                        {selectedAsset.name}
-                      </div>
-                      <span
-                        className={`status-badge ${statusClass(selectedAsset.status)}`}
+                  {/* Tabs */}
+                  <div
+                    style={{
+                      display: "flex",
+                      background: "#fff",
+                      flexShrink: 0,
+                      padding: "0 24px",
+                      boxShadow: "0 1px 0 0 #e2e8f0",
+                      position: "relative",
+                      zIndex: 1,
+                    }}
+                  >
+                    {[
+                      {
+                        key: "info",
+                        label: "Informasi",
+                        icon: <Icon.InfoCircle />,
+                      },
+                      {
+                        key: "spec",
+                        label: `Spesifikasi (${allSpecs.length})`,
+                        icon: <Icon.Cogs />,
+                      },
+                      {
+                        key: "history",
+                        label: `Riwayat (${history.length})`,
+                        icon: <Icon.History />,
+                      },
+                    ].map((t) => (
+                      <button
+                        key={t.key}
+                        onClick={() => {
+                          setDetailTab(t.key);
+                          setEditSpecsMode(false);
+                        }}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 7,
+                          padding: "14px 18px",
+                          border: "none",
+                          background: "transparent",
+                          fontSize: 13.5,
+                          fontWeight: detailTab === t.key ? 700 : 600,
+                          color: detailTab === t.key ? "#1d4ed8" : "#94a3b8",
+                          cursor: "pointer",
+                          boxShadow:
+                            detailTab === t.key
+                              ? "inset 0 -2px 0 #2563eb"
+                              : "inset 0 -2px 0 transparent",
+                          transition: "all .18s ease",
+                          fontFamily: "inherit",
+                          letterSpacing: "0.1px",
+                        }}
                       >
-                        {selectedAsset.status}
-                      </span>
-                    </div>
-                    <code className="detail-id">{selectedAsset.id}</code>
-                    <div className="detail-barcode-strip">
-                      <BarcodeCanvas
-                        value={selectedAsset.id}
-                        width={400}
-                        height={40}
-                      />
-                    </div>
-                    <div className="detail-grid">
-                      <div className="detail-item">
-                        <span className="detail-lbl">Entitas</span>
-                        <span className="detail-val">
-                          {selectedAsset.entitas || "—"}
-                        </span>
-                      </div>
-                      <div className="detail-item">
-                        <span className="detail-lbl">Branch</span>
-                        <span className="detail-val">
-                          {selectedAsset.branch}
-                        </span>
-                      </div>
-                      <div className="detail-item">
-                        <span className="detail-lbl">Kode Zona</span>
-                        <span className="detail-val">{selectedAsset.zona}</span>
-                      </div>
-                      <div className="detail-item">
-                        <span className="detail-lbl">Kode Subzona</span>
-                        <span className="detail-val">
-                          {selectedAsset.subzona}
-                        </span>
-                      </div>
-                      <div className="detail-item">
-                        <span className="detail-lbl">Kategori</span>
-                        <span className="detail-val">
-                          {selectedAsset.category}
-                        </span>
-                      </div>
-                      <div className="detail-item">
-                        <span className="detail-lbl">Tgl Pengadaan</span>
-                        <span className="detail-val">
-                          {fmtDate(selectedAsset.procurementDate)}
-                        </span>
-                      </div>
-                      <div className="detail-item detail-item--full">
-                        <span className="detail-lbl">Pekerjaan / Anggaran</span>
-                        <span className="detail-val">
-                          {selectedAsset.id_pekerjaan ? (
-                            <>
-                              <ProjectBadge
-                                id_pekerjaan={selectedAsset.id_pekerjaan}
-                              />
-                              <span
+                        {t.icon} {t.label}
+                      </button>
+                    ))}
+                  </div>
+                  {/* Body */}
+                  <div
+                    style={{
+                      flex: 1,
+                      overflowY: "auto",
+                      padding: 24,
+                      background: "#f8fafc",
+                    }}
+                  >
+                    {/* INFO TAB */}
+                    {detailTab === "info" && (
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 14,
+                        }}
+                      >
+                        {[
+                          {
+                            title: "🪪 Identitas",
+                            rows: [
+                              {
+                                icon: (
+                                  <span
+                                    style={{
+                                      fontSize: 10,
+                                      fontWeight: 900,
+                                      color: "#2563eb",
+                                    }}
+                                  >
+                                    #
+                                  </span>
+                                ),
+                                bg: "#eff6ff",
+                                label: "ID Aset",
+                                val: (
+                                  <code
+                                    style={{
+                                      fontSize: 12,
+                                      fontWeight: 700,
+                                      color: "#334155",
+                                      fontFamily: "monospace",
+                                      background: "#f1f5f9",
+                                      padding: "3px 10px",
+                                      borderRadius: 6,
+                                    }}
+                                  >
+                                    {a.id}
+                                  </code>
+                                ),
+                              },
+                              {
+                                icon: <Icon.Tag />,
+                                bg: "#ecfdf5",
+                                label: "Nama Aset",
+                                val: (
+                                  <span
+                                    style={{
+                                      fontSize: 13.5,
+                                      fontWeight: 700,
+                                      color: "#0f172a",
+                                    }}
+                                  >
+                                    {a.name}
+                                  </span>
+                                ),
+                              },
+                              {
+                                icon: <Icon.Briefcase />,
+                                bg: "#f5f3ff",
+                                label: "Entitas",
+                                val: (
+                                  <span
+                                    style={{
+                                      fontSize: 13.5,
+                                      fontWeight: 700,
+                                      color: "#0f172a",
+                                    }}
+                                  >
+                                    {a.entitas}
+                                  </span>
+                                ),
+                                last: true,
+                              },
+                            ],
+                          },
+                          {
+                            title: "📍 Lokasi",
+                            rows: [
+                              {
+                                icon: <Icon.MapPin />,
+                                bg: "#fef2f2",
+                                label: "Branch",
+                                val: (
+                                  <span
+                                    style={{ fontSize: 13.5, fontWeight: 700 }}
+                                  >
+                                    {a.branch}
+                                  </span>
+                                ),
+                              },
+                              {
+                                icon: <Icon.Cogs />,
+                                bg: "#fff7ed",
+                                label: "Zona",
+                                val: (
+                                  <span
+                                    style={{ fontSize: 13.5, fontWeight: 700 }}
+                                  >
+                                    {a.zona}
+                                  </span>
+                                ),
+                              },
+                              {
+                                icon: <Icon.Cogs />,
+                                bg: "#fff7ed",
+                                label: "Sub Zona",
+                                val: (
+                                  <span
+                                    style={{ fontSize: 13.5, fontWeight: 700 }}
+                                  >
+                                    {a.subzona}
+                                  </span>
+                                ),
+                                last: true,
+                              },
+                            ],
+                          },
+                          {
+                            title: "📊 Anggaran & Nilai",
+                            rows: [
+                              {
+                                icon: <Icon.Briefcase />,
+                                bg: isOpexProj ? "#ede9fe" : "#dbeafe",
+                                label: "Tipe Anggaran",
+                                val: (
+                                  <span
+                                    style={{
+                                      fontSize: 12,
+                                      fontWeight: 700,
+                                      padding: "3px 9px",
+                                      borderRadius: 6,
+                                      background: isOpexProj
+                                        ? "#ede9fe"
+                                        : "#dbeafe",
+                                      color: isOpexProj ? "#7c3aed" : "#1d4ed8",
+                                    }}
+                                  >
+                                    {isOpexProj ? "OPEX" : "CAPEX"}
+                                  </span>
+                                ),
+                              },
+                              {
+                                icon: <Icon.Briefcase />,
+                                bg: "#f0f9ff",
+                                label: "Nama Pekerjaan",
+                                val: (
+                                  <span
+                                    style={{
+                                      fontSize: 12,
+                                      color: "#334155",
+                                      fontWeight: 500,
+                                    }}
+                                  >
+                                    {proj ? proj.nm_pekerjaan : "—"}
+                                  </span>
+                                ),
+                              },
+                              {
+                                icon: <Icon.Coins />,
+                                bg: "#f0fdf4",
+                                label: "Nilai Aset",
+                                val: (
+                                  <span
+                                    style={{
+                                      fontSize: 14,
+                                      fontWeight: 800,
+                                      color: "#16a34a",
+                                    }}
+                                  >
+                                    {fmt(a.value)}
+                                  </span>
+                                ),
+                              },
+                              {
+                                icon: <Icon.Calendar />,
+                                bg: "#f0f9ff",
+                                label: "Tgl Pengadaan",
+                                val: (
+                                  <span
+                                    style={{ fontSize: 13.5, fontWeight: 700 }}
+                                  >
+                                    {fmtDate(a.procurementDate)}
+                                  </span>
+                                ),
+                                last: true,
+                              },
+                            ],
+                          },
+                          {
+                            title: "🔖 Status",
+                            rows: [
+                              {
+                                icon: (
+                                  <span
+                                    style={{
+                                      width: 8,
+                                      height: 8,
+                                      borderRadius: "50%",
+                                      background: st.dot,
+                                      display: "inline-block",
+                                    }}
+                                  />
+                                ),
+                                bg: st.bg,
+                                label: "Status",
+                                val: (
+                                  <span
+                                    style={{
+                                      fontSize: 13,
+                                      fontWeight: 700,
+                                      padding: "4px 12px",
+                                      borderRadius: 99,
+                                      background: st.bg,
+                                      color: st.color,
+                                    }}
+                                  >
+                                    {a.status}
+                                  </span>
+                                ),
+                              },
+                              {
+                                icon: <Icon.Tag />,
+                                bg: cat.bg,
+                                label: "Kategori",
+                                val: (
+                                  <span
+                                    style={{
+                                      fontSize: 13,
+                                      fontWeight: 700,
+                                      padding: "4px 10px",
+                                      borderRadius: 8,
+                                      background: cat.bg,
+                                      color: cat.color,
+                                    }}
+                                  >
+                                    {a.category}
+                                  </span>
+                                ),
+                                last: true,
+                              },
+                            ],
+                          },
+                        ].map((sec) => (
+                          <div
+                            key={sec.title}
+                            style={{
+                              background: "#fff",
+                              border: "1.5px solid #f1f5f9",
+                              borderRadius: 16,
+                              overflow: "hidden",
+                            }}
+                          >
+                            <p
+                              style={{
+                                fontSize: 11.5,
+                                fontWeight: 800,
+                                color: "#64748b",
+                                textTransform: "uppercase",
+                                letterSpacing: "0.6px",
+                                padding: "12px 16px 10px",
+                                background: "#f8fafc",
+                                borderBottom: "1px solid #f1f5f9",
+                                margin: 0,
+                              }}
+                            >
+                              {sec.title}
+                            </p>
+                            {sec.rows.map((row, ri) => (
+                              <div
+                                key={ri}
                                 style={{
-                                  fontSize: 11,
-                                  color: "#475569",
-                                  marginTop: 4,
-                                  display: "block",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "space-between",
+                                  padding: "13px 16px",
+                                  borderBottom: row.last
+                                    ? "none"
+                                    : "1px solid #f8fafc",
+                                  gap: 12,
                                 }}
                               >
-                                {getProjectName(selectedAsset.id_pekerjaan)}
-                              </span>
-                            </>
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 10,
+                                    flexShrink: 0,
+                                    minWidth: 150,
+                                  }}
+                                >
+                                  <div
+                                    style={{
+                                      width: 30,
+                                      height: 30,
+                                      borderRadius: 8,
+                                      background: row.bg,
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      flexShrink: 0,
+                                    }}
+                                  >
+                                    {row.icon}
+                                  </div>
+                                  <span
+                                    style={{
+                                      fontSize: 12.5,
+                                      fontWeight: 600,
+                                      color: "#64748b",
+                                      whiteSpace: "nowrap",
+                                    }}
+                                  >
+                                    {row.label}
+                                  </span>
+                                </div>
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "flex-end",
+                                    flex: 1,
+                                    textAlign: "right",
+                                  }}
+                                >
+                                  {row.val}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* SPEC TAB */}
+                    {detailTab === "spec" && (
+                      <div>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            marginBottom: 16,
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontSize: 13,
+                              fontWeight: 700,
+                              color: "#334155",
+                            }}
+                          >
+                            Spesifikasi Teknis &amp; Tambahan
+                          </span>
+                          {!editSpecsMode ? (
+                            <button
+                              onClick={() => {
+                                setEditSpecsMode(true);
+                                // ✅ FIX: deep copy dengan spread agar tidak mutate state asli
+                                setEditSpecsData({
+                                  specs: (a.specs || []).map((s) => ({
+                                    ...s,
+                                    _unitMode: "pick",
+                                  })),
+                                  customSpecs: (a.customSpecs || []).map(
+                                    (s) => ({ ...s, _unitMode: "pick" }),
+                                  ),
+                                });
+                              }}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 6,
+                                padding: "7px 14px",
+                                borderRadius: 10,
+                                border: "1.5px solid #bfdbfe",
+                                background: "#eff6ff",
+                                color: "#2563eb",
+                                fontSize: 12,
+                                fontWeight: 700,
+                                cursor: "pointer",
+                              }}
+                            >
+                              <Icon.Edit /> Edit Spesifikasi
+                            </button>
                           ) : (
-                            "—"
+                            <div style={{ display: "flex", gap: 8 }}>
+                              <button
+                                onClick={() => setEditSpecsMode(false)}
+                                style={{
+                                  padding: "7px 14px",
+                                  borderRadius: 10,
+                                  border: "1.5px solid #e2e8f0",
+                                  background: "#f1f5f9",
+                                  color: "#64748b",
+                                  fontSize: 12,
+                                  fontWeight: 700,
+                                  cursor: "pointer",
+                                }}
+                              >
+                                Batal
+                              </button>
+                              <button
+                                onClick={handleSaveSpecs}
+                                style={{
+                                  padding: "7px 14px",
+                                  borderRadius: 10,
+                                  border: "none",
+                                  background:
+                                    "linear-gradient(135deg,#2563eb,#1d4ed8)",
+                                  color: "#fff",
+                                  fontSize: 12,
+                                  fontWeight: 700,
+                                  cursor: "pointer",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 6,
+                                }}
+                              >
+                                <Icon.Save /> Simpan
+                              </button>
+                            </div>
                           )}
-                        </span>
+                        </div>
+
+                        {!editSpecsMode ? (
+                          <>
+                            {allSpecs.length === 0 ? (
+                              <div
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  alignItems: "center",
+                                  gap: 12,
+                                  padding: "56px 24px",
+                                  textAlign: "center",
+                                }}
+                              >
+                                <Icon.Cogs />
+                                <p style={{ fontSize: 13.5, color: "#94a3b8" }}>
+                                  Belum ada data spesifikasi
+                                </p>
+                              </div>
+                            ) : (
+                              <>
+                                {(a.specs || []).length > 0 && (
+                                  <>
+                                    <p
+                                      style={{
+                                        fontSize: 11,
+                                        fontWeight: 800,
+                                        color: "#64748b",
+                                        textTransform: "uppercase",
+                                        letterSpacing: "0.6px",
+                                        marginBottom: 10,
+                                      }}
+                                    >
+                                      Template Spesifikasi
+                                    </p>
+                                    <div
+                                      style={{
+                                        display: "grid",
+                                        gridTemplateColumns: "repeat(2,1fr)",
+                                        gap: 12,
+                                        marginBottom: 20,
+                                      }}
+                                    >
+                                      {(a.specs || []).map((sp, i) => {
+                                        const p =
+                                          specPalettes[i % specPalettes.length];
+                                        return (
+                                          <div
+                                            key={i}
+                                            style={{
+                                              borderRadius: 16,
+                                              padding: "18px 20px",
+                                              background: p.bg,
+                                              border: `1.5px solid ${p.border}`,
+                                              display: "flex",
+                                              flexDirection: "column",
+                                              gap: 8,
+                                            }}
+                                          >
+                                            <span
+                                              style={{
+                                                fontSize: 10.5,
+                                                fontWeight: 800,
+                                                textTransform: "uppercase",
+                                                letterSpacing: "0.8px",
+                                                color: p.label,
+                                              }}
+                                            >
+                                              {sp.spec_label}
+                                            </span>
+                                            <span
+                                              style={{
+                                                fontSize: 17,
+                                                fontWeight: 800,
+                                                letterSpacing: "-0.3px",
+                                                lineHeight: 1.2,
+                                                color: p.val,
+                                              }}
+                                            >
+                                              {sp.value}
+                                              {sp.default_unit ? (
+                                                <span
+                                                  style={{
+                                                    fontSize: 12,
+                                                    fontWeight: 600,
+                                                    marginLeft: 4,
+                                                    opacity: 0.7,
+                                                  }}
+                                                >
+                                                  {sp.default_unit}
+                                                </span>
+                                              ) : null}
+                                            </span>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  </>
+                                )}
+                                {(a.customSpecs || []).length > 0 && (
+                                  <>
+                                    <p
+                                      style={{
+                                        fontSize: 11,
+                                        fontWeight: 800,
+                                        color: "#64748b",
+                                        textTransform: "uppercase",
+                                        letterSpacing: "0.6px",
+                                        marginBottom: 10,
+                                      }}
+                                    >
+                                      Spesifikasi Tambahan
+                                    </p>
+                                    <div
+                                      style={{
+                                        display: "grid",
+                                        gridTemplateColumns: "repeat(2,1fr)",
+                                        gap: 12,
+                                      }}
+                                    >
+                                      {(a.customSpecs || []).map((sp, i) => {
+                                        const p =
+                                          specPalettes[
+                                            (i + (a.specs || []).length) %
+                                              specPalettes.length
+                                          ];
+                                        return (
+                                          <div
+                                            key={i}
+                                            style={{
+                                              borderRadius: 16,
+                                              padding: "18px 20px",
+                                              background: p.bg,
+                                              border: `1.5px dashed ${p.border}`,
+                                              display: "flex",
+                                              flexDirection: "column",
+                                              gap: 8,
+                                            }}
+                                          >
+                                            <span
+                                              style={{
+                                                fontSize: 10.5,
+                                                fontWeight: 800,
+                                                textTransform: "uppercase",
+                                                letterSpacing: "0.8px",
+                                                color: p.label,
+                                              }}
+                                            >
+                                              {sp.spec_label}
+                                            </span>
+                                            <span
+                                              style={{
+                                                fontSize: 17,
+                                                fontWeight: 800,
+                                                letterSpacing: "-0.3px",
+                                                lineHeight: 1.2,
+                                                color: p.val,
+                                              }}
+                                            >
+                                              {sp.value}
+                                              {sp.default_unit ? (
+                                                <span
+                                                  style={{
+                                                    fontSize: 12,
+                                                    fontWeight: 600,
+                                                    marginLeft: 4,
+                                                    opacity: 0.7,
+                                                  }}
+                                                >
+                                                  {sp.default_unit}
+                                                </span>
+                                              ) : null}
+                                            </span>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  </>
+                                )}
+                              </>
+                            )}
+                          </>
+                        ) : (
+                          // ✅ FIX: render EditSpecsSection sebagai komponen terpisah
+                          // dengan props editSpecsData dan setEditSpecsData
+                          <EditSpecsSection
+                            editSpecsData={editSpecsData}
+                            setEditSpecsData={setEditSpecsData}
+                          />
+                        )}
                       </div>
-                      <div className="detail-item">
-                        <span className="detail-lbl">Nilai Aset</span>
-                        <span className="detail-val detail-val--highlight">
-                          {fmt(selectedAsset.value)}
-                        </span>
+                    )}
+
+                    {/* HISTORY TAB */}
+                    {detailTab === "history" && (
+                      <div>
+                        <AssetHistoryTab
+                          assetCode={a.id}
+                          allBorrows={MOCK_ALL_BORROWS}
+                        />
                       </div>
-                    </div>
+                    )}
+                  </div>
+                  {/* Footer */}
+                  <div
+                    style={{
+                      padding: "14px 24px",
+                      background: "#fff",
+                      borderTop: "1px solid #f1f5f9",
+                      display: "flex",
+                      gap: 10,
+                      justifyContent: "flex-end",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <button
+                      className="btn-cancel"
+                      onClick={() => {
+                        setShowDetailModal(false);
+                        setEditSpecsMode(false);
+                      }}
+                    >
+                      Tutup
+                    </button>
+                    <button
+                      className="btn-barcode"
+                      onClick={() => {
+                        setShowDetailModal(false);
+                        setShowBarcodeModal(true);
+                      }}
+                    >
+                      <Icon.Barcode /> Cetak Barcode
+                    </button>
+                    <button
+                      className="btn-save"
+                      onClick={() => openEditModal(a)}
+                    >
+                      <Icon.Edit /> Edit Aset
+                    </button>
                   </div>
                 </div>
-              )}
-              {detailTab === "history" && (
-                <div className="detail-scroll">
-                  <AssetHistoryTab
-                    assetCode={selectedAsset.id}
-                    allBorrows={MOCK_ALL_BORROWS}
-                  />
-                </div>
-              )}
-              <div className="modal-footer sticky-footer">
-                <button
-                  className="btn-cancel"
-                  onClick={() => setShowDetailModal(false)}
-                >
-                  Tutup
-                </button>
-                <button
-                  className="btn-barcode"
-                  onClick={() => {
-                    setShowDetailModal(false);
-                    setShowBarcodeModal(true);
-                  }}
-                >
-                  <Icon.Barcode /> Cetak Barcode
-                </button>
-                <button
-                  className="btn-save"
-                  onClick={() => openEditModal(selectedAsset)}
-                >
-                  <Icon.Edit /> Edit Aset
-                </button>
               </div>
-            </div>
-          </div>
-        )}
+            );
+          })()}
 
         {/* DELETE CONFIRM */}
         {showDeleteConfirm && selectedAsset && (
@@ -3193,8 +4726,22 @@ const ViewAsset = () => {
                   </div>
                 </div>
                 <button
-                  className="close-btn"
                   onClick={() => setShowEditModal(false)}
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 8,
+                    border: "1.5px solid #e2e8f0",
+                    background: "#f8fafc",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#64748b",
+                    flexShrink: 0,
+                    lineHeight: 0,
+                    fontSize: 0,
+                  }}
                 >
                   <Icon.Times />
                 </button>
@@ -3676,10 +5223,24 @@ const ViewAsset = () => {
                   </div>
                 </div>
                 <button
-                  className="close-btn"
                   onClick={() => {
                     setShowModal(false);
                     resetForm();
+                  }}
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 8,
+                    border: "1.5px solid #e2e8f0",
+                    background: "#f8fafc",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#64748b",
+                    flexShrink: 0,
+                    lineHeight: 0,
+                    fontSize: 0,
                   }}
                 >
                   <Icon.Times />
@@ -3706,7 +5267,7 @@ const ViewAsset = () => {
                 className="asset-form-scroll"
                 onSubmit={(e) => e.preventDefault()}
               >
-                {/* SECTION 01 — Info */}
+                {/* SECTION 01 */}
                 <div className="form-section-card">
                   <div className="fsc-header">
                     <div className="fsc-step">01</div>
@@ -4060,8 +5621,8 @@ const ViewAsset = () => {
                         <Icon.Cogs /> Spesifikasi Teknis
                       </h4>
                       <p className="fsc-desc">
-                        Field muncul otomatis sesuai kategori yang dipilih di
-                        atas
+                        Field muncul otomatis sesuai kategori. Satuan bersifat
+                        opsional.
                       </p>
                     </div>
                   </div>
@@ -4077,17 +5638,163 @@ const ViewAsset = () => {
                     <div className="form-grid-2">
                       {templateSpecs.map((spec, i) => (
                         <div className="form-group" key={i}>
-                          <label>{spec.label}</label>
-                          <input
-                            type="text"
-                            placeholder={`Isi ${spec.label}...`}
-                            value={spec.value}
-                            onChange={(e) => {
-                              const n = [...templateSpecs];
-                              n[i] = { ...n[i], value: e.target.value };
-                              setTemplateSpecs(n);
+                          <label>{spec.spec_label}</label>
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: 0,
+                              borderRadius: 10,
+                              overflow: "hidden",
+                              border: "1.5px solid var(--border)",
+                              background: "var(--white)",
+                              transition: "border-color .15s",
                             }}
-                          />
+                          >
+                            <input
+                              type={
+                                spec.input_type === "number" ? "number" : "text"
+                              }
+                              placeholder={
+                                spec.input_type === "number"
+                                  ? "0"
+                                  : `Isi nilai...`
+                              }
+                              value={spec.value}
+                              style={{
+                                flex: 1,
+                                border: "none",
+                                outline: "none",
+                                padding: "9px 12px",
+                                fontSize: 13,
+                                color: "#334155",
+                                background: "transparent",
+                                minWidth: 0,
+                              }}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setTemplateSpecs((prev) =>
+                                  prev.map((s, idx) =>
+                                    idx === i ? { ...s, value: val } : s,
+                                  ),
+                                );
+                              }}
+                            />
+                            {spec._unitMode !== "custom" ? (
+                              <select
+                                value={spec.default_unit}
+                                title="Satuan (opsional)"
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setTemplateSpecs((prev) =>
+                                    prev.map((s, idx) =>
+                                      idx === i
+                                        ? {
+                                            ...s,
+                                            default_unit:
+                                              val === "__custom__" ? "" : val,
+                                            _unitMode:
+                                              val === "__custom__"
+                                                ? "custom"
+                                                : "pick",
+                                          }
+                                        : s,
+                                    ),
+                                  );
+                                }}
+                                style={{
+                                  border: "none",
+                                  borderLeft: `2px solid ${spec.default_unit ? "var(--cyan)" : "var(--border)"}`,
+                                  outline: "none",
+                                  padding: "0 10px",
+                                  fontSize: 12,
+                                  fontWeight: 700,
+                                  color: spec.default_unit
+                                    ? "#0369a1"
+                                    : "#94a3b8",
+                                  background: spec.default_unit
+                                    ? "#f0f9ff"
+                                    : "#f8fafc",
+                                  cursor: "pointer",
+                                  flexShrink: 0,
+                                  maxWidth: 110,
+                                  transition: "all .15s",
+                                }}
+                              >
+                                <option value="">Satuan</option>
+                                {SPEC_UNIT_OPTIONS.map((g) => (
+                                  <optgroup key={g.group} label={g.group}>
+                                    {g.units.map((u) => (
+                                      <option key={u} value={u}>
+                                        {u}
+                                      </option>
+                                    ))}
+                                  </optgroup>
+                                ))}
+                                <option value="__custom__">
+                                  ✏ Ketik baru...
+                                </option>
+                              </select>
+                            ) : (
+                              <input
+                                type="text"
+                                placeholder="Satuan..."
+                                value={spec.default_unit}
+                                autoFocus
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setTemplateSpecs((prev) =>
+                                    prev.map((s, idx) =>
+                                      idx === i
+                                        ? { ...s, default_unit: val }
+                                        : s,
+                                    ),
+                                  );
+                                }}
+                                onBlur={() => {
+                                  if (!spec.default_unit)
+                                    setTemplateSpecs((prev) =>
+                                      prev.map((s, idx) =>
+                                        idx === i
+                                          ? { ...s, _unitMode: "pick" }
+                                          : s,
+                                      ),
+                                    );
+                                }}
+                                style={{
+                                  border: "none",
+                                  borderLeft: "2px solid var(--cyan)",
+                                  outline: "none",
+                                  padding: "9px 8px",
+                                  fontSize: 12,
+                                  fontWeight: 700,
+                                  color: "#0369a1",
+                                  background: "#f0f9ff",
+                                  width: 90,
+                                  flexShrink: 0,
+                                }}
+                              />
+                            )}
+                          </div>
+                          {spec.value && (
+                            <span
+                              style={{
+                                fontSize: 11,
+                                color: "#64748b",
+                                marginTop: 2,
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 4,
+                              }}
+                            >
+                              <span style={{ color: "#16a34a" }}>✓</span>
+                              <strong style={{ color: "#0369a1" }}>
+                                {spec.value}
+                                {spec.default_unit
+                                  ? ` ${spec.default_unit}`
+                                  : ""}
+                              </strong>
+                            </span>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -4107,14 +5814,24 @@ const ViewAsset = () => {
                         <span className="optional-badge">Opsional</span>
                       </h4>
                       <p className="fsc-desc">
-                        Tambahkan atribut unik yang tidak tersedia di template
+                        Tambah atribut di luar template. Satuan bersifat
+                        opsional.
                       </p>
                     </div>
                     <button
                       type="button"
                       className="btn-small-add"
                       onClick={() =>
-                        setCustomSpecs([...customSpecs, { key: "", value: "" }])
+                        setCustomSpecs([
+                          ...customSpecs,
+                          {
+                            spec_label: "",
+                            value: "",
+                            default_unit: "",
+                            input_type: "text",
+                            _unitMode: "pick",
+                          },
+                        ])
                       }
                       style={{ marginLeft: "auto", flexShrink: 0 }}
                     >
@@ -4131,46 +5848,256 @@ const ViewAsset = () => {
                     </div>
                   )}
                   {customSpecs.map((spec, i) => (
-                    <div className="custom-spec-row" key={i}>
-                      <div className="spec-index">{i + 1}</div>
-                      <div className="spec-input-wrap">
+                    <div
+                      key={i}
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr 1fr auto",
+                        gap: 8,
+                        alignItems: "start",
+                        padding: "10px 12px",
+                        background: "#f8fafc",
+                        border: "1.5px solid #e2e8f0",
+                        borderRadius: 10,
+                        marginBottom: 8,
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 4,
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontSize: 10,
+                            fontWeight: 700,
+                            color: "#94a3b8",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.5px",
+                          }}
+                        >
+                          Nama Atribut
+                        </span>
                         <input
                           type="text"
-                          className="spec-input"
-                          placeholder=" "
-                          value={spec.key}
+                          placeholder="Contoh: Warna, Berat, Voltase..."
+                          value={spec.spec_label}
+                          style={{
+                            padding: "8px 10px",
+                            border: "1.5px solid #e2e8f0",
+                            borderRadius: 8,
+                            fontSize: 13,
+                            color: "#334155",
+                            background: "#fff",
+                            outline: "none",
+                            width: "100%",
+                          }}
                           onChange={(e) => {
-                            const n = [...customSpecs];
-                            n[i] = { ...n[i], key: e.target.value };
-                            setCustomSpecs(n);
+                            const val = e.target.value;
+                            setCustomSpecs((prev) =>
+                              prev.map((s, idx) =>
+                                idx === i ? { ...s, spec_label: val } : s,
+                              ),
+                            );
                           }}
                         />
-                        <label className="spec-float-label">Nama Atribut</label>
                       </div>
-                      <div className="spec-divider">:</div>
-                      <div className="spec-input-wrap spec-input-wrap--value">
-                        <input
-                          type="text"
-                          className="spec-input"
-                          placeholder=" "
-                          value={spec.value}
-                          onChange={(e) => {
-                            const n = [...customSpecs];
-                            n[i] = { ...n[i], value: e.target.value };
-                            setCustomSpecs(n);
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 4,
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontSize: 10,
+                            fontWeight: 700,
+                            color: "#94a3b8",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.5px",
                           }}
-                        />
-                        <label className="spec-float-label">Nilai</label>
+                        >
+                          Nilai &amp; Satuan{" "}
+                          <span
+                            style={{
+                              color: "#bfdbfe",
+                              fontWeight: 500,
+                              fontSize: 9,
+                            }}
+                          >
+                            (satuan opsional)
+                          </span>
+                        </span>
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: 0,
+                            borderRadius: 8,
+                            overflow: "hidden",
+                            border: "1.5px solid #e2e8f0",
+                            background: "#fff",
+                          }}
+                        >
+                          <input
+                            type="text"
+                            placeholder="Contoh: 16, Windows 11, Merah..."
+                            value={spec.value}
+                            style={{
+                              flex: 1,
+                              border: "none",
+                              outline: "none",
+                              padding: "8px 10px",
+                              fontSize: 13,
+                              color: "#334155",
+                              background: "transparent",
+                              minWidth: 0,
+                            }}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setCustomSpecs((prev) =>
+                                prev.map((s, idx) =>
+                                  idx === i ? { ...s, value: val } : s,
+                                ),
+                              );
+                            }}
+                          />
+                          {spec._unitMode !== "custom" ? (
+                            <select
+                              value={spec.default_unit}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setCustomSpecs((prev) =>
+                                  prev.map((s, idx) =>
+                                    idx === i
+                                      ? {
+                                          ...s,
+                                          default_unit:
+                                            val === "__custom__" ? "" : val,
+                                          _unitMode:
+                                            val === "__custom__"
+                                              ? "custom"
+                                              : "pick",
+                                        }
+                                      : s,
+                                  ),
+                                );
+                              }}
+                              style={{
+                                border: "none",
+                                borderLeft: `2px solid ${spec.default_unit ? "var(--cyan)" : "#e2e8f0"}`,
+                                outline: "none",
+                                padding: "0 8px",
+                                fontSize: 11,
+                                fontWeight: 700,
+                                color: spec.default_unit
+                                  ? "#0369a1"
+                                  : "#94a3b8",
+                                background: spec.default_unit
+                                  ? "#f0f9ff"
+                                  : "#f8fafc",
+                                cursor: "pointer",
+                                flexShrink: 0,
+                                maxWidth: 100,
+                              }}
+                            >
+                              <option value="">Satuan</option>
+                              {SPEC_UNIT_OPTIONS.map((g) => (
+                                <optgroup key={g.group} label={g.group}>
+                                  {g.units.map((u) => (
+                                    <option key={u} value={u}>
+                                      {u}
+                                    </option>
+                                  ))}
+                                </optgroup>
+                              ))}
+                              <option value="__custom__">
+                                ✏ Ketik baru...
+                              </option>
+                            </select>
+                          ) : (
+                            <input
+                              type="text"
+                              placeholder="Satuan..."
+                              value={spec.default_unit}
+                              autoFocus
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setCustomSpecs((prev) =>
+                                  prev.map((s, idx) =>
+                                    idx === i ? { ...s, default_unit: val } : s,
+                                  ),
+                                );
+                              }}
+                              onBlur={() => {
+                                if (!spec.default_unit)
+                                  setCustomSpecs((prev) =>
+                                    prev.map((s, idx) =>
+                                      idx === i
+                                        ? { ...s, _unitMode: "pick" }
+                                        : s,
+                                    ),
+                                  );
+                              }}
+                              style={{
+                                border: "none",
+                                borderLeft: "1.5px solid var(--cyan)",
+                                outline: "none",
+                                padding: "8px 8px",
+                                fontSize: 11,
+                                fontWeight: 700,
+                                color: "#0369a1",
+                                background: "#f0f9ff",
+                                width: 80,
+                                flexShrink: 0,
+                              }}
+                            />
+                          )}
+                        </div>
+                        {spec.value && (
+                          <span
+                            style={{
+                              fontSize: 11,
+                              color: "#64748b",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 4,
+                            }}
+                          >
+                            <span style={{ color: "#16a34a" }}>✓</span>{" "}
+                            <strong style={{ color: "#0369a1" }}>
+                              {spec.value}
+                              {spec.default_unit ? ` ${spec.default_unit}` : ""}
+                            </strong>
+                          </span>
+                        )}
                       </div>
                       <button
                         type="button"
-                        className="btn-trash spec-trash"
                         onClick={() => {
                           const n = [...customSpecs];
                           n.splice(i, 1);
                           setCustomSpecs(n);
                         }}
                         title="Hapus"
+                        style={{
+                          marginTop: 22,
+                          width: 36,
+                          height: 36,
+                          borderRadius: 8,
+                          border: "1.5px solid #fecaca",
+                          background: "#fef2f2",
+                          color: "#dc2626",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
+                          lineHeight: 0,
+                          fontSize: 0,
+                        }}
                       >
                         <Icon.SmallTrash />
                       </button>
