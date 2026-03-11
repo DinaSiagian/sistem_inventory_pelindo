@@ -67,7 +67,7 @@ const UserLayout = () => {
     { path: "/user/dashboard",  label: "Dashboard",                 icon: <FaHome /> },
     { category: "Manajemen Aset" },
     { path: "/user/inventaris", label: "Inventaris Aset",           icon: <FaBox /> },
-    { path: "/user/peminjaman", label: "Peminjaman & Pengembalian", icon: <FaHandHolding />, badge: true },
+    { path: "/user/peminjaman", label: "BAST Aset", icon: <FaHandHolding />, badge: true },
     { path: "/user/scan",       label: "Scan Barcode",              icon: <FaQrcode /> },
     { category: "Akun" },
     { path: "/user/profil",     label: "Profil Saya",               icon: <FaUserCircle /> },
