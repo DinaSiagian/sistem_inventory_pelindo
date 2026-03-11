@@ -1,6 +1,276 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import "./ViewAsset.css";
 
+// ── CAPEX ANGGARAN MASTER (thn_anggaran → nm_anggaran → pekerjaan) ─────
+const CAPEX_ANGGARAN = [
+  {
+    kd_anggaran: "2440015",
+    nm_anggaran: "Implementasi dan Standarisasi IT Infrastruktur",
+    thn_anggaran: 2024,
+    pekerjaan: [
+      {
+        id_pekerjaan: 1,
+        nm_pekerjaan:
+          "Pekerjaan Implementasi dan Standarisasi IT Infrastruktur (Planning & Control, CCTV dan SD-WAN Branch Malahayati, Lhokseumawe, Lembar, ParePare dan Garongkong) PT Pelindo Multi Terminal",
+      },
+      {
+        id_pekerjaan: 2,
+        nm_pekerjaan:
+          "Pekerjaan Implementasi dan Standarisasi IT Infrastruktur (Gate System Branch Malahayati, Lhokseumawe, Lembar, ParePare dan Garongkong) PT Pelindo Multi Terminal",
+      },
+      {
+        id_pekerjaan: 3,
+        nm_pekerjaan:
+          "Pekerjaan Implementasi dan Standarisasi IT Infrastruktur (Gate System dan Planning & Control Branch Balikpapan dan Bagendang) PT Pelindo Multi Terminal",
+      },
+      {
+        id_pekerjaan: 4,
+        nm_pekerjaan:
+          "Pekerjaan Implementasi dan Standarisasi IT Infrastruktur (Gate System Branch Makassar) PT Pelindo Multi Terminal",
+      },
+    ],
+  },
+  {
+    kd_anggaran: "2440014",
+    nm_anggaran: "Penyediaan Network di Branch SPMT",
+    thn_anggaran: 2024,
+    pekerjaan: [
+      {
+        id_pekerjaan: 5,
+        nm_pekerjaan:
+          "Penyediaan Network di Branch SPMT (Malahayati, Lhokseumawe, Lembar, Parepare dan Garongkong)",
+      },
+    ],
+  },
+  {
+    kd_anggaran: "2440013",
+    nm_anggaran: "Penyiapan Infrastruktur IT",
+    thn_anggaran: 2024,
+    pekerjaan: [
+      {
+        id_pekerjaan: 6,
+        nm_pekerjaan:
+          "Penyiapan Infrastruktur IT (Kantor Pusat, Pelindo Place, Pelindo Tower, Malahayati, Lhokseumawe, Bima, Badas, Parepare, Gresik, Tanjung Emas, Mekar Putih, Meulaboh, Kuala Langsa dan Bumiharjo) PT Pelindo Multi Terminal",
+      },
+    ],
+  },
+  {
+    kd_anggaran: "2440020",
+    nm_anggaran:
+      "Revisi Capex (Pemenuhan Kebutuhan Gate dan PNC Transformasi pada Branch SPMT)",
+    thn_anggaran: 2025,
+    pekerjaan: [
+      {
+        id_pekerjaan: 7,
+        nm_pekerjaan:
+          "Pemenuhan Kebutuhan Gate System Transformasi pada Branch (Jamrud Nilam Mirah, Tanjung Wangi, Trisakti, Dumai, Belawan) PT Pelindo Multi Terminal",
+      },
+      {
+        id_pekerjaan: 8,
+        nm_pekerjaan:
+          "Pemenuhan Kebutuhan Planning and Control Transformasi pada Branch (Jamrud Nilam Mirah, Tanjung Wangi, Trisakti, Dumai, Belawan dan Kantor Pusat) PT Pelindo Multi Terminal",
+      },
+      {
+        id_pekerjaan: 9,
+        nm_pekerjaan:
+          "Pemenuhan Kebutuhan Gate System, Planning and Control dan Perangkat Pendukung Transformasi PT Pelindo Multi Terminal",
+      },
+      {
+        id_pekerjaan: 10,
+        nm_pekerjaan:
+          "Pemenuhan Kebutuhan Gate System dan Planning and Control (Public Announcer, Kelengkapan Gate dan Radio Point To Point) PT Pelindo Multi Terminal",
+      },
+    ],
+  },
+  {
+    kd_anggaran: "2540011",
+    nm_anggaran: "Transformasi dan Digitalisasi PT Pelindo Multi Terminal",
+    thn_anggaran: 2025,
+    pekerjaan: [
+      {
+        id_pekerjaan: 11,
+        nm_pekerjaan:
+          "Pemenuhan Kebutuhan Gate System, Planning and Control dan Perangkat Pendukung Roro pada Branch (Lembar Gilimas, Tanjung Wangi, Tanjung Emas, Sibolga, Balikpapan, Parepare dan Tanjung Balai Karimun) PT Pelindo Multi Terminal",
+      },
+      {
+        id_pekerjaan: 12,
+        nm_pekerjaan:
+          "Penyediaan Kebutuhan Public Announcer Pendukung Transformasi dan Digitalisasi Branch (Balikpapan, Belawan, Dumai, Trisakti, Makassar, Parepare, Garongkong, Sibolga, Tanjung Emas, Tanjung Intan dan Gresik) PT Pelindo Multi Terminal",
+      },
+      {
+        id_pekerjaan: 13,
+        nm_pekerjaan:
+          "Penyediaan Kebutuhan Perangkat Jaringan, Security Information and Management (SIEM) dan Perangkat Pendukung Gate System PT Pelindo Multi Terminal",
+      },
+      {
+        id_pekerjaan: 14,
+        nm_pekerjaan:
+          "Penyediaan Kebutuhan Transformasi dan Digitalisasi (CCTV dan Public Announcer Traffic Monitoring pada Gate) Branch Belawan, Dumai, Malahayati, Lhokseumawe, Lembar, Jamrud Nilam Mirah, Makassar, Balikpapan, Bumiharjo Bagendang, Tanjung Pinang, Sibolga, Tanjung Emas, Parepare, Trisakti dan Gresik PT Pelindo Multi Terminal",
+      },
+    ],
+  },
+  {
+    kd_anggaran: "2540012",
+    nm_anggaran:
+      "Standarisasi Perangkat Jaringan di Lingkungan PT Pelindo Multi Terminal",
+    thn_anggaran: 2025,
+    pekerjaan: [
+      {
+        id_pekerjaan: 15,
+        nm_pekerjaan:
+          "Pemenuhan Kebutuhan Perangkat Network Branch Tanjung Balai Karimun Terminal Selat Panjang PT Pelindo Multi Terminal",
+      },
+    ],
+  },
+  {
+    kd_anggaran: "2540010",
+    nm_anggaran: "Penyiapan Infrastruktur IT pada Kegiatan Roro",
+    thn_anggaran: 2025,
+    pekerjaan: [
+      {
+        id_pekerjaan: 16,
+        nm_pekerjaan:
+          "Penyiapan Infrastruktur Gate System Pendukung Kegiatan RoRo pada Branch Tanjung Emas PT Pelindo Multi Terminal",
+      },
+    ],
+  },
+];
+
+// ── OPEX ANGGARAN (thn_anggaran → nm_anggaran, tanpa pekerjaan) ───
+const OPEX_ANGGARAN = [
+  {
+    kd_anggaran: "OPEX-5030",
+    nm_anggaran: "Beban Pemeliharaan Software",
+    kd_akun: "5030905000",
+    thn_anggaran: 2024,
+    id_pekerjaan: "OPEX-1",
+  },
+  {
+    kd_anggaran: "OPEX-5021A",
+    nm_anggaran: "Beban Jaringan dan Koneksi Data",
+    kd_akun: "5021300000",
+    thn_anggaran: 2024,
+    id_pekerjaan: "OPEX-2",
+  },
+  {
+    kd_anggaran: "OPEX-5021B",
+    nm_anggaran: "Beban Perlengkapan Kantor",
+    kd_akun: "5021200000",
+    thn_anggaran: 2024,
+    id_pekerjaan: "OPEX-3",
+  },
+  {
+    kd_anggaran: "OPEX-5081",
+    nm_anggaran: "Beban Jasa Konsultan",
+    kd_akun: "5081500000",
+    thn_anggaran: 2024,
+    id_pekerjaan: "OPEX-4",
+  },
+  {
+    kd_anggaran: "OPEX-5060",
+    nm_anggaran: "Beban Sumber Daya Pihak Ketiga Peralatan",
+    kd_akun: "5060700000",
+    thn_anggaran: 2024,
+    id_pekerjaan: "OPEX-5",
+  },
+  {
+    kd_anggaran: "OPEX-5030B",
+    nm_anggaran: "Beban Pemeliharaan Software",
+    kd_akun: "5030905000",
+    thn_anggaran: 2025,
+    id_pekerjaan: "OPEX-1",
+  },
+  {
+    kd_anggaran: "OPEX-5021C",
+    nm_anggaran: "Beban Jaringan dan Koneksi Data",
+    kd_akun: "5021300000",
+    thn_anggaran: 2025,
+    id_pekerjaan: "OPEX-2",
+  },
+  {
+    kd_anggaran: "OPEX-5021D",
+    nm_anggaran: "Beban Perlengkapan Kantor",
+    kd_akun: "5021200000",
+    thn_anggaran: 2025,
+    id_pekerjaan: "OPEX-3",
+  },
+  {
+    kd_anggaran: "OPEX-5081B",
+    nm_anggaran: "Beban Jasa Konsultan",
+    kd_akun: "5081500000",
+    thn_anggaran: 2025,
+    id_pekerjaan: "OPEX-4",
+  },
+  {
+    kd_anggaran: "OPEX-5060B",
+    nm_anggaran: "Beban Sumber Daya Pihak Ketiga Peralatan",
+    kd_akun: "5060700000",
+    thn_anggaran: 2025,
+    id_pekerjaan: "OPEX-5",
+  },
+];
+
+// ── DERIVED FLAT LIST (for lookup/table/export) ───────────────────
+const ALL_PROJECTS = [
+  ...CAPEX_ANGGARAN.flatMap((a) =>
+    a.pekerjaan.map((p) => ({
+      ...p,
+      jenis: "CAPEX",
+      kd_anggaran: a.kd_anggaran,
+      nm_anggaran: a.nm_anggaran,
+      thn_anggaran: a.thn_anggaran,
+    })),
+  ),
+  ...OPEX_ANGGARAN.map((o) => ({
+    id_pekerjaan: o.id_pekerjaan,
+    nm_pekerjaan: o.nm_anggaran,
+    jenis: "OPEX",
+    kd_anggaran: o.kd_anggaran,
+    nm_anggaran: o.nm_anggaran,
+    thn_anggaran: o.thn_anggaran,
+    kd_akun: o.kd_akun,
+  })),
+];
+
+// ── UNIFIED TAHUN LIST (CAPEX + OPEX) ────────────────────────────
+const ALL_TAHUN_LIST = [
+  ...new Set([
+    ...CAPEX_ANGGARAN.map((a) => a.thn_anggaran),
+    ...OPEX_ANGGARAN.map((o) => o.thn_anggaran),
+  ]),
+].sort();
+
+// ── GET ANGGARAN BY TAHUN (CAPEX + OPEX combined) ────────────────
+const getAnggaranByTahun = (thn) => {
+  const capex = CAPEX_ANGGARAN.filter(
+    (a) => String(a.thn_anggaran) === String(thn),
+  ).map((a) => ({ ...a, jenis: "CAPEX" }));
+  const opex = OPEX_ANGGARAN.filter(
+    (o) => String(o.thn_anggaran) === String(thn),
+  ).map((o) => ({
+    kd_anggaran: o.kd_anggaran,
+    nm_anggaran: o.nm_anggaran,
+    thn_anggaran: o.thn_anggaran,
+    jenis: "OPEX",
+    id_pekerjaan: o.id_pekerjaan,
+    kd_akun: o.kd_akun,
+  }));
+  return [...capex, ...opex];
+};
+
+// ── CAPEX_TAHUN_LIST kept for backward compat ─────────────────────
+const CAPEX_TAHUN_LIST = [
+  ...new Set(CAPEX_ANGGARAN.map((a) => a.thn_anggaran)),
+].sort();
+
+const getProjectById = (id) =>
+  ALL_PROJECTS.find((p) => String(p.id_pekerjaan) === String(id)) || null;
+
+const getProjectName = (id) => {
+  const p = getProjectById(id);
+  return p ? p.nm_pekerjaan : "—";
+};
+
 const MOCK_ALL_BORROWS = [
   {
     id: 1,
@@ -312,7 +582,7 @@ function BarcodeCanvas({ value, width = 340, height = 64 }) {
   );
 }
 
-// ── SVG ICONS ─────────────────────────────────────────────────────────────────
+// ── SVG ICONS ─────────────────────────────────────────────────────
 const Icon = {
   Inventory: () => (
     <svg
@@ -976,22 +1246,6 @@ const Icon = {
       <polyline points="21 15 16 10 5 21" />
     </svg>
   ),
-  Image: () => (
-    <svg
-      width="13"
-      height="13"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="3" y="3" width="18" height="18" rx="2" />
-      <circle cx="8.5" cy="8.5" r="1.5" />
-      <polyline points="21 15 16 10 5 21" />
-    </svg>
-  ),
   Grid: () => (
     <svg
       width="14"
@@ -1073,13 +1327,27 @@ const Icon = {
       <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
     </svg>
   ),
+  Briefcase: () => (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="2" y="7" width="20" height="14" rx="2" />
+      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+    </svg>
+  ),
 };
 
-// ── PHOTO UPLOAD COMPONENT ────────────────────────────────────────────────────
+// ── PHOTO UPLOAD ──────────────────────────────────────────────────
 function PhotoUpload({ value, onChange }) {
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef(null);
-
   const handleFile = (file) => {
     if (!file) return;
     const allowed = ["image/png", "image/jpeg", "image/jpg"];
@@ -1101,12 +1369,10 @@ function PhotoUpload({ value, onChange }) {
       });
     reader.readAsDataURL(file);
   };
-
   const formatSize = (bytes) =>
     bytes < 1024 * 1024
       ? `${(bytes / 1024).toFixed(1)} KB`
       : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-
   if (value) {
     return (
       <div className="photo-preview-wrap">
@@ -1141,7 +1407,6 @@ function PhotoUpload({ value, onChange }) {
       </div>
     );
   }
-
   return (
     <div
       className={`photo-upload-zone ${dragOver ? "drag-over" : ""}`}
@@ -1181,23 +1446,23 @@ function PhotoUpload({ value, onChange }) {
   );
 }
 
-// ── BARCODE LABEL MODAL ───────────────────────────────────────────────────────
+// ── BARCODE LABEL MODAL ───────────────────────────────────────────
 function BarcodeLabelModal({ asset, onClose, fmt, fmtDate }) {
+  const project = getProjectById(asset.id_pekerjaan);
   const handlePrint = () => {
     const w = window.open("", "_blank", "width=620,height=520");
     w.document
       .write(`<!DOCTYPE html><html><head><title>Label — ${asset.id}</title>
-<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Courier New',monospace;background:#f0f0f0;display:flex;justify-content:center;padding:30px}.label{width:360px;background:#fff;border:2.5px solid #111;border-radius:10px;padding:18px 20px;box-shadow:0 4px 20px rgba(0,0,0,.15)}.lh{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1.5px solid #111;padding-bottom:10px;margin-bottom:10px}.lbrand{font-size:16px;font-weight:900;letter-spacing:3px;color:#000}.lsub{font-size:8px;font-weight:700;color:#555;letter-spacing:1.5px;margin-top:2px}.lstatus{border:1.5px solid #000;border-radius:4px;padding:3px 8px;font-size:8px;font-weight:900;letter-spacing:1px;text-transform:uppercase}.lname{font-size:14px;font-weight:800;margin:8px 0 3px;color:#000;font-family:sans-serif}.lid{font-size:10px;font-weight:700;color:#444;letter-spacing:.5px;margin-bottom:10px}.lbar{text-align:center;border-top:1px dashed #ddd;border-bottom:1px dashed #ddd;padding:6px 0;margin:8px 0}.lmeta{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px;border-top:1px solid #eee;padding-top:8px}.mi label{display:block;font-size:7.5px;color:#888;text-transform:uppercase;letter-spacing:.4px;margin-bottom:1px}.mi span{font-size:9.5px;font-weight:700;color:#111}.lfoot{text-align:center;margin-top:10px;font-size:7px;color:#aaa;letter-spacing:.5px;border-top:1px dashed #ddd;padding-top:7px}@media print{body{background:#fff;padding:0}.label{box-shadow:none}}</style></head><body>
+<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Courier New',monospace;background:#f0f0f0;display:flex;justify-content:center;padding:30px}.label{width:360px;background:#fff;border:2.5px solid #111;border-radius:10px;padding:18px 20px;box-shadow:0 4px 20px rgba(0,0,0,.15)}.lh{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1.5px solid #111;padding-bottom:10px;margin-bottom:10px}.lbrand{font-size:16px;font-weight:900;letter-spacing:3px;color:#000}.lsub{font-size:8px;font-weight:700;color:#555;letter-spacing:1.5px;margin-top:2px}.lstatus{border:1.5px solid #000;border-radius:4px;padding:3px 8px;font-size:8px;font-weight:900;letter-spacing:1px;text-transform:uppercase}.lname{font-size:14px;font-weight:800;margin:8px 0 3px;color:#000;font-family:sans-serif}.lid{font-size:10px;font-weight:700;color:#444;letter-spacing:.5px;margin-bottom:10px}.lbar{text-align:center;border-top:1px dashed #ddd;border-bottom:1px dashed #ddd;padding:6px 0;margin:8px 0}.lmeta{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px;border-top:1px solid #eee;padding-top:8px}.mi label{display:block;font-size:7.5px;color:#888;text-transform:uppercase;letter-spacing:.4px;margin-bottom:1px}.mi span{font-size:9.5px;font-weight:700;color:#111}.lfoot{text-align:center;margin-top:10px;font-size:7px;color:#aaa;letter-spacing:.5px;border-top:1px dashed #ddd;padding-top:7px;text-transform:uppercase}@media print{body{background:#fff;padding:0}.label{box-shadow:none}}</style></head><body>
 <div class="label"><div class="lh"><div><div class="lbrand">PELINDO</div><div class="lsub">ASSET MANAGEMENT SYSTEM</div></div><span class="lstatus">${asset.status}</span></div>
 <div class="lname">${asset.name}</div><div class="lid">${asset.id}</div><div class="lbar" id="bw"></div>
-<div class="lmeta"><div class="mi"><label>Entitas</label><span>${asset.entitas || "—"}</span></div><div class="mi"><label>Cabang</label><span>${asset.branch}</span></div><div class="mi"><label>Zona · Subzona</label><span>${asset.zona} · ${asset.subzona}</span></div><div class="mi"><label>Kategori</label><span>${asset.category}</span></div><div class="mi"><label>Budget</label><span>${asset.budgetType || "—"}</span></div><div class="mi"><label>Tgl Pengadaan</label><span>${fmtDate(asset.procurementDate)}</span></div></div>
+<div class="lmeta"><div class="mi"><label>Entitas</label><span>${asset.entitas || "—"}</span></div><div class="mi"><label>Cabang</label><span>${asset.branch}</span></div><div class="mi"><label>Zona · Subzona</label><span>${asset.zona} · ${asset.subzona}</span></div><div class="mi"><label>Kategori</label><span>${asset.category}</span></div><div class="mi"><label>ID Pekerjaan</label><span>${asset.id_pekerjaan || "—"}</span></div><div class="mi"><label>Tgl Pengadaan</label><span>${fmtDate(asset.procurementDate)}</span></div></div>
 <div class="lfoot">SCAN BARCODE UNTUK VERIFIKASI ASET · ${new Date().getFullYear()}</div></div>
 <script>(function(){const CH=' !"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\\\]^_\`abcdefghijklmnopqrstuvwxyz{|}~';const P=["11011001100","11001101100","11001100110","10010011000","10010001100","10001001100","10011001000","10011000100","10001100100","11001001000","11001000100","11000100100","10110011100","10011011100","10011001110","10111001100","10011101100","10011100110","11001110010","11001011100","11001001110","11011100100","11001110100","11101101110","11101001100","11100101100","11100100110","11101100100","11100110100","11100110010","11011011000","11011000110","11000110110","10100011000","10001011000","10001000110","10110001000","10001101000","10001100010","11010001000","11000101000","11000100010","10110111000","10110001110","10001101110","10111011000","10111000110","10001110110","11101110110","11010001110","11000101110","11011101000","11011100010","11011101110","11101011000","11101000110","11100010110","11101101000","11101100010","11100011010","11101111010","11001000010","11110001010","10100110000","10100001100","10010110000","10010000110","10000101100","10000100110","10110010000","10110000100","10011010000","10011000010","10000110100","10000110010","11000010010","11001010000","11110111010","11000010100","10001111010","10100111100","10010111100","10010011110","10111100100","10011110100","10011110010","11110100100","11110010100","11110010010","11110110110","11011110110","11110110110","10101111000","10100011110","10001011110","10111101000","10111100010","11110101000","11110100010","10111011110","10111101110","11101011110","11110101110","11010000100","11010010000","11010011100","1100011101011"];
 const t="${asset.id}";let c=[104],cs=104;for(let i=0;i<t.length;i++){const x=CH.indexOf(t[i]);if(x<0)continue;c.push(x);cs+=x*(i+1);}c.push(cs%103);c.push(106);
 const bars=c.map(x=>P[x]).join('')+'11';const cv=document.createElement('canvas');const bw=Math.max(1,Math.floor(320/bars.length));cv.width=bw*bars.length;cv.height=60;cv.style.width='100%';cv.style.height='auto';const ctx=cv.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,cv.width,cv.height);ctx.fillStyle='#000';for(let i=0;i<bars.length;i++){if(bars[i]==='1')ctx.fillRect(i*bw,0,bw,60);}document.getElementById('bw').appendChild(cv);setTimeout(()=>{window.print();},400);})();</script></body></html>`);
     w.document.close();
   };
-
   const sc = (s) =>
     s === "Tersedia"
       ? "tersedia"
@@ -1277,7 +1542,7 @@ const bars=c.map(x=>P[x]).join('')+'11';const cv=document.createElement('canvas'
   );
 }
 
-// ── HISTORY TAB ───────────────────────────────────────────────────────────────
+// ── HISTORY TAB ───────────────────────────────────────────────────
 function AssetHistoryTab({ assetCode, allBorrows }) {
   const fmtDate = (d) =>
     d
@@ -1294,7 +1559,6 @@ function AssetHistoryTab({ assetCode, allBorrows }) {
         .sort((a, b) => new Date(b.borrow_date) - new Date(a.borrow_date)),
     [assetCode, allBorrows],
   );
-
   if (history.length === 0)
     return (
       <div className="hist-empty">
@@ -1307,7 +1571,6 @@ function AssetHistoryTab({ assetCode, allBorrows }) {
         </span>
       </div>
     );
-
   return (
     <div className="hist-wrap">
       <div className="hist-summary-row">
@@ -1411,7 +1674,24 @@ function AssetHistoryTab({ assetCode, allBorrows }) {
   );
 }
 
-// ── MAIN COMPONENT ────────────────────────────────────────────────────────────
+// ── PROJECT BADGE ─────────────────────────────────────────────────
+function ProjectBadge({ id_pekerjaan }) {
+  const project = getProjectById(id_pekerjaan);
+  if (!project)
+    return <span className="project-badge project-badge--none">—</span>;
+  const isOpex = String(id_pekerjaan).startsWith("OPEX");
+  return (
+    <span
+      className={`project-badge ${isOpex ? "project-badge--opex" : "project-badge--capex"}`}
+      title={project.nm_pekerjaan}
+    >
+      <Icon.Briefcase />
+      {isOpex ? "OPEX" : `P-${id_pekerjaan}`}
+    </span>
+  );
+}
+
+// ── MAIN COMPONENT ────────────────────────────────────────────────
 const ViewAsset = () => {
   const [assets, setAssets] = useState([
     {
@@ -1424,7 +1704,7 @@ const ViewAsset = () => {
       zona: "LPG",
       subzona: "DMG",
       value: 12000000,
-      budgetType: "OPEX",
+      id_pekerjaan: 1,
       procurementDate: "2026-01-28",
       photo: null,
     },
@@ -1438,7 +1718,7 @@ const ViewAsset = () => {
       zona: "GDG",
       subzona: "DMG",
       value: 1200000000,
-      budgetType: "CAPEX",
+      id_pekerjaan: 3,
       procurementDate: "2025-06-15",
       photo: null,
     },
@@ -1452,7 +1732,7 @@ const ViewAsset = () => {
       zona: "DTC",
       subzona: "PKR",
       value: 180000000,
-      budgetType: "CAPEX",
+      id_pekerjaan: 5,
       procurementDate: "2025-03-22",
       photo: null,
     },
@@ -1466,7 +1746,7 @@ const ViewAsset = () => {
       zona: "LPG",
       subzona: "PKR",
       value: 350000000,
-      budgetType: "CAPEX",
+      id_pekerjaan: "OPEX-5",
       procurementDate: "2024-08-01",
       photo: null,
     },
@@ -1480,7 +1760,7 @@ const ViewAsset = () => {
       zona: "GDG",
       subzona: "DMG",
       value: 8500000,
-      budgetType: "OPEX",
+      id_pekerjaan: "OPEX-3",
       procurementDate: "2026-02-14",
       photo: null,
     },
@@ -1494,7 +1774,7 @@ const ViewAsset = () => {
       zona: "DTC",
       subzona: "PKR",
       value: 45000000,
-      budgetType: "CAPEX",
+      id_pekerjaan: 4,
       procurementDate: "2025-09-05",
       photo: null,
     },
@@ -1508,7 +1788,7 @@ const ViewAsset = () => {
       zona: "LPG",
       subzona: "JLN",
       value: 620000000,
-      budgetType: "CAPEX",
+      id_pekerjaan: "OPEX-5",
       procurementDate: "2024-11-20",
       photo: null,
     },
@@ -1522,7 +1802,7 @@ const ViewAsset = () => {
       zona: "LPG",
       subzona: "DMG",
       value: 8500000000,
-      budgetType: "CAPEX",
+      id_pekerjaan: 6,
       procurementDate: "2023-04-10",
       photo: null,
     },
@@ -1536,7 +1816,7 @@ const ViewAsset = () => {
       zona: "GDG",
       subzona: "DMG",
       value: 3200000,
-      budgetType: "OPEX",
+      id_pekerjaan: "OPEX-3",
       procurementDate: "2025-07-30",
       photo: null,
     },
@@ -1550,7 +1830,7 @@ const ViewAsset = () => {
       zona: "GDG",
       subzona: "PKR",
       value: 12000000,
-      budgetType: "OPEX",
+      id_pekerjaan: 1,
       procurementDate: "2026-01-28",
       photo: null,
     },
@@ -1574,7 +1854,9 @@ const ViewAsset = () => {
   const [filterStatus, setFilterStatus] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
   const [filterBranch, setFilterBranch] = useState("");
-  const [filterBudget, setFilterBudget] = useState("");
+  // ── FILTER CASCADE: Anggaran → Pekerjaan ──
+  const [filterAnggaran, setFilterAnggaran] = useState("");
+  const [filterProject, setFilterProject] = useState("");
 
   const [formPhoto, setFormPhoto] = useState(null);
   const [formData, setFormData] = useState({
@@ -1593,7 +1875,9 @@ const ViewAsset = () => {
     status: "Tersedia",
     condition: "Baik",
     value: "",
-    budgetType: "",
+    id_pekerjaan: "",
+    thn_anggaran: "",
+    kd_anggaran: "",
     procurementDate: "",
   });
   const [templateSpecs, setTemplateSpecs] = useState([]);
@@ -1624,10 +1908,12 @@ const ViewAsset = () => {
     [assets],
   );
 
+  // ── FILTERED LIST — now uses filterAnggaran + filterProject cascade ──
   const filtered = useMemo(
     () =>
       assets.filter((a) => {
         const q = search.toLowerCase();
+        const proj = getProjectById(a.id_pekerjaan);
         return (
           (!q ||
             a.id.toLowerCase().includes(q) ||
@@ -1636,10 +1922,21 @@ const ViewAsset = () => {
           (!filterStatus || a.status === filterStatus) &&
           (!filterCategory || a.category === filterCategory) &&
           (!filterBranch || a.branch === filterBranch) &&
-          (!filterBudget || a.budgetType === filterBudget)
+          // Filter by anggaran (match kd_anggaran of the asset's project)
+          (!filterAnggaran || proj?.kd_anggaran === filterAnggaran) &&
+          // Filter by specific pekerjaan (only active when CAPEX anggaran selected)
+          (!filterProject || String(a.id_pekerjaan) === filterProject)
         );
       }),
-    [assets, search, filterStatus, filterCategory, filterBranch, filterBudget],
+    [
+      assets,
+      search,
+      filterStatus,
+      filterCategory,
+      filterBranch,
+      filterAnggaran,
+      filterProject,
+    ],
   );
 
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
@@ -1647,18 +1944,22 @@ const ViewAsset = () => {
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE,
   );
+
+  // ── count both anggaran & project as separate active filters ──
   const activeFiltersCount = [
     filterStatus,
     filterCategory,
     filterBranch,
-    filterBudget,
+    filterAnggaran,
+    filterProject,
   ].filter(Boolean).length;
 
   const resetFilters = () => {
     setFilterStatus("");
     setFilterCategory("");
     setFilterBranch("");
-    setFilterBudget("");
+    setFilterAnggaran("");
+    setFilterProject("");
     setCurrentPage(1);
   };
 
@@ -1682,8 +1983,6 @@ const ViewAsset = () => {
       : s === "Dipinjam"
         ? "dipinjam"
         : "maintenance";
-
-  // Get display image for an asset (uploaded photo or category default)
   const getAssetImage = (asset) =>
     asset.photo?.dataUrl || CATEGORY_IMAGES[asset.category] || null;
 
@@ -1809,7 +2108,9 @@ const ViewAsset = () => {
       status: "Tersedia",
       condition: "Baik",
       value: "",
-      budgetType: "",
+      id_pekerjaan: "",
+      thn_anggaran: "",
+      kd_anggaran: "",
       procurementDate: "",
     });
     setTemplateSpecs([]);
@@ -1832,7 +2133,12 @@ const ViewAsset = () => {
       zona: formData.zonaCode,
       subzona: formData.subzonaCode,
       value: parseFloat(formData.value) || 0,
-      budgetType: formData.budgetType,
+      id_pekerjaan:
+        formData.id_pekerjaan ||
+        (formData.kd_anggaran
+          ? OPEX_ANGGARAN.find((o) => o.kd_anggaran === formData.kd_anggaran)
+              ?.id_pekerjaan || null
+          : null),
       procurementDate: formData.procurementDate,
       photo: formPhoto,
     };
@@ -1849,17 +2155,24 @@ const ViewAsset = () => {
 
   const openEditModal = (asset) => {
     setSelectedAsset(asset);
+    const existingProj = ALL_PROJECTS.find(
+      (p) => String(p.id_pekerjaan) === String(asset.id_pekerjaan),
+    );
     setEditData({
       name: asset.name,
       category: asset.category,
       status: asset.status,
       value: asset.value,
-      budgetType: asset.budgetType,
       procurementDate: asset.procurementDate,
       entitas: asset.entitas,
       branch: asset.branch,
       zona: asset.zona,
       subzona: asset.subzona,
+      id_pekerjaan: asset.id_pekerjaan || "",
+      thn_anggaran: existingProj?.thn_anggaran
+        ? String(existingProj.thn_anggaran)
+        : "",
+      kd_anggaran: existingProj?.kd_anggaran || "",
     });
     setEditPhoto(asset.photo || null);
     setShowDetailModal(false);
@@ -1867,11 +2180,18 @@ const ViewAsset = () => {
   };
 
   const handleSaveEdit = () => {
+    const resolvedId =
+      editData.id_pekerjaan ||
+      (editData.kd_anggaran
+        ? OPEX_ANGGARAN.find((o) => o.kd_anggaran === editData.kd_anggaran)
+            ?.id_pekerjaan || null
+        : null);
+    const saveData = { ...editData, id_pekerjaan: resolvedId };
     const updated = assets.map((a) =>
       a.id === selectedAsset.id
         ? {
             ...a,
-            ...editData,
+            ...saveData,
             value: parseFloat(editData.value) || 0,
             photo: editPhoto,
           }
@@ -1880,7 +2200,7 @@ const ViewAsset = () => {
     setAssets(updated);
     setSelectedAsset((prev) => ({
       ...prev,
-      ...editData,
+      ...saveData,
       value: parseFloat(editData.value) || 0,
       photo: editPhoto,
     }));
@@ -1897,7 +2217,8 @@ const ViewAsset = () => {
       "Zona",
       "Subzona",
       "Status",
-      "Budget Type",
+      "ID Pekerjaan",
+      "Nama Pekerjaan",
       "Nilai",
       "Tgl Pengadaan",
     ];
@@ -1910,11 +2231,14 @@ const ViewAsset = () => {
       a.zona,
       a.subzona,
       a.status,
-      a.budgetType,
+      a.id_pekerjaan || "",
+      getProjectName(a.id_pekerjaan),
       a.value,
       a.procurementDate,
     ]);
-    const csv = [headers, ...rows].map((r) => r.join(",")).join("\n");
+    const csv = [headers, ...rows]
+      .map((r) => r.map((v) => `"${v}"`).join(","))
+      .join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -1943,7 +2267,11 @@ const ViewAsset = () => {
   const getHistoryCount = (id) =>
     MOCK_ALL_BORROWS.filter((b) => b.code === id).length;
 
-  // ── RENDER ──────────────────────────────────────────────────────────────────
+  // ── Helper: get the CAPEX entry for the currently selected filter anggaran ──
+  const filterAnggaranCapexEntry = filterAnggaran
+    ? CAPEX_ANGGARAN.find((a) => a.kd_anggaran === filterAnggaran)
+    : null;
+
   return (
     <>
       <div className="view-asset-wrapper">
@@ -2036,7 +2364,6 @@ const ViewAsset = () => {
             />
           </div>
           <div className="filter-actions">
-            {/* View toggle */}
             <div className="view-toggle">
               <button
                 className={`view-toggle-btn ${viewMode === "table" ? "active" : ""}`}
@@ -2067,9 +2394,11 @@ const ViewAsset = () => {
           </div>
         </div>
 
+        {/* ── FILTER PANEL — CASCADE Anggaran → Pekerjaan ── */}
         {showFilterPanel && (
           <div className="filter-panel">
             <div className="filter-panel-grid">
+              {/* Filter 1: Status */}
               <div className="filter-group">
                 <label>Status</label>
                 <select
@@ -2085,6 +2414,8 @@ const ViewAsset = () => {
                   <option>Maintenance</option>
                 </select>
               </div>
+
+              {/* Filter 2: Kategori */}
               <div className="filter-group">
                 <label>Kategori</label>
                 <select
@@ -2101,6 +2432,8 @@ const ViewAsset = () => {
                   <option>Furniture</option>
                 </select>
               </div>
+
+              {/* Filter 3: Branch */}
               <div className="filter-group">
                 <label>Branch</label>
                 <select
@@ -2121,21 +2454,105 @@ const ViewAsset = () => {
                     ))}
                 </select>
               </div>
+
+              {/* Filter 4 + 5: Cascade Nama Anggaran → Nama Pekerjaan dalam satu kolom */}
               <div className="filter-group">
-                <label>Budget Type</label>
+                <label>Nama Anggaran</label>
+                {/* Step 1 — Nama Anggaran (tanpa cascade-step-label agar sejajar dengan filter lain) */}
                 <select
-                  value={filterBudget}
+                  value={filterAnggaran}
                   onChange={(e) => {
-                    setFilterBudget(e.target.value);
+                    setFilterAnggaran(e.target.value);
+                    setFilterProject("");
                     setCurrentPage(1);
                   }}
+                  className={filterAnggaran ? "cascade-select--filled" : ""}
                 >
-                  <option value="">Semua</option>
-                  <option value="CAPEX">CAPEX</option>
-                  <option value="OPEX">OPEX</option>
+                  <option value="">Semua Anggaran</option>
+                  <optgroup label="CAPEX">
+                    {CAPEX_ANGGARAN.map((a) => (
+                      <option key={a.kd_anggaran} value={a.kd_anggaran}>
+                        [{a.thn_anggaran}] {a.nm_anggaran}
+                      </option>
+                    ))}
+                  </optgroup>
+                  <optgroup label="OPEX">
+                    {OPEX_ANGGARAN.map((o) => (
+                      <option key={o.kd_anggaran} value={o.kd_anggaran}>
+                        [{o.thn_anggaran}] {o.nm_anggaran}
+                      </option>
+                    ))}
+                  </optgroup>
                 </select>
+
+                {/* Step 2 — Nama Pekerjaan (hanya muncul jika anggaran CAPEX dipilih) */}
+                {filterAnggaranCapexEntry && (
+                  <div style={{ marginTop: 8 }}>
+                    <label
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 6,
+                        fontSize: 11,
+                        fontWeight: 700,
+                        color: "var(--cyan)",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.5px",
+                        marginBottom: 6,
+                      }}
+                    >
+                      <span style={{ opacity: 0.7 }}>↳</span>
+                      Nama Pekerjaan
+                      <span
+                        style={{
+                          background: "#e0f2fe",
+                          color: "#0369a1",
+                          fontSize: 10,
+                          fontWeight: 700,
+                          padding: "1px 6px",
+                          borderRadius: 20,
+                          border: "1px solid #bae6fd",
+                        }}
+                      >
+                        {filterAnggaranCapexEntry.pekerjaan.length}
+                      </span>
+                    </label>
+                    <select
+                      value={filterProject}
+                      onChange={(e) => {
+                        setFilterProject(e.target.value);
+                        setCurrentPage(1);
+                      }}
+                      className={filterProject ? "cascade-select--filled" : ""}
+                      style={{
+                        padding: "9px 12px",
+                        border: "1px solid var(--border)",
+                        borderRadius: 9,
+                        fontSize: 13,
+                        color: "#334155",
+                        background: "var(--white)",
+                        outline: "none",
+                        width: "100%",
+                        fontFamily: "var(--font)",
+                      }}
+                    >
+                      <option value="">Semua Pekerjaan</option>
+                      {filterAnggaranCapexEntry.pekerjaan.map((p) => (
+                        <option
+                          key={p.id_pekerjaan}
+                          value={String(p.id_pekerjaan)}
+                        >
+                          {p.nm_pekerjaan.length > 80
+                            ? p.nm_pekerjaan.substring(0, 80) + "…"
+                            : p.nm_pekerjaan}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
             </div>
+
             {activeFiltersCount > 0 && (
               <button className="filter-reset-btn" onClick={resetFilters}>
                 <Icon.Times /> Reset Filter
@@ -2159,7 +2576,6 @@ const ViewAsset = () => {
           </div>
 
           {viewMode === "grid" ? (
-            /* ── GRID CARD VIEW ── */
             <>
               {paginated.length === 0 ? (
                 <div className="empty-state">
@@ -2177,6 +2593,7 @@ const ViewAsset = () => {
                 <div className="asset-card-grid">
                   {paginated.map((asset) => {
                     const imgSrc = getAssetImage(asset);
+                    const project = getProjectById(asset.id_pekerjaan);
                     return (
                       <div
                         key={asset.id}
@@ -2227,12 +2644,21 @@ const ViewAsset = () => {
                           <code className="asset-card-id">{asset.id}</code>
                           <div className="asset-card-meta">
                             <span className="cat-badge">{asset.category}</span>
-                            <span
-                              className={`budget-badge ${asset.budgetType?.toLowerCase()}`}
-                            >
-                              {asset.budgetType || "—"}
-                            </span>
+                            <ProjectBadge id_pekerjaan={asset.id_pekerjaan} />
                           </div>
+                          {project && (
+                            <div
+                              className="asset-card-project"
+                              title={project.nm_pekerjaan}
+                            >
+                              <Icon.Briefcase />
+                              <span>
+                                {project.nm_pekerjaan.length > 45
+                                  ? project.nm_pekerjaan.substring(0, 45) + "…"
+                                  : project.nm_pekerjaan}
+                              </span>
+                            </div>
+                          )}
                           <div className="asset-card-loc">
                             <Icon.MapPin /> {asset.branch} · {asset.zona}/
                             {asset.subzona}
@@ -2273,7 +2699,6 @@ const ViewAsset = () => {
               )}
             </>
           ) : (
-            /* ── TABLE VIEW ── */
             <table className="asset-table">
               <thead>
                 <tr>
@@ -2282,7 +2707,7 @@ const ViewAsset = () => {
                   <th>LOKASI</th>
                   <th>KATEGORI</th>
                   <th>TGL PENGADAAN</th>
-                  <th>BUDGET</th>
+                  <th>NAMA PEKERJAAN</th>
                   <th>NILAI</th>
                   <th>STATUS</th>
                   <th>AKSI</th>
@@ -2321,6 +2746,7 @@ const ViewAsset = () => {
                 ) : (
                   paginated.map((asset) => {
                     const imgSrc = getAssetImage(asset);
+                    const project = getProjectById(asset.id_pekerjaan);
                     return (
                       <tr
                         key={asset.id}
@@ -2374,11 +2800,19 @@ const ViewAsset = () => {
                           </div>
                         </td>
                         <td>
-                          <span
-                            className={`budget-badge ${asset.budgetType?.toLowerCase()}`}
-                          >
-                            {asset.budgetType || "—"}
-                          </span>
+                          <div className="project-cell">
+                            <ProjectBadge id_pekerjaan={asset.id_pekerjaan} />
+                            {project && (
+                              <div
+                                className="project-name-text"
+                                title={project.nm_pekerjaan}
+                              >
+                                {project.nm_pekerjaan.length > 40
+                                  ? project.nm_pekerjaan.substring(0, 40) + "…"
+                                  : project.nm_pekerjaan}
+                              </div>
+                            )}
+                          </div>
                         </td>
                         <td className="fw-bold">{fmt(asset.value)}</td>
                         <td>
@@ -2509,7 +2943,6 @@ const ViewAsset = () => {
               className="modal-content detail-modal"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Header sits ABOVE hero image — z-index kept high */}
               <div
                 className="modal-header"
                 style={{ position: "relative", zIndex: 10 }}
@@ -2525,7 +2958,6 @@ const ViewAsset = () => {
                   <Icon.Times />
                 </button>
               </div>
-
               <div className="detail-tab-bar">
                 <button
                   className={`detail-tab-btn ${detailTab === "info" ? "detail-tab-btn--active" : ""}`}
@@ -2545,7 +2977,6 @@ const ViewAsset = () => {
                   )}
                 </button>
               </div>
-
               {detailTab === "info" && (
                 <div className="detail-scroll">
                   <div className="detail-img-hero">
@@ -2626,19 +3057,33 @@ const ViewAsset = () => {
                         </span>
                       </div>
                       <div className="detail-item">
-                        <span className="detail-lbl">Budget Type</span>
-                        <span className="detail-val">
-                          <span
-                            className={`budget-badge ${selectedAsset.budgetType?.toLowerCase()}`}
-                          >
-                            {selectedAsset.budgetType || "—"}
-                          </span>
-                        </span>
-                      </div>
-                      <div className="detail-item">
                         <span className="detail-lbl">Tgl Pengadaan</span>
                         <span className="detail-val">
                           {fmtDate(selectedAsset.procurementDate)}
+                        </span>
+                      </div>
+                      <div className="detail-item detail-item--full">
+                        <span className="detail-lbl">Pekerjaan / Anggaran</span>
+                        <span className="detail-val">
+                          {selectedAsset.id_pekerjaan ? (
+                            <>
+                              <ProjectBadge
+                                id_pekerjaan={selectedAsset.id_pekerjaan}
+                              />
+                              <span
+                                style={{
+                                  fontSize: 11,
+                                  color: "#475569",
+                                  marginTop: 4,
+                                  display: "block",
+                                }}
+                              >
+                                {getProjectName(selectedAsset.id_pekerjaan)}
+                              </span>
+                            </>
+                          ) : (
+                            "—"
+                          )}
                         </span>
                       </div>
                       <div className="detail-item">
@@ -2651,7 +3096,6 @@ const ViewAsset = () => {
                   </div>
                 </div>
               )}
-
               {detailTab === "history" && (
                 <div className="detail-scroll">
                   <AssetHistoryTab
@@ -2660,7 +3104,6 @@ const ViewAsset = () => {
                   />
                 </div>
               )}
-
               <div className="modal-footer sticky-footer">
                 <button
                   className="btn-cancel"
@@ -2756,9 +3199,8 @@ const ViewAsset = () => {
                   <Icon.Times />
                 </button>
               </div>
-
               <div className="asset-form-scroll">
-                {/* SECTION A — Informasi Utama */}
+                {/* SECTION A */}
                 <div className="form-section-card">
                   <div className="fsc-header">
                     <div className="fsc-step">A</div>
@@ -2767,8 +3209,7 @@ const ViewAsset = () => {
                         <Icon.Tag /> Informasi Utama
                       </h4>
                       <p className="fsc-desc">
-                        Nama, kategori, status, nilai, budget, dan tanggal
-                        pengadaan
+                        Nama, kategori, status, nilai, dan tanggal pengadaan
                       </p>
                     </div>
                   </div>
@@ -2846,26 +3287,196 @@ const ViewAsset = () => {
                       />
                     </div>
                     <div className="form-group">
-                      <label>
-                        Budget Type <span className="req">*</span>
-                      </label>
-                      <select
-                        value={editData.budgetType || ""}
-                        onChange={(e) =>
-                          setEditData((p) => ({
-                            ...p,
-                            budgetType: e.target.value,
-                          }))
-                        }
-                      >
-                        <option value="">Pilih...</option>
-                        <option value="CAPEX">CAPEX — Investasi</option>
-                        <option value="OPEX">OPEX — Operasional</option>
-                      </select>
+                      <label>Nama Pekerjaan</label>
+                      <div className="cascade-selects">
+                        <div className="cascade-step">
+                          <span className="cascade-step-label">
+                            Tahun Anggaran
+                          </span>
+                          <select
+                            value={editData.thn_anggaran || ""}
+                            onChange={(e) =>
+                              setEditData((p) => ({
+                                ...p,
+                                thn_anggaran: e.target.value,
+                                kd_anggaran: "",
+                                id_pekerjaan: "",
+                              }))
+                            }
+                            className={
+                              !editData.thn_anggaran
+                                ? "inp--pending"
+                                : "cascade-select--filled"
+                            }
+                          >
+                            <option value="">— Pilih Tahun —</option>
+                            {ALL_TAHUN_LIST.map((t) => (
+                              <option key={t} value={String(t)}>
+                                {t}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        {editData.thn_anggaran &&
+                          (() => {
+                            const list = getAnggaranByTahun(
+                              editData.thn_anggaran,
+                            );
+                            const capexList = list.filter(
+                              (a) => a.jenis === "CAPEX",
+                            );
+                            const opexList = list.filter(
+                              (a) => a.jenis === "OPEX",
+                            );
+                            return (
+                              <div className="cascade-step">
+                                <span className="cascade-step-label">
+                                  Nama Anggaran
+                                </span>
+                                <select
+                                  value={editData.kd_anggaran || ""}
+                                  onChange={(e) =>
+                                    setEditData((p) => ({
+                                      ...p,
+                                      kd_anggaran: e.target.value,
+                                      id_pekerjaan: "",
+                                    }))
+                                  }
+                                  className={
+                                    !editData.kd_anggaran
+                                      ? "inp--pending"
+                                      : "cascade-select--filled"
+                                  }
+                                >
+                                  <option value="">— Pilih Anggaran —</option>
+                                  {capexList.length > 0 && (
+                                    <optgroup label="CAPEX">
+                                      {capexList.map((a) => (
+                                        <option
+                                          key={a.kd_anggaran}
+                                          value={a.kd_anggaran}
+                                        >
+                                          {a.nm_anggaran}
+                                        </option>
+                                      ))}
+                                    </optgroup>
+                                  )}
+                                  {opexList.length > 0 && (
+                                    <optgroup label="OPEX">
+                                      {opexList.map((a) => (
+                                        <option
+                                          key={a.kd_anggaran}
+                                          value={a.kd_anggaran}
+                                        >
+                                          {a.nm_anggaran}
+                                        </option>
+                                      ))}
+                                    </optgroup>
+                                  )}
+                                </select>
+                              </div>
+                            );
+                          })()}
+                        {editData.kd_anggaran &&
+                          (() => {
+                            const anggaranCapex = CAPEX_ANGGARAN.find(
+                              (a) => a.kd_anggaran === editData.kd_anggaran,
+                            );
+                            if (!anggaranCapex) return null;
+                            return (
+                              <div className="cascade-step">
+                                <span className="cascade-step-label">
+                                  Nama Pekerjaan
+                                </span>
+                                <select
+                                  value={editData.id_pekerjaan || ""}
+                                  onChange={(e) =>
+                                    setEditData((p) => ({
+                                      ...p,
+                                      id_pekerjaan: e.target.value,
+                                    }))
+                                  }
+                                  className={
+                                    !editData.id_pekerjaan
+                                      ? "inp--pending"
+                                      : "cascade-select--filled"
+                                  }
+                                >
+                                  <option value="">— Pilih Pekerjaan —</option>
+                                  {anggaranCapex.pekerjaan.map((p) => (
+                                    <option
+                                      key={p.id_pekerjaan}
+                                      value={String(p.id_pekerjaan)}
+                                    >
+                                      {p.nm_pekerjaan}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                            );
+                          })()}
+                      </div>
                     </div>
                   </div>
+                  {editData.kd_anggaran &&
+                    (() => {
+                      const isCapex = !!CAPEX_ANGGARAN.find(
+                        (a) => a.kd_anggaran === editData.kd_anggaran,
+                      );
+                      const opexEntry = !isCapex
+                        ? OPEX_ANGGARAN.find(
+                            (o) => o.kd_anggaran === editData.kd_anggaran,
+                          )
+                        : null;
+                      if (isCapex && !editData.id_pekerjaan) return null;
+                      const anggaran = isCapex
+                        ? CAPEX_ANGGARAN.find(
+                            (a) => a.kd_anggaran === editData.kd_anggaran,
+                          )
+                        : null;
+                      return (
+                        <div className="project-info-box project-info-box--full">
+                          <Icon.Briefcase />
+                          <div style={{ flex: 1 }}>
+                            <div className="project-info-label">
+                              {isCapex
+                                ? "Pekerjaan Terpilih"
+                                : "Anggaran Terpilih"}
+                            </div>
+                            <div className="project-info-meta">
+                              <span className="pim-tag pim-tag--year">
+                                📅 {editData.thn_anggaran}
+                              </span>
+                              {isCapex ? (
+                                <>
+                                  <span className="pim-tag pim-tag--kd">
+                                    {editData.kd_anggaran}
+                                  </span>
+                                  <span className="pim-tag pim-tag--anggaran">
+                                    {anggaran?.nm_anggaran}
+                                  </span>
+                                </>
+                              ) : (
+                                <>
+                                  <span className="pim-tag pim-tag--opex">
+                                    OPEX
+                                  </span>
+                                  <span className="pim-tag pim-tag--kd">
+                                    {opexEntry?.kd_akun}
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                            <div className="project-info-name">
+                              {isCapex
+                                ? getProjectName(editData.id_pekerjaan)
+                                : opexEntry?.nm_anggaran}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
                 </div>
-
                 {/* SECTION B — Foto */}
                 <div
                   className="form-section-card"
@@ -2884,10 +3495,7 @@ const ViewAsset = () => {
                         <Icon.PhotoSm /> Foto Aset{" "}
                         <span className="optional-badge">Opsional</span>
                       </h4>
-                      <p className="fsc-desc">
-                        Ganti atau hapus foto aset. Biarkan kosong untuk tetap
-                        menggunakan foto saat ini.
-                      </p>
+                      <p className="fsc-desc">Ganti atau hapus foto aset.</p>
                     </div>
                     {editPhoto && (
                       <div
@@ -2910,31 +3518,7 @@ const ViewAsset = () => {
                     )}
                   </div>
                   <PhotoUpload value={editPhoto} onChange={setEditPhoto} />
-                  {!editPhoto && editData.category && (
-                    <div
-                      style={{
-                        marginTop: 10,
-                        padding: "10px 14px",
-                        background: "#f0f9ff",
-                        border: "1px solid #bae6fd",
-                        borderRadius: 9,
-                        fontSize: 12,
-                        color: "#0369a1",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 8,
-                      }}
-                    >
-                      <Icon.InfoCircle />
-                      <span>
-                        Foto default kategori{" "}
-                        <strong>{editData.category}</strong> akan digunakan jika
-                        tidak ada foto yang diupload.
-                      </span>
-                    </div>
-                  )}
                 </div>
-
                 {/* SECTION C — Lokasi */}
                 <div className="form-section-card form-section-card--generate">
                   <div className="fsc-header">
@@ -2944,8 +3528,7 @@ const ViewAsset = () => {
                         <Icon.MapPin /> Lokasi Aset
                       </h4>
                       <p className="fsc-desc">
-                        Perbarui lokasi aset. Kode ID tidak akan berubah
-                        meskipun lokasi diperbarui.
+                        Perbarui lokasi aset. Kode ID tidak akan berubah.
                       </p>
                     </div>
                   </div>
@@ -3061,7 +3644,6 @@ const ViewAsset = () => {
                   </div>
                 </div>
               </div>
-
               <div className="modal-footer sticky-footer">
                 <button
                   className="btn-cancel"
@@ -3103,7 +3685,6 @@ const ViewAsset = () => {
                   <Icon.Times />
                 </button>
               </div>
-
               <div className="form-step-bar">
                 {[
                   "Informasi",
@@ -3121,7 +3702,6 @@ const ViewAsset = () => {
                   </div>
                 ))}
               </div>
-
               <form
                 className="asset-form-scroll"
                 onSubmit={(e) => e.preventDefault()}
@@ -3136,7 +3716,7 @@ const ViewAsset = () => {
                       </h4>
                       <p className="fsc-desc">
                         Nama, kategori, tanggal pengadaan, status, nilai, dan
-                        tipe anggaran
+                        pekerjaan terkait
                       </p>
                     </div>
                   </div>
@@ -3210,26 +3790,199 @@ const ViewAsset = () => {
                     </div>
                     <div className="form-group">
                       <label>
-                        Budget Type <span className="req">*</span>
+                        Nama Pekerjaan <span className="req">*</span>
                       </label>
-                      <select
-                        value={formData.budgetType}
-                        onChange={(e) =>
-                          setFormData((p) => ({
-                            ...p,
-                            budgetType: e.target.value,
-                          }))
-                        }
-                      >
-                        <option value="">Pilih...</option>
-                        <option value="CAPEX">CAPEX — Investasi</option>
-                        <option value="OPEX">OPEX — Operasional</option>
-                      </select>
+                      <div className="cascade-selects">
+                        <div className="cascade-step">
+                          <span className="cascade-step-label">
+                            Tahun Anggaran
+                          </span>
+                          <select
+                            value={formData.thn_anggaran}
+                            onChange={(e) =>
+                              setFormData((p) => ({
+                                ...p,
+                                thn_anggaran: e.target.value,
+                                kd_anggaran: "",
+                                id_pekerjaan: "",
+                              }))
+                            }
+                            className={
+                              !formData.thn_anggaran
+                                ? "inp--pending"
+                                : "cascade-select--filled"
+                            }
+                          >
+                            <option value="">— Pilih Tahun —</option>
+                            {ALL_TAHUN_LIST.map((t) => (
+                              <option key={t} value={String(t)}>
+                                {t}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        {formData.thn_anggaran &&
+                          (() => {
+                            const list = getAnggaranByTahun(
+                              formData.thn_anggaran,
+                            );
+                            const capexList = list.filter(
+                              (a) => a.jenis === "CAPEX",
+                            );
+                            const opexList = list.filter(
+                              (a) => a.jenis === "OPEX",
+                            );
+                            return (
+                              <div className="cascade-step">
+                                <span className="cascade-step-label">
+                                  Nama Anggaran
+                                </span>
+                                <select
+                                  value={formData.kd_anggaran}
+                                  onChange={(e) =>
+                                    setFormData((p) => ({
+                                      ...p,
+                                      kd_anggaran: e.target.value,
+                                      id_pekerjaan: "",
+                                    }))
+                                  }
+                                  className={
+                                    !formData.kd_anggaran
+                                      ? "inp--pending"
+                                      : "cascade-select--filled"
+                                  }
+                                >
+                                  <option value="">— Pilih Anggaran —</option>
+                                  {capexList.length > 0 && (
+                                    <optgroup label="CAPEX">
+                                      {capexList.map((a) => (
+                                        <option
+                                          key={a.kd_anggaran}
+                                          value={a.kd_anggaran}
+                                        >
+                                          {a.nm_anggaran}
+                                        </option>
+                                      ))}
+                                    </optgroup>
+                                  )}
+                                  {opexList.length > 0 && (
+                                    <optgroup label="OPEX">
+                                      {opexList.map((a) => (
+                                        <option
+                                          key={a.kd_anggaran}
+                                          value={a.kd_anggaran}
+                                        >
+                                          {a.nm_anggaran}
+                                        </option>
+                                      ))}
+                                    </optgroup>
+                                  )}
+                                </select>
+                              </div>
+                            );
+                          })()}
+                        {formData.kd_anggaran &&
+                          (() => {
+                            const anggaranCapex = CAPEX_ANGGARAN.find(
+                              (a) => a.kd_anggaran === formData.kd_anggaran,
+                            );
+                            if (!anggaranCapex) return null;
+                            return (
+                              <div className="cascade-step">
+                                <span className="cascade-step-label">
+                                  Nama Pekerjaan
+                                </span>
+                                <select
+                                  value={formData.id_pekerjaan}
+                                  onChange={(e) =>
+                                    setFormData((p) => ({
+                                      ...p,
+                                      id_pekerjaan: e.target.value,
+                                    }))
+                                  }
+                                  className={
+                                    !formData.id_pekerjaan
+                                      ? "inp--pending"
+                                      : "cascade-select--filled"
+                                  }
+                                >
+                                  <option value="">— Pilih Pekerjaan —</option>
+                                  {anggaranCapex.pekerjaan.map((p) => (
+                                    <option
+                                      key={p.id_pekerjaan}
+                                      value={String(p.id_pekerjaan)}
+                                    >
+                                      {p.nm_pekerjaan}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                            );
+                          })()}
+                      </div>
                     </div>
                   </div>
+                  {formData.kd_anggaran &&
+                    (() => {
+                      const isCapex = !!CAPEX_ANGGARAN.find(
+                        (a) => a.kd_anggaran === formData.kd_anggaran,
+                      );
+                      const opexEntry = !isCapex
+                        ? OPEX_ANGGARAN.find(
+                            (o) => o.kd_anggaran === formData.kd_anggaran,
+                          )
+                        : null;
+                      const anggaran = isCapex
+                        ? CAPEX_ANGGARAN.find(
+                            (a) => a.kd_anggaran === formData.kd_anggaran,
+                          )
+                        : null;
+                      if (isCapex && !formData.id_pekerjaan) return null;
+                      return (
+                        <div className="project-info-box project-info-box--full">
+                          <Icon.Briefcase />
+                          <div style={{ flex: 1 }}>
+                            <div className="project-info-label">
+                              {isCapex
+                                ? "Pekerjaan Terpilih"
+                                : "Anggaran Terpilih"}
+                            </div>
+                            <div className="project-info-meta">
+                              <span className="pim-tag pim-tag--year">
+                                📅 {formData.thn_anggaran}
+                              </span>
+                              {isCapex ? (
+                                <>
+                                  <span className="pim-tag pim-tag--kd">
+                                    {formData.kd_anggaran}
+                                  </span>
+                                  <span className="pim-tag pim-tag--anggaran">
+                                    {anggaran?.nm_anggaran}
+                                  </span>
+                                </>
+                              ) : (
+                                <>
+                                  <span className="pim-tag pim-tag--opex">
+                                    OPEX
+                                  </span>
+                                  <span className="pim-tag pim-tag--kd">
+                                    {opexEntry?.kd_akun}
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                            <div className="project-info-name">
+                              {isCapex
+                                ? getProjectName(formData.id_pekerjaan)
+                                : opexEntry?.nm_anggaran}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
                 </div>
 
-                {/* SECTION 02 — FOTO (NEW) */}
+                {/* SECTION 02 — FOTO */}
                 <div
                   className="form-section-card"
                   style={{
@@ -3244,7 +3997,7 @@ const ViewAsset = () => {
                     <div className="fsc-step fsc-step--photo">02</div>
                     <div className="fsc-titles">
                       <h4 className="fsc-title">
-                        <Icon.PhotoSm /> Foto Aset
+                        <Icon.PhotoSm /> Foto Aset{" "}
                         <span className="optional-badge">Opsional</span>
                       </h4>
                       <p className="fsc-desc">
@@ -3369,40 +4122,55 @@ const ViewAsset = () => {
                     </button>
                   </div>
                   {customSpecs.length === 0 && (
-                    <p className="empty-text">
-                      Belum ada spesifikasi tambahan.
-                    </p>
+                    <div className="spec-empty-state">
+                      <span className="spec-empty-icon">⚙</span>
+                      <span>
+                        Belum ada spesifikasi tambahan. Klik{" "}
+                        <strong>+ Tambah</strong> untuk menambahkan.
+                      </span>
+                    </div>
                   )}
                   {customSpecs.map((spec, i) => (
                     <div className="custom-spec-row" key={i}>
-                      <input
-                        type="text"
-                        placeholder="Nama Spesifikasi"
-                        value={spec.key}
-                        onChange={(e) => {
-                          const n = [...customSpecs];
-                          n[i] = { ...n[i], key: e.target.value };
-                          setCustomSpecs(n);
-                        }}
-                      />
-                      <input
-                        type="text"
-                        placeholder="Nilai"
-                        value={spec.value}
-                        onChange={(e) => {
-                          const n = [...customSpecs];
-                          n[i] = { ...n[i], value: e.target.value };
-                          setCustomSpecs(n);
-                        }}
-                      />
+                      <div className="spec-index">{i + 1}</div>
+                      <div className="spec-input-wrap">
+                        <input
+                          type="text"
+                          className="spec-input"
+                          placeholder=" "
+                          value={spec.key}
+                          onChange={(e) => {
+                            const n = [...customSpecs];
+                            n[i] = { ...n[i], key: e.target.value };
+                            setCustomSpecs(n);
+                          }}
+                        />
+                        <label className="spec-float-label">Nama Atribut</label>
+                      </div>
+                      <div className="spec-divider">:</div>
+                      <div className="spec-input-wrap spec-input-wrap--value">
+                        <input
+                          type="text"
+                          className="spec-input"
+                          placeholder=" "
+                          value={spec.value}
+                          onChange={(e) => {
+                            const n = [...customSpecs];
+                            n[i] = { ...n[i], value: e.target.value };
+                            setCustomSpecs(n);
+                          }}
+                        />
+                        <label className="spec-float-label">Nilai</label>
+                      </div>
                       <button
                         type="button"
-                        className="btn-trash"
+                        className="btn-trash spec-trash"
                         onClick={() => {
                           const n = [...customSpecs];
                           n.splice(i, 1);
                           setCustomSpecs(n);
                         }}
+                        title="Hapus"
                       >
                         <Icon.SmallTrash />
                       </button>
@@ -3607,7 +4375,6 @@ const ViewAsset = () => {
                   )}
                 </div>
               </form>
-
               <div className="modal-footer sticky-footer">
                 <button
                   type="button"
