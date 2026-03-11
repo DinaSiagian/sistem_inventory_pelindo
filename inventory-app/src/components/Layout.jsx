@@ -28,7 +28,7 @@ const Layout = () => {
     { path: "/assets", label: "Inventory Aset", icon: <FaBox /> },
     {
       path: "/peminjaman",
-      label: "Peminjaman & Pengembalian Aset",
+      label: "BAST Aset",
       icon: <FaHandHolding />,
     },
     { category: "Keuangan & Proyek" },

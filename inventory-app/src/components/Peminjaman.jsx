@@ -30,10 +30,13 @@ const Icon = {
   ArrowRight: () => (<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>),
   ClipboardEmpty: () => (<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /><rect x="8" y="2" width="8" height="4" rx="1" ry="1" /></svg>),
   Dots: () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5" /><circle cx="12" cy="12" r="1.5" /><circle cx="12" cy="19" r="1.5" /></svg>),
+  Download: () => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>),
+  Printer: () => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9" /><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect x="6" y="14" width="12" height="8" /></svg>),
+  UserArrow: () => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><polyline points="19 8 21 10 19 12" /><line x1="15" y1="10" x2="21" y2="10" /></svg>),
 };
 
 // ─── CONFIG & MOCK DATA ────────────────────────────────────────
-const LOGGED_IN_ADMIN_ID = 1; // Asumsi Super Admin yang sedang login (Joy)
+const LOGGED_IN_ADMIN_ID = 1;
 
 const conditionConfig = {
   GOOD: { label: "Baik", color: "#16a34a", bg: "#dcfce7" },
@@ -73,36 +76,220 @@ const mockAssets = [
 ];
 
 const mockUsers = [
-  { id: 1, name: "Joy Valeda Silalahi", branch: "Jakarta" }, // Super Admin
-  { id: 2, name: "Dina Marlina Siagian", branch: "Jakarta" },
-  { id: 3, name: "Andi Pratama", branch: "Surabaya" },
-  { id: 4, name: "Sari Dewi", branch: "Jakarta" },
-  { id: 5, name: "Rini Handayani", branch: "Medan" },
+  { id: 1, name: "Joy Valeda Silalahi", branch: "Jakarta", jabatan: "Super Admin" },
+  { id: 2, name: "Dina Marlina Siagian", branch: "Jakarta", jabatan: "Staff IT" },
+  { id: 3, name: "Andi Pratama", branch: "Surabaya", jabatan: "IT Support" },
+  { id: 4, name: "Sari Dewi", branch: "Jakarta", jabatan: "Staff Operasional" },
+  { id: 5, name: "Rini Handayani", branch: "Medan", jabatan: "Manager IT" },
 ];
 
 const mockSubzona = ["Ruang IT", "Terminal 1", "Terminal 2", "Terminal 3", "Ruang Admin", "Data Center", "Ruang Network", "Gudang", "Luar Kota / Dinas"];
 
-// Mock data yang menyesuaikan dengan kolom relasi baru
 const initBorrows = [
-  { id: 1, code: "SPMT-LPT-01", name: "Laptop Lenovo ThinkPad X1", borrow_date: "2026-02-10T09:00:00", due_date: "2026-03-10", performed_by_id: 1, borrower_id: 3, from_zone: "Ruang IT", to_zone: "Terminal 2", reason: "Kebutuhan operasional proyek", condition: "GOOD", attachment: "ba_pinjam_lpt01.pdf", notes: "Dibawa ke lokasi proyek", is_returned: false },
-  { id: 2, code: "SPMT-LPT-03", name: "Laptop HP EliteBook 840", borrow_date: "2026-02-20T10:00:00", due_date: "2026-03-05", performed_by_id: 1, borrower_id: 4, from_zone: "Terminal 2", to_zone: "Terminal 1", reason: "Rotasi aset antar terminal", condition: "GOOD", attachment: null, notes: "", is_returned: false },
-  { id: 3, code: "SPMT-PC-01", name: "PC Desktop HP EliteDesk", borrow_date: "2026-01-15T08:00:00", due_date: "2026-02-15", performed_by_id: 1, borrower_id: 2, from_zone: "Ruang Admin", to_zone: "Terminal 3", reason: "Penggantian sementara unit rusak", condition: "GOOD", attachment: "ba_pinjam_pc01.pdf", notes: "Unit pengganti sementara", is_returned: false },
-  { id: 4, code: "SPMT-SWT-01", name: "Switch Cisco Catalyst 9300", borrow_date: "2026-02-28T14:00:00", due_date: "2026-03-28", performed_by_id: 1, borrower_id: 1, from_zone: "Ruang Network", to_zone: "Data Center", reason: "Upgrade infrastruktur jaringan", condition: "GOOD", attachment: null, notes: "", is_returned: false },
-  { id: 5, code: "SPMT-LPT-02", name: "Laptop Dell Latitude 5420", borrow_date: "2026-03-01T11:00:00", due_date: "2026-04-01", performed_by_id: 1, borrower_id: 5, from_zone: "Terminal 1", to_zone: "Medan - Kantor Cabang", reason: "Keperluan dinas luar kota", condition: "GOOD", attachment: "ba_pinjam_lpt02.pdf", notes: "", is_returned: false },
+  { id: 1, code: "SPMT-LPT-01", name: "Laptop Lenovo ThinkPad X1", borrow_date: "2026-02-10T09:00:00", due_date: "2026-03-10", performed_by_id: 1, giver_id: 2, receiver_id: 3, from_zone: "Ruang IT", to_zone: "Terminal 2", reason: "Kebutuhan operasional proyek", condition: "GOOD", attachment: "ba_pinjam_lpt01.pdf", notes: "Dibawa ke lokasi proyek", is_returned: false },
+  { id: 2, code: "SPMT-LPT-03", name: "Laptop HP EliteBook 840", borrow_date: "2026-02-20T10:00:00", due_date: "2026-03-05", performed_by_id: 1, giver_id: 1, receiver_id: 4, from_zone: "Terminal 2", to_zone: "Terminal 1", reason: "Rotasi aset antar terminal", condition: "GOOD", attachment: null, notes: "", is_returned: false },
+  { id: 3, code: "SPMT-PC-01", name: "PC Desktop HP EliteDesk", borrow_date: "2026-01-15T08:00:00", due_date: "2026-02-15", performed_by_id: 1, giver_id: 2, receiver_id: 2, from_zone: "Ruang Admin", to_zone: "Terminal 3", reason: "Penggantian sementara unit rusak", condition: "GOOD", attachment: "ba_pinjam_pc01.pdf", notes: "Unit pengganti sementara", is_returned: false },
+  { id: 4, code: "SPMT-SWT-01", name: "Switch Cisco Catalyst 9300", borrow_date: "2026-02-28T14:00:00", due_date: "2026-03-28", performed_by_id: 1, giver_id: 5, receiver_id: 1, from_zone: "Ruang Network", to_zone: "Data Center", reason: "Upgrade infrastruktur jaringan", condition: "GOOD", attachment: null, notes: "", is_returned: false },
+  { id: 5, code: "SPMT-LPT-02", name: "Laptop Dell Latitude 5420", borrow_date: "2026-03-01T11:00:00", due_date: "2026-04-01", performed_by_id: 1, giver_id: 1, receiver_id: 5, from_zone: "Terminal 1", to_zone: "Medan - Kantor Cabang", reason: "Keperluan dinas luar kota", condition: "GOOD", attachment: "ba_pinjam_lpt02.pdf", notes: "", is_returned: false },
 ];
 
 const initReturns = [
-  { id: 101, original_id: 3, code: "SPMT-PC-02", name: "PC Desktop Dell OptiPlex", borrow_date: "2025-11-01T09:00:00", return_date: "2025-12-01T14:30:00", performed_by_id: 1, borrower_id: 2, from_zone: "Ruang Admin", to_zone: "Terminal 1", reason: "Keperluan proyek", return_condition: "GOOD", return_notes: "Dikembalikan dalam kondisi baik", attachment: "ba_kembali_pc02.pdf" },
-  { id: 102, original_id: null, code: "SPMT-UPS-01", name: "UPS APC Smart-UPS 3000", borrow_date: "2025-10-05T08:00:00", return_date: "2025-11-05T10:00:00", performed_by_id: 1, borrower_id: 3, from_zone: "Data Center", to_zone: "Terminal 2", reason: "Backup power darurat", return_condition: "MINOR_DAMAGE", return_notes: "Terdapat goresan pada casing", attachment: null },
-  { id: 103, original_id: 1, code: "SPMT-LPT-01", name: "Laptop Lenovo ThinkPad X1", borrow_date: "2025-09-10T09:00:00", return_date: "2025-10-10T16:00:00", performed_by_id: 1, borrower_id: 1, from_zone: "Ruang IT", to_zone: "Terminal 3", reason: "Dinas luar kantor", return_condition: "GOOD", return_notes: "", attachment: "ba_kembali_lpt01.pdf" },
+  { id: 101, original_id: 3, code: "SPMT-PC-02", name: "PC Desktop Dell OptiPlex", borrow_date: "2025-11-01T09:00:00", return_date: "2025-12-01T14:30:00", performed_by_id: 1, giver_id: 2, receiver_id: 2, from_zone: "Ruang Admin", to_zone: "Terminal 1", reason: "Keperluan proyek", return_condition: "GOOD", return_notes: "Dikembalikan dalam kondisi baik", attachment: "ba_kembali_pc02.pdf" },
+  { id: 102, original_id: null, code: "SPMT-UPS-01", name: "UPS APC Smart-UPS 3000", borrow_date: "2025-10-05T08:00:00", return_date: "2025-11-05T10:00:00", performed_by_id: 1, giver_id: 3, receiver_id: 3, from_zone: "Data Center", to_zone: "Terminal 2", reason: "Backup power darurat", return_condition: "MINOR_DAMAGE", return_notes: "Terdapat goresan pada casing", attachment: null },
+  { id: 103, original_id: 1, code: "SPMT-LPT-01", name: "Laptop Lenovo ThinkPad X1", borrow_date: "2025-09-10T09:00:00", return_date: "2025-10-10T16:00:00", performed_by_id: 1, giver_id: 1, receiver_id: 1, from_zone: "Ruang IT", to_zone: "Terminal 3", reason: "Dinas luar kantor", return_condition: "GOOD", return_notes: "", attachment: "ba_kembali_lpt01.pdf" },
 ];
 
 // ─── HELPERS ───────────────────────────────────────────────────
-const getUser = (id) => mockUsers.find(u => u.id === id) || { name: "—", branch: "" };
+const getUser = (id) => mockUsers.find(u => u.id === id) || { name: "—", branch: "", jabatan: "" };
 const getAsset = (code) => mockAssets.find(a => a.code === code);
-const fmtDate = (d) => d ? new Date(d).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" }) : "—";
+const fmtDate = (d) => d ? new Date(d).toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" }) : "—";
+const fmtDateShort = (d) => d ? new Date(d).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" }) : "—";
 const fmtDT = (d) => d ? new Date(d).toLocaleString("id-ID", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "—";
 const isOverdue = (due) => due && new Date(due) < new Date();
+const genNomorBAST = (id, date) => {
+  const d = new Date(date);
+  return `BAST-IT/${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, "0")}/${String(id).padStart(4, "0")}`;
+};
+
+// ─── BAST PDF GENERATOR ─────────────────────────────────────────
+const generateBAST = (item, type = "borrow") => {
+  const isBorrow = type === "borrow";
+  const giver = getUser(item.giver_id);
+  const receiver = getUser(item.receiver_id);
+  const nomorBAST = genNomorBAST(item.id, item.borrow_date);
+  const tglDokumen = fmtDate(isBorrow ? item.borrow_date : item.return_date);
+  const kondisi = conditionConfig[isBorrow ? item.condition : item.return_condition];
+
+  const html = `<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Times New Roman', Times, serif; font-size: 12pt; color: #000; background: #fff; padding: 40px 50px; }
+  .kop { display: flex; align-items: center; gap: 20px; border-bottom: 3px double #000; padding-bottom: 14px; margin-bottom: 20px; }
+  .kop-logo { width: 70px; height: 70px; background: #003675; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 11pt; text-align: center; padding: 8px; flex-shrink: 0; }
+  .kop-text h1 { font-size: 14pt; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; }
+  .kop-text p { font-size: 10pt; color: #333; }
+  .judul-doc { text-align: center; margin: 24px 0 6px; }
+  .judul-doc h2 { font-size: 14pt; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; text-decoration: underline; }
+  .nomor-doc { text-align: center; font-size: 11pt; margin-bottom: 20px; color: #333; }
+  .intro { margin-bottom: 18px; line-height: 1.8; text-align: justify; }
+  .section-title { font-weight: bold; font-size: 11pt; margin: 18px 0 8px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #999; padding-bottom: 4px; }
+  table.detail { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+  table.detail td { padding: 6px 8px; font-size: 11pt; vertical-align: top; }
+  table.detail td:first-child { width: 38%; font-weight: 500; }
+  table.detail td:nth-child(2) { width: 4%; text-align: center; }
+  table.asset-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+  table.asset-table th { background: #003675; color: white; padding: 8px 10px; font-size: 10.5pt; font-weight: bold; border: 1px solid #003675; }
+  table.asset-table td { border: 1px solid #ccc; padding: 7px 10px; font-size: 11pt; }
+  table.asset-table tr:nth-child(even) td { background: #f4f7fb; }
+  .kondisi-badge { display: inline-block; padding: 2px 10px; border-radius: 4px; font-weight: bold; font-size: 10.5pt; background: ${kondisi?.bg}; color: ${kondisi?.color}; border: 1px solid ${kondisi?.color}; }
+  .pernyataan { margin: 18px 0; line-height: 1.9; text-align: justify; font-size: 11pt; }
+  .ttd-section { display: flex; justify-content: space-between; margin-top: 40px; gap: 20px; }
+  .ttd-box { flex: 1; text-align: center; }
+  .ttd-box .ttd-label { font-weight: bold; font-size: 11pt; margin-bottom: 4px; }
+  .ttd-box .ttd-role { font-size: 10pt; color: #555; margin-bottom: 70px; }
+  .ttd-box .ttd-nama { font-weight: bold; font-size: 11pt; border-top: 1.5px solid #000; padding-top: 6px; }
+  .ttd-box .ttd-jabatan { font-size: 10pt; color: #444; }
+  .footer-note { margin-top: 28px; padding: 10px 14px; background: #f8fafc; border-left: 4px solid #003675; font-size: 10pt; color: #555; line-height: 1.6; }
+  @media print {
+    body { padding: 20px 30px; }
+    .no-print { display: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- KOP SURAT -->
+<div class="kop">
+  <div class="kop-logo">PELINDO</div>
+  <div class="kop-text">
+    <h1>PT Pelabuhan Indonesia (Persero)</h1>
+    <p>Divisi Teknologi Informasi — Asset Management System</p>
+    <p>Jl. Medan Merdeka Timur No.16, Jakarta Pusat 10110</p>
+  </div>
+</div>
+
+<!-- JUDUL -->
+<div class="judul-doc">
+  <h2>Berita Acara Serah Terima Aset</h2>
+  <p style="font-size:11pt; margin-top:4px; font-style:italic; color:#555;">${isBorrow ? "Peminjaman / Pengeluaran Aset IT" : "Pengembalian Aset IT"}</p>
+</div>
+<div class="nomor-doc">Nomor: ${nomorBAST}</div>
+
+<!-- INTRO -->
+<div class="intro">
+  Pada hari ini, <strong>${tglDokumen}</strong>, yang bertanda tangan di bawah ini telah melaksanakan serah terima aset teknologi informasi 
+  milik PT Pelabuhan Indonesia (Persero), dengan rincian sebagai berikut:
+</div>
+
+<!-- PIHAK-PIHAK -->
+<div class="section-title">Pihak yang Terlibat</div>
+<table class="detail">
+  <tr>
+    <td>Pihak Pemberi / Penyerah</td>
+    <td>:</td>
+    <td><strong>${giver.name}</strong> &nbsp;|&nbsp; ${giver.jabatan} &nbsp;|&nbsp; ${giver.branch}</td>
+  </tr>
+  <tr>
+    <td>Pihak Penerima</td>
+    <td>:</td>
+    <td><strong>${receiver.name}</strong> &nbsp;|&nbsp; ${receiver.jabatan} &nbsp;|&nbsp; ${receiver.branch}</td>
+  </tr>
+  <tr>
+    <td>Dicatat oleh (Admin IT)</td>
+    <td>:</td>
+    <td>${getUser(item.performed_by_id).name} &nbsp;|&nbsp; ${getUser(item.performed_by_id).jabatan}</td>
+  </tr>
+</table>
+
+<!-- DETAIL TRANSAKSI -->
+<div class="section-title">Detail Transaksi</div>
+<table class="detail">
+  <tr><td>Tanggal Serah Terima</td><td>:</td><td>${tglDokumen}</td></tr>
+  ${isBorrow ? `<tr><td>Jatuh Tempo Pengembalian</td><td>:</td><td>${fmtDate(item.due_date)}</td></tr>` : `<tr><td>Tanggal Pengembalian</td><td>:</td><td>${fmtDate(item.return_date)}</td></tr>`}
+  <tr><td>Lokasi Asal</td><td>:</td><td>${item.from_zone}</td></tr>
+  <tr><td>Lokasi Tujuan</td><td>:</td><td>${item.to_zone}</td></tr>
+  <tr><td>Tujuan / Keperluan</td><td>:</td><td>${item.reason || "-"}</td></tr>
+  ${(!isBorrow && item.return_notes) ? `<tr><td>Catatan Pengembalian</td><td>:</td><td>${item.return_notes}</td></tr>` : ""}
+</table>
+
+<!-- DATA ASET -->
+<div class="section-title">Data Aset yang Diserahterimakan</div>
+<table class="asset-table">
+  <thead>
+    <tr>
+      <th>No.</th>
+      <th>Kode Aset</th>
+      <th>Nama / Deskripsi Aset</th>
+      <th>Kondisi</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align:center">1</td>
+      <td style="font-family:monospace; font-weight:bold">${item.code}</td>
+      <td>${item.name}</td>
+      <td><span class="kondisi-badge">${kondisi?.label || "-"}</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- PERNYATAAN -->
+<div class="pernyataan">
+  Dengan ditandatanganinya dokumen ini, kedua belah pihak menyatakan telah menerima dan menyerahkan aset tersebut di atas 
+  dalam kondisi yang tercantum, dan bertanggung jawab atas pemeliharaan dan keamanan aset selama berada dalam penguasaannya.
+  ${isBorrow
+    ? `Pihak penerima wajib mengembalikan aset paling lambat pada tanggal <strong>${fmtDate(item.due_date)}</strong>.`
+    : `Aset dinyatakan telah dikembalikan kepada pihak pemberi dalam kondisi <strong>${kondisi?.label}</strong>.`
+  }
+</div>
+
+<!-- TTD -->
+<div class="ttd-section">
+  <div class="ttd-box">
+    <div class="ttd-label">Pihak Pemberi / Penyerah</div>
+    <div class="ttd-role">(Menyerahkan Aset)</div>
+    <div class="ttd-nama">${giver.name}</div>
+    <div class="ttd-jabatan">${giver.jabatan} — ${giver.branch}</div>
+  </div>
+  <div class="ttd-box">
+    <div class="ttd-label">Pihak Penerima</div>
+    <div class="ttd-role">(Menerima Aset)</div>
+    <div class="ttd-nama">${receiver.name}</div>
+    <div class="ttd-jabatan">${receiver.jabatan} — ${receiver.branch}</div>
+  </div>
+  <div class="ttd-box">
+    <div class="ttd-label">Mengetahui</div>
+    <div class="ttd-role">(Admin IT / Sistem)</div>
+    <div class="ttd-nama">${getUser(item.performed_by_id).name}</div>
+    <div class="ttd-jabatan">${getUser(item.performed_by_id).jabatan}</div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer-note">
+  <strong>Catatan:</strong> Dokumen ini digenerate secara otomatis oleh sistem Asset Management PT Pelabuhan Indonesia (Persero). 
+  Nomor referensi: <strong>${nomorBAST}</strong>. 
+  Harap simpan dokumen ini sebagai bukti serah terima resmi.
+</div>
+
+<!-- PRINT BUTTON (tidak muncul saat print) -->
+<div class="no-print" style="margin-top:24px; text-align:center;">
+  <button onclick="window.print()" style="padding:10px 28px; background:#003675; color:white; border:none; border-radius:8px; font-size:13pt; cursor:pointer; font-family:inherit;">
+    🖨️ Cetak / Simpan PDF
+  </button>
+</div>
+
+</body>
+</html>`;
+
+  const blob = new Blob([html], { type: "text/html" });
+  const url = URL.createObjectURL(blob);
+  const win = window.open(url, "_blank");
+  if (win) win.focus();
+};
 
 // ─── STYLES ────────────────────────────────────────────────────
 const styles = `
@@ -177,8 +364,15 @@ const styles = `
 .pjm-ucell { display: flex; align-items: center; gap: .6rem; }
 .pjm-uav { width: 30px; height: 30px; border-radius: 50%; background: var(--blue-lt); color: var(--blue); font-weight: 700; font-size: .82rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .pjm-uav--green { background: var(--green-lt); color: var(--green); }
+.pjm-uav--orange { background: #fef3c7; color: #d97706; }
 .pjm-uname { font-size: .82rem; font-weight: 600; color: #1e293b; }
 .pjm-ubranch { font-size: .74rem; color: var(--slate-6); }
+/* User flow (pemberi → penerima) */
+.pjm-user-flow { display: flex; align-items: center; gap: 6px; }
+.pjm-user-mini { display: flex; align-items: center; gap: 5px; }
+.pjm-user-mini-av { width: 24px; height: 24px; border-radius: 50%; font-size: .7rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.pjm-user-mini-name { font-size: .77rem; font-weight: 600; color: var(--slate); white-space: nowrap; }
+.pjm-user-flow-arr { color: var(--slate-4); display: flex; }
 .pjm-loc-flow { display: flex; align-items: center; gap: .35rem; font-size: .79rem; flex-wrap: wrap; }
 .pjm-loc-f { color: var(--slate-6); }
 .pjm-loc-arr { color: var(--slate-4); display: flex; }
@@ -189,16 +383,21 @@ const styles = `
 .pjm-attach-sm { display: inline-flex; align-items: center; gap: 4px; font-size: .76rem; color: var(--blue); max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pjm-overdue-pill { font-size: .72rem; font-weight: 700; background: var(--red-lt); color: var(--red); padding: 2px 8px; border-radius: 99px; }
 
+/* Generate BAST button in table */
+.pjm-bast-gen-btn { display: inline-flex; align-items: center; gap: 4px; font-size: .73rem; font-weight: 700; color: #7c3aed; background: #f3e8ff; border: 1px solid #c4b5fd; border-radius: 6px; padding: 3px 8px; cursor: pointer; transition: all .15s; white-space: nowrap; font-family: inherit; }
+.pjm-bast-gen-btn:hover { background: #ede9fe; border-color: #a78bfa; transform: translateY(-1px); }
+
 /* ── ACTION DOTS DROPDOWN ── */
 .pjm-action-wrap { position: relative; display: inline-block; }
 .pjm-dot-btn { background: transparent; border: none; color: var(--slate-4); cursor: pointer; padding: 6px 8px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: background .15s, color .15s; line-height: 1; }
 .pjm-dot-btn:hover { background: var(--bg); color: #334155; }
-.pjm-dot-dropdown { position: absolute; right: 0; top: calc(100% + 4px); background: #fff; border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 12px 32px -6px rgba(0,0,0,0.14); z-index: 100; min-width: 185px; padding: 5px; animation: pjmDropIn 0.13s ease-out; }
+.pjm-dot-dropdown { position: absolute; right: 0; top: calc(100% + 4px); background: #fff; border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 12px 32px -6px rgba(0,0,0,0.14); z-index: 100; min-width: 195px; padding: 5px; animation: pjmDropIn 0.13s ease-out; }
 @keyframes pjmDropIn { from { opacity: 0; transform: translateY(-6px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
 .pjm-dot-dropdown button { width: 100%; background: none; border: none; padding: 9px 12px; text-align: left; font-size: 0.825rem; font-weight: 600; color: #334155; cursor: pointer; border-radius: 8px; display: flex; align-items: center; gap: 9px; transition: background .12s, color .12s; font-family: inherit; }
 .pjm-dot-dropdown button:hover { background: var(--bg); color: var(--slate); }
 .pjm-dot-dropdown button.dd-ret:hover { background: #d1fae5; color: #065f46; }
 .pjm-dot-dropdown button.dd-hist:hover { background: #f3e8ff; color: #6d28d9; }
+.pjm-dot-dropdown button.dd-bast:hover { background: #f3e8ff; color: #6d28d9; }
 .pjm-dot-dropdown button.dd-del { color: var(--red); }
 .pjm-dot-dropdown button.dd-del:hover { background: var(--red-lt); }
 .pjm-dot-dropdown hr { border: none; border-top: 1px solid var(--border); margin: 4px 0; }
@@ -212,13 +411,15 @@ const styles = `
 .pjm-btn-red { background: linear-gradient(135deg,#b91c1c,var(--red)); color: #fff; }
 .pjm-btn-ghost { background: var(--bg); color: #475569; border: 1.5px solid var(--border); }
 .pjm-btn-ghost:hover { background: #e9eef5; }
+.pjm-btn-purple { background: linear-gradient(135deg,#6d28d9,#7c3aed); color: #fff; box-shadow: 0 2px 8px rgba(124,58,237,.25); }
+.pjm-btn-purple:hover { filter: brightness(1.1); transform: translateY(-1px); }
 .pjm-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .85rem; padding: 4rem 1rem; background: #fff; border-radius: 14px; border: 1px solid var(--border); color: var(--slate-4); font-size: .9rem; box-shadow: var(--shadow); }
 .pjm-empty-ico { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
 .pjm-empty-ico--blue { background: var(--blue-lt); color: var(--blue); }
 .pjm-empty-ico--green { background: var(--green-lt); color: var(--green); }
 .pjm-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1rem; }
 .pjm-modal { background: #fff; border-radius: 18px; width: 100%; max-width: 520px; max-height: 92vh; display: flex; flex-direction: column; box-shadow: 0 24px 64px rgba(0,0,0,.2); overflow: hidden; }
-.pjm-modal--form { max-width: 600px; }
+.pjm-modal--form { max-width: 620px; }
 .pjm-modal--sm { max-width: 400px; }
 .pjm-modal--hist { max-width: 680px; }
 .pjm-modal-header { padding: 1.15rem 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); background: #fff; }
@@ -254,6 +455,13 @@ const styles = `
 .pjm-ric-lbl { font-size: .74rem; font-weight: 700; color: var(--slate-4); text-transform: uppercase; letter-spacing: .04em; min-width: 110px; }
 .pjm-text-blue { color: var(--blue); font-weight: 600; }
 .pjm-text-green { color: var(--green); font-weight: 600; }
+/* Section divider in form */
+.pjm-form-section { display: flex; align-items: center; gap: 10px; margin: 4px 0; }
+.pjm-form-section-label { font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; }
+.pjm-form-section-line { flex: 1; height: 1px; background: var(--border); }
+/* BAST auto-note */
+.pjm-bast-note { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; background: #f3e8ff; border: 1px solid #c4b5fd; border-radius: 10px; font-size: .81rem; color: #5b21b6; }
+.pjm-bast-note-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
 .pjm-detail-banner { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.1rem; border-radius: 12px; background: var(--bg); border: 1px solid var(--border); margin-bottom: .25rem; }
 .pjm-db-cat { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .pjm-db-name { font-size: .9rem; font-weight: 600; color: var(--slate); margin-top: 3px; }
@@ -353,10 +561,7 @@ function ActionDropdown({ id, activeId, setActiveId, items }) {
 
   return (
     <div className="pjm-action-wrap" ref={ref}>
-      <button
-        className="pjm-dot-btn"
-        onClick={(e) => { e.stopPropagation(); setActiveId(isOpen ? null : id); }}
-      >
+      <button className="pjm-dot-btn" onClick={(e) => { e.stopPropagation(); setActiveId(isOpen ? null : id); }}>
         <Icon.Dots />
       </button>
       {isOpen && (
@@ -364,13 +569,8 @@ function ActionDropdown({ id, activeId, setActiveId, items }) {
           {items.map((item, idx) => {
             if (item.type === "divider") return <hr key={idx} />;
             return (
-              <button
-                key={idx}
-                className={item.className || ""}
-                onClick={(e) => { e.stopPropagation(); item.onClick(); setActiveId(null); }}
-              >
-                {item.icon}
-                {item.label}
+              <button key={idx} className={item.className || ""} onClick={(e) => { e.stopPropagation(); item.onClick(); setActiveId(null); }}>
+                {item.icon}{item.label}
               </button>
             );
           })}
@@ -414,12 +614,14 @@ function SearchCombobox({ options, value, onChange, placeholder, renderLabel, re
               <input autoFocus value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Ketik untuk mencari..." />
             </div>
           )}
-          {filtered.length === 0 ? <div className="pjm-combo-empty">Tidak ada hasil untuk "{query}"</div> : filtered.map(o => (
-            <button key={o.value} type="button" className={`pjm-combo-item ${String(o.value) === String(value) ? "selected" : ""}`} onClick={() => { onChange(o.value); setOpen(false); setQuery(""); }}>
-              <span style={{ flex: 1 }}>{renderLabel(o)}</span>
-              {renderSub && <span className="pjm-combo-item-sub">{renderSub(o)}</span>}
-            </button>
-          ))}
+          {filtered.length === 0
+            ? <div className="pjm-combo-empty">Tidak ada hasil untuk "{query}"</div>
+            : filtered.map(o => (
+              <button key={o.value} type="button" className={`pjm-combo-item ${String(o.value) === String(value) ? "selected" : ""}`} onClick={() => { onChange(o.value); setOpen(false); setQuery(""); }}>
+                <span style={{ flex: 1 }}>{renderLabel(o)}</span>
+                {renderSub && <span className="pjm-combo-item-sub">{renderSub(o)}</span>}
+              </button>
+            ))}
         </div>
       )}
     </div>
@@ -427,7 +629,7 @@ function SearchCombobox({ options, value, onChange, placeholder, renderLabel, re
 }
 
 // ─── PDF UPLOAD ────────────────────────────────────────────────
-function PdfUpload({ value, onChange, label = "Berita Acara (PDF)" }) {
+function PdfUpload({ value, onChange }) {
   const [drag, setDrag] = useState(false);
   const inputRef = useRef(null);
   const handleFile = (file) => {
@@ -437,8 +639,10 @@ function PdfUpload({ value, onChange, label = "Berita Acara (PDF)" }) {
   };
   const fmtSize = (b) => b < 1024 * 1024 ? (b / 1024).toFixed(1) + " KB" : (b / (1024 * 1024)).toFixed(1) + " MB";
   return (
-    <div className="pjm-fg">
-      <label style={{ display: "flex", alignItems: "center", gap: 4 }}><Icon.Paperclip /> {label}</label>
+    <div style={{ display: "flex", flexDirection: "column", gap: ".35rem" }}>
+      <label style={{ fontSize: ".81rem", fontWeight: 600, color: "#475569", display: "flex", alignItems: "center", gap: 4 }}>
+        <Icon.Paperclip /> Lampiran BAST (PDF) &nbsp;<span style={{ fontSize: ".72rem", color: "var(--slate-4)", fontWeight: 400 }}>— Opsional, atau generate otomatis di bawah</span>
+      </label>
       {value ? (
         <div className="pjm-file-preview">
           <span style={{ color: "var(--blue)", display: "flex" }}><Icon.FileText /></span>
@@ -458,6 +662,25 @@ function PdfUpload({ value, onChange, label = "Berita Acara (PDF)" }) {
   );
 }
 
+// ─── USER FLOW CELL (Pemberi → Penerima) ──────────────────────
+function UserFlowCell({ giverId, receiverId, colorScheme = "blue" }) {
+  const giver = getUser(giverId);
+  const receiver = getUser(receiverId);
+  return (
+    <div className="pjm-user-flow">
+      <div className="pjm-user-mini">
+        <div className="pjm-user-mini-av" style={{ background: "#fef3c7", color: "#d97706" }}>{giver.name.charAt(0)}</div>
+        <div><div className="pjm-user-mini-name">{giver.name}</div><div style={{ fontSize: ".69rem", color: "#94a3b8" }}>Pemberi</div></div>
+      </div>
+      <span className="pjm-user-flow-arr"><Icon.ArrowRight /></span>
+      <div className="pjm-user-mini">
+        <div className="pjm-user-mini-av" style={{ background: colorScheme === "green" ? "#dcfce7" : "#dbeafe", color: colorScheme === "green" ? "#16a34a" : "#2563eb" }}>{receiver.name.charAt(0)}</div>
+        <div><div className="pjm-user-mini-name">{receiver.name}</div><div style={{ fontSize: ".69rem", color: "#94a3b8" }}>Penerima</div></div>
+      </div>
+    </div>
+  );
+}
+
 // ─── ASSET HISTORY MODAL ──────────────────────────────────────
 function AssetHistoryModal({ assetCode, assetName, borrows, returns, onClose }) {
   const allHistory = useMemo(() => {
@@ -473,10 +696,7 @@ function AssetHistoryModal({ assetCode, assetName, borrows, returns, onClose }) 
     <div className="pjm-overlay" onClick={onClose}>
       <div className="pjm-modal pjm-modal--hist" onClick={(e) => e.stopPropagation()}>
         <div className="pjm-modal-header pjm-mh--purple">
-          <h2>
-            <span className="pjm-mh-ico pjm-mh-ico--purple"><Icon.History /></span>
-            Riwayat Peminjaman Aset
-          </h2>
+          <h2><span className="pjm-mh-ico pjm-mh-ico--purple"><Icon.History /></span>Riwayat Serah Terima Aset</h2>
           <button className="pjm-modal-close" onClick={onClose}><Icon.Times /></button>
         </div>
         <div className="pjm-modal-body">
@@ -493,26 +713,34 @@ function AssetHistoryModal({ assetCode, assetName, borrows, returns, onClose }) 
             <div className="pjm-hist-empty">
               <span style={{ color: "#cbd5e1" }}><Icon.ClipboardEmpty /></span>
               <span className="pjm-hist-empty-title">Belum Ada Riwayat</span>
-              <span className="pjm-hist-empty-sub">Aset ini belum pernah dipinjam.</span>
+              <span className="pjm-hist-empty-sub">Aset ini belum pernah diserahterimakan.</span>
             </div>
           ) : (
             <div className="pjm-hist-table-wrap">
               <table className="pjm-hist-table">
                 <thead>
-                  <tr><th>#</th><th>Peminjam</th><th>Dari → Ke</th><th>Tgl Pinjam</th><th>Tgl Kembali</th><th>Kondisi</th><th>Status</th></tr>
+                  <tr><th>#</th><th>Pemberi → Penerima</th><th>Dari → Ke</th><th>Tgl Pinjam</th><th>Tgl Kembali</th><th>Kondisi</th><th>Status</th></tr>
                 </thead>
                 <tbody>
                   {allHistory.map((h, idx) => {
-                    const user = getUser(h.borrower_id || h.performed_by_id);
+                    const giver = getUser(h.giver_id);
+                    const receiver = getUser(h.receiver_id);
                     const condKey = h.is_returned ? h.return_condition : h.condition;
                     const cond = conditionConfig[condKey];
                     return (
                       <tr key={`${h.id}-${h.source}`} className={!h.is_returned ? "pjm-hist-row--active" : ""}>
                         <td className="pjm-hist-num">{allHistory.length - idx}</td>
                         <td>
-                          <div className="pjm-hist-user">
-                            <div className="pjm-hist-av">{user.name.charAt(0)}</div>
-                            <div><div className="pjm-hist-uname">{user.name}</div><div className="pjm-hist-ubranch">{user.branch}</div></div>
+                          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                            <div className="pjm-hist-user">
+                              <div className="pjm-hist-av" style={{ background: "#fef3c7", color: "#d97706" }}>{giver.name.charAt(0)}</div>
+                              <div><div className="pjm-hist-uname">{giver.name}</div><div className="pjm-hist-ubranch">Pemberi</div></div>
+                            </div>
+                            <span style={{ color: "#94a3b8", display: "flex" }}><Icon.ArrowRight /></span>
+                            <div className="pjm-hist-user">
+                              <div className="pjm-hist-av">{receiver.name.charAt(0)}</div>
+                              <div><div className="pjm-hist-uname">{receiver.name}</div><div className="pjm-hist-ubranch">Penerima</div></div>
+                            </div>
                           </div>
                         </td>
                         <td>
@@ -522,10 +750,10 @@ function AssetHistoryModal({ assetCode, assetName, borrows, returns, onClose }) 
                             <span className="pjm-hist-loc-to">{h.to_zone}</span>
                           </div>
                         </td>
-                        <td className="pjm-hist-date">{fmtDate(h.borrow_date)}</td>
+                        <td className="pjm-hist-date">{fmtDateShort(h.borrow_date)}</td>
                         <td className="pjm-hist-date">
                           {h.is_returned
-                            ? <span className="pjm-hist-date-ret">{fmtDate(h.return_date)}</span>
+                            ? <span className="pjm-hist-date-ret">{fmtDateShort(h.return_date)}</span>
                             : <span className="pjm-hist-no-ret">Belum kembali</span>}
                         </td>
                         <td>{cond && <span className="pjm-hist-cond" style={{ background: cond.bg, color: cond.color }}>{cond.label}</span>}</td>
@@ -550,67 +778,92 @@ function AssetHistoryModal({ assetCode, assetName, borrows, returns, onClose }) 
   );
 }
 
-// ─── BORROW FORM (POV SUPER ADMIN) ──────────────────────────────────────────
+// ─── BORROW FORM ──────────────────────────────────────────────
 function BorrowFormModal({ borrow, onClose, onSave }) {
   const isEdit = !!borrow;
-  
-  // Logic H+7 untuk due_date default biar admin kerjanya cepat
   const defaultDueDate = new Date();
   defaultDueDate.setDate(defaultDueDate.getDate() + 7);
-  
-  const [form, setForm] = useState(borrow ? { ...borrow, attachmentFile: borrow.attachment ? { name: borrow.attachment } : null } : { 
-    code: "", 
-    borrow_date: new Date().toISOString().slice(0, 16), 
-    due_date: defaultDueDate.toISOString().slice(0, 10), 
-    borrower_id: "", // Harus pilih dari dropdown
-    from_zone: "", 
-    to_zone: "", 
-    reason: "", 
-    condition: "GOOD", 
-    notes: "", 
-    attachment: "", 
-    attachmentFile: null, 
-    is_returned: false 
-  });
-  
+
+  const [form, setForm] = useState(borrow
+    ? { ...borrow, attachmentFile: borrow.attachment ? { name: borrow.attachment } : null }
+    : {
+      code: "", borrow_date: new Date().toISOString().slice(0, 16),
+      due_date: defaultDueDate.toISOString().slice(0, 10),
+      giver_id: "",        // ← User Pemberi
+      receiver_id: "",     // ← User Penerima (sebelumnya borrower_id)
+      from_zone: "", to_zone: "", reason: "", condition: "GOOD",
+      notes: "", attachment: "", attachmentFile: null, is_returned: false
+    });
   const [errors, setErrors] = useState({});
+
   const assetOptions = mockAssets.map(a => ({ value: a.code, label: a.code, sub: a.name, zone: a.zone, fullName: a.name }));
   const userOptions = mockUsers.map(u => ({ value: u.id, label: u.name, sub: u.branch }));
-  
-  const handleAssetChange = (code) => { const asset = getAsset(code); setForm({ ...form, code, from_zone: asset?.zone || "", name: asset?.name || "" }); };
-  
+
+  const handleAssetChange = (code) => {
+    const asset = getAsset(code);
+    setForm({ ...form, code, from_zone: asset?.zone || "", name: asset?.name || "" });
+  };
+
   const validate = () => {
     const e = {};
-    if (!form.code) e.code = "Wajib dipilih"; 
-    if (!form.borrower_id) e.borrower_id = "Wajib pilih peminjam"; 
-    if (!form.to_zone) e.to_zone = "Wajib diisi"; 
-    setErrors(e); return !Object.keys(e).length;
+    if (!form.code) e.code = "Wajib dipilih";
+    if (!form.giver_id) e.giver_id = "Wajib pilih user pemberi";
+    if (!form.receiver_id) e.receiver_id = "Wajib pilih user penerima";
+    if (!form.to_zone) e.to_zone = "Wajib diisi";
+    setErrors(e);
+    return !Object.keys(e).length;
   };
 
   const handleSave = () => {
     if (!validate()) return;
     const asset = getAsset(form.code);
-    
-    onSave({ 
-        ...form, 
-        id: borrow?.id || Date.now(), 
-        name: asset?.name || form.code, 
-        borrower_id: parseInt(form.borrower_id), 
-        performed_by_id: LOGGED_IN_ADMIN_ID, 
-        attachment: form.attachmentFile?.name || null 
+    onSave({
+      ...form,
+      id: borrow?.id || Date.now(),
+      name: asset?.name || form.code,
+      giver_id: parseInt(form.giver_id),
+      receiver_id: parseInt(form.receiver_id),
+      // Tetap simpan borrower_id untuk kompatibilitas (= receiver)
+      borrower_id: parseInt(form.receiver_id),
+      performed_by_id: LOGGED_IN_ADMIN_ID,
+      attachment: form.attachmentFile?.name || null
     });
     onClose();
+  };
+
+  // Untuk Generate BAST preview — butuh data sementara
+  const handleGenerateBAST = () => {
+    if (!form.giver_id || !form.receiver_id || !form.code) {
+      alert("Lengkapi data Aset, User Pemberi, dan User Penerima terlebih dahulu untuk generate BAST.");
+      return;
+    }
+    const asset = getAsset(form.code);
+    const tempItem = {
+      ...form,
+      id: borrow?.id || Date.now(),
+      name: asset?.name || form.code,
+      giver_id: parseInt(form.giver_id),
+      receiver_id: parseInt(form.receiver_id),
+      performed_by_id: LOGGED_IN_ADMIN_ID,
+    };
+    generateBAST(tempItem, "borrow");
   };
 
   return (
     <div className="pjm-overlay" onClick={onClose}>
       <div className="pjm-modal pjm-modal--form" onClick={(e) => e.stopPropagation()}>
         <div className="pjm-modal-header pjm-mh--blue">
-          <h2><span className="pjm-mh-ico"><Icon.Exchange /></span>{isEdit ? "Edit Peminjaman" : "Catat Peminjaman"}</h2>
+          <h2><span className="pjm-mh-ico"><Icon.Exchange /></span>{isEdit ? "Edit Serah Terima" : "Catat Serah Terima"}</h2>
           <button className="pjm-modal-close" onClick={onClose}><Icon.Times /></button>
         </div>
         <div className="pjm-modal-body">
-          
+
+          {/* ASET */}
+          <div className="pjm-form-section">
+            <span className="pjm-form-section-label" style={{ color: "var(--blue)" }}>Data Aset</span>
+            <div className="pjm-form-section-line" />
+          </div>
+
           <div className="pjm-fg">
             <label>Pilih Aset <span className="pjm-req">*</span></label>
             <SearchCombobox options={assetOptions} value={form.code} onChange={handleAssetChange} placeholder="Cari kode atau nama aset..." renderLabel={(o) => `${o.label} — ${o.fullName}`} renderSub={(o) => o.zone} hasError={!!errors.code} />
@@ -618,33 +871,97 @@ function BorrowFormModal({ borrow, onClose, onSave }) {
             {errors.code && <span className="pjm-ferr">{errors.code}</span>}
           </div>
 
-          <div className="pjm-fg">
-            <label>Siapa yang Meminjam? <span className="pjm-req">*</span></label>
-            <SearchCombobox options={userOptions} value={form.borrower_id} onChange={(val) => setForm({ ...form, borrower_id: val })} placeholder="Ketik nama karyawan..." renderLabel={(o) => o.label} renderSub={(o) => o.sub} hasError={!!errors.borrower_id} />
-            {errors.borrower_id && <span className="pjm-ferr">{errors.borrower_id}</span>}
+          {/* PIHAK-PIHAK */}
+          <div className="pjm-form-section" style={{ marginTop: 4 }}>
+            <span className="pjm-form-section-label" style={{ color: "#d97706" }}>Pihak yang Terlibat</span>
+            <div className="pjm-form-section-line" />
           </div>
 
           <div className="pjm-frow">
-            <div className="pjm-fg"><label>Waktu Pinjam</label><input type="datetime-local" value={form.borrow_date} className="pjm-input-ro" readOnly title="Otomatis terekam sistem" /></div>
+            <div className="pjm-fg">
+              <label>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
+                  <span style={{ width: 16, height: 16, borderRadius: "50%", background: "#fef3c7", color: "#d97706", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: ".65rem", fontWeight: 800 }}>P</span>
+                  User Pemberi <span className="pjm-req">*</span>
+                </span>
+              </label>
+              <SearchCombobox options={userOptions} value={form.giver_id} onChange={(val) => setForm({ ...form, giver_id: val })} placeholder="Pilih user pemberi aset..." renderLabel={(o) => o.label} renderSub={(o) => o.sub} hasError={!!errors.giver_id} />
+              {errors.giver_id && <span className="pjm-ferr">{errors.giver_id}</span>}
+              <span className="pjm-field-hint">Pihak yang menyerahkan / melepas aset</span>
+            </div>
+            <div className="pjm-fg">
+              <label>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
+                  <span style={{ width: 16, height: 16, borderRadius: "50%", background: "#dbeafe", color: "#2563eb", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: ".65rem", fontWeight: 800 }}>P</span>
+                  User Penerima <span className="pjm-req">*</span>
+                </span>
+              </label>
+              <SearchCombobox options={userOptions} value={form.receiver_id} onChange={(val) => setForm({ ...form, receiver_id: val })} placeholder="Pilih user penerima aset..." renderLabel={(o) => o.label} renderSub={(o) => o.sub} hasError={!!errors.receiver_id} />
+              {errors.receiver_id && <span className="pjm-ferr">{errors.receiver_id}</span>}
+              <span className="pjm-field-hint">Pihak yang menerima dan meminjam aset</span>
+            </div>
+          </div>
+
+          {/* WAKTU & LOKASI */}
+          <div className="pjm-form-section" style={{ marginTop: 4 }}>
+            <span className="pjm-form-section-label" style={{ color: "var(--slate-6)" }}>Waktu & Lokasi</span>
+            <div className="pjm-form-section-line" />
+          </div>
+
+          <div className="pjm-frow">
+            <div className="pjm-fg"><label>Waktu Serah Terima</label><input type="datetime-local" value={form.borrow_date} className="pjm-input-ro" readOnly title="Otomatis terekam sistem" /></div>
             <div className="pjm-fg"><label>Jatuh Tempo <span className="pjm-req">*</span></label><input type="date" value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} className={errors.due_date ? "pjm-err-input" : ""} /></div>
           </div>
-          
+
           <div className="pjm-frow">
             <div className="pjm-fg"><label>Dari Lokasi</label><input value={form.from_zone} readOnly className="pjm-input-ro" placeholder="Otomatis dari aset" /></div>
-            <div className="pjm-fg"><label>Dibawa Ke <span className="pjm-req">*</span></label><select value={form.to_zone} onChange={(e) => setForm({ ...form, to_zone: e.target.value })} className={errors.to_zone ? "pjm-err-input" : ""}><option value="">-- Pilih Tujuan --</option>{mockSubzona.map(s => <option key={s} value={s}>{s}</option>)}</select>{errors.to_zone && <span className="pjm-ferr">{errors.to_zone}</span>}</div>
+            <div className="pjm-fg">
+              <label>Dibawa Ke <span className="pjm-req">*</span></label>
+              <select value={form.to_zone} onChange={(e) => setForm({ ...form, to_zone: e.target.value })} className={errors.to_zone ? "pjm-err-input" : ""}>
+                <option value="">-- Pilih Tujuan --</option>
+                {mockSubzona.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+              {errors.to_zone && <span className="pjm-ferr">{errors.to_zone}</span>}
+            </div>
           </div>
-          
+
           <div className="pjm-fg"><label>Keperluan / Catatan Admin</label><input value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} placeholder="Cth: Dipinjam untuk operasional proyek" /></div>
-          
+
+          {/* KONDISI & BAST */}
+          <div className="pjm-form-section" style={{ marginTop: 4 }}>
+            <span className="pjm-form-section-label" style={{ color: "var(--slate-6)" }}>Kondisi & Dokumen BAST</span>
+            <div className="pjm-form-section-line" />
+          </div>
+
           <div className="pjm-fg">
             <label>Kondisi Aset Saat Keluar</label>
-            <div className="pjm-chips">{Object.entries(conditionConfig).map(([val, cfg]) => (<button key={val} type="button" className={`pjm-chip ${form.condition === val ? "pjm-chip--on" : ""}`} style={form.condition === val ? { background: cfg.bg, color: cfg.color, borderColor: cfg.color } : {}} onClick={() => setForm({ ...form, condition: val })}>{cfg.label}</button>))}</div>
+            <div className="pjm-chips">
+              {Object.entries(conditionConfig).map(([val, cfg]) => (
+                <button key={val} type="button" className={`pjm-chip ${form.condition === val ? "pjm-chip--on" : ""}`} style={form.condition === val ? { background: cfg.bg, color: cfg.color, borderColor: cfg.color } : {}} onClick={() => setForm({ ...form, condition: val })}>{cfg.label}</button>
+              ))}
+            </div>
           </div>
-          
-          <PdfUpload value={form.attachmentFile} onChange={(f) => setForm({ ...form, attachmentFile: f })} label="Lampiran Form BAST (Opsional)" />
+
+          <PdfUpload value={form.attachmentFile} onChange={(f) => setForm({ ...form, attachmentFile: f })} />
+
+          {/* Generate BAST notice */}
+          {!form.attachmentFile && (
+            <div className="pjm-bast-note">
+              <span className="pjm-bast-note-icon">✨</span>
+              <div>
+                <strong>Tidak punya file BAST?</strong> Klik tombol di bawah untuk <em>generate BAST otomatis</em> berdasarkan data yang sudah diisi. Dokumen akan terbuka di tab baru dan bisa langsung dicetak atau disimpan sebagai PDF.
+              </div>
+            </div>
+          )}
         </div>
+
         <div className="pjm-modal-footer">
           <button className="pjm-btn pjm-btn-ghost" onClick={onClose}>Batal</button>
+          {!form.attachmentFile && (
+            <button className="pjm-btn pjm-btn-purple" onClick={handleGenerateBAST}>
+              <Icon.Printer /> Generate BAST
+            </button>
+          )}
           <button className="pjm-btn pjm-btn-blue" onClick={handleSave}><Icon.Check /> Simpan Transaksi</button>
         </div>
       </div>
@@ -652,14 +969,40 @@ function BorrowFormModal({ borrow, onClose, onSave }) {
   );
 }
 
-// ─── RETURN FORM (SIMPLIFIKASI) ──────────────────────────────────────────────
+// ─── RETURN FORM ──────────────────────────────────────────────
 function ReturnFormModal({ borrow, onClose, onSave }) {
   if (!borrow) return null;
+  const giver = getUser(borrow.giver_id);
+  const receiver = getUser(borrow.receiver_id);
   const [form, setForm] = useState({ return_date: new Date().toISOString().slice(0, 16), return_condition: "GOOD", return_notes: "", attachmentFile: null });
-  
+
   const handleSave = () => {
-    onSave({ id: Date.now(), original_id: borrow.id, code: borrow.code, name: borrow.name, borrow_date: borrow.borrow_date, return_date: form.return_date, performed_by_id: LOGGED_IN_ADMIN_ID, borrower_id: borrow.borrower_id, from_zone: borrow.from_zone, to_zone: borrow.to_zone, reason: borrow.reason, return_condition: form.return_condition, return_notes: form.return_notes, attachment: form.attachmentFile?.name || null });
+    onSave({
+      id: Date.now(), original_id: borrow.id,
+      code: borrow.code, name: borrow.name,
+      borrow_date: borrow.borrow_date, return_date: form.return_date,
+      performed_by_id: LOGGED_IN_ADMIN_ID,
+      // Saat pengembalian: pemberi = penerima asal, penerima = pemberi asal
+      giver_id: borrow.receiver_id,
+      receiver_id: borrow.giver_id,
+      borrower_id: borrow.receiver_id,
+      from_zone: borrow.from_zone, to_zone: borrow.to_zone, reason: borrow.reason,
+      return_condition: form.return_condition, return_notes: form.return_notes,
+      attachment: form.attachmentFile?.name || null
+    });
     onClose();
+  };
+
+  const handleGenerateBAST = () => {
+    const tempItem = {
+      ...borrow,
+      giver_id: borrow.receiver_id, // saat return: yang mengembalikan = receiver sebelumnya
+      receiver_id: borrow.giver_id,
+      return_date: form.return_date,
+      return_condition: form.return_condition,
+      return_notes: form.return_notes,
+    };
+    generateBAST(tempItem, "return");
   };
 
   return (
@@ -672,19 +1015,54 @@ function ReturnFormModal({ borrow, onClose, onSave }) {
         <div className="pjm-modal-body">
           <div className="pjm-ret-info-card">
             <div className="pjm-ric-row"><span className="pjm-ric-lbl">Aset</span><span><code className="pjm-ctag">{borrow.code}</code> {borrow.name}</span></div>
-            <div className="pjm-ric-row"><span className="pjm-ric-lbl">Peminjam</span><span>{getUser(borrow.borrower_id).name}</span></div>
-            <div className="pjm-ric-row"><span className="pjm-ric-lbl">Dikembalikan Ke</span><span className="pjm-text-green">{borrow.from_zone} <span style={{fontSize: '0.7rem', color: '#94a3b8'}}>(Otomatis lokasi asal)</span></span></div>
+            <div className="pjm-ric-row">
+              <span className="pjm-ric-lbl">Yang Mengembalikan</span>
+              <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ width: 22, height: 22, borderRadius: "50%", background: "#dbeafe", color: "#2563eb", fontSize: ".7rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{receiver.name.charAt(0)}</span>
+                <strong>{receiver.name}</strong> <span style={{ color: "#94a3b8", fontSize: ".76rem" }}>({receiver.branch})</span>
+              </span>
+            </div>
+            <div className="pjm-ric-row">
+              <span className="pjm-ric-lbl">Dikembalikan Ke</span>
+              <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ width: 22, height: 22, borderRadius: "50%", background: "#fef3c7", color: "#d97706", fontSize: ".7rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{giver.name.charAt(0)}</span>
+                <span className="pjm-text-green">{giver.name}</span> <span style={{ color: "#94a3b8", fontSize: ".76rem" }}>· Lokasi asal: {borrow.from_zone}</span>
+              </span>
+            </div>
           </div>
-          
+
           <div className="pjm-fg">
             <label>Kondisi Saat Dikembalikan</label>
-            <div className="pjm-chips">{Object.entries(conditionConfig).map(([val, cfg]) => (<button key={val} type="button" className={`pjm-chip ${form.return_condition === val ? "pjm-chip--on" : ""}`} style={form.return_condition === val ? { background: cfg.bg, color: cfg.color, borderColor: cfg.color } : {}} onClick={() => setForm({ ...form, return_condition: val })}>{cfg.label}</button>))}</div>
+            <div className="pjm-chips">
+              {Object.entries(conditionConfig).map(([val, cfg]) => (
+                <button key={val} type="button" className={`pjm-chip ${form.return_condition === val ? "pjm-chip--on" : ""}`} style={form.return_condition === val ? { background: cfg.bg, color: cfg.color, borderColor: cfg.color } : {}} onClick={() => setForm({ ...form, return_condition: val })}>{cfg.label}</button>
+              ))}
+            </div>
           </div>
-          <div className="pjm-fg"><label>Catatan Pengembalian</label><textarea value={form.return_notes} onChange={(e) => setForm({ ...form, return_notes: e.target.value })} rows={2} placeholder="Kondisi, kerusakan, atau catatan lainnya..." /></div>
-          <PdfUpload value={form.attachmentFile} onChange={(f) => setForm({ ...form, attachmentFile: f })} label="Berita Acara Pengembalian (PDF)" />
+
+          <div className="pjm-fg">
+            <label>Catatan Pengembalian</label>
+            <textarea value={form.return_notes} onChange={(e) => setForm({ ...form, return_notes: e.target.value })} rows={2} placeholder="Kondisi, kerusakan, atau catatan lainnya..." />
+          </div>
+
+          <PdfUpload value={form.attachmentFile} onChange={(f) => setForm({ ...form, attachmentFile: f })} />
+
+          {!form.attachmentFile && (
+            <div className="pjm-bast-note">
+              <span className="pjm-bast-note-icon">✨</span>
+              <div>
+                <strong>Generate BAST Pengembalian</strong> — Klik tombol di bawah untuk membuat Berita Acara Pengembalian secara otomatis.
+              </div>
+            </div>
+          )}
         </div>
         <div className="pjm-modal-footer">
           <button className="pjm-btn pjm-btn-ghost" onClick={onClose}>Batal</button>
+          {!form.attachmentFile && (
+            <button className="pjm-btn pjm-btn-purple" onClick={handleGenerateBAST}>
+              <Icon.Printer /> Generate BAST
+            </button>
+          )}
           <button className="pjm-btn pjm-btn-green" onClick={handleSave}><Icon.Undo /> Konfirmasi Pengembalian</button>
         </div>
       </div>
@@ -696,17 +1074,18 @@ function ReturnFormModal({ borrow, onClose, onSave }) {
 function DetailModal({ item, itemType, onClose, onEdit, onReturn, onViewHistory, borrows, returns }) {
   if (!item) return null;
   const isBorrow = itemType === "borrow";
-  const user = getUser(item.borrower_id || item.performed_by_id);
+  const giver = getUser(item.giver_id);
+  const receiver = getUser(item.receiver_id);
   const cond = conditionConfig[isBorrow ? item.condition : item.return_condition];
   const overdue = isBorrow && isOverdue(item.due_date);
   const cat = assetCategories[getCategory(item.code)];
   const histCount = [...borrows.filter(b => b.code === item.code), ...returns.filter(r => r.code === item.code)].length;
-  
+
   return (
     <div className="pjm-overlay" onClick={onClose}>
       <div className="pjm-modal" onClick={(e) => e.stopPropagation()}>
         <div className={`pjm-modal-header ${isBorrow ? "pjm-mh--blue" : "pjm-mh--green"}`}>
-          <h2><span className={`pjm-mh-ico ${isBorrow ? "" : "pjm-mh-ico--green"}`}>{isBorrow ? <Icon.Exchange /> : <Icon.CheckCircle />}</span>{isBorrow ? "Detail Peminjaman" : "Detail Pengembalian"}</h2>
+          <h2><span className={`pjm-mh-ico ${isBorrow ? "" : "pjm-mh-ico--green"}`}>{isBorrow ? <Icon.Exchange /> : <Icon.CheckCircle />}</span>{isBorrow ? "Detail Serah Terima" : "Detail Pengembalian"}</h2>
           <button className="pjm-modal-close" onClick={onClose}><Icon.Times /></button>
         </div>
         <div className="pjm-modal-body">
@@ -719,16 +1098,30 @@ function DetailModal({ item, itemType, onClose, onEdit, onReturn, onViewHistory,
             </div>
           </div>
           <div className="pjm-detail-grid">
-            <div className="pjm-dgi"><span className="pjm-dgi-lbl">Tgl Pinjam</span><span>{fmtDT(item.borrow_date)}</span></div>
-            {isBorrow ? (
-              <div className="pjm-dgi"><span className="pjm-dgi-lbl">Jatuh Tempo</span><span className={overdue ? "pjm-text-danger" : ""}>{fmtDate(item.due_date)}</span></div>
-            ) : (
-              <div className="pjm-dgi"><span className="pjm-dgi-lbl">Tgl Dikembalikan</span><span className="pjm-text-green">{fmtDT(item.return_date)}</span></div>
-            )}
-            <div className="pjm-dgi"><span className="pjm-dgi-lbl">Peminjam</span><span>{user.name} <span className="pjm-text-muted">· {user.branch}</span></span></div>
+            <div className="pjm-dgi"><span className="pjm-dgi-lbl">Tgl Serah Terima</span><span>{fmtDT(item.borrow_date)}</span></div>
+            {isBorrow
+              ? <div className="pjm-dgi"><span className="pjm-dgi-lbl">Jatuh Tempo</span><span className={overdue ? "pjm-text-danger" : ""}>{fmtDate(item.due_date)}</span></div>
+              : <div className="pjm-dgi"><span className="pjm-dgi-lbl">Tgl Dikembalikan</span><span className="pjm-text-green">{fmtDT(item.return_date)}</span></div>}
+
+            {/* Pemberi */}
+            <div className="pjm-dgi">
+              <span className="pjm-dgi-lbl">User Pemberi</span>
+              <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ width: 22, height: 22, borderRadius: "50%", background: "#fef3c7", color: "#d97706", fontSize: ".7rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{giver.name.charAt(0)}</span>
+                {giver.name} <span className="pjm-text-muted">· {giver.branch}</span>
+              </span>
+            </div>
+            {/* Penerima */}
+            <div className="pjm-dgi">
+              <span className="pjm-dgi-lbl">User Penerima</span>
+              <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ width: 22, height: 22, borderRadius: "50%", background: "#dbeafe", color: "#2563eb", fontSize: ".7rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{receiver.name.charAt(0)}</span>
+                {receiver.name} <span className="pjm-text-muted">· {receiver.branch}</span>
+              </span>
+            </div>
+
             <div className="pjm-dgi"><span className="pjm-dgi-lbl">Kondisi</span><span className="pjm-cond-sm" style={{ background: cond?.bg, color: cond?.color }}>{cond?.label}</span></div>
-            <div className="pjm-dgi"><span className="pjm-dgi-lbl">Dari Lokasi</span><span>{item.from_zone}</span></div>
-            <div className="pjm-dgi"><span className="pjm-dgi-lbl">Ke Lokasi</span><span className="pjm-text-blue">{item.to_zone}</span></div>
+            <div className="pjm-dgi"><span className="pjm-dgi-lbl">Lokasi</span><span>{item.from_zone} → <span className="pjm-text-blue">{item.to_zone}</span></span></div>
             {item.reason && <div className="pjm-dgi pjm-dgi--full"><span className="pjm-dgi-lbl">Alasan</span><span>{item.reason}</span></div>}
             {(isBorrow ? item.notes : item.return_notes) && <div className="pjm-dgi pjm-dgi--full"><span className="pjm-dgi-lbl">Catatan</span><span>{isBorrow ? item.notes : item.return_notes}</span></div>}
             {item.attachment && <div className="pjm-dgi pjm-dgi--full"><span className="pjm-dgi-lbl">Lampiran</span><span className="pjm-attach-sm"><Icon.Paperclip />{item.attachment}</span></div>}
@@ -738,6 +1131,9 @@ function DetailModal({ item, itemType, onClose, onEdit, onReturn, onViewHistory,
           <button className="pjm-btn pjm-btn-ghost" onClick={onClose}>Tutup</button>
           <button className="pjm-btn pjm-btn-ghost" style={{ color: "#7c3aed", borderColor: "#c4b5fd" }} onClick={() => { onViewHistory(item); onClose(); }}>
             <Icon.History /> Riwayat ({histCount})
+          </button>
+          <button className="pjm-btn pjm-btn-purple" onClick={() => generateBAST(item, isBorrow ? "borrow" : "return")}>
+            <Icon.Printer /> Generate BAST
           </button>
           {isBorrow && <button className="pjm-btn pjm-btn-ghost" onClick={() => { onEdit(item); onClose(); }}><Icon.Edit /> Edit</button>}
           {isBorrow && <button className="pjm-btn pjm-btn-green" onClick={() => { onReturn(item); onClose(); }}><Icon.Undo /> Catat Pengembalian</button>}
@@ -755,8 +1151,8 @@ function DeleteModal({ item, onClose, onConfirm }) {
       <div className="pjm-modal pjm-modal--sm" onClick={(e) => e.stopPropagation()}>
         <div className="pjm-modal-body" style={{ alignItems: "center", textAlign: "center", paddingTop: 32 }}>
           <div className="pjm-del-ico"><Icon.Trash /></div>
-          <h3 className="pjm-del-title">Hapus Peminjaman?</h3>
-          <p className="pjm-del-desc">Data peminjaman <strong>{item.code}</strong> akan dihapus permanen.</p>
+          <h3 className="pjm-del-title">Hapus Serah Terima?</h3>
+          <p className="pjm-del-desc">Data serah terima <strong>{item.code}</strong> akan dihapus permanen.</p>
         </div>
         <div className="pjm-modal-footer" style={{ justifyContent: "center" }}>
           <button className="pjm-btn pjm-btn-ghost" onClick={onClose}>Batal</button>
@@ -790,32 +1186,24 @@ function CategoryGroup({ catKey, items, onView, onEdit, onReturn, onDelete, onVi
           <table className="pjm-table">
             <thead>
               <tr>
-                <th>Aset</th><th>Peminjam</th><th>Dari → Ke</th>
-                <th>Tgl Pinjam</th><th>Jatuh Tempo</th><th>Kondisi</th><th>Lampiran</th><th>Aksi</th>
+                <th>Aset</th>
+                <th>Pemberi → Penerima</th>
+                <th>Dari → Ke</th>
+                <th>Tgl Serah Terima</th>
+                <th>Jatuh Tempo</th>
+                <th>Kondisi</th>
+                <th>BAST</th>
+                <th>Aksi</th>
               </tr>
             </thead>
             <tbody>
               {items.map((b) => {
-                const borrower = getUser(b.borrower_id);
-                const admin = getUser(b.performed_by_id);
                 const cond = conditionConfig[b.condition];
                 const over = isOverdue(b.due_date);
                 return (
                   <tr key={b.id} className={over ? "pjm-row--over" : ""}>
                     <td><code className="pjm-ctag">{b.code}</code><div className="pjm-asub">{b.name}</div></td>
-                    <td>
-                      <div className="pjm-ucell">
-                        <div className="pjm-uav">{borrower.name.charAt(0)}</div>
-                        <div>
-                          <div className="pjm-uname">{borrower.name}</div>
-                          {b.borrower_id !== b.performed_by_id ? (
-                             <div className="pjm-ubranch" style={{color: '#94a3b8', fontSize: '0.7rem'}}>Dicatat oleh: {admin.name}</div>
-                           ) : (
-                             <div className="pjm-ubranch">{borrower.branch}</div>
-                           )}
-                        </div>
-                      </div>
-                    </td>
+                    <td><UserFlowCell giverId={b.giver_id} receiverId={b.receiver_id} /></td>
                     <td>
                       <div className="pjm-loc-flow">
                         <span className="pjm-loc-f">{b.from_zone}</span>
@@ -823,19 +1211,24 @@ function CategoryGroup({ catKey, items, onView, onEdit, onReturn, onDelete, onVi
                         <span className="pjm-loc-t">{b.to_zone}</span>
                       </div>
                     </td>
-                    <td className="pjm-td-date">{fmtDate(b.borrow_date)}</td>
-                    <td><span className={`pjm-due ${over ? "pjm-due--over" : ""}`}>{over && <Icon.Clock />}{fmtDate(b.due_date)}</span></td>
+                    <td className="pjm-td-date">{fmtDateShort(b.borrow_date)}</td>
+                    <td><span className={`pjm-due ${over ? "pjm-due--over" : ""}`}>{over && <Icon.Clock />}{fmtDateShort(b.due_date)}</span></td>
                     <td><span className="pjm-cond-sm" style={{ background: cond?.bg, color: cond?.color }}>{cond?.label}</span></td>
-                    <td>{b.attachment ? <span className="pjm-attach-sm"><Icon.Paperclip />{b.attachment}</span> : <span className="pjm-text-muted">—</span>}</td>
+                    <td>
+                      {b.attachment
+                        ? <span className="pjm-attach-sm"><Icon.Paperclip />{b.attachment}</span>
+                        : <button className="pjm-bast-gen-btn" onClick={(e) => { e.stopPropagation(); generateBAST(b, "borrow"); }}>
+                            <Icon.Printer /> Generate
+                          </button>
+                      }
+                    </td>
                     <td onClick={(e) => e.stopPropagation()}>
-                      <ActionDropdown
-                        id={b.id}
-                        activeId={activeDropdown}
-                        setActiveId={setActiveDropdown}
+                      <ActionDropdown id={b.id} activeId={activeDropdown} setActiveId={setActiveDropdown}
                         items={[
                           { icon: <Icon.Eye />, label: "Lihat Detail", onClick: () => onView(b) },
                           { icon: <Icon.Edit />, label: "Edit", onClick: () => onEdit(b) },
                           { icon: <Icon.Undo />, label: "Catat Pengembalian", className: "dd-ret", onClick: () => onReturn(b) },
+                          { icon: <Icon.Printer />, label: "Generate BAST", className: "dd-bast", onClick: () => generateBAST(b, "borrow") },
                           { icon: <Icon.History />, label: "Riwayat Aset", className: "dd-hist", onClick: () => onViewHistory(b) },
                           { type: "divider" },
                           { icon: <Icon.Trash />, label: "Hapus", className: "dd-del", onClick: () => onDelete(b) },
@@ -868,7 +1261,7 @@ export default function Peminjaman() {
   const filteredBorrows = activeBorrows.filter(b => {
     const q = search.toLowerCase();
     const ms = b.code.toLowerCase().includes(q) || b.name.toLowerCase().includes(q) || b.to_zone.toLowerCase().includes(q);
-    const mu = filterUser === "semua" || b.borrower_id === parseInt(filterUser);
+    const mu = filterUser === "semua" || b.receiver_id === parseInt(filterUser);
     return ms && mu;
   });
   const filteredReturns = returns.filter(r => {
@@ -896,26 +1289,42 @@ export default function Peminjaman() {
   return (
     <div className="pjm-root">
       <style>{styles}</style>
+
+      {/* HEADER */}
       <div className="pjm-header">
         <div>
-          <h1 className="pjm-title">Peminjaman & Pengembalian</h1>
-          <p className="pjm-subtitle">Kelola pencatatan peminjaman dan pengembalian aset IT per kategori</p>
+          <h1 className="pjm-title">Serah Terima</h1>
+          <p className="pjm-subtitle">Kelola pencatatan BAST aset IT — peminjaman dan pengembalian per kategori</p>
         </div>
-        <button className="pjm-btn pjm-btn-blue pjm-btn-lg" onClick={() => setModal({ type: "borrow-form", data: null })}><Icon.Plus /> Catat Peminjaman</button>
+        <button className="pjm-btn pjm-btn-blue pjm-btn-lg" onClick={() => setModal({ type: "borrow-form", data: null })}>
+          <Icon.Plus /> Catat Serah Terima
+        </button>
       </div>
 
       {/* STATS */}
       <div className="pjm-stats">
-        <div className="pjm-stat-card"><div className="pjm-stat-ico" style={{ background: "#dbeafe", color: "#2563eb" }}><Icon.Exchange /></div><div><div className="pjm-stat-n">{activeBorrows.length}</div><div className="pjm-stat-l">Sedang Dipinjam</div></div></div>
-        <div className={`pjm-stat-card ${overdueCount > 0 ? "pjm-stat-card--warn" : ""}`}><div className="pjm-stat-ico" style={{ background: overdueCount > 0 ? "#fee2e2" : "#f1f5f9", color: overdueCount > 0 ? "#dc2626" : "#94a3b8" }}><Icon.Clock /></div><div><div className="pjm-stat-n" style={{ color: overdueCount > 0 ? "#dc2626" : undefined }}>{overdueCount}</div><div className="pjm-stat-l">Terlambat Kembali</div></div></div>
-        <div className="pjm-stat-card"><div className="pjm-stat-ico" style={{ background: "#dcfce7", color: "#16a34a" }}><Icon.CheckCircle /></div><div><div className="pjm-stat-n">{returns.length}</div><div className="pjm-stat-l">Sudah Dikembalikan</div></div></div>
-        <div className="pjm-stat-card"><div className="pjm-stat-ico" style={{ background: "#ede9fe", color: "#7c3aed" }}><Icon.User /></div><div><div className="pjm-stat-n">{[...new Set(activeBorrows.map(b => b.borrower_id))].length}</div><div className="pjm-stat-l">Peminjam Aktif</div></div></div>
+        <div className="pjm-stat-card">
+          <div className="pjm-stat-ico" style={{ background: "#dbeafe", color: "#2563eb" }}><Icon.Exchange /></div>
+          <div><div className="pjm-stat-n">{activeBorrows.length}</div><div className="pjm-stat-l">Sedang Dipinjam</div></div>
+        </div>
+        <div className={`pjm-stat-card ${overdueCount > 0 ? "pjm-stat-card--warn" : ""}`}>
+          <div className="pjm-stat-ico" style={{ background: overdueCount > 0 ? "#fee2e2" : "#f1f5f9", color: overdueCount > 0 ? "#dc2626" : "#94a3b8" }}><Icon.Clock /></div>
+          <div><div className="pjm-stat-n" style={{ color: overdueCount > 0 ? "#dc2626" : undefined }}>{overdueCount}</div><div className="pjm-stat-l">Terlambat Kembali</div></div>
+        </div>
+        <div className="pjm-stat-card">
+          <div className="pjm-stat-ico" style={{ background: "#dcfce7", color: "#16a34a" }}><Icon.CheckCircle /></div>
+          <div><div className="pjm-stat-n">{returns.length}</div><div className="pjm-stat-l">Sudah Dikembalikan</div></div>
+        </div>
+        <div className="pjm-stat-card">
+          <div className="pjm-stat-ico" style={{ background: "#ede9fe", color: "#7c3aed" }}><Icon.User /></div>
+          <div><div className="pjm-stat-n">{[...new Set(activeBorrows.map(b => b.receiver_id))].length}</div><div className="pjm-stat-l">Penerima Aktif</div></div>
+        </div>
       </div>
 
       {/* TABS */}
       <div className="pjm-tab-sw">
         <button className={`pjm-tsb ${activeTab === "borrow" ? "pjm-tsb--blue" : ""}`} onClick={() => { setActiveTab("borrow"); setSearch(""); }}>
-          <Icon.Exchange /> Daftar Peminjaman
+          <Icon.Exchange /> Daftar Serah Terima
           <span className={`pjm-tsbadge ${overdueCount > 0 && activeTab !== "borrow" ? "pjm-tsbadge--warn" : ""}`}>{activeBorrows.length}</span>
         </button>
         <button className={`pjm-tsb ${activeTab === "return" ? "pjm-tsb--green" : ""}`} onClick={() => { setActiveTab("return"); setSearch(""); }}>
@@ -935,7 +1344,7 @@ export default function Peminjaman() {
           <div className="pjm-filter-wrap">
             <Icon.User />
             <select value={filterUser} onChange={(e) => setFilterUser(e.target.value)}>
-              <option value="semua">Semua Peminjam</option>
+              <option value="semua">Semua Penerima</option>
               {mockUsers.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
             </select>
           </div>
@@ -979,42 +1388,33 @@ export default function Peminjaman() {
             <div className="pjm-table-wrap">
               <table className="pjm-table pjm-table--ret">
                 <thead>
-                  <tr><th>Aset</th><th>Peminjam</th><th>Dari → Ke</th><th>Tgl Pinjam</th><th>Tgl Dikembalikan</th><th>Kondisi Kembali</th><th>Catatan</th><th>Lampiran</th><th>Aksi</th></tr>
+                  <tr><th>Aset</th><th>Pemberi → Penerima</th><th>Dari → Ke</th><th>Tgl Pinjam</th><th>Tgl Dikembalikan</th><th>Kondisi Kembali</th><th>Catatan</th><th>BAST</th><th>Aksi</th></tr>
                 </thead>
                 <tbody>
                   {filteredReturns.map((r) => {
-                    const borrower = getUser(r.borrower_id);
-                    const admin = getUser(r.performed_by_id);
                     const cond = conditionConfig[r.return_condition];
                     return (
                       <tr key={r.id}>
                         <td><code className="pjm-ctag">{r.code}</code><div className="pjm-asub">{r.name}</div></td>
-                        <td>
-                          <div className="pjm-ucell">
-                            <div className="pjm-uav pjm-uav--green">{borrower.name.charAt(0)}</div>
-                            <div>
-                              <div className="pjm-uname">{borrower.name}</div>
-                              {r.borrower_id !== r.performed_by_id ? (
-                                <div className="pjm-ubranch" style={{color: '#94a3b8', fontSize: '0.7rem'}}>Dicatat oleh: {admin.name}</div>
-                              ) : (
-                                <div className="pjm-ubranch">{borrower.branch}</div>
-                              )}
-                            </div>
-                          </div>
-                        </td>
+                        <td><UserFlowCell giverId={r.giver_id} receiverId={r.receiver_id} colorScheme="green" /></td>
                         <td><div className="pjm-loc-flow"><span className="pjm-loc-f">{r.from_zone}</span><span className="pjm-loc-arr"><Icon.ArrowRight /></span><span className="pjm-loc-t">{r.to_zone}</span></div></td>
-                        <td className="pjm-td-date">{fmtDate(r.borrow_date)}</td>
-                        <td className="pjm-td-date pjm-td-date--green">{fmtDate(r.return_date)}</td>
+                        <td className="pjm-td-date">{fmtDateShort(r.borrow_date)}</td>
+                        <td className="pjm-td-date pjm-td-date--green">{fmtDateShort(r.return_date)}</td>
                         <td><span className="pjm-cond-sm" style={{ background: cond?.bg, color: cond?.color }}>{cond?.label}</span></td>
                         <td className="pjm-td-notes">{r.return_notes || <span className="pjm-text-muted">—</span>}</td>
-                        <td>{r.attachment ? <span className="pjm-attach-sm"><Icon.Paperclip />{r.attachment}</span> : <span className="pjm-text-muted">—</span>}</td>
+                        <td>
+                          {r.attachment
+                            ? <span className="pjm-attach-sm"><Icon.Paperclip />{r.attachment}</span>
+                            : <button className="pjm-bast-gen-btn" onClick={(e) => { e.stopPropagation(); generateBAST(r, "return"); }}>
+                                <Icon.Printer /> Generate
+                              </button>
+                          }
+                        </td>
                         <td onClick={(e) => e.stopPropagation()}>
-                          <ActionDropdown
-                            id={r.id}
-                            activeId={activeReturnDropdown}
-                            setActiveId={setActiveReturnDropdown}
+                          <ActionDropdown id={r.id} activeId={activeReturnDropdown} setActiveId={setActiveReturnDropdown}
                             items={[
                               { icon: <Icon.Eye />, label: "Lihat Detail", onClick: () => setModal({ type: "detail", data: r, itemType: "return" }) },
+                              { icon: <Icon.Printer />, label: "Generate BAST", className: "dd-bast", onClick: () => generateBAST(r, "return") },
                               { icon: <Icon.History />, label: "Riwayat Aset", className: "dd-hist", onClick: () => handleViewHistory(r) },
                             ]}
                           />
@@ -1037,19 +1437,13 @@ export default function Peminjaman() {
           onEdit={(b) => setModal({ type: "borrow-form", data: b })}
           onReturn={(b) => setModal({ type: "return-form", data: b })}
           onViewHistory={handleViewHistory}
-          borrows={borrows}
-          returns={returns}
+          borrows={borrows} returns={returns}
         />
       )}
       {modal?.type === "delete" && <DeleteModal item={modal.data} onClose={() => setModal(null)} onConfirm={handleDelete} />}
-
       {historyModal && (
-        <AssetHistoryModal
-          assetCode={historyModal.code}
-          assetName={historyModal.name}
-          borrows={borrows}
-          returns={returns}
-          onClose={() => setHistoryModal(null)}
+        <AssetHistoryModal assetCode={historyModal.code} assetName={historyModal.name}
+          borrows={borrows} returns={returns} onClose={() => setHistoryModal(null)}
         />
       )}
     </div>
