@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { mockOpex, mockCapex, mockRealisasiOpex } from "../data/mockData";
 import "./BudgetManagement.css";
 
@@ -24,6 +25,7 @@ import {
   AlertTriangle,
   AlertCircle,
   MinusCircle,
+  Pencil,
 } from "lucide-react";
 
 // ── helpers ──────────────────────────────────────────────────────
@@ -300,6 +302,7 @@ function BalanceBar({ assets, nilaiKontrak }) {
 
 // ── component utama ───────────────────────────────────────────────
 export default function BudgetManagement() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("capex");
   const [expandedBudget, setExpandedBudget] = useState(null);
   const [expandedProject, setExpandedProject] = useState(null);
@@ -307,15 +310,35 @@ export default function BudgetManagement() {
   const [realisasiOpex, setRealisasiOpex] = useState(mockRealisasiOpex);
   const [modalRealisasi, setModalRealisasi] = useState(null);
 
-  // ── NEW: Year filter state (sama persis dengan Dashboard style) ──
+  // ── Year filter ──
   const currentYear = new Date().getFullYear();
-  const tahunOptions = [
-    String(currentYear - 3),
-    String(currentYear - 2),
-    String(currentYear - 1),
-    String(currentYear),
-  ];
+  const tahunOptions = Array.from(
+    { length: currentYear - 2023 + 3 },
+    (_, i) => String(2023 + i)
+  );
   const [tahunAnggaran, setTahunAnggaran] = useState(String(currentYear));
+
+  // ── Navigasi ke halaman edit ──────────────────────────────────
+  // Membawa data lengkap via location.state sehingga BudgetInput
+  // bisa langsung prefill tanpa fetch ulang.
+  const handleEdit = (e, item) => {
+    e.stopPropagation(); // jangan trigger toggle expand
+    navigate("/budget/input", {
+      state: {
+        mode: "edit",
+        budgetType: activeTab,           // "capex" | "opex"
+        editData: item.raw,              // data mentah dari mockData
+        editMeta: {
+          id: item.id,
+          name: item.name,
+          pagu: item.pagu,
+          used: item.used,
+          realisasiList: item.realisasiList ?? [],
+          projects: item.projects ?? [],
+        },
+      },
+    });
+  };
 
   const data = useMemo(() => {
     const raw = activeTab === "capex" ? mockCapex : mockOpex;
@@ -700,7 +723,7 @@ export default function BudgetManagement() {
 
         {/* ── RIGHT SIDE: year selector + CAPEX/OPEX tabs ── */}
         <div className="bm-header-right">
-          {/* Year filter — same style as Dashboard */}
+          {/* Year filter */}
           <div className="bm-year-filter-wrap">
             <span className="bm-year-filter-label">Tahun Anggaran</span>
             <div className="bm-year-pills">
@@ -822,7 +845,7 @@ export default function BudgetManagement() {
                 <th className="ta-r">Realisasi</th>
                 <th className="ta-r">Sisa</th>
                 <th className="ta-c">Serapan</th>
-                <th></th>
+                <th className="ta-c">Aksi</th>
               </tr>
             </thead>
             <tbody>
@@ -892,12 +915,17 @@ export default function BudgetManagement() {
                           {statusLabel(item.percentage)}
                         </div>
                       </td>
-                      <td>
-                        {open ? (
-                          <ChevronUp size={18} className="tc-accent" />
-                        ) : (
-                          <ChevronDown size={18} className="tc-muted2" />
-                        )}
+
+                      {/* ── Tombol Edit ── */}
+                      <td className="ta-c" onClick={(e) => e.stopPropagation()}>
+                        <button
+                          className="bm-btn-edit"
+                          title={`Edit ${activeTab === "capex" ? "CAPEX" : "OPEX"} ini`}
+                          onClick={(e) => handleEdit(e, item)}
+                        >
+                          <Pencil size={13} />
+                          Edit
+                        </button>
                       </td>
                     </tr>
                     {open &&

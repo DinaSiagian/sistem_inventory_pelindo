@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Save,
   X,
@@ -13,6 +13,7 @@ import {
   Search,
   ChevronDown,
   AlertTriangle,
+  Pencil,
 } from "lucide-react";
 import "./BudgetInput.css";
 
@@ -92,7 +93,6 @@ const inventoryAset = [
   },
 ];
 
-// OPEX masters — setiap master sudah punya aset terdaftar
 const defaultOpexMasters = [
   {
     id: "5030905000",
@@ -163,7 +163,6 @@ const defaultOpexMasters = [
   },
 ];
 
-// CAPEX masters — setiap master sudah punya daftar pekerjaan
 const defaultCapexMasters = [
   {
     id: "CAP-2540011",
@@ -473,6 +472,7 @@ function MataAnggaranDropdown({
   onAddCustom,
   deletedIds,
   onDeleteMaster,
+  readOnly = false,
 }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
@@ -537,19 +537,6 @@ function MataAnggaranDropdown({
                 "{pendingItem?.kode} — {pendingItem?.nama}"
               </strong>{" "}
               dari daftar?
-              {pendingItem?.aset?.length > 0 && (
-                <span
-                  style={{
-                    display: "block",
-                    marginTop: 6,
-                    color: "#ef4444",
-                    fontSize: "0.82rem",
-                  }}
-                >
-                  ⚠ Mata anggaran ini memiliki {pendingItem.aset.length} aset
-                  terdaftar.
-                </span>
-              )}
             </p>
             <div className="bi-confirm-actions">
               <button
@@ -593,9 +580,13 @@ function MataAnggaranDropdown({
               </div>
             )}
           </div>
-          <button className="bi-btn-change" onClick={() => onSelect(null)}>
-            Ganti
-          </button>
+          {/* Saat edit mode, tombol Ganti disembunyikan agar user tidak
+              tidak sengaja ganti mata anggaran yang salah */}
+          {!readOnly && (
+            <button className="bi-btn-change" onClick={() => onSelect(null)}>
+              Ganti
+            </button>
+          )}
         </div>
       ) : (
         <>
@@ -639,74 +630,24 @@ function MataAnggaranDropdown({
                         padding: "10px 10px 10px 14px",
                         borderBottom: "1px solid #f1f5f9",
                         cursor: "pointer",
-                        transition: "background 0.15s",
                         gap: 8,
                       }}
-                      onMouseEnter={(e) =>
-                        (e.currentTarget.style.background = "#eff6ff")
-                      }
-                      onMouseLeave={(e) =>
-                        (e.currentTarget.style.background = "transparent")
-                      }
                       onClick={() => {
                         onSelect(m.id);
                         setOpen(false);
                       }}
                     >
-                      <div
-                        style={{
-                          flex: 1,
-                          minWidth: 0,
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: 3,
-                        }}
-                      >
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 6,
-                            flexWrap: "wrap",
-                          }}
-                        >
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                           <code className="bi-aset-code">{m.kode}</code>
-                          <span
-                            style={{
-                              fontWeight: 600,
-                              fontSize: "0.84rem",
-                              color: "#0f172a",
-                            }}
-                          >
+                          <span style={{ fontWeight: 600, fontSize: "0.84rem" }}>
                             {m.nama}
                           </span>
-                          {m.isCustom && (
-                            <span className="bi-custom-badge">Custom</span>
-                          )}
-                          {m.aset?.length > 0 && (
-                            <span className="bi-loaded-mini">
-                              {m.aset.length} aset terdaftar
-                            </span>
-                          )}
                         </div>
-                        {m.nilai_kontrak > 0 && (
-                          <div
-                            style={{ fontSize: "0.75rem", color: "#64748b" }}
-                          >
-                            Nilai Kontrak:{" "}
-                            <span style={{ color: "#dc2626", fontWeight: 700 }}>
-                              Rp {fmt(m.nilai_kontrak)}
-                            </span>
-                          </div>
-                        )}
                       </div>
                       <button
-                        title="Hapus dari daftar"
                         style={{
                           flexShrink: 0,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
                           width: 34,
                           height: 34,
                           borderRadius: 8,
@@ -714,19 +655,7 @@ function MataAnggaranDropdown({
                           background: "#fee2e2",
                           color: "#dc2626",
                           cursor: "pointer",
-                          transition: "all 0.15s",
                           fontSize: "16px",
-                          lineHeight: 1,
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.background = "#dc2626";
-                          e.currentTarget.style.color = "#ffffff";
-                          e.currentTarget.style.borderColor = "#dc2626";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.background = "#fee2e2";
-                          e.currentTarget.style.color = "#dc2626";
-                          e.currentTarget.style.borderColor = "#fca5a5";
                         }}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -743,8 +672,7 @@ function MataAnggaranDropdown({
                     className="bi-add-custom-row"
                     onClick={() => setShowForm(true)}
                   >
-                    <Plus size={13} /> Tambah mata anggaran baru (tidak ada di
-                    daftar)
+                    <Plus size={13} /> Tambah mata anggaran baru
                   </div>
                 ) : (
                   <div className="bi-custom-form">
@@ -763,7 +691,7 @@ function MataAnggaranDropdown({
                     </div>
                     <div className="bi-custom-field">
                       <label className="bi-custom-label">
-                        Nama Mata Anggaran <span className="bi-req">*</span>
+                        Nama <span className="bi-req">*</span>
                       </label>
                       <input
                         placeholder="Nama mata anggaran"
@@ -787,17 +715,12 @@ function MataAnggaranDropdown({
                       />
                     </div>
                     <div className="bi-custom-form-actions">
-                      <button
-                        className="bi-btn-add"
-                        onClick={handleAdd}
-                        style={{ padding: "6px 14px", fontSize: ".75rem" }}
-                      >
+                      <button className="bi-btn-add" onClick={handleAdd}>
                         <Plus size={13} /> Tambah
                       </button>
                       <button
                         className="bi-btn bi-btn-secondary"
                         onClick={() => setShowForm(false)}
-                        style={{ padding: "6px 12px", fontSize: ".75rem" }}
                       >
                         Batal
                       </button>
@@ -823,6 +746,7 @@ function AnggaranCapexDropdown({
   onAddCustom,
   deletedIds,
   onDeleteMaster,
+  readOnly = false,
 }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
@@ -862,24 +786,15 @@ function AnggaranCapexDropdown({
     onSelect(id);
     setOpen(false);
     setShowForm(false);
-    setForm({
-      kode: "",
-      nama: "",
-      thn_rkap_awal: new Date().getFullYear(),
-      thn_rkap_akhir: new Date().getFullYear() + 1,
-      nilai_rkap: "",
-    });
   };
 
   const handleConfirmDelete = () => {
     if (!pendingDeleteId) return;
-    // Jika yang dihapus sedang terpilih, reset pilihan
     if (pendingDeleteId === selectedId) onSelect(null);
     onDeleteMaster(pendingDeleteId);
     setPendingDeleteId(null);
   };
 
-  // Item yang mau dihapus (untuk tampil nama di konfirmasi)
   const pendingItem = pendingDeleteId
     ? [...defaultCapexMasters, ...customCapexMasters].find(
         (c) => c.id === pendingDeleteId,
@@ -888,7 +803,6 @@ function AnggaranCapexDropdown({
 
   return (
     <div className="bi-aset-search-wrap">
-      {/* Mini confirm inline di dalam dropdown */}
       {pendingDeleteId && (
         <div
           className="bi-confirm-overlay"
@@ -900,23 +814,7 @@ function AnggaranCapexDropdown({
             </div>
             <p className="bi-confirm-msg">
               Hapus pos anggaran{" "}
-              <strong>
-                "{pendingItem?.kode} — {pendingItem?.nama}"
-              </strong>{" "}
-              dari daftar?
-              {pendingItem?.pekerjaan?.length > 0 && (
-                <span
-                  style={{
-                    display: "block",
-                    marginTop: 6,
-                    color: "#ef4444",
-                    fontSize: "0.82rem",
-                  }}
-                >
-                  ⚠ Pos ini memiliki {pendingItem.pekerjaan.length} pekerjaan
-                  terdaftar.
-                </span>
-              )}
+              <strong>"{pendingItem?.kode} — {pendingItem?.nama}"</strong>?
             </p>
             <div className="bi-confirm-actions">
               <button
@@ -949,11 +847,6 @@ function AnggaranCapexDropdown({
                   Custom
                 </span>
               )}
-              {selected.pekerjaan?.length > 0 && (
-                <span className="bi-loaded-mini bi-loaded-mini--capex">
-                  {selected.pekerjaan.length} pekerjaan
-                </span>
-              )}
             </div>
             <div className="bi-mata-selected-meta">
               <span>
@@ -964,9 +857,11 @@ function AnggaranCapexDropdown({
               </span>
             </div>
           </div>
-          <button className="bi-btn-change" onClick={() => onSelect(null)}>
-            Ganti
-          </button>
+          {!readOnly && (
+            <button className="bi-btn-change" onClick={() => onSelect(null)}>
+              Ganti
+            </button>
+          )}
         </div>
       ) : (
         <>
@@ -1001,138 +896,66 @@ function AnggaranCapexDropdown({
                   />
                 </div>
                 <div className="bi-aset-list-scroll">
-                  {filtered.length === 0 ? (
-                    <div className="bi-aset-empty">Tidak ada yang cocok</div>
-                  ) : (
-                    filtered.map((c) => (
-                      <div
-                        key={c.id}
+                  {filtered.map((c) => (
+                    <div
+                      key={c.id}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        padding: "10px 10px 10px 14px",
+                        borderBottom: "1px solid #f1f5f9",
+                        cursor: "pointer",
+                        gap: 8,
+                      }}
+                      onClick={() => {
+                        onSelect(c.id);
+                        setOpen(false);
+                      }}
+                    >
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                          <code className="bi-aset-code bi-aset-code--capex">
+                            {c.kode}
+                          </code>
+                          <span style={{ fontWeight: 600, fontSize: "0.84rem" }}>
+                            {c.nama}
+                          </span>
+                        </div>
+                        <div style={{ fontSize: "0.75rem", color: "#64748b", marginTop: 2 }}>
+                          RKAP {c.thn_rkap_awal}–{c.thn_rkap_akhir} ·{" "}
+                          <span style={{ color: "#dc2626", fontWeight: 700 }}>
+                            Rp {fmt(c.nilai_rkap)}
+                          </span>
+                        </div>
+                      </div>
+                      <button
                         style={{
-                          display: "flex",
-                          alignItems: "center",
-                          padding: "10px 10px 10px 14px",
-                          borderBottom: "1px solid #f1f5f9",
+                          flexShrink: 0,
+                          width: 34,
+                          height: 34,
+                          borderRadius: 8,
+                          border: "1px solid #fca5a5",
+                          background: "#fee2e2",
+                          color: "#dc2626",
                           cursor: "pointer",
-                          transition: "background 0.15s",
-                          gap: 8,
+                          fontSize: "16px",
                         }}
-                        className="bi-aset-option-row"
-                        onMouseEnter={(e) =>
-                          (e.currentTarget.style.background = "#eff6ff")
-                        }
-                        onMouseLeave={(e) =>
-                          (e.currentTarget.style.background = "transparent")
-                        }
-                        onClick={() => {
-                          onSelect(c.id);
-                          setOpen(false);
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPendingDeleteId(c.id);
                         }}
                       >
-                        {/* Konten utama */}
-                        <div
-                          style={{
-                            flex: 1,
-                            minWidth: 0,
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: 3,
-                          }}
-                        >
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 6,
-                              flexWrap: "wrap",
-                            }}
-                          >
-                            <code className="bi-aset-code bi-aset-code--capex">
-                              {c.kode}
-                            </code>
-                            <span
-                              style={{
-                                fontWeight: 600,
-                                fontSize: "0.84rem",
-                                color: "#0f172a",
-                              }}
-                            >
-                              {c.nama}
-                            </span>
-                            {c.isCustom && (
-                              <span className="bi-custom-badge bi-custom-badge--capex">
-                                Custom
-                              </span>
-                            )}
-                            {c.pekerjaan?.length > 0 && (
-                              <span className="bi-loaded-mini bi-loaded-mini--capex">
-                                {c.pekerjaan.length} pekerjaan
-                              </span>
-                            )}
-                          </div>
-                          <div
-                            style={{
-                              display: "flex",
-                              gap: 14,
-                              fontSize: "0.75rem",
-                              color: "#64748b",
-                            }}
-                          >
-                            <span>
-                              RKAP {c.thn_rkap_awal}–{c.thn_rkap_akhir}
-                            </span>
-                            <span style={{ color: "#dc2626", fontWeight: 700 }}>
-                              Rp {fmt(c.nilai_rkap)}
-                            </span>
-                          </div>
-                        </div>
-                        {/* Tombol hapus */}
-                        <button
-                          title="Hapus dari daftar"
-                          style={{
-                            flexShrink: 0,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            width: 34,
-                            height: 34,
-                            borderRadius: 8,
-                            border: "1px solid #fca5a5",
-                            background: "#fee2e2",
-                            color: "#dc2626",
-                            cursor: "pointer",
-                            transition: "all 0.15s",
-                            fontSize: "16px",
-                            lineHeight: 1,
-                            fontFamily: "sans-serif",
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.background = "#dc2626";
-                            e.currentTarget.style.color = "#ffffff";
-                            e.currentTarget.style.borderColor = "#dc2626";
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.background = "#fee2e2";
-                            e.currentTarget.style.color = "#dc2626";
-                            e.currentTarget.style.borderColor = "#fca5a5";
-                          }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setPendingDeleteId(c.id);
-                          }}
-                        >
-                          🗑
-                        </button>
-                      </div>
-                    ))
-                  )}
+                        🗑
+                      </button>
+                    </div>
+                  ))}
                 </div>
                 {!showForm ? (
                   <div
                     className="bi-add-custom-row bi-add-custom-row--capex"
                     onClick={() => setShowForm(true)}
                   >
-                    <Plus size={13} /> Tambah pos anggaran CAPEX baru (tidak ada
-                    di daftar)
+                    <Plus size={13} /> Tambah pos anggaran CAPEX baru
                   </div>
                 ) : (
                   <div className="bi-custom-form bi-custom-form--capex">
@@ -1142,25 +965,22 @@ function AnggaranCapexDropdown({
                     <div className="bi-custom-form-grid">
                       <div className="bi-custom-field">
                         <label className="bi-custom-label">
-                          Kode Anggaran CAPEX <span className="bi-req">*</span>
+                          Kode <span className="bi-req">*</span>
                         </label>
                         <input
-                          placeholder="Contoh: 2540011"
+                          placeholder="2540011"
                           value={form.kode}
                           onChange={(e) =>
                             setForm({ ...form, kode: e.target.value })
                           }
                         />
                       </div>
-                      <div
-                        className="bi-custom-field"
-                        style={{ gridColumn: "1/-1" }}
-                      >
+                      <div className="bi-custom-field" style={{ gridColumn: "1/-1" }}>
                         <label className="bi-custom-label">
-                          Nama Anggaran CAPEX <span className="bi-req">*</span>
+                          Nama <span className="bi-req">*</span>
                         </label>
                         <input
-                          placeholder="Contoh: Transformasi dan Digitalisasi..."
+                          placeholder="Nama anggaran CAPEX"
                           value={form.nama}
                           onChange={(e) =>
                             setForm({ ...form, nama: e.target.value })
@@ -1168,9 +988,7 @@ function AnggaranCapexDropdown({
                         />
                       </div>
                       <div className="bi-custom-field">
-                        <label className="bi-custom-label">
-                          Tahun RKAP Awal
-                        </label>
+                        <label className="bi-custom-label">Tahun RKAP Awal</label>
                         <input
                           type="number"
                           value={form.thn_rkap_awal}
@@ -1180,9 +998,7 @@ function AnggaranCapexDropdown({
                         />
                       </div>
                       <div className="bi-custom-field">
-                        <label className="bi-custom-label">
-                          Tahun RKAP Akhir
-                        </label>
+                        <label className="bi-custom-label">Tahun RKAP Akhir</label>
                         <input
                           type="number"
                           value={form.thn_rkap_akhir}
@@ -1191,40 +1007,25 @@ function AnggaranCapexDropdown({
                           }
                         />
                       </div>
-                      <div
-                        className="bi-custom-field"
-                        style={{ gridColumn: "1/-1" }}
-                      >
-                        <label className="bi-custom-label">
-                          Nilai Anggaran RKAP (IDR)
-                        </label>
+                      <div className="bi-custom-field" style={{ gridColumn: "1/-1" }}>
+                        <label className="bi-custom-label">Nilai RKAP (IDR)</label>
                         <input
                           type="number"
-                          placeholder="Contoh: 3000000000"
+                          placeholder="3000000000"
                           value={form.nilai_rkap}
                           onChange={(e) =>
                             setForm({ ...form, nilai_rkap: e.target.value })
                           }
                         />
-                        {form.nilai_rkap && (
-                          <span className="bi-custom-form-hint">
-                            ≈ Rp {fmt(form.nilai_rkap)}
-                          </span>
-                        )}
                       </div>
                     </div>
                     <div className="bi-custom-form-actions">
-                      <button
-                        className="bi-btn-add"
-                        onClick={handleAdd}
-                        style={{ padding: "6px 14px", fontSize: ".75rem" }}
-                      >
+                      <button className="bi-btn-add" onClick={handleAdd}>
                         <Plus size={13} /> Tambah
                       </button>
                       <button
                         className="bi-btn bi-btn-secondary"
                         onClick={() => setShowForm(false)}
-                        style={{ padding: "6px 12px", fontSize: ".75rem" }}
                       >
                         Batal
                       </button>
@@ -1245,9 +1046,21 @@ function AnggaranCapexDropdown({
 // ═══════════════════════════════════════════════════════════════
 const BudgetInput = () => {
   const navigate = useNavigate();
-  const [budgetType, setBudgetType] = useState("opex");
-  const [step, setStep] = useState(1);
-  const [confirm, setConfirm] = useState(null); // { message, onConfirm }
+  const location = useLocation();
+
+  // ── Deteksi mode edit dari navigate state ─────────────────────
+  const editState = location.state ?? {};
+  const isEditMode = editState.mode === "edit";
+  const editBudgetType = editState.budgetType ?? "opex";
+  const editData = editState.editData ?? null;
+  const editMeta = editState.editMeta ?? null;
+
+  const [budgetType, setBudgetType] = useState(
+    isEditMode ? editBudgetType : "opex"
+  );
+  // Edit mode langsung ke step 2
+  const [step, setStep] = useState(isEditMode ? 2 : 1);
+  const [confirm, setConfirm] = useState(null);
 
   const [customMasters, setCustomMasters] = useState([]);
   const [deletedOpexIds, setDeletedOpexIds] = useState([]);
@@ -1255,21 +1068,65 @@ const BudgetInput = () => {
     setDeletedOpexIds((prev) => [...prev, id]);
   const [customCapexMasters, setCustomCapexMasters] = useState([]);
   const [deletedCapexIds, setDeletedCapexIds] = useState([]);
-
-  const handleDeleteCapexMaster = (id) => {
+  const handleDeleteCapexMaster = (id) =>
     setDeletedCapexIds((prev) => [...prev, id]);
-  };
 
-  // ── OPEX ─────────────────────────────────────────────────────
+  // ── OPEX state ────────────────────────────────────────────────
   const [selectedOpexId, setSelectedOpexId] = useState(null);
   const [opexTahun, setOpexTahun] = useState(new Date().getFullYear());
   const [opexNilaiKontrak, setOpexNilaiKontrak] = useState("");
   const [opexAssets, setOpexAssets] = useState([]);
 
-  // ── CAPEX ─────────────────────────────────────────────────────
+  // ── CAPEX state ───────────────────────────────────────────────
   const [selectedCapexId, setSelectedCapexId] = useState(null);
   const [capexTahun, setCapexTahun] = useState(new Date().getFullYear());
   const [capexProjects, setCapexProjects] = useState([]);
+
+  // ── Prefill data saat edit mode ───────────────────────────────
+  useEffect(() => {
+    if (!isEditMode || !editData || !editMeta) return;
+
+    if (editBudgetType === "opex") {
+      // Cari ID master OPEX yang cocok
+      const matchedMaster = defaultOpexMasters.find(
+        (m) => m.id === String(editData.id_anggaran_tahunan)
+      );
+      if (matchedMaster) {
+        setSelectedOpexId(matchedMaster.id);
+        setOpexNilaiKontrak(String(editData.nilai_anggaran_tahunan || ""));
+        // Prefill aset dari realisasiList (atau aset master jika ada)
+        setOpexAssets(
+          matchedMaster.aset?.length > 0
+            ? matchedMaster.aset.map((a) => ({ ...a }))
+            : []
+        );
+      }
+    }
+
+    if (editBudgetType === "capex") {
+      // Cari ID master CAPEX yang cocok
+      const matchedMaster = defaultCapexMasters.find(
+        (m) => m.kode === editData.kd_anggaran_capex
+      );
+      if (matchedMaster) {
+        setSelectedCapexId(matchedMaster.id);
+        // Prefill daftar pekerjaan
+        setCapexProjects(
+          editMeta.projects?.length > 0
+            ? editMeta.projects.map((p) => ({
+                ...p,
+                assets: (p.assets || []).map((a) => ({ ...a })),
+              }))
+            : matchedMaster.pekerjaan?.length > 0
+              ? matchedMaster.pekerjaan.map((p) => ({
+                  ...p,
+                  assets: (p.assets || []).map((a) => ({ ...a })),
+                }))
+              : [emptyProject()]
+        );
+      }
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Derived ───────────────────────────────────────────────────
   const allMasters = [...defaultOpexMasters, ...customMasters].filter(
@@ -1291,7 +1148,7 @@ const BudgetInput = () => {
     !selectedCapexMaster.isCustom &&
     selectedCapexMaster.pekerjaan?.length > 0;
 
-  // ── Select OPEX → auto-fill nilai kontrak & aset ─────────────
+  // ── Select OPEX → auto-fill ───────────────────────────────────
   const handleSelectOpex = (id) => {
     setSelectedOpexId(id);
     if (!id) {
@@ -1308,7 +1165,7 @@ const BudgetInput = () => {
     );
   };
 
-  // ── Select CAPEX → auto-fill pekerjaan ───────────────────────
+  // ── Select CAPEX → auto-fill ──────────────────────────────────
   const handleSelectCapex = (id) => {
     setSelectedCapexId(id);
     if (!id) {
@@ -1489,7 +1346,9 @@ const BudgetInput = () => {
   const sisaCapex = nilaiRkapCapex - totalKontrakCapex;
 
   const handleSubmit = () => {
-    alert(`Data ${budgetType.toUpperCase()} berhasil disimpan!`);
+    alert(
+      `Data ${budgetType.toUpperCase()} berhasil ${isEditMode ? "diperbarui" : "disimpan"}!`
+    );
     navigate("/budget");
   };
 
@@ -1511,10 +1370,21 @@ const BudgetInput = () => {
             <ArrowLeft size={18} />
           </button>
           <div>
-            <h1>Input Data Anggaran Baru</h1>
+            {/* Judul berubah sesuai mode */}
+            <h1>
+              {isEditMode ? (
+                <>
+                  <Pencil size={18} style={{ marginRight: 8, verticalAlign: "middle" }} />
+                  Edit Data Anggaran
+                </>
+              ) : (
+                "Input Data Anggaran Baru"
+              )}
+            </h1>
             <p>
-              Tambah pos anggaran {budgetType === "opex" ? "OPEX" : "CAPEX"} dan
-              realisasinya
+              {isEditMode
+                ? `Mengedit pos anggaran ${budgetType === "opex" ? "OPEX" : "CAPEX"}: ${editMeta?.name ?? ""}`
+                : `Tambah pos anggaran ${budgetType === "opex" ? "OPEX" : "CAPEX"} dan realisasinya`}
             </p>
           </div>
         </div>
@@ -1523,25 +1393,27 @@ const BudgetInput = () => {
         </span>
       </div>
 
-      {/* Steps */}
-      <div className="bi-steps">
-        <div
-          className={`bi-step ${step >= 1 ? "active" : ""} ${step > 1 ? "done" : ""}`}
-        >
-          <div className="bi-step-num">
-            {step > 1 ? <CheckCircle size={18} /> : "1"}
+      {/* Steps — hanya tampil saat mode tambah baru */}
+      {!isEditMode && (
+        <div className="bi-steps">
+          <div
+            className={`bi-step ${step >= 1 ? "active" : ""} ${step > 1 ? "done" : ""}`}
+          >
+            <div className="bi-step-num">
+              {step > 1 ? <CheckCircle size={18} /> : "1"}
+            </div>
+            <span>Pilih Tipe Anggaran</span>
           </div>
-          <span>Pilih Tipe Anggaran</span>
+          <div className="bi-step-line" />
+          <div className={`bi-step ${step >= 2 ? "active" : ""}`}>
+            <div className="bi-step-num">2</div>
+            <span>Isi Data Anggaran</span>
+          </div>
         </div>
-        <div className="bi-step-line" />
-        <div className={`bi-step ${step >= 2 ? "active" : ""}`}>
-          <div className="bi-step-num">2</div>
-          <span>Isi Data Anggaran</span>
-        </div>
-      </div>
+      )}
 
-      {/* ── STEP 1: Pilih Tipe ── */}
-      {step === 1 && (
+      {/* ── STEP 1: Pilih Tipe (hanya mode tambah baru) ── */}
+      {step === 1 && !isEditMode && (
         <div className="bi-content">
           <div className="bi-type-cards">
             <div
@@ -1587,7 +1459,6 @@ const BudgetInput = () => {
       ══════════════════════════════════════════════════════════ */}
       {step === 2 && budgetType === "opex" && (
         <div className="bi-content">
-          {/* Form Pos Anggaran */}
           <div className="bi-form-card">
             <div className="bi-form-header">
               <FileText size={20} />
@@ -1602,19 +1473,19 @@ const BudgetInput = () => {
                 onAddCustom={(o) => setCustomMasters([...customMasters, o])}
                 deletedIds={deletedOpexIds}
                 onDeleteMaster={handleDeleteOpexMaster}
+                readOnly={isEditMode}
               />
             </div>
 
             {selectedOpexMaster && (
               <>
-                {/* Banner: data existing dimuat otomatis */}
                 {isExistingOpex && selectedOpexMaster.aset?.length > 0 && (
                   <div className="bi-autofill-banner">
                     <CheckCircle size={15} />
                     <span>
-                      Data existing dimuat otomatis — informasi di bawah terisi
-                      dari sistem. Anda dapat mengedit nilai kontrak dan
-                      menambah/menghapus aset.
+                      {isEditMode
+                        ? "Mode edit — data dimuat dari pos anggaran yang dipilih. Ubah sesuai kebutuhan."
+                        : "Data existing dimuat otomatis — informasi di bawah terisi dari sistem."}
                     </span>
                   </div>
                 )}
@@ -1676,33 +1547,21 @@ const BudgetInput = () => {
               />
 
               {opexAssets.length === 0 && (
-                <div
-                  className="bi-capex-assets-empty"
-                  style={{ marginTop: 12 }}
-                >
+                <div className="bi-capex-assets-empty" style={{ marginTop: 12 }}>
                   <Package size={20} strokeWidth={1.4} />
                   <span>
-                    Pilih dari inventory atau klik "Input Manual" untuk menambah
-                    aset
+                    Pilih dari inventory atau klik "Input Manual" untuk menambah aset
                   </span>
                 </div>
               )}
 
               {opexAssets.map((asset, idx) => (
-                <div
-                  key={asset.id}
-                  className="bi-asset-item"
-                  style={{ marginTop: 12 }}
-                >
+                <div key={asset.id} className="bi-asset-item" style={{ marginTop: 12 }}>
                   <div className="bi-asset-header">
-                    <div
-                      style={{ display: "flex", alignItems: "center", gap: 10 }}
-                    >
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                       <span className="bi-asset-num">Aset #{idx + 1}</span>
                       {asset.fromInventory && (
-                        <span className="bi-inventory-badge">
-                          Dari Inventory
-                        </span>
+                        <span className="bi-inventory-badge">Dari Inventory</span>
                       )}
                       {!asset.fromInventory && (
                         <span className="bi-manual-badge">Manual</span>
@@ -1723,11 +1582,7 @@ const BudgetInput = () => {
                         readOnly={asset.fromInventory}
                         className={asset.fromInventory ? "bi-readonly" : ""}
                         onChange={(e) =>
-                          updateOpexAsset(
-                            asset.id,
-                            "asset_code",
-                            e.target.value,
-                          )
+                          updateOpexAsset(asset.id, "asset_code", e.target.value)
                         }
                         placeholder="AST-OPX-XXXX"
                       />
@@ -1738,11 +1593,7 @@ const BudgetInput = () => {
                         type="date"
                         value={asset.procurement_date}
                         onChange={(e) =>
-                          updateOpexAsset(
-                            asset.id,
-                            "procurement_date",
-                            e.target.value,
-                          )
+                          updateOpexAsset(asset.id, "procurement_date", e.target.value)
                         }
                       />
                     </div>
@@ -1788,20 +1639,14 @@ const BudgetInput = () => {
                         type="number"
                         value={asset.nilai_aset}
                         onChange={(e) =>
-                          updateOpexAsset(
-                            asset.id,
-                            "nilai_aset",
-                            e.target.value,
-                          )
+                          updateOpexAsset(asset.id, "nilai_aset", e.target.value)
                         }
                         placeholder="15000000"
                         className={asset.fromInventory ? "bi-readonly" : ""}
                         readOnly={asset.fromInventory}
                       />
                       {asset.nilai_aset && (
-                        <span className="bi-helper">
-                          ≈ Rp {fmt(asset.nilai_aset)}
-                        </span>
+                        <span className="bi-helper">≈ Rp {fmt(asset.nilai_aset)}</span>
                       )}
                     </div>
                   </div>
@@ -1815,9 +1660,7 @@ const BudgetInput = () => {
                 </div>
                 <div className="bi-summary-item">
                   <span>Total Nilai Aset</span>
-                  <strong className="text-red">
-                    Rp {fmt(totalNilaiAsetOpex)}
-                  </strong>
+                  <strong className="text-red">Rp {fmt(totalNilaiAsetOpex)}</strong>
                 </div>
                 <div className="bi-summary-item">
                   <span>Sisa Anggaran</span>
@@ -1832,12 +1675,13 @@ const BudgetInput = () => {
           <div className="bi-actions">
             <button
               className="bi-btn bi-btn-secondary"
-              onClick={() => setStep(1)}
+              onClick={() => (isEditMode ? navigate("/budget") : setStep(1))}
             >
-              <X size={16} /> Batal
+              <X size={16} /> {isEditMode ? "Batal" : "Kembali"}
             </button>
             <button className="bi-btn bi-btn-primary" onClick={handleSubmit}>
-              <Save size={16} /> Simpan Data OPEX
+              <Save size={16} />
+              {isEditMode ? "Simpan Perubahan OPEX" : "Simpan Data OPEX"}
             </button>
           </div>
         </div>
@@ -1848,7 +1692,6 @@ const BudgetInput = () => {
       ══════════════════════════════════════════════════════════ */}
       {step === 2 && budgetType === "capex" && (
         <div className="bi-content">
-          {/* Pos Anggaran */}
           <div className="bi-form-card">
             <div className="bi-form-header">
               <FileText size={20} />
@@ -1865,6 +1708,7 @@ const BudgetInput = () => {
                 }
                 deletedIds={deletedCapexIds}
                 onDeleteMaster={handleDeleteCapexMaster}
+                readOnly={isEditMode}
               />
             </div>
 
@@ -1874,9 +1718,9 @@ const BudgetInput = () => {
                   <div className="bi-autofill-banner bi-autofill-banner--capex">
                     <CheckCircle size={15} />
                     <span>
-                      Data existing dimuat otomatis — informasi di bawah terisi
-                      dari sistem. Anda dapat menambah/menghapus pekerjaan dan
-                      aset.
+                      {isEditMode
+                        ? "Mode edit — data pekerjaan dan aset dimuat otomatis. Ubah sesuai kebutuhan."
+                        : "Data existing dimuat otomatis — informasi di bawah terisi dari sistem."}
                     </span>
                   </div>
                 )}
@@ -1979,11 +1823,7 @@ const BudgetInput = () => {
                         rows="2"
                         value={proj.nm_pekerjaan}
                         onChange={(e) =>
-                          updateCapexProject(
-                            proj.id,
-                            "nm_pekerjaan",
-                            e.target.value,
-                          )
+                          updateCapexProject(proj.id, "nm_pekerjaan", e.target.value)
                         }
                         placeholder="Pengadaan Server / Instalasi Network..."
                       />
@@ -1994,18 +1834,12 @@ const BudgetInput = () => {
                         type="number"
                         value={proj.nilai_rab}
                         onChange={(e) =>
-                          updateCapexProject(
-                            proj.id,
-                            "nilai_rab",
-                            e.target.value,
-                          )
+                          updateCapexProject(proj.id, "nilai_rab", e.target.value)
                         }
                         placeholder="850000000"
                       />
                       {proj.nilai_rab && (
-                        <span className="bi-helper">
-                          ≈ Rp {fmt(proj.nilai_rab)}
-                        </span>
+                        <span className="bi-helper">≈ Rp {fmt(proj.nilai_rab)}</span>
                       )}
                     </div>
                     <div className="bi-form-group">
@@ -2014,18 +1848,12 @@ const BudgetInput = () => {
                         type="number"
                         value={proj.nilai_kontrak}
                         onChange={(e) =>
-                          updateCapexProject(
-                            proj.id,
-                            "nilai_kontrak",
-                            e.target.value,
-                          )
+                          updateCapexProject(proj.id, "nilai_kontrak", e.target.value)
                         }
                         placeholder="800000000"
                       />
                       {proj.nilai_kontrak && (
-                        <span className="bi-helper">
-                          ≈ Rp {fmt(proj.nilai_kontrak)}
-                        </span>
+                        <span className="bi-helper">≈ Rp {fmt(proj.nilai_kontrak)}</span>
                       )}
                     </div>
                     <div className="bi-form-group">
@@ -2053,11 +1881,7 @@ const BudgetInput = () => {
                       <input
                         value={proj.no_kontrak}
                         onChange={(e) =>
-                          updateCapexProject(
-                            proj.id,
-                            "no_kontrak",
-                            e.target.value,
-                          )
+                          updateCapexProject(proj.id, "no_kontrak", e.target.value)
                         }
                         placeholder="SPK/IT/001/2026"
                       />
@@ -2068,11 +1892,7 @@ const BudgetInput = () => {
                         type="date"
                         value={proj.tgl_kontrak}
                         onChange={(e) =>
-                          updateCapexProject(
-                            proj.id,
-                            "tgl_kontrak",
-                            e.target.value,
-                          )
+                          updateCapexProject(proj.id, "tgl_kontrak", e.target.value)
                         }
                       />
                     </div>
@@ -2082,11 +1902,7 @@ const BudgetInput = () => {
                         type="number"
                         value={proj.durasi_kontrak}
                         onChange={(e) =>
-                          updateCapexProject(
-                            proj.id,
-                            "durasi_kontrak",
-                            e.target.value,
-                          )
+                          updateCapexProject(proj.id, "durasi_kontrak", e.target.value)
                         }
                         placeholder="90"
                       />
@@ -2117,11 +1933,7 @@ const BudgetInput = () => {
                         type="date"
                         value={proj.tgl_bamk}
                         onChange={(e) =>
-                          updateCapexProject(
-                            proj.id,
-                            "tgl_bamk",
-                            e.target.value,
-                          )
+                          updateCapexProject(proj.id, "tgl_bamk", e.target.value)
                         }
                       />
                     </div>
@@ -2151,10 +1963,7 @@ const BudgetInput = () => {
                     />
 
                     {proj.assets.length === 0 ? (
-                      <div
-                        className="bi-capex-assets-empty"
-                        style={{ marginTop: 10 }}
-                      >
+                      <div className="bi-capex-assets-empty" style={{ marginTop: 10 }}>
                         <Package size={20} strokeWidth={1.4} />
                         <span>
                           Pilih dari inventory atau klik "Input Manual" untuk
@@ -2169,13 +1978,7 @@ const BudgetInput = () => {
                           style={{ marginTop: 10 }}
                         >
                           <div className="bi-asset-header">
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 10,
-                              }}
-                            >
+                            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                               <span className="bi-asset-num bi-asset-num--capex">
                                 Aset #{aIdx + 1}
                               </span>
@@ -2190,9 +1993,7 @@ const BudgetInput = () => {
                             </div>
                             <button
                               className="bi-btn-remove"
-                              onClick={() =>
-                                askRemoveCapexAsset(proj.id, asset)
-                              }
+                              onClick={() => askRemoveCapexAsset(proj.id, asset)}
                             >
                               <Trash2 size={14} /> Hapus
                             </button>
@@ -2203,16 +2004,9 @@ const BudgetInput = () => {
                               <input
                                 value={asset.asset_code}
                                 readOnly={asset.fromInventory}
-                                className={
-                                  asset.fromInventory ? "bi-readonly" : ""
-                                }
+                                className={asset.fromInventory ? "bi-readonly" : ""}
                                 onChange={(e) =>
-                                  updateCapexAsset(
-                                    proj.id,
-                                    asset.id,
-                                    "asset_code",
-                                    e.target.value,
-                                  )
+                                  updateCapexAsset(proj.id, asset.id, "asset_code", e.target.value)
                                 }
                                 placeholder="AST-CPX-XXXX"
                               />
@@ -2223,12 +2017,7 @@ const BudgetInput = () => {
                                 type="date"
                                 value={asset.procurement_date}
                                 onChange={(e) =>
-                                  updateCapexAsset(
-                                    proj.id,
-                                    asset.id,
-                                    "procurement_date",
-                                    e.target.value,
-                                  )
+                                  updateCapexAsset(proj.id, asset.id, "procurement_date", e.target.value)
                                 }
                               />
                             </div>
@@ -2237,16 +2026,9 @@ const BudgetInput = () => {
                               <input
                                 value={asset.name}
                                 readOnly={asset.fromInventory}
-                                className={
-                                  asset.fromInventory ? "bi-readonly" : ""
-                                }
+                                className={asset.fromInventory ? "bi-readonly" : ""}
                                 onChange={(e) =>
-                                  updateCapexAsset(
-                                    proj.id,
-                                    asset.id,
-                                    "name",
-                                    e.target.value,
-                                  )
+                                  updateCapexAsset(proj.id, asset.id, "name", e.target.value)
                                 }
                                 placeholder="Server / Switch / CCTV..."
                               />
@@ -2256,16 +2038,9 @@ const BudgetInput = () => {
                               <input
                                 value={asset.brand}
                                 readOnly={asset.fromInventory}
-                                className={
-                                  asset.fromInventory ? "bi-readonly" : ""
-                                }
+                                className={asset.fromInventory ? "bi-readonly" : ""}
                                 onChange={(e) =>
-                                  updateCapexAsset(
-                                    proj.id,
-                                    asset.id,
-                                    "brand",
-                                    e.target.value,
-                                  )
+                                  updateCapexAsset(proj.id, asset.id, "brand", e.target.value)
                                 }
                                 placeholder="Cisco"
                               />
@@ -2275,16 +2050,9 @@ const BudgetInput = () => {
                               <input
                                 value={asset.model}
                                 readOnly={asset.fromInventory}
-                                className={
-                                  asset.fromInventory ? "bi-readonly" : ""
-                                }
+                                className={asset.fromInventory ? "bi-readonly" : ""}
                                 onChange={(e) =>
-                                  updateCapexAsset(
-                                    proj.id,
-                                    asset.id,
-                                    "model",
-                                    e.target.value,
-                                  )
+                                  updateCapexAsset(proj.id, asset.id, "model", e.target.value)
                                 }
                                 placeholder="Catalyst 2960-X"
                               />
@@ -2294,12 +2062,7 @@ const BudgetInput = () => {
                               <input
                                 value={asset.serial_number}
                                 onChange={(e) =>
-                                  updateCapexAsset(
-                                    proj.id,
-                                    asset.id,
-                                    "serial_number",
-                                    e.target.value,
-                                  )
+                                  updateCapexAsset(proj.id, asset.id, "serial_number", e.target.value)
                                 }
                                 placeholder="SN-XXXX-XXXX"
                               />
@@ -2310,16 +2073,9 @@ const BudgetInput = () => {
                                 type="number"
                                 value={asset.nilai_aset}
                                 readOnly={asset.fromInventory}
-                                className={
-                                  asset.fromInventory ? "bi-readonly" : ""
-                                }
+                                className={asset.fromInventory ? "bi-readonly" : ""}
                                 onChange={(e) =>
-                                  updateCapexAsset(
-                                    proj.id,
-                                    asset.id,
-                                    "nilai_aset",
-                                    e.target.value,
-                                  )
+                                  updateCapexAsset(proj.id, asset.id, "nilai_aset", e.target.value)
                                 }
                                 placeholder="0"
                               />
@@ -2359,9 +2115,7 @@ const BudgetInput = () => {
                 </div>
                 <div className="bi-summary-item">
                   <span>Total Nilai Kontrak</span>
-                  <strong className="text-red">
-                    Rp {fmt(totalKontrakCapex)}
-                  </strong>
+                  <strong className="text-red">Rp {fmt(totalKontrakCapex)}</strong>
                 </div>
                 <div className="bi-summary-item">
                   <span>Sisa Anggaran</span>
@@ -2372,8 +2126,7 @@ const BudgetInput = () => {
                 <div className="bi-summary-item">
                   <span>Total Aset Terdaftar</span>
                   <strong className="text-blue">
-                    {capexProjects.reduce((s, p) => s + p.assets.length, 0)}{" "}
-                    aset
+                    {capexProjects.reduce((s, p) => s + p.assets.length, 0)} aset
                   </strong>
                 </div>
               </div>
@@ -2383,12 +2136,13 @@ const BudgetInput = () => {
           <div className="bi-actions">
             <button
               className="bi-btn bi-btn-secondary"
-              onClick={() => setStep(1)}
+              onClick={() => (isEditMode ? navigate("/budget") : setStep(1))}
             >
-              <X size={16} /> Batal
+              <X size={16} /> {isEditMode ? "Batal" : "Kembali"}
             </button>
             <button className="bi-btn bi-btn-primary" onClick={handleSubmit}>
-              <Save size={16} /> Simpan Data CAPEX
+              <Save size={16} />
+              {isEditMode ? "Simpan Perubahan CAPEX" : "Simpan Data CAPEX"}
             </button>
           </div>
         </div>

@@ -639,12 +639,20 @@ const AlertItem = ({
 
 const Dashboard = () => {
   const [filterTren, setFilterTren] = useState("bulanan");
-  const [tahunAnggaran, setTahunAnggaran] = useState("2026");
   const navigate = useNavigate();
+
+  // ✅ Tahun anggaran — composable: otomatis generate dari 2023
+  //    sampai 2 tahun ke depan dari tahun saat ini.
+  //    Tidak perlu edit manual setiap tahun baru.
+  const currentYear = new Date().getFullYear();
+  const tahunOptions = Array.from(
+    { length: currentYear - 2023 + 3 },
+    (_, i) => String(2023 + i)
+  );
+  const [tahunAnggaran, setTahunAnggaran] = useState(String(currentYear));
 
   const dataTren =
     filterTren === "harian" ? dataPeminjamanHarian : dataPeminjamanBulanan;
-  const tahunOptions = ["2023", "2024", "2025", "2026"];
 
   const alerts = useMemo(() => calculateAlerts(), []);
   const highCount = alerts.filter((a) => a.priority === "high").length;
