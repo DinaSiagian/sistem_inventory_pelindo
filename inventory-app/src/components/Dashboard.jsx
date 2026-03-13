@@ -9,6 +9,8 @@ import {
   FaTimesCircle,
   FaFileInvoiceDollar,
   FaBalanceScale,
+  FaChevronDown,
+  FaChevronUp,
 } from "react-icons/fa";
 import {
   LineChart,
@@ -23,13 +25,11 @@ import {
   Cell,
   Label,
 } from "recharts";
-
 import "./Dashboard.css";
 
 // ================================================================
 // MOCK DATA — Tren Peminjaman
 // ================================================================
-
 const dataPeminjamanHarian = [
   { name: "Sen", Laptop: 8, Proyektor: 3, Kamera: 2, Kendaraan: 1 },
   { name: "Sel", Laptop: 12, Proyektor: 5, Kamera: 4, Kendaraan: 2 },
@@ -39,7 +39,6 @@ const dataPeminjamanHarian = [
   { name: "Sab", Laptop: 5, Proyektor: 2, Kamera: 2, Kendaraan: 1 },
   { name: "Min", Laptop: 3, Proyektor: 1, Kamera: 1, Kendaraan: 0 },
 ];
-
 const dataPeminjamanBulanan = [
   { name: "Jan", Laptop: 40, Proyektor: 20, Kamera: 15, Kendaraan: 10 },
   { name: "Feb", Laptop: 30, Proyektor: 18, Kamera: 12, Kendaraan: 8 },
@@ -48,7 +47,6 @@ const dataPeminjamanBulanan = [
   { name: "Mei", Laptop: 85, Proyektor: 35, Kamera: 28, Kendaraan: 15 },
   { name: "Jun", Laptop: 120, Proyektor: 45, Kamera: 35, Kendaraan: 20 },
 ];
-
 const kategoriLines = [
   { key: "Laptop", color: "#004494" },
   { key: "Proyektor", color: "#27ae60" },
@@ -59,159 +57,268 @@ const kategoriLines = [
 // ================================================================
 // MOCK DATA — Kondisi Aset
 // ================================================================
-
 const dataKondisi = [
   { name: "Baik", value: 850, color: "#2ecc71" },
   { name: "Dalam Pemeliharaan", value: 80, color: "#3498db" },
   { name: "Rusak Berat", value: 45, color: "#e74c3c" },
   { name: "Rusak Ringan", value: 120, color: "#f1c40f" },
 ];
-
 const totalKondisi = dataKondisi.reduce((sum, d) => sum + d.value, 0);
 
 // ================================================================
-// MOCK DATA — Anggaran OPEX
+// MOCK DATA — CAPEX sesuai struktur tabel database
+// nm_anggaran_capex, thn_rkap_awal, thn_rkap_akhir, thn_anggaran
+// Satu program bisa muncul di beberapa thn_anggaran (multi-year spending)
 // ================================================================
-
-const mockOpex = [
+const mockCapexRows = [
   {
-    id_anggaran_tahunan: 1,
-    nm_anggaran_master: "Beban Pemeliharaan Software",
-    nilai_anggaran_tahunan: 500000000,
+    nm_anggaran_capex: "Implementasi dan Standarisasi IT Infrastruktur",
+    thn_rkap_awal: 2024,
+    thn_rkap_akhir: 2024,
+    thn_anggaran: 2024,
+    nilai_anggaran: 1200000000,
+    realisasi: 1200000000,
+    status: "selesai",
   },
   {
-    id_anggaran_tahunan: 2,
-    nm_anggaran_master: "Beban Jaringan dan Koneksi Data",
-    nilai_anggaran_tahunan: 600000000,
+    nm_anggaran_capex: "Penyediaan Network di Branch SPMT",
+    thn_rkap_awal: 2024,
+    thn_rkap_akhir: 2024,
+    thn_anggaran: 2024,
+    nilai_anggaran: 800000000,
+    realisasi: 800000000,
+    status: "selesai",
   },
   {
-    id_anggaran_tahunan: 3,
-    nm_anggaran_master: "Beban Perlengkapan Kantor",
-    nilai_anggaran_tahunan: 700000000,
+    nm_anggaran_capex:
+      "Penyiapan Infrastruktur IT (Kantor Pusat, Pelindo Place, Pelindo Tower, Malahayati, Lhokseumawe, Bima, Badas, Parepare, Gresik, Tanjung Emas, Mekar Putih, Meulaboh, Kuala Langsa dan Bumiharjo) PT Pelindo Multi Terminal",
+    thn_rkap_awal: 2024,
+    thn_rkap_akhir: 2024,
+    thn_anggaran: 2024,
+    nilai_anggaran: 3500000000,
+    realisasi: 3500000000,
+    status: "selesai",
   },
   {
-    id_anggaran_tahunan: 4,
-    nm_anggaran_master: "Beban Jasa Konsultan",
-    nilai_anggaran_tahunan: 800000000,
+    nm_anggaran_capex:
+      "Revisi Capex (Pemenuhan Kebutuhan Gate dan PNC Transformasi pada Branch SPMT)",
+    thn_rkap_awal: 2024,
+    thn_rkap_akhir: 2025,
+    thn_anggaran: 2025,
+    nilai_anggaran: 1500000000,
+    realisasi: 1200000000,
+    status: "berjalan",
   },
   {
-    id_anggaran_tahunan: 5,
-    nm_anggaran_master: "Beban Sumber Daya Pihak Ketiga Peralatan",
-    nilai_anggaran_tahunan: 900000000,
-  },
-];
-
-const mockRealisasiOpex = [
-  { id_realisasi: 1, id_anggaran_tahunan: 2, jumlah: 120000000 },
-  { id_realisasi: 2, id_anggaran_tahunan: 2, jumlah: 120000000 },
-  { id_realisasi: 3, id_anggaran_tahunan: 1, jumlah: 85000000 },
-  { id_realisasi: 4, id_anggaran_tahunan: 3, jumlah: 45000000 },
-  { id_realisasi: 5, id_anggaran_tahunan: 4, jumlah: 200000000 },
-  { id_realisasi: 6, id_anggaran_tahunan: 4, jumlah: 200000000 },
-  { id_realisasi: 7, id_anggaran_tahunan: 5, jumlah: 150000000 },
-];
-
-// ================================================================
-// MOCK DATA — CAPEX Projects
-// ================================================================
-
-const mockCapex = [
-  {
-    projects: [
-      {
-        id_pekerjaan: 1,
-        nm_pekerjaan:
-          "Pekerjaan Implementasi dan Standarisasi IT Infrastruktur (Planning & Control, CCTV dan SD-WAN Branch Malahayati, Lhokseumawe, Lembar, ParePare dan Garongkong) PT Pelindo Multi Terminal",
-        nilai_kontrak: 1200000000,
-        no_kontrak: "SI.01/12/8/2/PPTI/TEKI/PLMT-24",
-        assets: [
-          { asset_code: "SPMT-MLH-LPG-DMG-01", acquisition_value: 350000000 },
-          { asset_code: "SPMT-LHK-LPG-DMG-01", acquisition_value: 350000000 },
-          { asset_code: "SPMT-MLH-DTC-PKR-01", acquisition_value: 500000000 },
-        ],
-      },
-      {
-        id_pekerjaan: 2,
-        nm_pekerjaan:
-          "Pekerjaan Implementasi dan Standarisasi IT Infrastruktur (Gate System Branch Malahayati, Lhokseumawe, Lembar, ParePare dan Garongkong) PT Pelindo Multi Terminal",
-        nilai_kontrak: 980000000,
-        no_kontrak: "SI.01/8/8/2/PPTI/TEKI/PLMT-24",
-        assets: [
-          { asset_code: "SPMT-MLH-LPG-DMG-02", acquisition_value: 490000000 },
-          { asset_code: "SPMT-GRG-LPG-DMG-01", acquisition_value: 490000000 },
-        ],
-      },
-      {
-        id_pekerjaan: 3,
-        nm_pekerjaan:
-          "Pekerjaan Implementasi dan Standarisasi IT Infrastruktur (Gate System dan Planning & Control Branch Balikpapan dan Bagendang) PT Pelindo Multi Terminal",
-        nilai_kontrak: 750000000,
-        no_kontrak: "SI.01/4/9/2/PPTI/TEKI/PLMT-24",
-        assets: [],
-      },
-    ],
+    nm_anggaran_capex:
+      "Transformasi dan Digitalisasi PT Pelindo Multi Terminal",
+    thn_rkap_awal: 2025,
+    thn_rkap_akhir: 2026,
+    thn_anggaran: 2025,
+    nilai_anggaran: 2000000000,
+    realisasi: 1600000000,
+    status: "berjalan",
   },
   {
-    projects: [
-      {
-        id_pekerjaan: 4,
-        nm_pekerjaan:
-          "Penyediaan Network di Branch SPMT (Malahayati, Lhokseumawe, Lembar, Parepare dan Garongkong)",
-        nilai_kontrak: 1500000000,
-        no_kontrak: "SI.01/15/8/5/PPTI/TEKI/PLMT-24",
-        assets: [
-          { asset_code: "SPMT-MLH-DTC-PKR-02", acquisition_value: 450000000 },
-          { asset_code: "SPMT-LHK-DTC-PKR-02", acquisition_value: 450000000 },
-          { asset_code: "SPMT-GRG-DTC-PKR-01", acquisition_value: 350000000 },
-        ],
-      },
-    ],
+    nm_anggaran_capex:
+      "Standarisasi Perangkat Jaringan di Lingkungan PT Pelindo Multi Terminal",
+    thn_rkap_awal: 2025,
+    thn_rkap_akhir: 2026,
+    thn_anggaran: 2025,
+    nilai_anggaran: 1800000000,
+    realisasi: 1300000000,
+    status: "berjalan",
   },
   {
-    projects: [
-      {
-        id_pekerjaan: 5,
-        nm_pekerjaan:
-          "Pemenuhan Kebutuhan Gate System, Planning and Control dan Perangkat Pendukung Roro pada Branch (Lembar Gilimas, Tanjung Wangi, Tanjung Emas, Sibolga, Balikpapan, Parepare dan Tanjung Balai Karimun) PT Pelindo Multi Terminal",
-        nilai_kontrak: 3950000000,
-        no_kontrak: "SI.01/7/7/4/PPTI/TEKI/PLMT-25",
-        assets: [
-          { asset_code: "SPMT-TJE-LPG-DMG-01", acquisition_value: 1400000000 },
-          { asset_code: "SPMT-BLP-LPG-DMG-01", acquisition_value: 1350000000 },
-          { asset_code: "SPMT-TJE-DTC-PKR-01", acquisition_value: 1200000000 },
-        ],
-      },
-      {
-        id_pekerjaan: 6,
-        nm_pekerjaan:
-          "Penyediaan Kebutuhan Transformasi dan Digitalisasi (CCTV dan Public Announcer Traffic Monitoring pada Gate) Branch Belawan, Dumai, Malahayati, Lhokseumawe, Lembar, Makassar, Balikpapan PT Pelindo Multi Terminal",
-        nilai_kontrak: 2870000000,
-        no_kontrak: "PD.01/22/10/1/PPTI/TEKI/PLMT-25",
-        assets: [],
-      },
-    ],
+    nm_anggaran_capex: "Penyiapan Infrastruktur IT pada Kegiatan Roro",
+    thn_rkap_awal: 2025,
+    thn_rkap_akhir: 2026,
+    thn_anggaran: 2025,
+    nilai_anggaran: 900000000,
+    realisasi: 650000000,
+    status: "berjalan",
   },
   {
-    projects: [
-      {
-        id_pekerjaan: 7,
-        nm_pekerjaan:
-          "Pemenuhan Kebutuhan Perangkat Network Branch Tanjung Balai Karimun Terminal Selat Panjang PT Pelindo Multi Terminal",
-        nilai_kontrak: 810000000,
-        no_kontrak: "PD.01/24/7/1/PPTI/TEKI/PLMT-25",
-        assets: [
-          { asset_code: "SPMT-TBK-DTC-PKR-01", acquisition_value: 410000000 },
-          { asset_code: "SPMT-TBK-DTC-PKR-02", acquisition_value: 400000000 },
-        ],
-      },
-    ],
+    nm_anggaran_capex:
+      "Transformasi dan Digitalisasi PT Pelindo Multi Terminal",
+    thn_rkap_awal: 2025,
+    thn_rkap_akhir: 2026,
+    thn_anggaran: 2026,
+    nilai_anggaran: 2000000000,
+    realisasi: 800000000,
+    status: "berjalan",
+  },
+  {
+    nm_anggaran_capex:
+      "Standarisasi Perangkat Jaringan di Lingkungan PT Pelindo Multi Terminal",
+    thn_rkap_awal: 2025,
+    thn_rkap_akhir: 2026,
+    thn_anggaran: 2026,
+    nilai_anggaran: 1800000000,
+    realisasi: 400000000,
+    status: "berjalan",
+  },
+  {
+    nm_anggaran_capex: "Penyiapan Infrastruktur IT pada Kegiatan Roro",
+    thn_rkap_awal: 2025,
+    thn_rkap_akhir: 2026,
+    thn_anggaran: 2026,
+    nilai_anggaran: 900000000,
+    realisasi: 150000000,
+    status: "berjalan",
   },
 ];
 
 // ================================================================
-// MOCK DATA — Peminjaman (untuk alert rusak & overdue)
+// MOCK DATA — OPEX per tahun
+// Satu tahun bisa banyak item beban/pekerjaan
 // ================================================================
+const mockOpexPerTahun = {
+  2023: [
+    {
+      id: 1,
+      nama: "Beban Pemeliharaan Software",
+      rkap: 400000000,
+      realisasi: 400000000,
+    },
+    {
+      id: 2,
+      nama: "Beban Jaringan dan Koneksi Data",
+      rkap: 500000000,
+      realisasi: 498000000,
+    },
+    {
+      id: 3,
+      nama: "Beban Perlengkapan Kantor",
+      rkap: 600000000,
+      realisasi: 590000000,
+    },
+    {
+      id: 4,
+      nama: "Beban Jasa Konsultan",
+      rkap: 700000000,
+      realisasi: 695000000,
+    },
+    {
+      id: 5,
+      nama: "Beban SDM Pihak Ketiga",
+      rkap: 800000000,
+      realisasi: 780000000,
+    },
+  ],
+  2024: [
+    {
+      id: 1,
+      nama: "Beban Pemeliharaan Software",
+      rkap: 450000000,
+      realisasi: 440000000,
+    },
+    {
+      id: 2,
+      nama: "Beban Jaringan dan Koneksi Data",
+      rkap: 550000000,
+      realisasi: 530000000,
+    },
+    {
+      id: 3,
+      nama: "Beban Perlengkapan Kantor",
+      rkap: 650000000,
+      realisasi: 620000000,
+    },
+    {
+      id: 4,
+      nama: "Beban Jasa Konsultan",
+      rkap: 750000000,
+      realisasi: 740000000,
+    },
+    {
+      id: 5,
+      nama: "Beban SDM Pihak Ketiga",
+      rkap: 850000000,
+      realisasi: 810000000,
+    },
+  ],
+  2025: [
+    {
+      id: 1,
+      nama: "Beban Pemeliharaan Software",
+      rkap: 500000000,
+      realisasi: 420000000,
+    },
+    {
+      id: 2,
+      nama: "Beban Jaringan dan Koneksi Data",
+      rkap: 600000000,
+      realisasi: 510000000,
+    },
+    {
+      id: 3,
+      nama: "Beban Perlengkapan Kantor",
+      rkap: 700000000,
+      realisasi: 580000000,
+    },
+    {
+      id: 4,
+      nama: "Beban Jasa Konsultan",
+      rkap: 800000000,
+      realisasi: 720000000,
+    },
+    {
+      id: 5,
+      nama: "Beban SDM Pihak Ketiga",
+      rkap: 900000000,
+      realisasi: 760000000,
+    },
+    {
+      id: 6,
+      nama: "Beban Lisensi & Subscription",
+      rkap: 300000000,
+      realisasi: 280000000,
+    },
+  ],
+  2026: [
+    {
+      id: 1,
+      nama: "Beban Pemeliharaan Software",
+      rkap: 500000000,
+      realisasi: 85000000,
+    },
+    {
+      id: 2,
+      nama: "Beban Jaringan dan Koneksi Data",
+      rkap: 600000000,
+      realisasi: 240000000,
+    },
+    {
+      id: 3,
+      nama: "Beban Perlengkapan Kantor",
+      rkap: 700000000,
+      realisasi: 45000000,
+    },
+    {
+      id: 4,
+      nama: "Beban Jasa Konsultan",
+      rkap: 800000000,
+      realisasi: 400000000,
+    },
+    {
+      id: 5,
+      nama: "Beban SDM Pihak Ketiga",
+      rkap: 900000000,
+      realisasi: 150000000,
+    },
+    {
+      id: 6,
+      nama: "Beban Outsourcing IT",
+      rkap: 450000000,
+      realisasi: 120000000,
+    },
+  ],
+};
 
+// ================================================================
+// MOCK DATA — Peminjaman
+// ================================================================
 const mockBorrows = [
   {
     id_peminjaman: 1,
@@ -296,27 +403,30 @@ const mockBorrows = [
 ];
 
 // ================================================================
-// HELPER
+// HELPERS
 // ================================================================
-
-const formatRupiah = (value) =>
+const formatRupiah = (v) =>
   new Intl.NumberFormat("id-ID", {
     style: "currency",
     currency: "IDR",
     minimumFractionDigits: 0,
-  }).format(value);
+  }).format(v);
+
+const formatRupiahShort = (v) => {
+  if (v >= 1_000_000_000) return `Rp ${(v / 1_000_000_000).toFixed(1)} M`;
+  if (v >= 1_000_000) return `Rp ${(v / 1_000_000).toFixed(0)} Jt`;
+  return formatRupiah(v);
+};
 
 // ================================================================
-// calculateAlerts()
+// ALERTS
 // ================================================================
-
-const calculateAlerts = () => {
+const calculateAlerts = (opexData) => {
   const alerts = [];
   const today = new Date();
 
-  // 1. Aset sering rusak (≥2x)
   const damageCount = {};
-  const damageAssetNames = {};
+  const damageNames = {};
   mockBorrows.forEach((b) => {
     if (
       b.is_returned &&
@@ -324,107 +434,54 @@ const calculateAlerts = () => {
         b.return_condition === "DAMAGED")
     ) {
       damageCount[b.asset_code] = (damageCount[b.asset_code] || 0) + 1;
-      damageAssetNames[b.asset_code] = b.asset_name;
+      damageNames[b.asset_code] = b.asset_name;
     }
   });
   Object.entries(damageCount).forEach(([code, count]) => {
-    if (count >= 2) {
+    if (count >= 2)
       alerts.push({
         id: `damage-${code}`,
         type: "FREQUENT_DAMAGE",
         priority: "high",
         title: "Aset Sering Rusak",
-        message: `${damageAssetNames[code]} (${code}) dikembalikan dalam kondisi rusak sebanyak ${count}x. Pertimbangkan pengecekan atau penggantian.`,
+        message: `${damageNames[code]} (${code}) dikembalikan rusak sebanyak ${count}x. Pertimbangkan pengecekan atau penggantian.`,
         action_label: "Lihat Riwayat",
         action_path: "/peminjaman",
       });
-    }
   });
 
-  // 2. Peminjaman overdue
-  const overdueBorrows = mockBorrows.filter(
+  const overdue = mockBorrows.filter(
     (b) => !b.is_returned && new Date(b.due_date) < today,
   );
-  if (overdueBorrows.length > 0) {
+  if (overdue.length > 0)
     alerts.push({
       id: "overdue-summary",
       type: "OVERDUE_BORROW",
       priority: "medium",
       title: "Peminjaman Melewati Jatuh Tempo",
-      message: `${overdueBorrows.length} aset melewati jatuh tempo: ${overdueBorrows.map((b) => b.asset_name).join(", ")}. Segera tindak lanjut.`,
+      message: `${overdue.length} aset melewati jatuh tempo: ${overdue.map((b) => b.asset_name).join(", ")}. Segera tindak lanjut.`,
       action_label: "Cek Peminjaman",
       action_path: "/peminjaman",
     });
-  }
 
-  // 3. Anggaran OPEX kritis (≥80%)
-  mockOpex.forEach((opex) => {
-    const totalRealisasi = mockRealisasiOpex
-      .filter((r) => r.id_anggaran_tahunan === opex.id_anggaran_tahunan)
-      .reduce((sum, r) => sum + r.jumlah, 0);
-    const pct = (totalRealisasi / opex.nilai_anggaran_tahunan) * 100;
-    if (pct >= 80) {
+  opexData.forEach((opex) => {
+    const pct = opex.rkap > 0 ? (opex.realisasi / opex.rkap) * 100 : 0;
+    if (pct >= 80)
       alerts.push({
-        id: `opex-critical-${opex.id_anggaran_tahunan}`,
+        id: `opex-critical-${opex.id}`,
         type: "OPEX_CRITICAL",
         priority: pct >= 100 ? "high" : "medium",
         title: "Anggaran OPEX Kritis",
-        message: `${opex.nm_anggaran_master} terserap ${pct.toFixed(1)}% (${formatRupiah(totalRealisasi)} dari ${formatRupiah(opex.nilai_anggaran_tahunan)}). Sisa: ${formatRupiah(opex.nilai_anggaran_tahunan - totalRealisasi)}.`,
+        message: `${opex.nama} terserap ${pct.toFixed(1)}% (${formatRupiah(opex.realisasi)} dari ${formatRupiah(opex.rkap)}). Sisa: ${formatRupiah(opex.rkap - opex.realisasi)}.`,
         action_label: "Lihat Anggaran",
         action_path: "/budget",
       });
-    }
   });
 
-  // 4. Project CAPEX tanpa aset
-  mockCapex.forEach((capexItem) => {
-    capexItem.projects.forEach((proj) => {
-      if (!proj.assets || proj.assets.length === 0) {
-        alerts.push({
-          id: `capex-no-asset-${proj.id_pekerjaan}`,
-          type: "CAPEX_NO_ASSET",
-          priority: "medium",
-          title: "Data Aset CAPEX Belum Diisi",
-          message: `Pekerjaan "${proj.nm_pekerjaan.substring(0, 60)}..." (${proj.no_kontrak}) sudah kontrak senilai ${formatRupiah(proj.nilai_kontrak)} namun belum ada data aset.`,
-          action_label: "Input Aset",
-          action_path: "/budget",
-        });
-      }
-    });
-  });
-
-  // 5. CAPEX imbalance (selisih >5%)
-  mockCapex.forEach((capexItem) => {
-    capexItem.projects.forEach((proj) => {
-      if (!proj.assets || proj.assets.length === 0) return;
-      const sumAcquisition = proj.assets.reduce(
-        (sum, a) => sum + (a.acquisition_value || 0),
-        0,
-      );
-      const selisih = Math.abs(proj.nilai_kontrak - sumAcquisition);
-      const selisihPct = (selisih / proj.nilai_kontrak) * 100;
-      if (selisihPct > 5) {
-        alerts.push({
-          id: `capex-imbalance-${proj.id_pekerjaan}`,
-          type: "CAPEX_IMBALANCE",
-          priority: "medium",
-          title: "Nilai Aset vs Kontrak Tidak Sesuai",
-          message: `Pekerjaan "${proj.nm_pekerjaan.substring(0, 55)}..." selisih ${formatRupiah(selisih)} (${selisihPct.toFixed(1)}%) antara kontrak (${formatRupiah(proj.nilai_kontrak)}) dan total aset (${formatRupiah(sumAcquisition)}).`,
-          action_label: "Cek Detail",
-          action_path: "/budget",
-        });
-      }
-    });
-  });
-
-  const priorityOrder = { high: 0, medium: 1, low: 2 };
-  alerts.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+  const order = { high: 0, medium: 1, low: 2 };
+  alerts.sort((a, b) => order[a.priority] - order[b.priority]);
   return alerts;
 };
-
-// ================================================================
-// ALERT STYLE MAP
-// ================================================================
 
 const ALERT_STYLE = {
   FREQUENT_DAMAGE: {
@@ -453,7 +510,6 @@ const ALERT_STYLE = {
 // ================================================================
 // SUB-COMPONENTS
 // ================================================================
-
 const CustomKondisiLegend = () => (
   <div
     style={{
@@ -586,30 +642,6 @@ const StatsCard = ({ title, value, icon, color, sub }) => (
   </div>
 );
 
-const BudgetCard = ({ title, current, target, percent, color, desc }) => (
-  <div className="dashboard-card">
-    <div className="card-header">
-      <h3 className="section-title">{title}</h3>
-      <span className="section-subtitle">Realisasi vs RKAP</span>
-    </div>
-    <div className="budget-value-row">
-      <h2 className="current-value" style={{ color }}>
-        {current}
-      </h2>
-      <span className="target-value">/ {target}</span>
-    </div>
-    <div className="progress-bar-bg">
-      <div
-        className="progress-fill"
-        style={{ width: `${percent}%`, background: color }}
-      />
-    </div>
-    <p className="budget-summary-text">
-      <strong>{percent}%</strong> {desc}
-    </p>
-  </div>
-);
-
 const AlertItem = ({
   icon,
   bg,
@@ -634,8 +666,1003 @@ const AlertItem = ({
 );
 
 // ================================================================
+// STATUS CONFIG
+// ================================================================
+const statusConfig = {
+  selesai: {
+    color: "#27ae60",
+    bg: "#e8f8f0",
+    label: "Selesai",
+    dot: "#27ae60",
+  },
+  berjalan: {
+    color: "#004494",
+    bg: "#e8f0fb",
+    label: "Berjalan",
+    dot: "#004494",
+  },
+  belum: {
+    color: "#b0b8c1",
+    bg: "#f1f2f6",
+    label: "Belum Mulai",
+    dot: "#b0b8c1",
+  },
+};
+
+// ================================================================
+// CAPEX CARD
+// - Semua tahun tampil sekaligus dengan progress bar masing-masing
+// - Klik chevron per-tahun → muncul dropdown detail pekerjaan tahun itu
+// ================================================================
+const CapexMultiYearCard = ({ selectedYear }) => {
+  // selectedCapexTahun: tahun yang dipilih di dropdown (null = belum pilih)
+  const [selectedCapexTahun, setSelectedCapexTahun] = useState(null);
+  // openYear: baris tahun yang dropdown detailnya terbuka
+  const [openYear, setOpenYear] = useState(null);
+
+  // Sync dropdown ke selectedYear dari header saat pertama render / ganti tahun
+  React.useEffect(() => {
+    setSelectedCapexTahun(selectedYear);
+    setOpenYear(null);
+  }, [selectedYear]);
+
+  // Group rows by thn_anggaran
+  const byTahun = useMemo(() => {
+    const map = {};
+    mockCapexRows.forEach((row) => {
+      const y = String(row.thn_anggaran);
+      if (!map[y]) map[y] = [];
+      map[y].push(row);
+    });
+    return map;
+  }, []);
+
+  const tahunList = Object.keys(byTahun).sort();
+
+  const totalAnggaran = mockCapexRows.reduce((s, r) => s + r.nilai_anggaran, 0);
+  const totalRealisasi = mockCapexRows.reduce((s, r) => s + r.realisasi, 0);
+  const pctTotal =
+    totalAnggaran > 0 ? (totalRealisasi / totalAnggaran) * 100 : 0;
+
+  const tahunSummary = tahunList.map((y) => {
+    const rows = byTahun[y];
+    const anggaran = rows.reduce((s, r) => s + r.nilai_anggaran, 0);
+    const realisasi = rows.reduce((s, r) => s + r.realisasi, 0);
+    const pct = anggaran > 0 ? (realisasi / anggaran) * 100 : 0;
+    const hasBerjalan = rows.some((r) => r.status === "berjalan");
+    const hasSelesai = rows.some((r) => r.status === "selesai");
+    const status = hasBerjalan ? "berjalan" : hasSelesai ? "selesai" : "belum";
+    return { tahun: y, anggaran, realisasi, pct, status, rows };
+  });
+
+  const tahunAktif = tahunSummary.filter((t) => t.status !== "belum").length;
+
+  // Data untuk tahun yang dipilih (untuk stacked bar & rows)
+  const visibleSummary = selectedCapexTahun
+    ? tahunSummary.filter((t) => t.tahun === selectedCapexTahun)
+    : [];
+
+  return (
+    <div className="dashboard-card capex-card">
+      {/* ── Header ── */}
+      <div className="card-header" style={{ marginBottom: "12px" }}>
+        <div>
+          <h3 className="section-title">Anggaran CAPEX</h3>
+          <span className="section-subtitle">Multi-Year · Semua Program</span>
+        </div>
+        <div style={{ textAlign: "right", flexShrink: 0, marginLeft: "12px" }}>
+          <div
+            style={{
+              fontSize: "0.68rem",
+              color: "#95a5a6",
+              fontWeight: 700,
+              textTransform: "uppercase",
+              letterSpacing: "0.5px",
+            }}
+          >
+            Total RKAP
+          </div>
+          <div
+            style={{
+              fontSize: "1.55rem",
+              fontWeight: 800,
+              color: "#004494",
+              lineHeight: 1.2,
+            }}
+          >
+            {formatRupiahShort(totalAnggaran)}
+          </div>
+          <div
+            style={{ fontSize: "0.72rem", color: "#7f8c8d", marginTop: "2px" }}
+          >
+            {tahunList[0]}–{tahunList[tahunList.length - 1]}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Overall progress (selalu tampil) ── */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "6px",
+        }}
+      >
+        <span style={{ fontSize: "0.8rem", color: "#7f8c8d", fontWeight: 600 }}>
+          Total Realisasi:{" "}
+          <strong style={{ color: "#2c3e50" }}>
+            {formatRupiahShort(totalRealisasi)}
+          </strong>
+        </span>
+        <span
+          style={{ fontSize: "0.88rem", fontWeight: 800, color: "#004494" }}
+        >
+          {pctTotal.toFixed(1)}%
+        </span>
+      </div>
+      <div className="capex-bar-scroll-wrap" style={{ marginBottom: "16px" }}>
+        <div
+          className="capex-stacked-bar-bg"
+          style={{ minWidth: `${tahunSummary.length * 60}px` }}
+        >
+          {tahunSummary.map((t) => {
+            const segW = (t.anggaran / totalAnggaran) * 100;
+            const fillW = t.anggaran > 0 ? (t.realisasi / t.anggaran) * 100 : 0;
+            const cfg = statusConfig[t.status];
+            const isActive = t.tahun === selectedCapexTahun;
+            return (
+              <div
+                key={t.tahun}
+                className={`capex-stacked-segment ${isActive ? "capex-stacked-segment--active" : ""}`}
+                style={{ width: `${segW}%` }}
+                title={`${t.tahun}: ${formatRupiahShort(t.realisasi)} / ${formatRupiahShort(t.anggaran)} (${fillW.toFixed(1)}%)`}
+              >
+                <div
+                  className="capex-stacked-fill"
+                  style={{ width: `${fillW}%`, background: cfg.color }}
+                />
+              </div>
+            );
+          })}
+        </div>
+        <div
+          className="capex-stacked-labels"
+          style={{ minWidth: `${tahunSummary.length * 60}px` }}
+        >
+          {tahunSummary.map((t) => {
+            const segW = (t.anggaran / totalAnggaran) * 100;
+            const isActive = t.tahun === selectedCapexTahun;
+            return (
+              <div
+                key={t.tahun}
+                style={{
+                  width: `${segW}%`,
+                  textAlign: "center",
+                  fontSize: "0.68rem",
+                  fontWeight: isActive ? 800 : 500,
+                  color: isActive ? "#004494" : "#95a5a6",
+                }}
+              >
+                {t.tahun}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── Dropdown pilih tahun anggaran ── */}
+      <div style={{ marginBottom: "14px" }}>
+        <label
+          style={{
+            fontSize: "0.72rem",
+            fontWeight: 700,
+            color: "#7f8c8d",
+            textTransform: "uppercase",
+            letterSpacing: "0.5px",
+            display: "block",
+            marginBottom: "6px",
+          }}
+        >
+          Pilih Tahun Anggaran
+        </label>
+        <div style={{ position: "relative" }}>
+          <select
+            value={selectedCapexTahun ?? ""}
+            onChange={(e) => {
+              setSelectedCapexTahun(e.target.value || null);
+              setOpenYear(null);
+            }}
+            style={{
+              width: "100%",
+              padding: "9px 36px 9px 12px",
+              borderRadius: "8px",
+              border: `1.5px solid ${selectedCapexTahun ? "#004494" : "#d0d7e2"}`,
+              background: "white",
+              fontSize: "0.88rem",
+              fontWeight: selectedCapexTahun ? 700 : 400,
+              color: selectedCapexTahun ? "#2c3e50" : "#95a5a6",
+              cursor: "pointer",
+              appearance: "none",
+              WebkitAppearance: "none",
+              fontFamily: "inherit",
+              outline: "none",
+              boxShadow: selectedCapexTahun
+                ? "0 0 0 3px rgba(0,68,148,0.1)"
+                : "none",
+              transition: "all 0.2s ease",
+            }}
+          >
+            <option value="">-- Pilih tahun anggaran --</option>
+            {tahunSummary.map((t) => {
+              const cfg = statusConfig[t.status];
+              return (
+                <option key={t.tahun} value={t.tahun}>
+                  {t.tahun} · {cfg.label} · {t.pct.toFixed(1)}%
+                </option>
+              );
+            })}
+          </select>
+          {/* Custom chevron icon */}
+          <div
+            style={{
+              position: "absolute",
+              right: "12px",
+              top: "50%",
+              transform: "translateY(-50%)",
+              pointerEvents: "none",
+              color: selectedCapexTahun ? "#004494" : "#b0b8c1",
+              fontSize: "0.75rem",
+            }}
+          >
+            <FaChevronDown />
+          </div>
+        </div>
+      </div>
+
+      {/* ── Baris progress per tahun — muncul setelah tahun dipilih ── */}
+      {selectedCapexTahun ? (
+        <div
+          className="capex-year-rows"
+          style={{ animation: "capexDropIn 0.2s ease-out" }}
+        >
+          {visibleSummary.map((t) => {
+            const cfg = statusConfig[t.status];
+            const isOpen = openYear === t.tahun;
+
+            return (
+              <div
+                key={t.tahun}
+                style={{
+                  borderRadius: "8px",
+                  border: `1px solid #c7d9f8`,
+                  background: "#eef4ff",
+                  overflow: "hidden",
+                }}
+              >
+                {/* Row header — klik untuk toggle dropdown detail pekerjaan */}
+                <div
+                  className="capex-year-row"
+                  onClick={() => setOpenYear(isOpen ? null : t.tahun)}
+                  style={{ cursor: "pointer" }}
+                >
+                  {/* Kiri: dot + tahun + badge status */}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      minWidth: "100px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: "8px",
+                        height: "8px",
+                        borderRadius: "50%",
+                        background: cfg.dot,
+                        flexShrink: 0,
+                        display: "inline-block",
+                      }}
+                    />
+                    <span
+                      style={{
+                        fontSize: "0.85rem",
+                        fontWeight: 800,
+                        color: cfg.color,
+                      }}
+                    >
+                      {t.tahun}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "0.6rem",
+                        fontWeight: 700,
+                        padding: "1px 6px",
+                        borderRadius: "8px",
+                        background: cfg.bg,
+                        color: cfg.color,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {cfg.label}
+                    </span>
+                  </div>
+
+                  {/* Tengah: progress bar */}
+                  <div style={{ flex: 1, margin: "0 10px" }}>
+                    <div
+                      style={{
+                        height: "6px",
+                        borderRadius: "3px",
+                        background: "#d0dcf0",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <div
+                        style={{
+                          height: "100%",
+                          width: `${Math.min(t.pct, 100)}%`,
+                          background: cfg.color,
+                          borderRadius: "3px",
+                          transition: "width 0.7s ease",
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Kanan: nilai + persen + chevron */}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
+                  >
+                    <div style={{ textAlign: "right", minWidth: "140px" }}>
+                      <span
+                        style={{
+                          fontSize: "0.78rem",
+                          fontWeight: 700,
+                          color: "#2c3e50",
+                        }}
+                      >
+                        {formatRupiahShort(t.realisasi)}
+                      </span>
+                      <span
+                        style={{
+                          fontSize: "0.75rem",
+                          color: "#95a5a6",
+                          fontWeight: 400,
+                        }}
+                      >
+                        {" "}
+                        / {formatRupiahShort(t.anggaran)}
+                      </span>
+                      <div
+                        style={{
+                          fontSize: "0.68rem",
+                          fontWeight: 700,
+                          color: cfg.color,
+                        }}
+                      >
+                        {t.pct.toFixed(1)}%
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        color: isOpen ? "#004494" : "#b0b8c1",
+                        fontSize: "0.7rem",
+                        transition: "color 0.2s",
+                        width: "14px",
+                        flexShrink: 0,
+                      }}
+                    >
+                      {isOpen ? <FaChevronUp /> : <FaChevronDown />}
+                    </div>
+                  </div>
+                </div>
+
+                {/* DROPDOWN: daftar pekerjaan */}
+                {isOpen && (
+                  <div
+                    style={{
+                      borderTop: "1px solid #c7d9f8",
+                      background: "white",
+                      padding: "10px 14px",
+                      animation: "capexDropIn 0.18s ease-out",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: "0.67rem",
+                        fontWeight: 700,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.5px",
+                        color: "#95a5a6",
+                        marginBottom: "8px",
+                      }}
+                    >
+                      {t.rows.length} Pekerjaan · Thn Anggaran {t.tahun}
+                    </div>
+
+                    {t.rows.map((row, idx) => {
+                      const pct =
+                        row.nilai_anggaran > 0
+                          ? (row.realisasi / row.nilai_anggaran) * 100
+                          : 0;
+                      const rowCfg = statusConfig[row.status];
+                      return (
+                        <div
+                          key={idx}
+                          style={{
+                            display: "flex",
+                            alignItems: "flex-start",
+                            gap: "10px",
+                            padding: "7px 0",
+                            borderBottom:
+                              idx < t.rows.length - 1
+                                ? "1px solid #f5f6f8"
+                                : "none",
+                          }}
+                        >
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div
+                              style={{
+                                fontSize: "0.78rem",
+                                fontWeight: 600,
+                                color: "#2c3e50",
+                                lineHeight: 1.35,
+                                display: "-webkit-box",
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: "vertical",
+                                overflow: "hidden",
+                              }}
+                              title={row.nm_anggaran_capex}
+                            >
+                              {row.nm_anggaran_capex}
+                            </div>
+                            <div
+                              style={{
+                                fontSize: "0.64rem",
+                                color: "#95a5a6",
+                                marginTop: "2px",
+                              }}
+                            >
+                              RKAP {row.thn_rkap_awal}
+                              {row.thn_rkap_akhir !== row.thn_rkap_awal
+                                ? `–${row.thn_rkap_akhir}`
+                                : ""}
+                            </div>
+                          </div>
+                          <div
+                            style={{
+                              flexShrink: 0,
+                              width: "68px",
+                              paddingTop: "3px",
+                            }}
+                          >
+                            <div
+                              style={{
+                                height: "4px",
+                                borderRadius: "2px",
+                                background: "#f1f2f6",
+                                overflow: "hidden",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  height: "100%",
+                                  width: `${Math.min(pct, 100)}%`,
+                                  background: rowCfg.color,
+                                  borderRadius: "2px",
+                                }}
+                              />
+                            </div>
+                            <div
+                              style={{
+                                fontSize: "0.64rem",
+                                fontWeight: 700,
+                                color: rowCfg.color,
+                                textAlign: "right",
+                                marginTop: "2px",
+                              }}
+                            >
+                              {pct.toFixed(0)}%
+                            </div>
+                          </div>
+                          <div
+                            style={{
+                              textAlign: "right",
+                              flexShrink: 0,
+                              minWidth: "105px",
+                            }}
+                          >
+                            <div
+                              style={{
+                                fontSize: "0.75rem",
+                                fontWeight: 700,
+                                color: "#2c3e50",
+                              }}
+                            >
+                              {formatRupiahShort(row.realisasi)}
+                            </div>
+                            <div
+                              style={{ fontSize: "0.67rem", color: "#95a5a6" }}
+                            >
+                              / {formatRupiahShort(row.nilai_anggaran)}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {/* Sub-total */}
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        paddingTop: "8px",
+                        marginTop: "4px",
+                        borderTop: "1.5px solid #e8ecf0",
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: "0.74rem",
+                          fontWeight: 700,
+                          color: "#7f8c8d",
+                        }}
+                      >
+                        Total Tahun {t.tahun}
+                      </span>
+                      <div>
+                        <span
+                          style={{
+                            fontSize: "0.78rem",
+                            fontWeight: 800,
+                            color: "#27ae60",
+                          }}
+                        >
+                          {formatRupiahShort(t.realisasi)}
+                        </span>
+                        <span style={{ fontSize: "0.7rem", color: "#95a5a6" }}>
+                          {" "}
+                          dari {formatRupiahShort(t.anggaran)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        /* ── Placeholder: belum pilih tahun ── */
+        <div
+          style={{
+            border: "1.5px dashed #d0d7e2",
+            borderRadius: "10px",
+            padding: "28px 20px",
+            textAlign: "center",
+            marginBottom: "14px",
+            background: "#fafbfc",
+          }}
+        >
+          <div style={{ fontSize: "1.6rem", marginBottom: "8px" }}>📅</div>
+          <div
+            style={{
+              fontSize: "0.85rem",
+              fontWeight: 700,
+              color: "#7f8c8d",
+              marginBottom: "4px",
+            }}
+          >
+            Pilih tahun anggaran terlebih dahulu
+          </div>
+          <div style={{ fontSize: "0.75rem", color: "#b0b8c1" }}>
+            Progress per tahun akan tampil di sini
+          </div>
+        </div>
+      )}
+
+      {/* ── Footer ── */}
+      <div className="capex-footer-summary">
+        <div className="capex-footer-item">
+          <span>Sudah Terserap</span>
+          <strong style={{ color: "#27ae60" }}>
+            {formatRupiahShort(totalRealisasi)}
+          </strong>
+        </div>
+        <div className="capex-footer-divider" />
+        <div className="capex-footer-item">
+          <span>Sisa Anggaran</span>
+          <strong style={{ color: "#e74c3c" }}>
+            {formatRupiahShort(totalAnggaran - totalRealisasi)}
+          </strong>
+        </div>
+        <div className="capex-footer-divider" />
+        <div className="capex-footer-item">
+          <span>Rentang Tahun</span>
+          <strong style={{ color: "#004494" }}>{tahunAktif} Tahun Aktif</strong>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ================================================================
+// OPEX CARD
+// - Default: total progress + mini bar per pos (tanpa angka detail)
+// - Klik "Lihat Detail" → muncul semua nama pos + bisa klik tiap item untuk expand
+// ================================================================
+const OpexBudgetCard = ({ tahun, dataOpex }) => {
+  const [showDetail, setShowDetail] = useState(false);
+  const [openItem, setOpenItem] = useState(null);
+
+  // Reset saat tahun berubah
+  React.useEffect(() => {
+    setShowDetail(false);
+    setOpenItem(null);
+  }, [tahun]);
+
+  const totalRkap = dataOpex.reduce((s, o) => s + o.rkap, 0);
+  const totalRealisasi = dataOpex.reduce((s, o) => s + o.realisasi, 0);
+  const pct = totalRkap > 0 ? (totalRealisasi / totalRkap) * 100 : 0;
+  const color = pct >= 100 ? "#e74c3c" : pct >= 80 ? "#f39c12" : "#d35400";
+
+  return (
+    <div className="dashboard-card">
+      <div className="card-header">
+        <div>
+          <h3 className="section-title">Anggaran OPEX</h3>
+          <span className="section-subtitle">
+            Realisasi vs RKAP · Tahun {tahun} · {dataOpex.length} Pos
+          </span>
+        </div>
+      </div>
+
+      {/* ── Total overview ── */}
+      <div className="budget-value-row">
+        <h2 className="current-value" style={{ color }}>
+          {formatRupiahShort(totalRealisasi)}
+        </h2>
+        <span className="target-value">/ {formatRupiahShort(totalRkap)}</span>
+      </div>
+      <div className="progress-bar-bg">
+        <div
+          className="progress-fill"
+          style={{ width: `${Math.min(pct, 100)}%`, background: color }}
+        />
+      </div>
+      <p className="budget-summary-text">
+        <strong>{pct.toFixed(1)}%</strong> Terserap. Sisa:{" "}
+        {formatRupiahShort(totalRkap - totalRealisasi)}
+      </p>
+
+      {/* ── Mini bar ringkasan per pos (selalu tampil, tanpa angka detail) ── */}
+      <div
+        style={{
+          borderTop: "1px solid #f1f2f6",
+          paddingTop: "12px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "7px",
+          marginBottom: "14px",
+        }}
+      >
+        {dataOpex.map((opex) => {
+          const p = opex.rkap > 0 ? (opex.realisasi / opex.rkap) * 100 : 0;
+          const c = p >= 100 ? "#e74c3c" : p >= 80 ? "#f39c12" : "#27ae60";
+          return (
+            <div
+              key={opex.id}
+              style={{ display: "flex", alignItems: "center", gap: "8px" }}
+            >
+              <div
+                style={{
+                  fontSize: "0.76rem",
+                  color: "#555",
+                  fontWeight: 500,
+                  flex: 1,
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+                title={opex.nama}
+              >
+                {opex.nama.replace("Beban ", "")}
+              </div>
+              <div
+                style={{
+                  width: "80px",
+                  height: "5px",
+                  borderRadius: "3px",
+                  background: "#f1f2f6",
+                  overflow: "hidden",
+                  flexShrink: 0,
+                }}
+              >
+                <div
+                  style={{
+                    height: "100%",
+                    width: `${Math.min(p, 100)}%`,
+                    background: c,
+                    borderRadius: "3px",
+                    transition: "width 0.6s ease",
+                  }}
+                />
+              </div>
+              <span
+                style={{
+                  fontSize: "0.7rem",
+                  fontWeight: 700,
+                  color: c,
+                  minWidth: "32px",
+                  textAlign: "right",
+                  flexShrink: 0,
+                }}
+              >
+                {p.toFixed(0)}%
+              </span>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ── Tombol Lihat Detail ── */}
+      <button
+        onClick={() => setShowDetail((v) => !v)}
+        style={{
+          width: "100%",
+          padding: "9px",
+          borderRadius: "8px",
+          border: `1px solid ${color}`,
+          background: showDetail ? color : "white",
+          color: showDetail ? "white" : color,
+          fontWeight: 700,
+          fontSize: "0.82rem",
+          cursor: "pointer",
+          transition: "all 0.18s ease",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "6px",
+          fontFamily: "inherit",
+          marginBottom: showDetail ? "12px" : "0",
+        }}
+      >
+        {showDetail ? <FaChevronUp /> : <FaChevronDown />}
+        {showDetail
+          ? "Sembunyikan Detail"
+          : `Lihat Detail (${dataOpex.length} Pos Anggaran)`}
+      </button>
+
+      {/* ── Detail per-item: muncul saat showDetail ── */}
+      {showDetail && (
+        <div
+          style={{
+            border: "1px solid #e8ecf0",
+            borderRadius: "10px",
+            overflow: "hidden",
+            animation: "capexDropIn 0.2s ease-out",
+          }}
+        >
+          <div
+            style={{
+              background: "#f8f9fb",
+              padding: "8px 14px",
+              borderBottom: "1px solid #e8ecf0",
+            }}
+          >
+            <span
+              style={{
+                fontSize: "0.7rem",
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: "0.5px",
+                color: "#7f8c8d",
+              }}
+            >
+              Rincian Per Pos Anggaran · {tahun}
+            </span>
+          </div>
+          <div
+            style={{
+              maxHeight: "360px",
+              overflowY: "auto",
+              scrollbarWidth: "thin",
+              scrollbarColor: "#d0d7e2 transparent",
+            }}
+          >
+            {dataOpex.map((opex) => {
+              const p = opex.rkap > 0 ? (opex.realisasi / opex.rkap) * 100 : 0;
+              const c = p >= 100 ? "#e74c3c" : p >= 80 ? "#f39c12" : "#27ae60";
+              const isOpen = openItem === opex.id;
+              return (
+                <div
+                  key={opex.id}
+                  style={{ borderBottom: "1px solid #f1f2f6" }}
+                >
+                  {/* Row item — klik untuk expand detail angka */}
+                  <div
+                    onClick={() => setOpenItem(isOpen ? null : opex.id)}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                      padding: "10px 14px",
+                      cursor: "pointer",
+                      background: isOpen ? "#f0f6ff" : "white",
+                      transition: "background 0.15s",
+                    }}
+                  >
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div
+                        style={{
+                          fontSize: "0.79rem",
+                          fontWeight: 600,
+                          color: "#2c3e50",
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                        title={opex.nama}
+                      >
+                        {opex.nama}
+                      </div>
+                      <div
+                        style={{
+                          marginTop: "5px",
+                          height: "4px",
+                          borderRadius: "2px",
+                          background: "#f1f2f6",
+                          overflow: "hidden",
+                        }}
+                      >
+                        <div
+                          style={{
+                            height: "100%",
+                            width: `${Math.min(p, 100)}%`,
+                            background: c,
+                            borderRadius: "2px",
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div style={{ textAlign: "right", flexShrink: 0 }}>
+                      <div
+                        style={{
+                          fontSize: "0.72rem",
+                          fontWeight: 800,
+                          color: c,
+                        }}
+                      >
+                        {p.toFixed(0)}%
+                      </div>
+                      <div style={{ fontSize: "0.7rem", color: "#95a5a6" }}>
+                        {formatRupiahShort(opex.realisasi)}
+                      </div>
+                    </div>
+                    <span
+                      style={{
+                        color: isOpen ? "#004494" : "#b0b8c1",
+                        fontSize: "0.65rem",
+                        flexShrink: 0,
+                      }}
+                    >
+                      {isOpen ? <FaChevronUp /> : <FaChevronDown />}
+                    </span>
+                  </div>
+
+                  {/* Detail item: RKAP, Realisasi, Sisa */}
+                  {isOpen && (
+                    <div
+                      style={{
+                        background: "#f8fbff",
+                        borderTop: "1px solid #e8f0fb",
+                        padding: "10px 14px",
+                        animation: "capexDropIn 0.15s ease-out",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "1fr 1fr 1fr",
+                          gap: "10px",
+                          marginBottom: "8px",
+                        }}
+                      >
+                        {[
+                          {
+                            label: "RKAP",
+                            val: formatRupiahShort(opex.rkap),
+                            col: "#2c3e50",
+                          },
+                          {
+                            label: "Realisasi",
+                            val: formatRupiahShort(opex.realisasi),
+                            col: c,
+                          },
+                          {
+                            label: "Sisa",
+                            val: formatRupiahShort(opex.rkap - opex.realisasi),
+                            col:
+                              opex.rkap - opex.realisasi < 0
+                                ? "#e74c3c"
+                                : "#27ae60",
+                          },
+                        ].map((item) => (
+                          <div key={item.label}>
+                            <div
+                              style={{
+                                fontSize: "0.6rem",
+                                fontWeight: 700,
+                                color: "#95a5a6",
+                                textTransform: "uppercase",
+                                letterSpacing: "0.4px",
+                              }}
+                            >
+                              {item.label}
+                            </div>
+                            <div
+                              style={{
+                                fontSize: "0.82rem",
+                                fontWeight: 700,
+                                color: item.col,
+                              }}
+                            >
+                              {item.val}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div
+                        style={{
+                          height: "5px",
+                          borderRadius: "3px",
+                          background: "#e8ecf0",
+                          overflow: "hidden",
+                        }}
+                      >
+                        <div
+                          style={{
+                            height: "100%",
+                            width: `${Math.min(p, 100)}%`,
+                            background: c,
+                            borderRadius: "3px",
+                          }}
+                        />
+                      </div>
+                      <div
+                        style={{
+                          fontSize: "0.63rem",
+                          color: "#95a5a6",
+                          marginTop: "3px",
+                        }}
+                      >
+                        {p.toFixed(1)}% dari anggaran terserap
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ================================================================
+
+// ================================================================
 // MAIN DASHBOARD
 // ================================================================
+const tahunOptions = ["2023", "2024", "2025", "2026"];
 
 const Dashboard = () => {
   const [filterTren, setFilterTren] = useState("bulanan");
@@ -644,20 +1671,29 @@ const Dashboard = () => {
 
   const dataTren =
     filterTren === "harian" ? dataPeminjamanHarian : dataPeminjamanBulanan;
-  const tahunOptions = ["2023", "2024", "2025", "2026"];
 
-  const alerts = useMemo(() => calculateAlerts(), []);
+  const opexTahunIni = mockOpexPerTahun[tahunAnggaran] ?? [];
+
+  const alerts = useMemo(() => calculateAlerts(opexTahunIni), [tahunAnggaran]);
   const highCount = alerts.filter((a) => a.priority === "high").length;
   const totalCount = alerts.length;
 
   return (
     <div className="dashboard-wrapper">
+      {/* Animasi dropdown */}
+      <style>{`
+        @keyframes capexDropIn {
+          from { opacity: 0; transform: translateY(-6px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
+
       {/* 1. HEADER */}
       <div className="dashboard-header">
         <div>
           <h1 className="dashboard-title">Dashboard Overview</h1>
           <p className="dashboard-subtitle">
-            Monitoring Aset & Anggaran PT Pelindo Multi Terminal
+            Monitoring Aset &amp; Anggaran PT Pelindo Multi Terminal
           </p>
         </div>
         <div
@@ -746,29 +1782,14 @@ const Dashboard = () => {
         />
       </div>
 
-      {/* 3. BUDGET MONITORING */}
+      {/* 3. BUDGET */}
       <div className="budget-grid">
-        <BudgetCard
-          title="Anggaran CAPEX"
-          current="Rp 8.5 M"
-          target="Rp 12 M"
-          percent={70}
-          color="#004494"
-          desc="Terserap. Sisa: Rp 3.5 M"
-        />
-        <BudgetCard
-          title="Anggaran OPEX"
-          current="Rp 2.1 M"
-          target="Rp 4.5 M"
-          percent={45}
-          color="#d35400"
-          desc="Terserap. Sisa: Rp 2.4 M"
-        />
+        <CapexMultiYearCard selectedYear={tahunAnggaran} />
+        <OpexBudgetCard tahun={tahunAnggaran} dataOpex={opexTahunIni} />
       </div>
 
       {/* 4. CHARTS */}
       <div className="chart-grid">
-        {/* Tren Peminjaman */}
         <div className="dashboard-card">
           <div
             style={{
@@ -804,7 +1825,6 @@ const Dashboard = () => {
                     boxShadow:
                       filterTren === f ? "0 1px 4px rgba(0,0,0,0.1)" : "none",
                     transition: "all 0.2s",
-                    textTransform: "capitalize",
                   }}
                 >
                   {f === "harian" ? "Per Hari" : "Per Bulan"}
@@ -812,7 +1832,6 @@ const Dashboard = () => {
               ))}
             </div>
           </div>
-
           <div
             style={{
               display: "flex",
@@ -846,7 +1865,6 @@ const Dashboard = () => {
               </div>
             ))}
           </div>
-
           <div className="chart-container">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={dataTren}>
@@ -885,7 +1903,6 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Kondisi Aset */}
         <div className="dashboard-card">
           <h3 className="section-title">Kondisi Aset</h3>
           <div className="chart-container" style={{ height: "220px" }}>
@@ -908,11 +1925,10 @@ const Dashboard = () => {
                     outerRadius,
                     percent,
                   }) => {
-                    const RADIAN = Math.PI / 180;
-                    const radius =
-                      innerRadius + (outerRadius - innerRadius) * 0.5;
-                    const x = cx + radius * Math.cos(-midAngle * RADIAN);
-                    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+                    const r = Math.PI / 180;
+                    const rad = innerRadius + (outerRadius - innerRadius) * 0.5;
+                    const x = cx + rad * Math.cos(-midAngle * r);
+                    const y = cy + rad * Math.sin(-midAngle * r);
                     return percent > 0.05 ? (
                       <text
                         x={x}
@@ -934,9 +1950,9 @@ const Dashboard = () => {
                   <Label content={<CustomDonutLabel />} position="center" />
                 </Pie>
                 <Tooltip
-                  formatter={(value, name) => [
-                    `${value.toLocaleString()} unit (${((value / totalKondisi) * 100).toFixed(1)}%)`,
-                    name,
+                  formatter={(v, n) => [
+                    `${v.toLocaleString()} unit (${((v / totalKondisi) * 100).toFixed(1)}%)`,
+                    n,
                   ]}
                   contentStyle={{
                     borderRadius: "8px",
@@ -951,7 +1967,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* 5. SMART ALERTS — dinamis dari calculateAlerts() */}
+      {/* 5. SMART ALERTS */}
       <div className="dashboard-card">
         <div className="alert-header">
           <h3 className="section-title">⚠️ Smart Alerts</h3>
@@ -970,7 +1986,6 @@ const Dashboard = () => {
             </span>
           )}
         </div>
-
         {totalCount === 0 && (
           <p
             style={{
@@ -983,9 +1998,8 @@ const Dashboard = () => {
             Tidak ada alert saat ini. Semua kondisi normal.
           </p>
         )}
-
         {alerts.map((alert) => {
-          const style = ALERT_STYLE[alert.type] ?? {
+          const s = ALERT_STYLE[alert.type] ?? {
             icon: <FaExclamationTriangle />,
             bg: "#fdecea",
             color: "#e74c3c",
@@ -993,9 +2007,9 @@ const Dashboard = () => {
           return (
             <AlertItem
               key={alert.id}
-              icon={style.icon}
-              bg={style.bg}
-              color={style.color}
+              icon={s.icon}
+              bg={s.bg}
+              color={s.color}
               title={alert.title}
               text={alert.message}
               btnText={alert.action_label}
