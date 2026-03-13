@@ -160,6 +160,51 @@ export const mockOpex = [
 // Setiap aset kini punya acquisition_value (nilai perolehan per unit)
 // SUM(acquisition_value) per project idealnya = nilai_kontrak
 export const mockCapex = [
+  // ================================================================
+  // 2440013 — Penyiapan Infrastruktur IT Kantor Pusat & Branch
+  // Dari Excel: SI.01/10/9/2/PPTI/TEKI/PLMT-24 | 10-Sep-24 | 90 hari
+  //             tgl_sp3: 06-Sep-24 | tgl_bamk: 06-Sep-24
+  //             no_po: 8260000074
+  // ================================================================
+  {
+    id_anggaran_tahunan_capex: 5,
+    kd_anggaran_master: "5900100000",
+    kd_anggaran_capex: "2440013",
+    nm_anggaran_capex: "Penyiapan Infrastruktur IT Kantor Pusat & Branch",
+    thn_rkap_awal: 2024,
+    thn_rkap_akhir: 2024,
+    thn_anggaran: 2024,
+    nilai_anggaran_kad: null,
+    nilai_anggaran_rkap: 0,
+    projects: [
+      {
+        id_pekerjaan: 10,
+        id_anggaran_tahunan: "2440013",
+        jenis_anggaran: "Capex",
+        nm_pekerjaan:
+          "Penyiapan Infrastruktur IT (Kantor Pusat, Pelindo Place, Pelindo Tower, Malahayati, Lhokseumawe, Bima, Badas, Parepare, Gresik, Tanjung Emas, Mekar Putih, Meulaboh, Kuala Langsa dan Bumiharjo) PT Pelindo Multi Terminal",
+        nilai_rab: null,
+        nilai_kontrak: null,
+        no_pr: null,
+        no_po: "8260000074",
+        no_kontrak: "SI.01/10/9/2/PPTI/TEKI/PLMT-24",
+        tgl_kontrak: "2024-09-10",
+        durasi_kontrak: 90,
+        no_sp3: null,
+        tgl_sp3: "2024-09-06",
+        tgl_bamk: "2024-09-06",
+        create_user: null,
+        create_date: null,
+        keterangan: null,
+        assets: [],
+      },
+    ],
+  },
+
+  // ================================================================
+  // 2440015 — Implementasi dan Standarisasi IT Infrastruktur
+  // (data sudah ada sebelumnya)
+  // ================================================================
   {
     id_anggaran_tahunan_capex: 1,
     kd_anggaran_master: "5900100000",
@@ -274,6 +319,11 @@ export const mockCapex = [
       },
     ],
   },
+
+  // ================================================================
+  // 2440014 — Penyediaan Network di Branch SPMT
+  // (data sudah ada sebelumnya)
+  // ================================================================
   {
     id_anggaran_tahunan_capex: 2,
     kd_anggaran_master: "5900100000",
@@ -333,6 +383,126 @@ export const mockCapex = [
       },
     ],
   },
+
+  // ================================================================
+  // 2440020 — Gate System & Transformasi (multi pekerjaan dari Excel)
+  // Dari Excel: 4 baris dengan kd_anggaran 2440020
+  // ================================================================
+  {
+    id_anggaran_tahunan_capex: 6,
+    kd_anggaran_master: "5900100000",
+    kd_anggaran_capex: "2440020",
+    nm_anggaran_capex:
+      "Pemenuhan Kebutuhan Gate System Transformasi dan Planning & Control PT Pelindo Multi Terminal",
+    thn_rkap_awal: 2024,
+    thn_rkap_akhir: 2025,
+    thn_anggaran: 2024,
+    nilai_anggaran_kad: null,
+    nilai_anggaran_rkap: 0,
+    projects: [
+      {
+        // Baris 1 Excel: SI.01/7/1/3/PPTI/TEKI/PLMT-25 | 07-Jan-25 | 90 hari
+        // tgl_sp3: 03-Jan-25 | tgl_bamk: 15-Jan-25
+        // no_sp3: KP.20.01/3/1/2/PGDN/SDMU/PLMT-25
+        id_pekerjaan: 11,
+        id_anggaran_tahunan: "2440020",
+        jenis_anggaran: "Capex",
+        nm_pekerjaan:
+          "Pemenuhan Kebutuhan Gate System Transformasi pada Branch (Jamrud Nilam Mirah, Tanjung Wangi, Trisakti, Dumai, Belawan) PT Pelindo Multi Terminal",
+        nilai_rab: null,
+        nilai_kontrak: null,
+        no_pr: null,
+        no_po: null,
+        no_kontrak: "SI.01/7/1/3/PPTI/TEKI/PLMT-25",
+        tgl_kontrak: "2025-01-07",
+        durasi_kontrak: 90,
+        no_sp3: "KP.20.01/3/1/2/PGDN/SDMU/PLMT-25",
+        tgl_sp3: "2025-01-03",
+        tgl_bamk: "2025-01-15",
+        create_user: null,
+        create_date: null,
+        keterangan: null,
+        assets: [],
+      },
+      {
+        // Baris 2 Excel: SI.01/13/1/2/PPTI/TEKI/PLMT-25 | 13-Jan-25 | 90 hari
+        // tgl_sp3: 10-Jan-25 | tgl_bamk: 15-Jan-25
+        // no_sp3: KP.20.01/10/1/4/PGD N/SDMU/PLMT-25
+        id_pekerjaan: 12,
+        id_anggaran_tahunan: "2440020",
+        jenis_anggaran: "Capex",
+        nm_pekerjaan:
+          "Pemenuhan Kebutuhan Planning and Control Transformasi pada Branch (Jamrud Nilam Mirah, Tanjung Wangi, Trisakti, Dumai, Belawan dan Kantor Pusat) PT Pelindo Multi Terminal",
+        nilai_rab: null,
+        nilai_kontrak: null,
+        no_pr: null,
+        no_po: null,
+        no_kontrak: "SI.01/13/1/2/PPTI/TEKI/PLMT-25",
+        tgl_kontrak: "2025-01-13",
+        durasi_kontrak: 90,
+        no_sp3: "KP.20.01/10/1/4/PGDN/SDMU/PLMT-25",
+        tgl_sp3: "2025-01-10",
+        tgl_bamk: "2025-01-15",
+        create_user: null,
+        create_date: null,
+        keterangan: null,
+        assets: [],
+      },
+      {
+        // Baris 3 Excel: SI.01/24/1/3/PPTI/TEKI/PLMT-25 | 24-Jan-25 | 90 hari
+        // tgl_sp3: 21-Jan-25 | tgl_bamk: 07-Feb-25
+        // no_sp3: KP.20.01/21/1/4/PGDN/SDMU/PLMT-25
+        id_pekerjaan: 13,
+        id_anggaran_tahunan: "2440020",
+        jenis_anggaran: "Capex",
+        nm_pekerjaan:
+          "Pemenuhan Kebutuhan Gate System, Planning and Control dan Perangkat Pendukung Transformasi PT Pelindo Multi Terminal",
+        nilai_rab: null,
+        nilai_kontrak: null,
+        no_pr: null,
+        no_po: null,
+        no_kontrak: "SI.01/24/1/3/PPTI/TEKI/PLMT-25",
+        tgl_kontrak: "2025-01-24",
+        durasi_kontrak: 90,
+        no_sp3: "KP.20.01/21/1/4/PGDN/SDMU/PLMT-25",
+        tgl_sp3: "2025-01-21",
+        tgl_bamk: "2025-02-07",
+        create_user: null,
+        create_date: null,
+        keterangan: null,
+        assets: [],
+      },
+      {
+        // Baris 4 Excel: PD.05.01/29/10/1/PPTI/TEKI/PLMT-25 | 29-Oct-25 | 60 hari
+        // tgl_sp3: 23-Oct-25 | tgl_bamk: 02-Oct-25
+        // no_sp3: PD.05.01/23/10/2/PGDN/SDMU/PLMT-25
+        id_pekerjaan: 14,
+        id_anggaran_tahunan: "2440020",
+        jenis_anggaran: "Capex",
+        nm_pekerjaan:
+          "Pemenuhan Kebutuhan Gate System dan Planning and Control (Public Announcer, Kelengkapan Gate dan Radio Point To Point) PT Pelindo Multi Terminal",
+        nilai_rab: null,
+        nilai_kontrak: null,
+        no_pr: null,
+        no_po: null,
+        no_kontrak: "PD.05.01/29/10/1/PPTI/TEKI/PLMT-25",
+        tgl_kontrak: "2025-10-29",
+        durasi_kontrak: 60,
+        no_sp3: "PD.05.01/23/10/2/PGDN/SDMU/PLMT-25",
+        tgl_sp3: "2025-10-23",
+        tgl_bamk: "2025-10-02",
+        create_user: null,
+        create_date: null,
+        keterangan: null,
+        assets: [],
+      },
+    ],
+  },
+
+  // ================================================================
+  // 2540011 — Transformasi dan Digitalisasi PT Pelindo Multi Terminal
+  // (data sudah ada + tambah baris baru dari Excel)
+  // ================================================================
   {
     id_anggaran_tahunan_capex: 3,
     kd_anggaran_master: "5900100000",
@@ -346,6 +516,9 @@ export const mockCapex = [
     nilai_anggaran_rkap: 12000000000,
     projects: [
       {
+        // Dari Excel baris 2540011 ke-1: SI.01/7/7/4/PPTI/TEKI/PLMT-25 | 07-Jul-25 | 120 hari
+        // tgl_sp3: 30-Jun-25 | tgl_bamk: 01-Jul-25
+        // no_sp3: PD.05.01/30/6/3/PGD N/SDMU/PLMT-25
         id_pekerjaan: 5,
         id_anggaran_tahunan: "2540011",
         jenis_anggaran: "Capex",
@@ -392,6 +565,58 @@ export const mockCapex = [
         ],
       },
       {
+        // Dari Excel baris 2540011 ke-2: PD.05.01/18/8/1/PPTI/TEKI/PLMT-25 | 18-Ags-2025 | 60 hari
+        // tgl_sp3: 11 Ags 2025 | tgl_bamk: 15-Sep-25
+        // no_sp3: PD.05.01/11/8/3/PGDN/SDMU/PLMT-25
+        id_pekerjaan: 15,
+        id_anggaran_tahunan: "2540011",
+        jenis_anggaran: "Capex",
+        nm_pekerjaan:
+          "Digitalisasi Branch (Balikpapan, Belawan, Dumai, Trisakti, Makassar, Parepare, Garongkong, Sibolga, Tanjung Emas, Tanjung Intan dan Gresik) PT Pelindo Multi Terminal",
+        nilai_rab: null,
+        nilai_kontrak: null,
+        no_pr: null,
+        no_po: null,
+        no_kontrak: "PD.05.01/18/8/1/PPTI/TEKI/PLMT-25",
+        tgl_kontrak: "2025-08-18",
+        durasi_kontrak: 60,
+        no_sp3: "PD.05.01/11/8/3/PGDN/SDMU/PLMT-25",
+        tgl_sp3: "2025-08-11",
+        tgl_bamk: "2025-09-15",
+        create_user: null,
+        create_date: null,
+        keterangan: null,
+        assets: [],
+      },
+      {
+        // Dari Excel baris 2540011 ke-3: PD.01/28/10/1/PPTI/TEKI/PLMT-25 | 28-Oct-25 | 60 hari
+        // tgl_sp3: 23-Oct-25 | tgl_bamk: 02-Oct-25
+        // no_sp3: PD.01/23/10/2/PGDN/SDMU/PLMT-25
+        id_pekerjaan: 16,
+        id_anggaran_tahunan: "2540011",
+        jenis_anggaran: "Capex",
+        nm_pekerjaan:
+          "Penyediaan Kebutuhan Perangkat Jaringan, Security Information and Management (SIEM) dan Perangkat Pendukung Gate System PT Pelindo Multi Terminal",
+        nilai_rab: null,
+        nilai_kontrak: null,
+        no_pr: null,
+        no_po: null,
+        no_kontrak: "PD.01/28/10/1/PPTI/TEKI/PLMT-25",
+        tgl_kontrak: "2025-10-28",
+        durasi_kontrak: 60,
+        no_sp3: "PD.01/23/10/2/PGDN/SDMU/PLMT-25",
+        tgl_sp3: "2025-10-23",
+        tgl_bamk: "2025-10-02",
+        create_user: null,
+        create_date: null,
+        keterangan: null,
+        assets: [],
+      },
+      {
+        // Dari Excel baris 2540011 ke-4 (sudah ada di mock sebelumnya):
+        // PD.01/22/10/1/PPTI/TEKI/PLMT-25 | 22-Oct-25 | 60 hari
+        // tgl_sp3: 16-Oct-25 | tgl_bamk: 02-Oct-25
+        // no_sp3: PD.01/16/10/2/PGDN/SDMU/PLMT-25
         id_pekerjaan: 6,
         id_anggaran_tahunan: "2540011",
         jenis_anggaran: "Capex",
@@ -411,6 +636,11 @@ export const mockCapex = [
       },
     ],
   },
+
+  // ================================================================
+  // 2540012 — Standarisasi Perangkat Jaringan
+  // (data sudah ada sebelumnya)
+  // ================================================================
   {
     id_anggaran_tahunan_capex: 4,
     kd_anggaran_master: "5900100000",
@@ -424,6 +654,9 @@ export const mockCapex = [
     nilai_anggaran_rkap: 4500000000,
     projects: [
       {
+        // Dari Excel: PD.01/24/7/1/PPTI/TEKI/PLMT-25 | 24-Jul-25 | 60 hari
+        // tgl_sp3: 22-Jul-25 | tgl_bamk: ########  (terpotong, estimasi 01-Ags-25)
+        // no_sp3: PD.01/22/7/1/PGDN/DSDM/PLMT-25
         id_pekerjaan: 7,
         id_anggaran_tahunan: "2540012",
         jenis_anggaran: "Capex",
@@ -459,6 +692,48 @@ export const mockCapex = [
             acquisition_value: 400000000,
           },
         ],
+      },
+    ],
+  },
+
+  // ================================================================
+  // 2540010 — Penyiapan Infrastruktur Gate System RoRo
+  // Dari Excel: SI.01/4/8/1/PPTI/TEKI/PLMT-25 | 4-Ags-2025 | 60 hari
+  //             tgl_sp3: 31-Jul-25 | tgl_bamk: 01-Sep-25
+  //             no_sp3: PD.01/31/7/2/PGDN/SDMU/PLMT-25
+  // ================================================================
+  {
+    id_anggaran_tahunan_capex: 7,
+    kd_anggaran_master: "5900100000",
+    kd_anggaran_capex: "2540010",
+    nm_anggaran_capex:
+      "Penyiapan Infrastruktur Gate System Pendukung Kegiatan RoRo PT Pelindo Multi Terminal",
+    thn_rkap_awal: 2025,
+    thn_rkap_akhir: 2025,
+    thn_anggaran: 2025,
+    nilai_anggaran_kad: null,
+    nilai_anggaran_rkap: 0,
+    projects: [
+      {
+        id_pekerjaan: 17,
+        id_anggaran_tahunan: "2540010",
+        jenis_anggaran: "Capex",
+        nm_pekerjaan:
+          "Penyiapan Infrastruktur Gate System Pendukung Kegiatan RoRo pada Branch Tanjung Emas PT Pelindo Multi Terminal",
+        nilai_rab: null,
+        nilai_kontrak: null,
+        no_pr: null,
+        no_po: null,
+        no_kontrak: "SI.01/4/8/1/PPTI/TEKI/PLMT-25",
+        tgl_kontrak: "2025-08-04",
+        durasi_kontrak: 60,
+        no_sp3: "PD.01/31/7/2/PGDN/SDMU/PLMT-25",
+        tgl_sp3: "2025-07-31",
+        tgl_bamk: "2025-09-01",
+        create_user: null,
+        create_date: null,
+        keterangan: null,
+        assets: [],
       },
     ],
   },
@@ -674,7 +949,7 @@ export const calculateAlerts = () => {
           title: "Data Aset CAPEX Belum Diisi",
           message: `Pekerjaan "${proj.nm_pekerjaan.substring(0, 60)}..." (${
             proj.no_kontrak
-          }) sudah kontrak senilai ${formatRupiah(proj.nilai_kontrak)} namun belum ada data aset.`,
+          }) sudah kontrak senilai ${proj.nilai_kontrak ? formatRupiah(proj.nilai_kontrak) : "belum ada nilai"} namun belum ada data aset.`,
           id_pekerjaan: proj.id_pekerjaan,
           no_kontrak: proj.no_kontrak,
           action_label: "Input Aset",
@@ -688,6 +963,7 @@ export const calculateAlerts = () => {
   mockCapex.forEach((capexItem) => {
     capexItem.projects.forEach((proj) => {
       if (!proj.assets || proj.assets.length === 0) return;
+      if (!proj.nilai_kontrak) return;
 
       const sumAcquisition = proj.assets.reduce(
         (sum, a) => sum + (a.acquisition_value || 0),
