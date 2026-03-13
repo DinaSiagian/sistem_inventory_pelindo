@@ -61,7 +61,7 @@ const Icons = {
   package:
     "M16.5 9.4l-9-5.19M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16zM3.27 6.96 12 12.01l8.73-5.05M12 22.08V12",
   warning:
-    "M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01",
+    "M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0-3.42 0zM12 9v4M12 17h.01",
   alertCirc:
     "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 8v4M12 16h.01",
   minusCirc:
@@ -804,8 +804,10 @@ const CSS = `
 .bm-sub-table tbody tr:hover td{background:#f8faff}
 .bm-sub-total td{background:#f8fafc!important;border-top:1.5px solid var(--border)!important;font-size:.8rem}
 .bm-date-cell{display:flex;align-items:center;gap:5px;color:var(--ink2);font-size:.8rem}
-.bm-aset-link{display:flex;align-items:center;gap:5px;color:var(--blue)}
 .bm-no-aset{font-size:.72rem;color:var(--ink3);font-style:italic}
+
+/* ── Aset cell: plain, no link icon ── */
+.bm-aset-plain{display:inline-flex;align-items:center}
 
 .bm-projects{display:flex;flex-direction:column;gap:8px}
 .bm-proj-card{border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;background:var(--surface);transition:box-shadow .15s}
@@ -917,6 +919,7 @@ const CSS = `
 .bm-file-chip-size{color:#94a3b8;font-weight:400;font-size:.62rem;flex-shrink:0}
 .bm-file-chip-del{display:flex;align-items:center;background:none;border:none;cursor:pointer;padding:0;color:#94a3b8;transition:color .15s;flex-shrink:0;line-height:1}
 .bm-file-chip-del:hover{color:var(--red)}
+/* View chip for lampiran — paperclip icon here is intentional */
 .bm-file-view-chip{display:inline-flex;align-items:center;gap:4px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:20px;padding:2px 8px;font-size:.68rem;color:var(--blue);font-weight:600}
 
 /* ══ Toast & Modal & Confirm ══ */
@@ -961,6 +964,9 @@ const CSS = `
 .bm-confirm-msg{font-size:.9rem;color:var(--ink);font-weight:500;line-height:1.5}
 .bm-confirm-actions{display:flex;gap:10px}
 
+/* ══ Lampiran th icon ══ */
+.bm-th-with-icon{display:inline-flex;align-items:center;gap:4px}
+
 @media(max-width:768px){
   .bm-root{padding:1rem}
   .bm-header{flex-direction:column;align-items:flex-start}
@@ -977,7 +983,6 @@ const CSS = `
 // ══════════════════════════════════════════════════════════════════
 function InvoiceAttachment({ files = [], onChange, compact = false }) {
   const [dragging, setDragging] = useState(false);
-  const inputRef = useRef(null);
 
   const handleFiles = (incoming) => {
     const arr = Array.from(incoming);
@@ -1212,7 +1217,7 @@ function ModalRealisasi({ anggaran, onClose, onSave }) {
             </div>
             <div className="bm-form-group bm-form-group--full">
               <label>
-                <Icon d={Icons.link} size={11} /> ID Aset{" "}
+                ID Aset{" "}
                 <span className="bm-optional-badge">Opsional</span>
               </label>
               <input
@@ -1584,7 +1589,7 @@ function OpexEditPanel({ item, realisasiOpex, onSave, onCancel, showToast }) {
 }
 
 // ══════════════════════════════════════════════════════════════════
-// EDIT PANEL — CAPEX (unchanged)
+// EDIT PANEL — CAPEX
 // ══════════════════════════════════════════════════════════════════
 function CapexEditPanel({ item, onSave, onCancel, showToast }) {
   const [pagu, setPagu] = useState(String(item.raw.nilai_anggaran_rkap));
@@ -2242,7 +2247,10 @@ function CapexEditPanel({ item, onSave, onCancel, showToast }) {
 }
 
 // ══════════════════════════════════════════════════════════════════
-// OPEX Detail (view mode) — show lampiran chips
+// OPEX Detail (view mode)
+// CHANGES:
+//   - Kolom ASET: hapus icon link (🔗), tampilkan kode aset plain saja
+//   - Kolom LAMPIRAN header: tambahkan icon paperclip
 // ══════════════════════════════════════════════════════════════════
 function OpexDetail({ item, onAddRealisasi }) {
   return (
@@ -2272,7 +2280,13 @@ function OpexDetail({ item, onAddRealisasi }) {
                   <th>Keterangan</th>
                   <th>No. Invoice</th>
                   <th>Aset</th>
-                  <th>Lampiran</th>
+                  {/* ── Paperclip icon hanya di header LAMPIRAN ── */}
+                  <th>
+                    <span className="bm-th-with-icon">
+                      <Icon d={Icons.paperclip} size={11} />
+                      Lampiran
+                    </span>
+                  </th>
                   <th className="ta-r">Jumlah</th>
                 </tr>
               </thead>
@@ -2299,18 +2313,19 @@ function OpexDetail({ item, onAddRealisasi }) {
                           <span className="tc-muted2">—</span>
                         )}
                       </td>
+                      {/* ── Aset: plain code badge, NO link icon ── */}
                       <td>
                         {r.id_aset ? (
-                          <div className="bm-aset-link">
-                            <Icon d={Icons.link} size={11} />
+                          <span className="bm-aset-plain">
                             <code className="bm-code bm-code--aset">
                               {r.id_aset}
                             </code>
-                          </div>
+                          </span>
                         ) : (
-                          <span className="bm-no-aset">Tidak ada</span>
+                          <span className="bm-no-aset">—</span>
                         )}
                       </td>
+                      {/* ── Lampiran: paperclip icon muncul di chip ── */}
                       <td>
                         {r.lampiran && r.lampiran.length > 0 ? (
                           <div
