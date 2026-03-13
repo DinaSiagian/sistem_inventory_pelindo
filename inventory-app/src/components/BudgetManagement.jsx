@@ -1,9 +1,14 @@
 // ================================================================
-// BudgetManagement + Inline Edit
-// Semua CSS di-inline via <style> tag agar bisa langsung dipakai
+// BudgetManagement + Inline Edit + Invoice Attachment
 // ================================================================
 
-import React, { useState, useMemo, useRef, useEffect } from "react";
+import React, {
+  useState,
+  useMemo,
+  useRef,
+  useEffect,
+  useCallback,
+} from "react";
 
 // ── Icons mini (lucide-style SVG inline) ──────────────────────────
 const Icon = ({ d, size = 16, ...p }) => (
@@ -62,6 +67,10 @@ const Icons = {
   minusCirc:
     "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM8 12h8",
   checkCirc: "M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4 12 14.01l-3-3",
+  paperclip:
+    "M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48",
+  upload: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12",
+  file: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6",
 };
 
 // ── Helpers ───────────────────────────────────────────────────────
@@ -79,6 +88,12 @@ const fmtDate = (d) =>
         year: "numeric",
       })
     : "—";
+const fmtFileSize = (bytes) => {
+  if (!bytes) return "";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
 const statusClass = (pct) =>
   pct >= 100 ? "over" : pct >= 80 ? "warn" : pct >= 40 ? "mid" : "safe";
 const statusLabel = (pct) =>
@@ -137,9 +152,6 @@ const newId = () =>
 
 // ── Mock Data ─────────────────────────────────────────────────────
 const initMockCapex = [
-  // ================================================================
-  // 2440013 — Penyiapan Infrastruktur IT Kantor Pusat & Branch
-  // ================================================================
   {
     kd_anggaran_capex: "CAP-2440013",
     kd_anggaran_master: "2440013",
@@ -240,10 +252,6 @@ const initMockCapex = [
       },
     ],
   },
-
-  // ================================================================
-  // 2440014 — Penyediaan Network di Branch SPMT
-  // ================================================================
   {
     kd_anggaran_capex: "CAP-2440014",
     kd_anggaran_master: "2440014",
@@ -326,10 +334,6 @@ const initMockCapex = [
       },
     ],
   },
-
-  // ================================================================
-  // 2440015 — Implementasi dan Standarisasi IT Infrastruktur
-  // ================================================================
   {
     kd_anggaran_capex: "CAP-2440015",
     kd_anggaran_master: "2440015",
@@ -373,15 +377,6 @@ const initMockCapex = [
             acquisition_value: 85000000,
           },
           {
-            asset_code: "SPMT-LMB-LPG-KMR-01",
-            name: "CCTV IP Camera Lembar",
-            brand: "Hikvision",
-            model: "DS-2CD2T47G2-L",
-            serial_number: "HVK-LMB-KMR-001",
-            procurement_date: "2024-08-12",
-            acquisition_value: 85000000,
-          },
-          {
             asset_code: "SPMT-MLH-DTC-PKR-01",
             name: "Router SD-WAN Malahayati",
             brand: "Cisco",
@@ -391,38 +386,11 @@ const initMockCapex = [
             acquisition_value: 185000000,
           },
           {
-            asset_code: "SPMT-LHK-DTC-PKR-01",
-            name: "Router SD-WAN Lhokseumawe",
-            brand: "Cisco",
-            model: "ISR 4331",
-            serial_number: "CSC-LHK-RTR-001",
-            procurement_date: "2024-08-12",
-            acquisition_value: 185000000,
-          },
-          {
-            asset_code: "SPMT-PPR-DTC-PKR-01",
-            name: "Router SD-WAN Parepare",
-            brand: "Cisco",
-            model: "ISR 4331",
-            serial_number: "CSC-PPR-RTR-001",
-            procurement_date: "2024-08-12",
-            acquisition_value: 185000000,
-          },
-          {
             asset_code: "SPMT-MLH-DTC-SRV-01",
             name: "Server Planning & Control Malahayati",
             brand: "Dell",
             model: "PowerEdge R450",
             serial_number: "DELL-MLH-SRV-001",
-            procurement_date: "2024-08-12",
-            acquisition_value: 195000000,
-          },
-          {
-            asset_code: "SPMT-GRG-DTC-SRV-01",
-            name: "Server Planning & Control Garongkong",
-            brand: "Dell",
-            model: "PowerEdge R450",
-            serial_number: "DELL-GRG-SRV-001",
             procurement_date: "2024-08-12",
             acquisition_value: 195000000,
           },
@@ -470,138 +438,10 @@ const initMockCapex = [
             procurement_date: "2024-08-08",
             acquisition_value: 185000000,
           },
-          {
-            asset_code: "SPMT-PPR-LPG-DMG-01",
-            name: "Gate Controller Parepare",
-            brand: "Genetec",
-            model: "AutoVu SharpX",
-            serial_number: "GTC-PPR-GCL-001",
-            procurement_date: "2024-08-08",
-            acquisition_value: 185000000,
-          },
-          {
-            asset_code: "SPMT-GRG-LPG-DMG-01",
-            name: "Gate Controller Garongkong",
-            brand: "Genetec",
-            model: "AutoVu SharpX",
-            serial_number: "GTC-GRG-GCL-001",
-            procurement_date: "2024-08-08",
-            acquisition_value: 190000000,
-          },
-        ],
-      },
-      {
-        id_pekerjaan: "PKJ-2440015-003",
-        nm_pekerjaan:
-          "Pekerjaan Implementasi dan Standarisasi IT Infrastruktur (Gate System dan Planning & Control Branch Balikpapan dan Bagendang) PT Pelindo Multi Terminal",
-        nilai_rab: 800000000,
-        nilai_kontrak: 750000000,
-        no_pr: "8260000057",
-        no_po: "6440000109",
-        no_kontrak: "SI.01/4/9/2/PPTI/TEKI/PLMT-24",
-        tgl_kontrak: "2024-09-24",
-        durasi_kontrak: 90,
-        no_sp3: "",
-        tgl_sp3: "2024-09-02",
-        tgl_bamk: "2024-09-02",
-        assets: [
-          {
-            asset_code: "SPMT-BLP-LPG-DMG-01",
-            name: "Gate Controller Balikpapan",
-            brand: "Genetec",
-            model: "AutoVu SharpX",
-            serial_number: "GTC-BLP-GCL-001",
-            procurement_date: "2024-09-24",
-            acquisition_value: 210000000,
-          },
-          {
-            asset_code: "SPMT-BGD-LPG-DMG-01",
-            name: "Gate Controller Bagendang",
-            brand: "Genetec",
-            model: "AutoVu SharpX",
-            serial_number: "GTC-BGD-GCL-001",
-            procurement_date: "2024-09-24",
-            acquisition_value: 190000000,
-          },
-          {
-            asset_code: "SPMT-BLP-DTC-SRV-01",
-            name: "Server Planning & Control Balikpapan",
-            brand: "Dell",
-            model: "PowerEdge R450",
-            serial_number: "DELL-BLP-SRV-001",
-            procurement_date: "2024-09-24",
-            acquisition_value: 195000000,
-          },
-          {
-            asset_code: "SPMT-BGD-DTC-SRV-01",
-            name: "Server Planning & Control Bagendang",
-            brand: "Dell",
-            model: "PowerEdge R450",
-            serial_number: "DELL-BGD-SRV-001",
-            procurement_date: "2024-09-24",
-            acquisition_value: 155000000,
-          },
-        ],
-      },
-      {
-        id_pekerjaan: "PKJ-2440015-004",
-        nm_pekerjaan:
-          "Pekerjaan Implementasi dan Standarisasi IT Infrastruktur (Gate System Branch Makassar) PT Pelindo Multi Terminal",
-        nilai_rab: 0,
-        nilai_kontrak: 0,
-        no_pr: "8260000058",
-        no_po: "6440000110",
-        no_kontrak: "SI.01/20/9/2/PPTI/TEKI/PLMT-24",
-        tgl_kontrak: "2024-09-20",
-        durasi_kontrak: 90,
-        no_sp3: "",
-        tgl_sp3: "2024-09-17",
-        tgl_bamk: "2024-09-17",
-        assets: [
-          {
-            asset_code: "SPMT-MKS-LPG-DMG-01",
-            name: "Gate Controller Makassar — Pintu 1",
-            brand: "Genetec",
-            model: "AutoVu SharpX",
-            serial_number: "GTC-MKS-GCL-001",
-            procurement_date: "2024-09-20",
-            acquisition_value: 210000000,
-          },
-          {
-            asset_code: "SPMT-MKS-LPG-DMG-02",
-            name: "Gate Controller Makassar — Pintu 2",
-            brand: "Genetec",
-            model: "AutoVu SharpX",
-            serial_number: "GTC-MKS-GCL-002",
-            procurement_date: "2024-09-20",
-            acquisition_value: 210000000,
-          },
-          {
-            asset_code: "SPMT-MKS-LPG-KMR-01",
-            name: "CCTV Overhead Gate Makassar",
-            brand: "Hikvision",
-            model: "DS-2CD2T47G2-L",
-            serial_number: "HVK-MKS-KMR-001",
-            procurement_date: "2024-09-20",
-            acquisition_value: 95000000,
-          },
-          {
-            asset_code: "SPMT-MKS-DTC-PKR-01",
-            name: "UPS Gate Room Makassar",
-            brand: "APC",
-            model: "Smart-UPS 3000VA",
-            serial_number: "APC-MKS-UPS-001",
-            procurement_date: "2024-09-20",
-            acquisition_value: 125000000,
-          },
         ],
       },
     ],
   },
-
-  // ================================================================
-  // 2440020 — Gate System & Planning Control Transformasi
-  // ================================================================
   {
     kd_anggaran_capex: "CAP-2440020",
     kd_anggaran_master: "2440020",
@@ -646,24 +486,6 @@ const initMockCapex = [
             acquisition_value: 400000000,
           },
           {
-            asset_code: "SPMT-TSK-LPG-DMG-01",
-            name: "Gate Controller Trisakti",
-            brand: "Genetec",
-            model: "AutoVu SharpX",
-            serial_number: "GTC-TSK-GCL-001",
-            procurement_date: "2025-01-07",
-            acquisition_value: 400000000,
-          },
-          {
-            asset_code: "SPMT-DMI-LPG-DMG-01",
-            name: "Gate Controller Dumai",
-            brand: "Genetec",
-            model: "AutoVu SharpX",
-            serial_number: "GTC-DMI-GCL-001",
-            procurement_date: "2025-01-07",
-            acquisition_value: 410000000,
-          },
-          {
             asset_code: "SPMT-BLW-LPG-DMG-01",
             name: "Gate Controller Belawan",
             brand: "Genetec",
@@ -674,306 +496,8 @@ const initMockCapex = [
           },
         ],
       },
-      {
-        id_pekerjaan: "PKJ-2440020-002",
-        nm_pekerjaan:
-          "Pemenuhan Kebutuhan Planning and Control Transformasi pada Branch (Jamrud Nilam Mirah, Tanjung Wangi, Trisakti, Dumai, Belawan dan Kantor Pusat) PT Pelindo Multi Terminal",
-        nilai_rab: 0,
-        nilai_kontrak: 0,
-        no_pr: "8260000283",
-        no_po: "6440000676",
-        no_kontrak: "SI.01/13/1/2/PPTI/TEKI/PLMT-25",
-        tgl_kontrak: "2025-01-13",
-        durasi_kontrak: 90,
-        no_sp3: "KP.20.01/10/1/4/PGDN/SDMU/PLMT-25",
-        tgl_sp3: "2025-01-10",
-        tgl_bamk: "2025-01-15",
-        assets: [
-          {
-            asset_code: "SPMT-JNM-DTC-SRV-01",
-            name: "Server Planning & Control Jamrud Nilam Mirah",
-            brand: "Dell",
-            model: "PowerEdge R550",
-            serial_number: "DELL-JNM-SRV-001",
-            procurement_date: "2025-01-13",
-            acquisition_value: 310000000,
-          },
-          {
-            asset_code: "SPMT-TWG-DTC-SRV-01",
-            name: "Server Planning & Control Tanjung Wangi",
-            brand: "Dell",
-            model: "PowerEdge R550",
-            serial_number: "DELL-TWG-SRV-001",
-            procurement_date: "2025-01-13",
-            acquisition_value: 310000000,
-          },
-          {
-            asset_code: "SPMT-TSK-DTC-SRV-01",
-            name: "Server Planning & Control Trisakti",
-            brand: "Dell",
-            model: "PowerEdge R550",
-            serial_number: "DELL-TSK-SRV-001",
-            procurement_date: "2025-01-13",
-            acquisition_value: 310000000,
-          },
-          {
-            asset_code: "SPMT-DMI-DTC-SRV-01",
-            name: "Server Planning & Control Dumai",
-            brand: "Dell",
-            model: "PowerEdge R550",
-            serial_number: "DELL-DMI-SRV-001",
-            procurement_date: "2025-01-13",
-            acquisition_value: 310000000,
-          },
-          {
-            asset_code: "SPMT-BLW-DTC-SRV-01",
-            name: "Server Planning & Control Belawan",
-            brand: "Dell",
-            model: "PowerEdge R550",
-            serial_number: "DELL-BLW-SRV-001",
-            procurement_date: "2025-01-13",
-            acquisition_value: 310000000,
-          },
-          {
-            asset_code: "SPMT-KPT-DTC-SRV-03",
-            name: "Server Aggregasi Planning & Control — Kantor Pusat",
-            brand: "Dell",
-            model: "PowerEdge R750",
-            serial_number: "DELL-KPT-SRV-003",
-            procurement_date: "2025-01-13",
-            acquisition_value: 230000000,
-          },
-        ],
-      },
-      {
-        id_pekerjaan: "PKJ-2440020-003",
-        nm_pekerjaan:
-          "Pemenuhan Kebutuhan Gate System, Planning and Control dan Perangkat Pendukung Transformasi PT Pelindo Multi Terminal",
-        nilai_rab: 0,
-        nilai_kontrak: 0,
-        no_pr: "8260000256",
-        no_po: "6440000761",
-        no_kontrak: "SI.01/24/1/3/PPTI/TEKI/PLMT-25",
-        tgl_kontrak: "2025-01-24",
-        durasi_kontrak: 90,
-        no_sp3: "KP.20.01/21/1/4/PGDN/SDMU/PLMT-25",
-        tgl_sp3: "2025-01-21",
-        tgl_bamk: "2025-02-07",
-        assets: [
-          {
-            asset_code: "SPMT-BLW-LPG-KMR-01",
-            name: "CCTV Traffic Monitoring Belawan — Gate Utama",
-            brand: "Axis",
-            model: "P3245-V",
-            serial_number: "AXIS-BLW-KMR-001",
-            procurement_date: "2025-01-24",
-            acquisition_value: 95000000,
-          },
-          {
-            asset_code: "SPMT-DMI-LPG-KMR-01",
-            name: "CCTV Traffic Monitoring Dumai — Gate Utama",
-            brand: "Axis",
-            model: "P3245-V",
-            serial_number: "AXIS-DMI-KMR-001",
-            procurement_date: "2025-01-24",
-            acquisition_value: 95000000,
-          },
-          {
-            asset_code: "SPMT-JNM-LPG-KMR-01",
-            name: "CCTV Traffic Monitoring Jamrud Nilam Mirah",
-            brand: "Axis",
-            model: "P3245-V",
-            serial_number: "AXIS-JNM-KMR-001",
-            procurement_date: "2025-01-24",
-            acquisition_value: 95000000,
-          },
-          {
-            asset_code: "SPMT-BLW-DTC-PKR-01",
-            name: "UPS Rack Belawan — Data Center",
-            brand: "APC",
-            model: "Smart-UPS 3000VA RM",
-            serial_number: "APC-BLW-UPS-001",
-            procurement_date: "2025-01-24",
-            acquisition_value: 125000000,
-          },
-          {
-            asset_code: "SPMT-DMI-DTC-PKR-01",
-            name: "UPS Rack Dumai — Data Center",
-            brand: "APC",
-            model: "Smart-UPS 3000VA RM",
-            serial_number: "APC-DMI-UPS-001",
-            procurement_date: "2025-01-24",
-            acquisition_value: 125000000,
-          },
-          {
-            asset_code: "SPMT-KPT-DTC-PKR-03",
-            name: "Network Management System (NMS) Appliance — Kantor Pusat",
-            brand: "Paessler",
-            model: "PRTG Enterprise Monitor",
-            serial_number: "PRTG-KPT-NMS-001",
-            procurement_date: "2025-01-24",
-            acquisition_value: 380000000,
-          },
-          {
-            asset_code: "SPMT-KPT-DTC-PKR-04",
-            name: "Patch Panel 48-Port — Kantor Pusat",
-            brand: "Panduit",
-            model: "CP24BLY",
-            serial_number: "PDT-KPT-PNL-001",
-            procurement_date: "2025-01-24",
-            acquisition_value: 45000000,
-          },
-          {
-            asset_code: "SPMT-JNM-DTC-PKR-01",
-            name: "Access Switch Gate Area Jamrud Nilam Mirah",
-            brand: "Cisco",
-            model: "Catalyst 2960-X 24TS",
-            serial_number: "CSC-JNM-ASW-001",
-            procurement_date: "2025-01-24",
-            acquisition_value: 155000000,
-          },
-          {
-            asset_code: "SPMT-TWG-DTC-PKR-01",
-            name: "Access Switch Gate Area Tanjung Wangi",
-            brand: "Cisco",
-            model: "Catalyst 2960-X 24TS",
-            serial_number: "CSC-TWG-ASW-001",
-            procurement_date: "2025-01-24",
-            acquisition_value: 155000000,
-          },
-          {
-            asset_code: "SPMT-TSK-DTC-PKR-02",
-            name: "Access Switch Gate Area Trisakti",
-            brand: "Cisco",
-            model: "Catalyst 2960-X 24TS",
-            serial_number: "CSC-TSK-ASW-002",
-            procurement_date: "2025-01-24",
-            acquisition_value: 155000000,
-          },
-          {
-            asset_code: "SPMT-TSK-DTC-PKR-03",
-            name: "Firewall UTM Trisakti",
-            brand: "Fortinet",
-            model: "FortiGate 80F",
-            serial_number: "FGT-TSK-FWL-001",
-            procurement_date: "2025-01-24",
-            acquisition_value: 155000000,
-          },
-          {
-            asset_code: "SPMT-TWG-DTC-PKR-02",
-            name: "Firewall UTM Tanjung Wangi",
-            brand: "Fortinet",
-            model: "FortiGate 80F",
-            serial_number: "FGT-TWG-FWL-001",
-            procurement_date: "2025-01-24",
-            acquisition_value: 155000000,
-          },
-          {
-            asset_code: "SPMT-JNM-DTC-PKR-02",
-            name: "Firewall UTM Jamrud Nilam Mirah",
-            brand: "Fortinet",
-            model: "FortiGate 80F",
-            serial_number: "FGT-JNM-FWL-001",
-            procurement_date: "2025-01-24",
-            acquisition_value: 155000000,
-          },
-          {
-            asset_code: "SPMT-KPT-DTC-PKR-05",
-            name: "Storage NAS Monitoring Data — Kantor Pusat",
-            brand: "Synology",
-            model: "RS2423+",
-            serial_number: "SYN-KPT-NAS-001",
-            procurement_date: "2025-01-24",
-            acquisition_value: 360000000,
-          },
-        ],
-      },
-      {
-        id_pekerjaan: "PKJ-2440020-004",
-        nm_pekerjaan:
-          "Pemenuhan Kebutuhan Gate System dan Planning and Control (Public Announcer, Kelengkapan Gate dan Radio Point To Point) PT Pelindo Multi Terminal",
-        nilai_rab: 0,
-        nilai_kontrak: 0,
-        no_pr: "8260000614",
-        no_po: "6440000838",
-        no_kontrak: "PD.05.01/29/10/1/PPTI/TEKI/PLMT-25",
-        tgl_kontrak: "2025-10-29",
-        durasi_kontrak: 60,
-        no_sp3: "PD.05.01/23/10/2/PGDN/SDMU/PLMT-25",
-        tgl_sp3: "2025-10-23",
-        tgl_bamk: "2025-10-02",
-        assets: [
-          {
-            asset_code: "SPMT-BLW-LPG-ANS-01",
-            name: "IP Public Announcer Belawan — Gate",
-            brand: "Bosch",
-            model: "PRA-CSI2",
-            serial_number: "BSH-BLW-ANS-001",
-            procurement_date: "2025-10-29",
-            acquisition_value: 145000000,
-          },
-          {
-            asset_code: "SPMT-JNM-LPG-ANS-01",
-            name: "IP Public Announcer Jamrud Nilam Mirah — Gate",
-            brand: "Bosch",
-            model: "PRA-CSI2",
-            serial_number: "BSH-JNM-ANS-001",
-            procurement_date: "2025-10-29",
-            acquisition_value: 145000000,
-          },
-          {
-            asset_code: "SPMT-DMI-LPG-ANS-01",
-            name: "IP Public Announcer Dumai — Gate",
-            brand: "Bosch",
-            model: "PRA-CSI2",
-            serial_number: "BSH-DMI-ANS-001",
-            procurement_date: "2025-10-29",
-            acquisition_value: 145000000,
-          },
-          {
-            asset_code: "SPMT-BLW-LPG-PKR-01",
-            name: "Radio Point-to-Point Belawan — Link Kantor Pusat",
-            brand: "Ubiquiti",
-            model: "airFiber 5XHD",
-            serial_number: "UBQ-BLW-P2P-001",
-            procurement_date: "2025-10-29",
-            acquisition_value: 280000000,
-          },
-          {
-            asset_code: "SPMT-DMI-LPG-PKR-01",
-            name: "Radio Point-to-Point Dumai — Link Kantor Pusat",
-            brand: "Ubiquiti",
-            model: "airFiber 5XHD",
-            serial_number: "UBQ-DMI-P2P-001",
-            procurement_date: "2025-10-29",
-            acquisition_value: 280000000,
-          },
-          {
-            asset_code: "SPMT-TSK-LPG-PKR-01",
-            name: "Radio Point-to-Point Trisakti — Link Kantor Pusat",
-            brand: "Ubiquiti",
-            model: "airFiber 5XHD",
-            serial_number: "UBQ-TSK-P2P-001",
-            procurement_date: "2025-10-29",
-            acquisition_value: 280000000,
-          },
-          {
-            asset_code: "SPMT-TWG-LPG-PKR-01",
-            name: "Barrier Gate Otomatis Tanjung Wangi",
-            brand: "FAAC",
-            model: "B680H",
-            serial_number: "FAAC-TWG-BGT-001",
-            procurement_date: "2025-10-29",
-            acquisition_value: 405000000,
-          },
-        ],
-      },
     ],
   },
-
-  // ================================================================
-  // 2540010 — Penyiapan Infrastruktur Gate System RoRo
-  // ================================================================
   {
     kd_anggaran_capex: "CAP-2540010",
     kd_anggaran_master: "2540010",
@@ -1008,15 +532,6 @@ const initMockCapex = [
             acquisition_value: 560000000,
           },
           {
-            asset_code: "SPMT-TJE-LPG-DMG-03",
-            name: "Gate Controller RoRo Tanjung Emas — Dermaga 2",
-            brand: "Genetec",
-            model: "AutoVu Sharp XP",
-            serial_number: "GTC-TJE-GCL-003",
-            procurement_date: "2025-08-04",
-            acquisition_value: 560000000,
-          },
-          {
             asset_code: "SPMT-TJE-LPG-KMR-02",
             name: "CCTV Dermaga RoRo Tanjung Emas — 4K PTZ",
             brand: "Axis",
@@ -1025,41 +540,10 @@ const initMockCapex = [
             procurement_date: "2025-08-04",
             acquisition_value: 185000000,
           },
-          {
-            asset_code: "SPMT-TJE-LPG-ANS-02",
-            name: "IP Public Announcer Dermaga RoRo Tanjung Emas",
-            brand: "Bosch",
-            model: "PRA-CSI2",
-            serial_number: "BSH-TJE-ANS-002",
-            procurement_date: "2025-08-04",
-            acquisition_value: 145000000,
-          },
-          {
-            asset_code: "SPMT-TJE-LPG-PKR-01",
-            name: "Barrier Gate Otomatis RoRo Tanjung Emas — Pintu 1",
-            brand: "FAAC",
-            model: "B680H",
-            serial_number: "FAAC-TJE-BGT-001",
-            procurement_date: "2025-08-04",
-            acquisition_value: 135000000,
-          },
-          {
-            asset_code: "SPMT-TJE-LPG-PKR-02",
-            name: "Barrier Gate Otomatis RoRo Tanjung Emas — Pintu 2",
-            brand: "FAAC",
-            model: "B680H",
-            serial_number: "FAAC-TJE-BGT-002",
-            procurement_date: "2025-08-04",
-            acquisition_value: 95000000,
-          },
         ],
       },
     ],
   },
-
-  // ================================================================
-  // 2540011 — Transformasi dan Digitalisasi Operasional
-  // ================================================================
   {
     kd_anggaran_capex: "CAP-2540011",
     kd_anggaran_master: "2540011",
@@ -1094,60 +578,6 @@ const initMockCapex = [
             acquisition_value: 560000000,
           },
           {
-            asset_code: "SPMT-TWG-LPG-DMG-02",
-            name: "Gate Controller RoRo Tanjung Wangi",
-            brand: "Genetec",
-            model: "AutoVu Sharp XP",
-            serial_number: "GTC-TWG-GCL-002",
-            procurement_date: "2025-07-07",
-            acquisition_value: 560000000,
-          },
-          {
-            asset_code: "SPMT-TJE-LPG-DMG-01",
-            name: "Gate Controller Tanjung Emas",
-            brand: "Genetec",
-            model: "AutoVu Sharp XP",
-            serial_number: "GTC-TJE-GCL-001",
-            procurement_date: "2025-07-07",
-            acquisition_value: 560000000,
-          },
-          {
-            asset_code: "SPMT-SBG-LPG-DMG-01",
-            name: "Gate Controller Sibolga",
-            brand: "Genetec",
-            model: "AutoVu SharpX",
-            serial_number: "GTC-SBG-GCL-001",
-            procurement_date: "2025-07-07",
-            acquisition_value: 420000000,
-          },
-          {
-            asset_code: "SPMT-BLP-LPG-DMG-02",
-            name: "Gate Controller RoRo Balikpapan",
-            brand: "Genetec",
-            model: "AutoVu Sharp XP",
-            serial_number: "GTC-BLP-GCL-002",
-            procurement_date: "2025-07-07",
-            acquisition_value: 560000000,
-          },
-          {
-            asset_code: "SPMT-PPR-LPG-DMG-02",
-            name: "Gate Controller RoRo Parepare",
-            brand: "Genetec",
-            model: "AutoVu Sharp XP",
-            serial_number: "GTC-PPR-GCL-002",
-            procurement_date: "2025-07-07",
-            acquisition_value: 450000000,
-          },
-          {
-            asset_code: "SPMT-TBK-LPG-DMG-01",
-            name: "Gate Controller Tanjung Balai Karimun",
-            brand: "Genetec",
-            model: "AutoVu SharpX",
-            serial_number: "GTC-TBK-GCL-001",
-            procurement_date: "2025-07-07",
-            acquisition_value: 420000000,
-          },
-          {
             asset_code: "SPMT-TJE-DTC-SRV-01",
             name: "Server Planning & Control Tanjung Emas",
             brand: "Dell",
@@ -1158,396 +588,8 @@ const initMockCapex = [
           },
         ],
       },
-      {
-        id_pekerjaan: "PKJ-2540011-002",
-        nm_pekerjaan:
-          "Penyediaan Kebutuhan Public Announcer Pendukung Transformasi dan Digitalisasi Branch (Balikpapan, Belawan, Dumai, Trisakti, Makassar, Parepare, Garongkong, Sibolga, Tanjung Emas, Tanjung Intan dan Gresik) PT Pelindo Multi Terminal",
-        nilai_rab: 0,
-        nilai_kontrak: 0,
-        no_pr: "8260000748",
-        no_po: "6440000820",
-        no_kontrak: "PD.05.01/18/8/1/PPTI/TEKI/PLMT-25",
-        tgl_kontrak: "2025-08-18",
-        durasi_kontrak: 60,
-        no_sp3: "PD.05.01/11/8/3/PGDN/SDMU/PLMT-25",
-        tgl_sp3: "2025-08-11",
-        tgl_bamk: "2025-09-15",
-        assets: [
-          {
-            asset_code: "SPMT-BLP-LPG-ANS-01",
-            name: "IP Public Announcer Balikpapan",
-            brand: "Bosch",
-            model: "PRA-CSI2",
-            serial_number: "BSH-BLP-ANS-001",
-            procurement_date: "2025-08-18",
-            acquisition_value: 165000000,
-          },
-          {
-            asset_code: "SPMT-BLW-LPG-ANS-02",
-            name: "IP Public Announcer Belawan",
-            brand: "Bosch",
-            model: "PRA-CSI2",
-            serial_number: "BSH-BLW-ANS-002",
-            procurement_date: "2025-08-18",
-            acquisition_value: 165000000,
-          },
-          {
-            asset_code: "SPMT-DMI-LPG-ANS-02",
-            name: "IP Public Announcer Dumai",
-            brand: "Bosch",
-            model: "PRA-CSI2",
-            serial_number: "BSH-DMI-ANS-002",
-            procurement_date: "2025-08-18",
-            acquisition_value: 165000000,
-          },
-          {
-            asset_code: "SPMT-TSK-LPG-ANS-01",
-            name: "IP Public Announcer Trisakti",
-            brand: "Bosch",
-            model: "PRA-CSI2",
-            serial_number: "BSH-TSK-ANS-001",
-            procurement_date: "2025-08-18",
-            acquisition_value: 165000000,
-          },
-          {
-            asset_code: "SPMT-MKS-LPG-ANS-01",
-            name: "IP Public Announcer Makassar",
-            brand: "Bosch",
-            model: "PRA-CSI2",
-            serial_number: "BSH-MKS-ANS-001",
-            procurement_date: "2025-08-18",
-            acquisition_value: 165000000,
-          },
-          {
-            asset_code: "SPMT-PPR-LPG-ANS-01",
-            name: "IP Public Announcer Parepare",
-            brand: "Bosch",
-            model: "PRA-CSI2",
-            serial_number: "BSH-PPR-ANS-001",
-            procurement_date: "2025-08-18",
-            acquisition_value: 165000000,
-          },
-          {
-            asset_code: "SPMT-GRG-LPG-ANS-01",
-            name: "IP Public Announcer Garongkong",
-            brand: "Bosch",
-            model: "PRA-CSI2",
-            serial_number: "BSH-GRG-ANS-001",
-            procurement_date: "2025-08-18",
-            acquisition_value: 165000000,
-          },
-          {
-            asset_code: "SPMT-SBG-LPG-ANS-01",
-            name: "IP Public Announcer Sibolga",
-            brand: "Bosch",
-            model: "PRA-CSI2",
-            serial_number: "BSH-SBG-ANS-001",
-            procurement_date: "2025-08-18",
-            acquisition_value: 165000000,
-          },
-          {
-            asset_code: "SPMT-TJE-LPG-ANS-01",
-            name: "IP Public Announcer Tanjung Emas",
-            brand: "Bosch",
-            model: "PRA-CSI2",
-            serial_number: "BSH-TJE-ANS-001",
-            procurement_date: "2025-08-18",
-            acquisition_value: 165000000,
-          },
-          {
-            asset_code: "SPMT-TMI-LPG-ANS-01",
-            name: "IP Public Announcer Tanjung Intan",
-            brand: "Bosch",
-            model: "PRA-CSI2",
-            serial_number: "BSH-TMI-ANS-001",
-            procurement_date: "2025-08-18",
-            acquisition_value: 165000000,
-          },
-          {
-            asset_code: "SPMT-GRK-LPG-ANS-01",
-            name: "IP Public Announcer Gresik",
-            brand: "Bosch",
-            model: "PRA-CSI2",
-            serial_number: "BSH-GRK-ANS-001",
-            procurement_date: "2025-08-18",
-            acquisition_value: 165000000,
-          },
-          {
-            asset_code: "SPMT-KPT-DTC-SRV-04",
-            name: "Server Manajemen Announcer — Kantor Pusat",
-            brand: "Dell",
-            model: "PowerEdge R450",
-            serial_number: "DELL-KPT-SRV-004",
-            procurement_date: "2025-08-18",
-            acquisition_value: 210000000,
-          },
-        ],
-      },
-      {
-        id_pekerjaan: "PKJ-2540011-003",
-        nm_pekerjaan:
-          "Penyediaan Kebutuhan Perangkat Jaringan, Security Information and Management (SIEM) dan Perangkat Pendukung Gate System PT Pelindo Multi Terminal",
-        nilai_rab: 0,
-        nilai_kontrak: 0,
-        no_pr: "8260001121",
-        no_po: "6440000839",
-        no_kontrak: "PD.01/28/10/1/PPTI/TEKI/PLMT-25",
-        tgl_kontrak: "2025-10-28",
-        durasi_kontrak: 60,
-        no_sp3: "PD.01/23/10/2/PGDN/SDMU/PLMT-25",
-        tgl_sp3: "2025-10-23",
-        tgl_bamk: "2025-10-02",
-        assets: [
-          {
-            asset_code: "SPMT-KPT-DTC-SRV-05",
-            name: "SIEM Appliance — Kantor Pusat (Primary)",
-            brand: "IBM",
-            model: "QRadar SIEM 3105",
-            serial_number: "IBM-KPT-SIEM-001",
-            procurement_date: "2025-10-28",
-            acquisition_value: 850000000,
-          },
-          {
-            asset_code: "SPMT-KPT-DTC-SRV-06",
-            name: "SIEM Log Collector — Kantor Pusat",
-            brand: "IBM",
-            model: "QRadar Log Manager",
-            serial_number: "IBM-KPT-SIEM-002",
-            procurement_date: "2025-10-28",
-            acquisition_value: 450000000,
-          },
-          {
-            asset_code: "SPMT-KPT-DTC-PKR-05",
-            name: "Core Switch Backbone — Kantor Pusat (Redundant)",
-            brand: "Cisco",
-            model: "Nexus 9300-48S",
-            serial_number: "CSC-KPT-CSW-002",
-            procurement_date: "2025-10-28",
-            acquisition_value: 520000000,
-          },
-          {
-            asset_code: "SPMT-BLW-DTC-PKR-02",
-            name: "Firewall UTM Belawan",
-            brand: "Fortinet",
-            model: "FortiGate 100F",
-            serial_number: "FGT-BLW-FWL-001",
-            procurement_date: "2025-10-28",
-            acquisition_value: 220000000,
-          },
-          {
-            asset_code: "SPMT-DMI-DTC-PKR-02",
-            name: "Firewall UTM Dumai",
-            brand: "Fortinet",
-            model: "FortiGate 100F",
-            serial_number: "FGT-DMI-FWL-001",
-            procurement_date: "2025-10-28",
-            acquisition_value: 220000000,
-          },
-          {
-            asset_code: "SPMT-MKS-DTC-PKR-02",
-            name: "Firewall UTM Makassar",
-            brand: "Fortinet",
-            model: "FortiGate 100F",
-            serial_number: "FGT-MKS-FWL-001",
-            procurement_date: "2025-10-28",
-            acquisition_value: 220000000,
-          },
-          {
-            asset_code: "SPMT-BLP-DTC-PKR-02",
-            name: "Access Switch Gate Area Balikpapan",
-            brand: "Cisco",
-            model: "Catalyst 2960-X 48TS",
-            serial_number: "CSC-BLP-ASW-002",
-            procurement_date: "2025-10-28",
-            acquisition_value: 180000000,
-          },
-          {
-            asset_code: "SPMT-TJE-DTC-PKR-02",
-            name: "Access Switch Gate Area Tanjung Emas",
-            brand: "Cisco",
-            model: "Catalyst 2960-X 48TS",
-            serial_number: "CSC-TJE-ASW-001",
-            procurement_date: "2025-10-28",
-            acquisition_value: 180000000,
-          },
-          {
-            asset_code: "SPMT-KPT-GDG-PKR-01",
-            name: "Patch Panel Manajemen Kabel — Kantor Pusat",
-            brand: "Panduit",
-            model: "CP48BLY",
-            serial_number: "PDT-KPT-PNL-002",
-            procurement_date: "2025-10-28",
-            acquisition_value: 510000000,
-          },
-        ],
-      },
-      {
-        id_pekerjaan: "PKJ-2540011-004",
-        nm_pekerjaan:
-          "Penyediaan Kebutuhan Transformasi dan Digitalisasi (CCTV dan Public Announcer Traffic Monitoring pada Gate) Branch Belawan, Dumai, Malahayati, Lhokseumawe, Lembar, Jamrud Nilam Mirah, Makassar, Balikpapan, Bumiharjo Bagendang, Tanjung Pinang, Sibolga, Tanjung Emas, Parepare, Trisakti dan Gresik PT Pelindo Multi Terminal",
-        nilai_rab: 3100000000,
-        nilai_kontrak: 2870000000,
-        no_pr: "8260001031",
-        no_po: "6440000840",
-        no_kontrak: "PD.01/22/10/1/PPTI/TEKI/PLMT-25",
-        tgl_kontrak: "2025-10-22",
-        durasi_kontrak: 60,
-        no_sp3: "PD.01/16/10/2/PGDN/SDMU/PLMT-25",
-        tgl_sp3: "2025-10-16",
-        tgl_bamk: "2025-10-02",
-        assets: [
-          {
-            asset_code: "SPMT-BLW-LPG-KMR-02",
-            name: "CCTV Traffic Monitoring Gate — Belawan",
-            brand: "Axis",
-            model: "P3245-V 1080p",
-            serial_number: "AXIS-BLW-KMR-002",
-            procurement_date: "2025-10-22",
-            acquisition_value: 280000000,
-          },
-          {
-            asset_code: "SPMT-DMI-LPG-KMR-02",
-            name: "CCTV Traffic Monitoring Gate — Dumai",
-            brand: "Axis",
-            model: "P3245-V 1080p",
-            serial_number: "AXIS-DMI-KMR-002",
-            procurement_date: "2025-10-22",
-            acquisition_value: 280000000,
-          },
-          {
-            asset_code: "SPMT-MLH-LPG-KMR-02",
-            name: "CCTV Traffic Monitoring Gate — Malahayati",
-            brand: "Axis",
-            model: "P3245-V 1080p",
-            serial_number: "AXIS-MLH-KMR-002",
-            procurement_date: "2025-10-22",
-            acquisition_value: 280000000,
-          },
-          {
-            asset_code: "SPMT-LHK-LPG-KMR-02",
-            name: "CCTV Traffic Monitoring Gate — Lhokseumawe",
-            brand: "Axis",
-            model: "P3245-V 1080p",
-            serial_number: "AXIS-LHK-KMR-002",
-            procurement_date: "2025-10-22",
-            acquisition_value: 280000000,
-          },
-          {
-            asset_code: "SPMT-LMB-LPG-KMR-02",
-            name: "CCTV Traffic Monitoring Gate — Lembar",
-            brand: "Axis",
-            model: "P3245-V 1080p",
-            serial_number: "AXIS-LMB-KMR-002",
-            procurement_date: "2025-10-22",
-            acquisition_value: 280000000,
-          },
-          {
-            asset_code: "SPMT-JNM-LPG-KMR-02",
-            name: "CCTV Traffic Monitoring Gate — Jamrud Nilam Mirah",
-            brand: "Axis",
-            model: "P3245-V 1080p",
-            serial_number: "AXIS-JNM-KMR-002",
-            procurement_date: "2025-10-22",
-            acquisition_value: 280000000,
-          },
-          {
-            asset_code: "SPMT-MKS-LPG-KMR-02",
-            name: "CCTV Traffic Monitoring Gate — Makassar",
-            brand: "Axis",
-            model: "P3245-V 1080p",
-            serial_number: "AXIS-MKS-KMR-002",
-            procurement_date: "2025-10-22",
-            acquisition_value: 280000000,
-          },
-          {
-            asset_code: "SPMT-BLP-LPG-KMR-02",
-            name: "CCTV Traffic Monitoring Gate — Balikpapan",
-            brand: "Axis",
-            model: "P3245-V 1080p",
-            serial_number: "AXIS-BLP-KMR-002",
-            procurement_date: "2025-10-22",
-            acquisition_value: 280000000,
-          },
-          {
-            asset_code: "SPMT-BMH-LPG-KMR-01",
-            name: "CCTV Traffic Monitoring Gate — Bumiharjo Bagendang",
-            brand: "Axis",
-            model: "P3245-V 1080p",
-            serial_number: "AXIS-BMH-KMR-001",
-            procurement_date: "2025-10-22",
-            acquisition_value: 280000000,
-          },
-          {
-            asset_code: "SPMT-TPG-LPG-KMR-01",
-            name: "CCTV Traffic Monitoring Gate — Tanjung Pinang",
-            brand: "Axis",
-            model: "P3245-V 1080p",
-            serial_number: "AXIS-TPG-KMR-001",
-            procurement_date: "2025-10-22",
-            acquisition_value: 280000000,
-          },
-          {
-            asset_code: "SPMT-SBG-LPG-KMR-01",
-            name: "CCTV Traffic Monitoring Gate — Sibolga",
-            brand: "Axis",
-            model: "P3245-V 1080p",
-            serial_number: "AXIS-SBG-KMR-001",
-            procurement_date: "2025-10-22",
-            acquisition_value: 280000000,
-          },
-          {
-            asset_code: "SPMT-TJE-LPG-KMR-01",
-            name: "CCTV Traffic Monitoring Gate — Tanjung Emas",
-            brand: "Axis",
-            model: "P3245-V 1080p",
-            serial_number: "AXIS-TJE-KMR-001",
-            procurement_date: "2025-10-22",
-            acquisition_value: 280000000,
-          },
-          {
-            asset_code: "SPMT-PPR-LPG-KMR-01",
-            name: "CCTV Traffic Monitoring Gate — Parepare",
-            brand: "Axis",
-            model: "P3245-V 1080p",
-            serial_number: "AXIS-PPR-KMR-001",
-            procurement_date: "2025-10-22",
-            acquisition_value: 280000000,
-          },
-          {
-            asset_code: "SPMT-TSK-LPG-KMR-01",
-            name: "CCTV Traffic Monitoring Gate — Trisakti",
-            brand: "Axis",
-            model: "P3245-V 1080p",
-            serial_number: "AXIS-TSK-KMR-001",
-            procurement_date: "2025-10-22",
-            acquisition_value: 280000000,
-          },
-          {
-            asset_code: "SPMT-GRK-LPG-KMR-01",
-            name: "CCTV Traffic Monitoring Gate — Gresik",
-            brand: "Axis",
-            model: "P3245-V 1080p",
-            serial_number: "AXIS-GRK-KMR-001",
-            procurement_date: "2025-10-22",
-            acquisition_value: 280000000,
-          },
-          {
-            asset_code: "SPMT-KPT-DTC-SRV-07",
-            name: "Video Management System (VMS) Server — Kantor Pusat",
-            brand: "Genetec",
-            model: "Security Center 5.11",
-            serial_number: "GTC-KPT-VMS-001",
-            procurement_date: "2025-10-22",
-            acquisition_value: 420000000,
-          },
-        ],
-      },
     ],
   },
-
-  // ================================================================
-  // 2540012 — Pengembangan Infrastruktur Jaringan
-  // ================================================================
   {
     kd_anggaran_capex: "CAP-2540012",
     kd_anggaran_master: "2540012",
@@ -1590,33 +632,6 @@ const initMockCapex = [
             procurement_date: "2025-07-24",
             acquisition_value: 220000000,
           },
-          {
-            asset_code: "SPMT-SPJ-DTC-PKR-01",
-            name: "Core Switch Terminal Selat Panjang",
-            brand: "Cisco",
-            model: "Catalyst 2960-X 24TS",
-            serial_number: "CSC-SPJ-CSW-001",
-            procurement_date: "2025-07-24",
-            acquisition_value: 155000000,
-          },
-          {
-            asset_code: "SPMT-SPJ-DTC-PKR-02",
-            name: "Wireless Access Point Selat Panjang",
-            brand: "Cisco",
-            model: "Aironet 2800",
-            serial_number: "CSC-SPJ-WAP-001",
-            procurement_date: "2025-07-24",
-            acquisition_value: 85000000,
-          },
-          {
-            asset_code: "SPMT-TBK-DTC-PKR-03",
-            name: "Wireless Access Point Tanjung Balai Karimun",
-            brand: "Cisco",
-            model: "Aironet 2800",
-            serial_number: "CSC-TBK-WAP-001",
-            procurement_date: "2025-07-24",
-            acquisition_value: 80000000,
-          },
         ],
       },
     ],
@@ -1653,6 +668,7 @@ const initMockRealisasiOpex = [
     no_invoice: "INV/2026/001",
     jumlah: 15000000,
     id_aset: "AST-OPX-0001",
+    lampiran: [],
   },
   {
     id_realisasi: 2,
@@ -1662,6 +678,7 @@ const initMockRealisasiOpex = [
     no_invoice: "INV/2026/015",
     jumlah: 8500000,
     id_aset: null,
+    lampiran: [],
   },
   {
     id_realisasi: 3,
@@ -1671,6 +688,7 @@ const initMockRealisasiOpex = [
     no_invoice: "INV/TEL/2026/001",
     jumlah: 24000000,
     id_aset: "AST-OPX-0002",
+    lampiran: [],
   },
 ];
 
@@ -1703,7 +721,6 @@ const CSS = `
 .tc-red{color:var(--red)}.tc-green{color:var(--green)}.tc-amber{color:var(--amber)}.tc-ink{color:var(--ink)}
 .lh-tight{line-height:1.3}.fs-xs{font-size:.75rem}.mt2{margin-top:3px}
 
-/* ── header ── */
 .bm-header{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1.75rem}
 .bm-header-text h1{font-size:1.7rem;font-weight:800;color:var(--ink);letter-spacing:-.5px}
 .bm-header-text p{color:var(--ink3);font-size:.85rem;margin-top:3px}
@@ -1719,7 +736,6 @@ const CSS = `
 .bm-tab:hover{background:var(--bg);color:var(--ink2)}
 .bm-tab.active{background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(29,78,216,.3)}
 
-/* ── kpis ── */
 .bm-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.25rem;margin-bottom:1.25rem}
 .bm-kpi{background:var(--surface);border-radius:var(--r-lg);padding:1.3rem 1.4rem;display:flex;align-items:flex-start;gap:1rem;border:1px solid var(--border);box-shadow:var(--shadow-sm);border-top:3px solid var(--border);transition:transform .15s,box-shadow .15s}
 .bm-kpi:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
@@ -1734,10 +750,8 @@ const CSS = `
 .bm-kpi-bar{height:5px;border-radius:99px;background:var(--bg);width:100%;overflow:hidden;margin-top:6px}
 .bm-kpi-bar-fill{height:100%;border-radius:99px;transition:width .6s ease}
 
-/* ── banner ── */
 .bm-banner{display:flex;align-items:center;gap:7px;background:var(--blue-lt);border:1px solid var(--blue-md);border-radius:var(--r-sm);padding:8px 14px;font-size:.8rem;color:#1e40af;margin-bottom:1.25rem}
 
-/* ── table ── */
 .bm-table-wrap{background:var(--surface);border-radius:var(--r-lg);border:1px solid var(--border);box-shadow:var(--shadow-sm);overflow:hidden}
 .bm-table-bar{display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.5rem;border-bottom:1px solid var(--border)}
 .bm-table-bar h2{font-size:.9rem;font-weight:700;color:var(--ink)}
@@ -1754,7 +768,6 @@ const CSS = `
 .bm-row--open td{border-bottom-color:transparent}
 .bm-empty-cell{text-align:center;padding:3rem;color:var(--ink3);font-size:.85rem}
 
-/* ── status & pct ── */
 .bm-pct-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:80px}
 .bm-pct-bar{width:70px;height:5px;border-radius:99px;background:var(--bg);overflow:hidden}
 .bm-pct-fill{height:100%;border-radius:99px;transition:width .4s}
@@ -1771,7 +784,6 @@ const CSS = `
 .sc-safe.bm-status-lbl{color:var(--green)}.sc-mid.bm-status-lbl{color:var(--blue)}
 .sc-warn.bm-status-lbl{color:var(--warn)}.sc-over.bm-status-lbl{color:var(--red)}
 
-/* ── misc badges ── */
 .bm-pill{display:inline-flex;align-items:center;padding:2px 9px;border-radius:99px;font-size:.68rem;font-weight:700}
 .bm-pill.blue{background:var(--blue-lt);color:var(--blue)}
 .bm-code{font-family:var(--mono);font-size:.73rem;background:var(--bg);color:var(--ink2);padding:2px 7px;border-radius:4px;border:1px solid var(--border)}
@@ -1780,13 +792,11 @@ const CSS = `
 .bm-type-badge.capex{background:#dbeafe;color:#1e40af}
 .bm-type-badge.opex{background:#d1fae5;color:#065f46}
 
-/* ── drill row ── */
 .bm-drill-row>td{padding:0;border-bottom:1px solid var(--border)}
 .bm-drill-wrap{background:#f8faff;border-left:4px solid var(--blue);padding:1.1rem 1.4rem}
 .bm-drill-header{display:flex;align-items:center;gap:7px;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink2);margin-bottom:.9rem;flex-wrap:wrap}
 .bm-drill-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
 
-/* ── sub table ── */
 .bm-sub-table{width:100%;border-collapse:collapse;font-size:.8rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);overflow:hidden}
 .bm-sub-table th{background:#eef2ff;padding:7px 11px;text-align:left;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#4338ca;border-bottom:1px solid #c7d2fe}
 .bm-sub-table td{padding:8px 11px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
@@ -1797,7 +807,6 @@ const CSS = `
 .bm-aset-link{display:flex;align-items:center;gap:5px;color:var(--blue)}
 .bm-no-aset{font-size:.72rem;color:var(--ink3);font-style:italic}
 
-/* ── projects ── */
 .bm-projects{display:flex;flex-direction:column;gap:8px}
 .bm-proj-card{border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;background:var(--surface);transition:box-shadow .15s}
 .bm-proj-card:hover{box-shadow:var(--shadow-sm)}
@@ -1819,7 +828,6 @@ const CSS = `
 .bm-val-num.rab{color:var(--ink3)}.bm-val-num.kontrak{color:var(--red)}.bm-val-num.aset{color:var(--blue)}
 .bm-proj-actions{display:flex;flex-direction:column;align-items:flex-end;gap:5px}
 
-/* ── balance ── */
 .bm-balance-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:99px;font-size:.65rem;font-weight:700;letter-spacing:.3px;white-space:nowrap}
 .bm-balance-badge--balanced{background:var(--green-lt);color:var(--green);border:1px solid #86efac}
 .bm-balance-badge--near{background:var(--warn-lt);color:var(--warn);border:1px solid #fde047}
@@ -1850,22 +858,13 @@ const CSS = `
 .bm-empty{display:flex;flex-direction:column;align-items:center;gap:8px;padding:2rem;color:var(--ink3);font-size:.83rem}
 .bm-empty--sm{padding:.8rem;flex-direction:row;justify-content:center;font-size:.76rem}
 
-/* ── anim ── */
 .anim-in{animation:slideIn .22s ease-out}
 @keyframes slideIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
 
-/* ══════════════════════════════════════════════════════
-   EDIT PANEL
-══════════════════════════════════════════════════════ */
-.bm-row-edit-btn{
-  display:inline-flex;align-items:center;gap:5px;padding:5px 10px;
-  background:white;border:1px solid var(--border);border-radius:var(--r-sm);
-  font-family:var(--font);font-size:.72rem;font-weight:700;color:var(--ink2);
-  cursor:pointer;transition:all .2s;white-space:nowrap
-}
+/* ══ Edit Panel ══ */
+.bm-row-edit-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;background:white;border:1px solid var(--border);border-radius:var(--r-sm);font-family:var(--font);font-size:.72rem;font-weight:700;color:var(--ink2);cursor:pointer;transition:all .2s;white-space:nowrap}
 .bm-row-edit-btn:hover{background:var(--blue-lt);border-color:var(--blue);color:var(--blue)}
 .bm-row-edit-btn.active{background:var(--blue);border-color:var(--blue);color:white}
-
 .bm-edit-drawer{background:#f0f7ff;border-left:4px solid var(--blue);padding:0}
 .bm-edit-drawer > td{padding:0;border-bottom:2px solid var(--blue)}
 .bm-edit-panel{padding:1.4rem 1.6rem}
@@ -1878,18 +877,11 @@ const CSS = `
 .bm-edit-grid-full{grid-column:1/-1}
 .bm-edit-field{display:flex;flex-direction:column;gap:5px}
 .bm-edit-field label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink2)}
-.bm-edit-field input,.bm-edit-field textarea,.bm-edit-field select{
-  padding:8px 10px;border:1px solid var(--border);border-radius:7px;
-  font-family:var(--font);font-size:.82rem;color:var(--ink);outline:none;
-  transition:all .2s;background:white
-}
-.bm-edit-field input:focus,.bm-edit-field textarea:focus,.bm-edit-field select:focus{
-  border-color:var(--blue);box-shadow:0 0 0 3px rgba(29,78,216,.1)
-}
+.bm-edit-field input,.bm-edit-field textarea,.bm-edit-field select{padding:8px 10px;border:1px solid var(--border);border-radius:7px;font-family:var(--font);font-size:.82rem;color:var(--ink);outline:none;transition:all .2s;background:white}
+.bm-edit-field input:focus,.bm-edit-field textarea:focus,.bm-edit-field select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(29,78,216,.1)}
 .bm-edit-field textarea{resize:vertical;min-height:52px}
 .bm-edit-field input[readonly]{background:#f8fafc;color:var(--ink3);cursor:default}
 .bm-edit-hint{font-size:.7rem;color:var(--green);font-weight:600;margin-top:2px}
-
 .bm-edit-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:1rem;padding-top:.9rem;border-top:1px solid #c7d2fe}
 .bm-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-family:var(--font);font-size:.8rem;font-weight:700;cursor:pointer;border:none;transition:all .2s}
 .bm-btn-cancel{background:white;color:var(--ink2);border:1px solid var(--border)}
@@ -1902,25 +894,38 @@ const CSS = `
 .bm-btn-add-sm:hover{transform:translateY(-1px)}
 .bm-btn-add-realisasi{margin-left:auto;display:inline-flex;align-items:center;gap:5px;padding:6px 12px;background:linear-gradient(135deg,var(--blue),#3b82f6);color:white;border:none;border-radius:7px;font-size:.72rem;font-weight:700;cursor:pointer;transition:all .2s;font-family:var(--font);box-shadow:0 2px 8px rgba(29,78,216,.25)}
 .bm-btn-add-realisasi:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(29,78,216,.4)}
-
 .bm-proj-edit-card{background:white;border:1px solid #c7d2fe;border-radius:var(--r-md);overflow:hidden;margin-bottom:10px}
 .bm-proj-edit-card-header{display:flex;align-items:center;gap:8px;padding:10px 14px;background:#eef2ff;border-bottom:1px solid #c7d2fe}
 .bm-proj-edit-card-title{font-size:.78rem;font-weight:700;color:#3730a3;flex:1}
-
 .bm-real-edit-row{background:#fffff8;border:1px solid #fde68a;border-radius:var(--r-sm);padding:12px;margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .bm-real-edit-row.new-row{background:#f0fff4;border-color:#86efac}
 .bm-real-edit-fullrow{grid-column:1/-1}
-
 .bm-asset-edit-row{background:white;border:1px solid #e0e7ff;border-radius:var(--r-sm);padding:10px;margin-top:8px}
 .bm-asset-edit-row-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 
+/* ══ Invoice File Attachment ══ */
+.bm-file-drop-zone{border:2px dashed #c7d2fe;border-radius:8px;padding:9px 12px;background:#f8faff;transition:all .2s;cursor:pointer;position:relative}
+.bm-file-drop-zone:hover,.bm-file-drop-zone.drag-over{border-color:var(--blue);background:#eff6ff}
+.bm-file-drop-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.bm-file-drop-inner{display:flex;align-items:center;gap:7px;pointer-events:none}
+.bm-file-drop-inner svg{color:var(--blue);flex-shrink:0}
+.bm-file-drop-text{font-size:.73rem;color:var(--ink2);font-weight:500}
+.bm-file-drop-hint{font-size:.65rem;color:var(--ink3);margin-left:auto}
+.bm-file-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.bm-file-chip{display:inline-flex;align-items:center;gap:4px;background:white;border:1px solid #bfdbfe;border-radius:20px;padding:3px 8px 3px 6px;font-size:.68rem;color:#1e40af;font-weight:600;max-width:200px}
+.bm-file-chip-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:120px}
+.bm-file-chip-size{color:#94a3b8;font-weight:400;font-size:.62rem;flex-shrink:0}
+.bm-file-chip-del{display:flex;align-items:center;background:none;border:none;cursor:pointer;padding:0;color:#94a3b8;transition:color .15s;flex-shrink:0;line-height:1}
+.bm-file-chip-del:hover{color:var(--red)}
+.bm-file-view-chip{display:inline-flex;align-items:center;gap:4px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:20px;padding:2px 8px;font-size:.68rem;color:var(--blue);font-weight:600}
+
+/* ══ Toast & Modal & Confirm ══ */
 .bm-toast{position:fixed;bottom:24px;right:24px;background:var(--ink);color:white;padding:12px 20px;border-radius:12px;font-size:.82rem;font-weight:600;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:8px;z-index:9999;animation:toastIn .3s cubic-bezier(.16,1,.3,1)}
 .bm-toast.success{background:var(--green)}.bm-toast.error{background:var(--red)}
 @keyframes toastIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-
 .bm-modal-overlay{position:fixed;inset:0;background:rgba(10,22,40,.6);display:flex;align-items:center;justify-content:center;z-index:2000;backdrop-filter:blur(4px);padding:20px;animation:fadeOvl .2s ease}
 @keyframes fadeOvl{from{opacity:0}to{opacity:1}}
-.bm-modal{background:var(--surface);border-radius:18px;width:100%;max-width:520px;box-shadow:var(--shadow-lg);display:flex;flex-direction:column;overflow:hidden;animation:modalUp .25s cubic-bezier(.16,1,.3,1)}
+.bm-modal{background:var(--surface);border-radius:18px;width:100%;max-width:540px;box-shadow:var(--shadow-lg);display:flex;flex-direction:column;overflow:hidden;animation:modalUp .25s cubic-bezier(.16,1,.3,1)}
 @keyframes modalUp{from{opacity:0;transform:translateY(24px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
 .bm-modal-header{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;background:var(--bg2);border-bottom:1px solid var(--border)}
 .bm-modal-header-left{display:flex;align-items:center;gap:12px}
@@ -1950,7 +955,6 @@ const CSS = `
 .bm-btn-save-modal:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(29,78,216,.4)}
 .bm-btn-cancel-modal{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--ink2);font-family:var(--font);font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s}
 .bm-btn-cancel-modal:hover{background:var(--bg)}
-
 .bm-confirm-overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;z-index:9000;padding:20px}
 .bm-confirm-box{background:white;border-radius:16px;padding:28px 24px;max-width:360px;width:100%;box-shadow:var(--shadow-lg);display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;animation:modalUp .22s cubic-bezier(.16,1,.3,1)}
 .bm-confirm-icon{width:50px;height:50px;background:#fff7ed;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#f97316}
@@ -1967,6 +971,91 @@ const CSS = `
   .bm-real-edit-row{grid-template-columns:1fr}
 }
 `;
+
+// ══════════════════════════════════════════════════════════════════
+// InvoiceAttachment — reusable drop-zone component
+// ══════════════════════════════════════════════════════════════════
+function InvoiceAttachment({ files = [], onChange, compact = false }) {
+  const [dragging, setDragging] = useState(false);
+  const inputRef = useRef(null);
+
+  const handleFiles = (incoming) => {
+    const arr = Array.from(incoming);
+    const mapped = arr.map((f) => ({
+      name: f.name,
+      size: f.size,
+      type: f.type,
+      _file: f,
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    }));
+    onChange([...files, ...mapped]);
+  };
+
+  const onDrop = (e) => {
+    e.preventDefault();
+    setDragging(false);
+    if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);
+  };
+
+  const removeFile = (id) => onChange(files.filter((f) => f.id !== id));
+
+  return (
+    <div>
+      <div
+        className={`bm-file-drop-zone${dragging ? " drag-over" : ""}`}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragging(true);
+        }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={onDrop}
+      >
+        <input
+          type="file"
+          multiple
+          accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.doc,.docx"
+          onChange={(e) => {
+            if (e.target.files.length) handleFiles(e.target.files);
+            e.target.value = "";
+          }}
+        />
+        <div className="bm-file-drop-inner">
+          <Icon d={Icons.upload} size={14} />
+          <span className="bm-file-drop-text">
+            {compact
+              ? "Drop atau klik untuk lampirkan invoice"
+              : "Drop file atau klik untuk upload lampiran invoice"}
+          </span>
+          <span className="bm-file-drop-hint">PDF, JPG, PNG, Excel, Word</span>
+        </div>
+      </div>
+      {files.length > 0 && (
+        <div className="bm-file-chips">
+          {files.map((f) => (
+            <span key={f.id} className="bm-file-chip">
+              <Icon
+                d={Icons.file}
+                size={11}
+                style={{ flexShrink: 0, color: "#3b82f6" }}
+              />
+              <span className="bm-file-chip-name" title={f.name}>
+                {f.name}
+              </span>
+              <span className="bm-file-chip-size">{fmtFileSize(f.size)}</span>
+              <button
+                className="bm-file-chip-del"
+                onClick={() => removeFile(f.id)}
+                title="Hapus lampiran"
+              >
+                <Icon d={Icons.x} size={11} />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ══════════════════════════════════════════════════════════════════
 // Toast
@@ -2000,8 +1089,7 @@ function ConfirmDialog({ msg, onConfirm, onCancel }) {
             Batal
           </button>
           <button className="bm-btn bm-btn-danger" onClick={onConfirm}>
-            <Icon d={Icons.trash} size={13} />
-            Hapus
+            <Icon d={Icons.trash} size={13} /> Hapus
           </button>
         </div>
       </div>
@@ -2010,7 +1098,7 @@ function ConfirmDialog({ msg, onConfirm, onCancel }) {
 }
 
 // ══════════════════════════════════════════════════════════════════
-// ModalRealisasiOpex (add new)
+// ModalRealisasiOpex — with invoice attachment
 // ══════════════════════════════════════════════════════════════════
 function ModalRealisasi({ anggaran, onClose, onSave }) {
   const [form, setForm] = useState({
@@ -2019,7 +1107,9 @@ function ModalRealisasi({ anggaran, onClose, onSave }) {
     keterangan: "",
     no_invoice: "",
     id_aset: "",
+    lampiran: [],
   });
+
   const save = () => {
     if (!form.jumlah || !form.keterangan || !form.tanggal_realisasi) {
       alert("Tanggal, jumlah, dan keterangan wajib diisi.");
@@ -2032,6 +1122,7 @@ function ModalRealisasi({ anggaran, onClose, onSave }) {
     });
     onClose();
   };
+
   return (
     <div className="bm-modal-overlay" onClick={onClose}>
       <div className="bm-modal" onClick={(e) => e.stopPropagation()}>
@@ -2082,7 +1173,9 @@ function ModalRealisasi({ anggaran, onClose, onSave }) {
               />
             </div>
             <div className="bm-form-group">
-              <label>No. Invoice</label>
+              <label>
+                No. Invoice <span className="bm-optional-badge">Opsional</span>
+              </label>
               <input
                 placeholder="INV/2026/001"
                 value={form.no_invoice}
@@ -2131,6 +1224,17 @@ function ModalRealisasi({ anggaran, onClose, onSave }) {
                 Isi jika berhubungan dengan aset di inventory
               </span>
             </div>
+            {/* ── Invoice Attachment ── */}
+            <div className="bm-form-group bm-form-group--full">
+              <label>
+                <Icon d={Icons.paperclip} size={11} /> Lampiran Invoice{" "}
+                <span className="bm-optional-badge">Opsional</span>
+              </label>
+              <InvoiceAttachment
+                files={form.lampiran}
+                onChange={(lamps) => setForm({ ...form, lampiran: lamps })}
+              />
+            </div>
           </div>
         </div>
         <div className="bm-modal-footer">
@@ -2147,7 +1251,7 @@ function ModalRealisasi({ anggaran, onClose, onSave }) {
 }
 
 // ══════════════════════════════════════════════════════════════════
-// BalanceBadge & BalanceBar
+// Balance components
 // ══════════════════════════════════════════════════════════════════
 function BalanceBadge({ assets, nilaiKontrak }) {
   const info = getBalanceInfo(assets, nilaiKontrak);
@@ -2200,7 +1304,7 @@ function BalanceBar({ assets, nilaiKontrak }) {
 }
 
 // ══════════════════════════════════════════════════════════════════
-// EDIT PANEL — OPEX
+// EDIT PANEL — OPEX (with invoice attachment per realisasi row)
 // ══════════════════════════════════════════════════════════════════
 function OpexEditPanel({ item, realisasiOpex, onSave, onCancel, showToast }) {
   const [pagu, setPagu] = useState(String(item.raw.nilai_anggaran_tahunan));
@@ -2209,7 +1313,7 @@ function OpexEditPanel({ item, realisasiOpex, onSave, onCancel, showToast }) {
   const [realisasiList, setRealisasiList] = useState(
     realisasiOpex
       .filter((r) => r.id_anggaran_tahunan === item.raw.id_anggaran_tahunan)
-      .map((r) => ({ ...r })),
+      .map((r) => ({ ...r, lampiran: r.lampiran || [] })),
   );
   const [confirm, setConfirm] = useState(null);
 
@@ -2231,6 +1335,7 @@ function OpexEditPanel({ item, realisasiOpex, onSave, onCancel, showToast }) {
         keterangan: "",
         no_invoice: "",
         id_aset: "",
+        lampiran: [],
         _new: true,
       },
     ]);
@@ -2354,7 +1459,20 @@ function OpexEditPanel({ item, realisasiOpex, onSave, onCancel, showToast }) {
                     />
                   </div>
                   <div className="bm-edit-field">
-                    <label>No. Invoice</label>
+                    <label>
+                      No. Invoice{" "}
+                      <span
+                        style={{
+                          fontSize: ".6rem",
+                          color: "var(--ink3)",
+                          fontWeight: 400,
+                          textTransform: "none",
+                          letterSpacing: 0,
+                        }}
+                      >
+                        (opsional)
+                      </span>
+                    </label>
                     <input
                       value={r.no_invoice || ""}
                       onChange={(e) =>
@@ -2417,6 +1535,35 @@ function OpexEditPanel({ item, realisasiOpex, onSave, onCancel, showToast }) {
                       </button>
                     </div>
                   </div>
+                  {/* ── Lampiran Invoice per baris ── */}
+                  <div className="bm-edit-field bm-real-edit-fullrow">
+                    <label>
+                      <Icon
+                        d={Icons.paperclip}
+                        size={11}
+                        style={{ display: "inline", marginRight: 3 }}
+                      />
+                      Lampiran Invoice{" "}
+                      <span
+                        style={{
+                          fontSize: ".6rem",
+                          color: "var(--ink3)",
+                          fontWeight: 400,
+                          textTransform: "none",
+                          letterSpacing: 0,
+                        }}
+                      >
+                        (opsional)
+                      </span>
+                    </label>
+                    <InvoiceAttachment
+                      files={r.lampiran || []}
+                      onChange={(lamps) =>
+                        updateReal(r.id_realisasi, "lampiran", lamps)
+                      }
+                      compact
+                    />
+                  </div>
                 </div>
               ))}
             </div>
@@ -2437,7 +1584,7 @@ function OpexEditPanel({ item, realisasiOpex, onSave, onCancel, showToast }) {
 }
 
 // ══════════════════════════════════════════════════════════════════
-// EDIT PANEL — CAPEX
+// EDIT PANEL — CAPEX (unchanged)
 // ══════════════════════════════════════════════════════════════════
 function CapexEditPanel({ item, onSave, onCancel, showToast }) {
   const [pagu, setPagu] = useState(String(item.raw.nilai_anggaran_rkap));
@@ -2455,7 +1602,6 @@ function CapexEditPanel({ item, onSave, onCancel, showToast }) {
     setProjects(
       projects.map((p) => (p.id_pekerjaan === id ? { ...p, [field]: val } : p)),
     );
-
   const addProj = () =>
     setProjects([
       ...projects,
@@ -2476,10 +1622,8 @@ function CapexEditPanel({ item, onSave, onCancel, showToast }) {
         _new: true,
       },
     ]);
-
   const removeProj = (id) =>
     setProjects(projects.filter((p) => p.id_pekerjaan !== id));
-
   const addAsset = (projId) =>
     setProjects(
       projects.map((p) =>
@@ -2503,7 +1647,6 @@ function CapexEditPanel({ item, onSave, onCancel, showToast }) {
           : p,
       ),
     );
-
   const updateAsset = (projId, assetCode, field, val) =>
     setProjects(
       projects.map((p) =>
@@ -2517,7 +1660,6 @@ function CapexEditPanel({ item, onSave, onCancel, showToast }) {
           : p,
       ),
     );
-
   const removeAsset = (projId, assetCode) =>
     setProjects(
       projects.map((p) =>
@@ -2563,7 +1705,6 @@ function CapexEditPanel({ item, onSave, onCancel, showToast }) {
                 <Icon d={Icons.x} size={13} /> Batal
               </button>
             </div>
-
             <div className="bm-edit-section">
               <div className="bm-edit-section-title">
                 <Icon d={Icons.briefcase} size={13} /> Informasi Anggaran CAPEX
@@ -2595,7 +1736,6 @@ function CapexEditPanel({ item, onSave, onCancel, showToast }) {
                 </div>
               </div>
             </div>
-
             <div className="bm-edit-section">
               <div className="bm-edit-section-title">
                 <Icon d={Icons.fileText} size={13} /> Daftar Pekerjaan / Kontrak
@@ -2610,14 +1750,12 @@ function CapexEditPanel({ item, onSave, onCancel, showToast }) {
                   <Icon d={Icons.plus} size={13} /> Tambah Pekerjaan
                 </button>
               </div>
-
               {projects.length === 0 && (
                 <div className="bm-empty bm-empty--sm">
                   <Icon d={Icons.fileText} size={16} />
                   <span>Belum ada pekerjaan</span>
                 </div>
               )}
-
               {projects.map((proj, idx) => {
                 const isOpen = expandedProj === proj.id_pekerjaan;
                 return (
@@ -2678,7 +1816,6 @@ function CapexEditPanel({ item, onSave, onCancel, showToast }) {
                         <Icon d={Icons.trash} size={13} /> Hapus
                       </button>
                     </div>
-
                     {isOpen && (
                       <div style={{ padding: "12px 14px" }} className="anim-in">
                         <div
@@ -2846,7 +1983,6 @@ function CapexEditPanel({ item, onSave, onCancel, showToast }) {
                             />
                           </div>
                         </div>
-
                         <div
                           style={{
                             borderTop: "1px dashed #c7d2fe",
@@ -3090,7 +2226,6 @@ function CapexEditPanel({ item, onSave, onCancel, showToast }) {
                 );
               })}
             </div>
-
             <div className="bm-edit-actions">
               <button className="bm-btn bm-btn-cancel" onClick={onCancel}>
                 <Icon d={Icons.x} size={13} /> Batal
@@ -3107,7 +2242,7 @@ function CapexEditPanel({ item, onSave, onCancel, showToast }) {
 }
 
 // ══════════════════════════════════════════════════════════════════
-// OPEX Detail (view mode)
+// OPEX Detail (view mode) — show lampiran chips
 // ══════════════════════════════════════════════════════════════════
 function OpexDetail({ item, onAddRealisasi }) {
   return (
@@ -3137,6 +2272,7 @@ function OpexDetail({ item, onAddRealisasi }) {
                   <th>Keterangan</th>
                   <th>No. Invoice</th>
                   <th>Aset</th>
+                  <th>Lampiran</th>
                   <th className="ta-r">Jumlah</th>
                 </tr>
               </thead>
@@ -3175,13 +2311,46 @@ function OpexDetail({ item, onAddRealisasi }) {
                           <span className="bm-no-aset">Tidak ada</span>
                         )}
                       </td>
+                      <td>
+                        {r.lampiran && r.lampiran.length > 0 ? (
+                          <div
+                            style={{
+                              display: "flex",
+                              flexWrap: "wrap",
+                              gap: 4,
+                            }}
+                          >
+                            {r.lampiran.map((f) => (
+                              <span
+                                key={f.id}
+                                className="bm-file-view-chip"
+                                title={f.name}
+                              >
+                                <Icon d={Icons.paperclip} size={10} />
+                                <span
+                                  style={{
+                                    maxWidth: 80,
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    whiteSpace: "nowrap",
+                                  }}
+                                >
+                                  {f.name}
+                                </span>
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="bm-no-aset">—</span>
+                        )}
+                      </td>
                       <td className="ta-r tc-red fw-bold">− {fmt(r.jumlah)}</td>
                     </tr>
                   ))}
               </tbody>
               <tfoot>
                 <tr className="bm-sub-total">
-                  <td colSpan="4" className="ta-r fw-bold">
+                  <td colSpan="5" className="ta-r fw-bold">
                     Total
                   </td>
                   <td className="ta-r tc-red fw-bold">{fmt(item.used)}</td>
@@ -3201,7 +2370,7 @@ function OpexDetail({ item, onAddRealisasi }) {
 }
 
 // ══════════════════════════════════════════════════════════════════
-// CAPEX Detail (view mode)
+// CAPEX Detail (view mode — unchanged)
 // ══════════════════════════════════════════════════════════════════
 function CapexDetail({ item, expandedProject, toggleProject }) {
   return (
@@ -3496,7 +2665,6 @@ export default function BudgetManagement() {
   };
   const toggleProject = (id) =>
     setExpandedProject(expandedProject === id ? null : id);
-
   const handleEditClick = (e, id) => {
     e.stopPropagation();
     if (editingBudget === id) {
@@ -3506,7 +2674,6 @@ export default function BudgetManagement() {
       setEditingBudget(id);
     }
   };
-
   const switchTab = (t) => {
     setActiveTab(t);
     setExpandedBudget(null);
@@ -3569,7 +2736,6 @@ export default function BudgetManagement() {
             onDone={() => setToast(null)}
           />
         )}
-
         {modalRealisasi && (
           <ModalRealisasi
             anggaran={modalRealisasi}
@@ -3675,7 +2841,7 @@ export default function BudgetManagement() {
             <>
               <Icon d={Icons.monitor} size={13} />
               Realisasi OPEX = total transaksi. Klik ✏ Edit untuk mengubah data
-              — tidak perlu pindah halaman.
+              — termasuk menambah lampiran invoice.
             </>
           )}
         </div>

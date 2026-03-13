@@ -1220,6 +1220,124 @@
   font-weight: 600;
 }
 
+/* ══ Tambahan untuk BudgetInput.css ══ */
+
+/* Invoice section */
+.bi-invoice-section {
+  margin-top: 20px;
+  border: 1px solid #dbeafe;
+  border-radius: 10px;
+  padding: 14px 16px;
+  background: #f8faff;
+}
+.bi-invoice-section-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #1d4ed8;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.bi-invoice-optional-badge {
+  background: #e0f2fe;
+  color: #0369a1;
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  text-transform: none;
+  letter-spacing: 0;
+  margin-left: 4px;
+}
+.bi-optional-note {
+  font-size: 0.68rem;
+  color: #94a3b8;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  margin-left: 4px;
+}
+
+/* File drop zone */
+.bi-file-drop {
+  border: 2px dashed #c7d2fe;
+  border-radius: 8px;
+  padding: 9px 12px;
+  background: #f8faff;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.bi-file-drop:hover,
+.bi-file-drop.drag-over {
+  border-color: #1d4ed8;
+  background: #eff6ff;
+}
+.bi-file-drop-inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+.bi-file-drop-text {
+  font-size: 0.73rem;
+  color: #475569;
+  font-weight: 500;
+}
+.bi-file-drop-hint {
+  font-size: 0.65rem;
+  color: #94a3b8;
+  margin-left: auto;
+}
+.bi-file-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 7px;
+}
+.bi-file-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: white;
+  border: 1px solid #bfdbfe;
+  border-radius: 20px;
+  padding: 3px 8px 3px 6px;
+  font-size: 0.68rem;
+  color: #1e40af;
+  font-weight: 600;
+  max-width: 220px;
+}
+.bi-file-chip-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 120px;
+}
+.bi-file-chip-size {
+  color: #94a3b8;
+  font-weight: 400;
+  font-size: 0.62rem;
+  flex-shrink: 0;
+}
+.bi-file-chip-del {
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: #94a3b8;
+  transition: color 0.15s;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.bi-file-chip-del:hover {
+  color: #dc2626;
+}
+
 /* ── Responsive ──────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .bi-form-grid {

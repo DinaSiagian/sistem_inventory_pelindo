@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Save,
@@ -13,6 +13,9 @@ import {
   Search,
   ChevronDown,
   AlertTriangle,
+  Paperclip,
+  Upload,
+  File as FileIcon,
 } from "lucide-react";
 import "./BudgetInput.css";
 
@@ -92,7 +95,6 @@ const inventoryAset = [
   },
 ];
 
-// OPEX masters — setiap master sudah punya aset terdaftar
 const defaultOpexMasters = [
   {
     id: "5030905000",
@@ -163,7 +165,6 @@ const defaultOpexMasters = [
   },
 ];
 
-// CAPEX masters — setiap master sudah punya daftar pekerjaan
 const defaultCapexMasters = [
   {
     id: "CAP-2540011",
@@ -335,6 +336,13 @@ const defaultCapexMasters = [
 ];
 
 const fmt = (n) => new Intl.NumberFormat("id-ID").format(n || 0);
+const fmtFileSize = (bytes) => {
+  if (!bytes) return "";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
+
 const emptyProject = () => ({
   id: `p-${Date.now()}-${Math.random()}`,
   nm_pekerjaan: "",
@@ -352,7 +360,95 @@ const emptyProject = () => ({
 });
 
 // ═══════════════════════════════════════════════════════════════
-// Dialog konfirmasi hapus
+// InvoiceAttachment — drop zone (reusable)
+// ═══════════════════════════════════════════════════════════════
+function InvoiceAttachment({
+  files = [],
+  onChange,
+  label = "Drop atau klik untuk lampirkan invoice",
+}) {
+  const [dragging, setDragging] = useState(false);
+
+  const handleFiles = (incoming) => {
+    const arr = Array.from(incoming).map((f) => ({
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 5)}`,
+      name: f.name,
+      size: f.size,
+      type: f.type,
+      _file: f,
+    }));
+    onChange([...files, ...arr]);
+  };
+
+  const onDrop = (e) => {
+    e.preventDefault();
+    setDragging(false);
+    if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);
+  };
+
+  const removeFile = (id) => onChange(files.filter((f) => f.id !== id));
+
+  return (
+    <div>
+      <div
+        className={`bi-file-drop${dragging ? " drag-over" : ""}`}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragging(true);
+        }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={onDrop}
+        style={{ position: "relative" }}
+      >
+        <input
+          type="file"
+          multiple
+          accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.doc,.docx"
+          style={{
+            position: "absolute",
+            inset: 0,
+            opacity: 0,
+            cursor: "pointer",
+            width: "100%",
+            height: "100%",
+          }}
+          onChange={(e) => {
+            if (e.target.files.length) handleFiles(e.target.files);
+            e.target.value = "";
+          }}
+        />
+        <div className="bi-file-drop-inner">
+          <Upload size={14} color="#1d4ed8" style={{ flexShrink: 0 }} />
+          <span className="bi-file-drop-text">{label}</span>
+          <span className="bi-file-drop-hint">PDF, JPG, PNG, Excel, Word</span>
+        </div>
+      </div>
+      {files.length > 0 && (
+        <div className="bi-file-chips">
+          {files.map((f) => (
+            <span key={f.id} className="bi-file-chip">
+              <FileIcon size={11} color="#3b82f6" style={{ flexShrink: 0 }} />
+              <span className="bi-file-chip-name" title={f.name}>
+                {f.name}
+              </span>
+              <span className="bi-file-chip-size">{fmtFileSize(f.size)}</span>
+              <button
+                className="bi-file-chip-del"
+                onClick={() => removeFile(f.id)}
+                title="Hapus"
+              >
+                <X size={11} />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ConfirmDialog
 // ═══════════════════════════════════════════════════════════════
 function ConfirmDialog({ message, onConfirm, onCancel }) {
   return (
@@ -376,7 +472,7 @@ function ConfirmDialog({ message, onConfirm, onCancel }) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// Dropdown pencarian aset dari inventory
+// AsetSearchDropdown
 // ═══════════════════════════════════════════════════════════════
 function AsetSearchDropdown({
   onSelect,
@@ -385,7 +481,6 @@ function AsetSearchDropdown({
 }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
-
   const filtered = inventoryAset.filter(
     (a) =>
       !existingCodes.includes(a.kode) &&
@@ -393,7 +488,6 @@ function AsetSearchDropdown({
         a.kode.toLowerCase().includes(q.toLowerCase()) ||
         a.brand.toLowerCase().includes(q.toLowerCase())),
   );
-
   return (
     <div className="bi-aset-search-wrap">
       <div
@@ -464,7 +558,7 @@ function AsetSearchDropdown({
 }
 
 // ═══════════════════════════════════════════════════════════════
-// Dropdown Mata Anggaran OPEX
+// MataAnggaranDropdown
 // ═══════════════════════════════════════════════════════════════
 function MataAnggaranDropdown({
   selectedId,
@@ -505,13 +599,6 @@ function MataAnggaranDropdown({
     setOpen(false);
     setShowForm(false);
     setForm({ kode: "", nama: "", nilai_kontrak: "" });
-  };
-
-  const handleConfirmDelete = () => {
-    if (!pendingDeleteId) return;
-    if (pendingDeleteId === selectedId) onSelect(null);
-    onDeleteMaster(pendingDeleteId);
-    setPendingDeleteId(null);
   };
 
   const pendingItem = pendingDeleteId
@@ -560,7 +647,11 @@ function MataAnggaranDropdown({
               </button>
               <button
                 className="bi-btn bi-btn-danger"
-                onClick={handleConfirmDelete}
+                onClick={() => {
+                  if (pendingDeleteId === selectedId) onSelect(null);
+                  onDeleteMaster(pendingDeleteId);
+                  setPendingDeleteId(null);
+                }}
               >
                 <Trash2 size={14} /> Hapus
               </button>
@@ -568,7 +659,6 @@ function MataAnggaranDropdown({
           </div>
         </div>
       )}
-
       {selected ? (
         <div className="bi-mata-selected">
           <div className="bi-mata-selected-info">
@@ -721,12 +811,10 @@ function MataAnggaranDropdown({
                         onMouseEnter={(e) => {
                           e.currentTarget.style.background = "#dc2626";
                           e.currentTarget.style.color = "#ffffff";
-                          e.currentTarget.style.borderColor = "#dc2626";
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.background = "#fee2e2";
                           e.currentTarget.style.color = "#dc2626";
-                          e.currentTarget.style.borderColor = "#fca5a5";
                         }}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -814,7 +902,7 @@ function MataAnggaranDropdown({
 }
 
 // ═══════════════════════════════════════════════════════════════
-// Dropdown Pos Anggaran CAPEX
+// AnggaranCapexDropdown
 // ═══════════════════════════════════════════════════════════════
 function AnggaranCapexDropdown({
   selectedId,
@@ -871,15 +959,6 @@ function AnggaranCapexDropdown({
     });
   };
 
-  const handleConfirmDelete = () => {
-    if (!pendingDeleteId) return;
-    // Jika yang dihapus sedang terpilih, reset pilihan
-    if (pendingDeleteId === selectedId) onSelect(null);
-    onDeleteMaster(pendingDeleteId);
-    setPendingDeleteId(null);
-  };
-
-  // Item yang mau dihapus (untuk tampil nama di konfirmasi)
   const pendingItem = pendingDeleteId
     ? [...defaultCapexMasters, ...customCapexMasters].find(
         (c) => c.id === pendingDeleteId,
@@ -888,7 +967,6 @@ function AnggaranCapexDropdown({
 
   return (
     <div className="bi-aset-search-wrap">
-      {/* Mini confirm inline di dalam dropdown */}
       {pendingDeleteId && (
         <div
           className="bi-confirm-overlay"
@@ -927,7 +1005,11 @@ function AnggaranCapexDropdown({
               </button>
               <button
                 className="bi-btn bi-btn-danger"
-                onClick={handleConfirmDelete}
+                onClick={() => {
+                  if (pendingDeleteId === selectedId) onSelect(null);
+                  onDeleteMaster(pendingDeleteId);
+                  setPendingDeleteId(null);
+                }}
               >
                 <Trash2 size={14} /> Hapus
               </button>
@@ -935,7 +1017,6 @@ function AnggaranCapexDropdown({
           </div>
         </div>
       )}
-
       {selected ? (
         <div className="bi-mata-selected bi-mata-selected--capex">
           <div className="bi-mata-selected-info">
@@ -1016,7 +1097,6 @@ function AnggaranCapexDropdown({
                           transition: "background 0.15s",
                           gap: 8,
                         }}
-                        className="bi-aset-option-row"
                         onMouseEnter={(e) =>
                           (e.currentTarget.style.background = "#eff6ff")
                         }
@@ -1028,7 +1108,6 @@ function AnggaranCapexDropdown({
                           setOpen(false);
                         }}
                       >
-                        {/* Konten utama */}
                         <div
                           style={{
                             flex: 1,
@@ -1085,7 +1164,6 @@ function AnggaranCapexDropdown({
                             </span>
                           </div>
                         </div>
-                        {/* Tombol hapus */}
                         <button
                           title="Hapus dari daftar"
                           style={{
@@ -1103,17 +1181,14 @@ function AnggaranCapexDropdown({
                             transition: "all 0.15s",
                             fontSize: "16px",
                             lineHeight: 1,
-                            fontFamily: "sans-serif",
                           }}
                           onMouseEnter={(e) => {
                             e.currentTarget.style.background = "#dc2626";
                             e.currentTarget.style.color = "#ffffff";
-                            e.currentTarget.style.borderColor = "#dc2626";
                           }}
                           onMouseLeave={(e) => {
                             e.currentTarget.style.background = "#fee2e2";
                             e.currentTarget.style.color = "#dc2626";
-                            e.currentTarget.style.borderColor = "#fca5a5";
                           }}
                           onClick={(e) => {
                             e.stopPropagation();
@@ -1247,36 +1322,33 @@ const BudgetInput = () => {
   const navigate = useNavigate();
   const [budgetType, setBudgetType] = useState("opex");
   const [step, setStep] = useState(1);
-  const [confirm, setConfirm] = useState(null); // { message, onConfirm }
+  const [confirm, setConfirm] = useState(null);
 
   const [customMasters, setCustomMasters] = useState([]);
   const [deletedOpexIds, setDeletedOpexIds] = useState([]);
-  const handleDeleteOpexMaster = (id) =>
-    setDeletedOpexIds((prev) => [...prev, id]);
   const [customCapexMasters, setCustomCapexMasters] = useState([]);
   const [deletedCapexIds, setDeletedCapexIds] = useState([]);
 
-  const handleDeleteCapexMaster = (id) => {
-    setDeletedCapexIds((prev) => [...prev, id]);
-  };
-
-  // ── OPEX ─────────────────────────────────────────────────────
+  // ── OPEX ──────────────────────────────────────────────────────
   const [selectedOpexId, setSelectedOpexId] = useState(null);
   const [opexTahun, setOpexTahun] = useState(new Date().getFullYear());
   const [opexNilaiKontrak, setOpexNilaiKontrak] = useState("");
   const [opexAssets, setOpexAssets] = useState([]);
+  // ── OPEX Invoice / Realisasi (optional section) ───────────────
+  const [opexInvoice, setOpexInvoice] = useState({
+    no_invoice: "",
+    lampiran: [],
+  });
 
-  // ── CAPEX ─────────────────────────────────────────────────────
+  // ── CAPEX ──────────────────────────────────────────────────────
   const [selectedCapexId, setSelectedCapexId] = useState(null);
   const [capexTahun, setCapexTahun] = useState(new Date().getFullYear());
   const [capexProjects, setCapexProjects] = useState([]);
 
-  // ── Derived ───────────────────────────────────────────────────
   const allMasters = [...defaultOpexMasters, ...customMasters].filter(
     (m) => !deletedOpexIds.includes(m.id),
   );
   const selectedOpexMaster = allMasters.find((m) => m.id === selectedOpexId);
-
   const allCapexMasters = [
     ...defaultCapexMasters,
     ...customCapexMasters,
@@ -1284,14 +1356,12 @@ const BudgetInput = () => {
   const selectedCapexMaster = allCapexMasters.find(
     (c) => c.id === selectedCapexId,
   );
-
   const isExistingOpex = selectedOpexMaster && !selectedOpexMaster.isCustom;
   const isExistingCapex =
     selectedCapexMaster &&
     !selectedCapexMaster.isCustom &&
     selectedCapexMaster.pekerjaan?.length > 0;
 
-  // ── Select OPEX → auto-fill nilai kontrak & aset ─────────────
   const handleSelectOpex = (id) => {
     setSelectedOpexId(id);
     if (!id) {
@@ -1308,7 +1378,6 @@ const BudgetInput = () => {
     );
   };
 
-  // ── Select CAPEX → auto-fill pekerjaan ───────────────────────
   const handleSelectCapex = (id) => {
     setSelectedCapexId(id);
     if (!id) {
@@ -1326,7 +1395,7 @@ const BudgetInput = () => {
     );
   };
 
-  // ── OPEX aset handlers ────────────────────────────────────────
+  // ── OPEX aset ─────────────────────────────────────────────────
   const addOpexFromInventory = (aset) => {
     if (opexAssets.find((a) => a.asset_code === aset.kode)) return;
     setOpexAssets([
@@ -1372,7 +1441,7 @@ const BudgetInput = () => {
       },
     });
 
-  // ── CAPEX project handlers ────────────────────────────────────
+  // ── CAPEX project ─────────────────────────────────────────────
   const addCapexProject = () =>
     setCapexProjects([...capexProjects, emptyProject()]);
   const updateCapexProject = (id, field, val) =>
@@ -1390,8 +1459,8 @@ const BudgetInput = () => {
       },
     });
 
-  // ── CAPEX aset handlers ───────────────────────────────────────
-  const addCapexFromInventory = (projId, aset) => {
+  // ── CAPEX aset ────────────────────────────────────────────────
+  const addCapexFromInventory = (projId, aset) =>
     setCapexProjects(
       capexProjects.map((p) =>
         p.id === projId && !p.assets.find((a) => a.asset_code === aset.kode)
@@ -1415,8 +1484,7 @@ const BudgetInput = () => {
           : p,
       ),
     );
-  };
-  const addCapexManual = (projId) => {
+  const addCapexManual = (projId) =>
     setCapexProjects(
       capexProjects.map((p) =>
         p.id === projId
@@ -1440,8 +1508,7 @@ const BudgetInput = () => {
           : p,
       ),
     );
-  };
-  const updateCapexAsset = (projId, assetId, field, val) => {
+  const updateCapexAsset = (projId, assetId, field, val) =>
     setCapexProjects(
       capexProjects.map((p) =>
         p.id === projId
@@ -1454,8 +1521,7 @@ const BudgetInput = () => {
           : p,
       ),
     );
-  };
-  const doRemoveCapexAsset = (projId, assetId) => {
+  const doRemoveCapexAsset = (projId, assetId) =>
     setCapexProjects(
       capexProjects.map((p) =>
         p.id === projId
@@ -1463,7 +1529,6 @@ const BudgetInput = () => {
           : p,
       ),
     );
-  };
   const askRemoveCapexAsset = (projId, asset) =>
     setConfirm({
       message: `Hapus aset "${asset.name || asset.asset_code || "ini"}" dari pekerjaan ini?`,
@@ -1480,7 +1545,6 @@ const BudgetInput = () => {
   );
   const nilaiKontrakOpex = parseFloat(opexNilaiKontrak || 0);
   const sisaOpex = nilaiKontrakOpex - totalNilaiAsetOpex;
-
   const totalKontrakCapex = capexProjects.reduce(
     (s, p) => s + parseFloat(p.nilai_kontrak || 0),
     0,
@@ -1493,7 +1557,6 @@ const BudgetInput = () => {
     navigate("/budget");
   };
 
-  // ─────────────────────────────────────────────────────────────
   return (
     <div className="bi-root">
       {confirm && (
@@ -1540,7 +1603,7 @@ const BudgetInput = () => {
         </div>
       </div>
 
-      {/* ── STEP 1: Pilih Tipe ── */}
+      {/* STEP 1 */}
       {step === 1 && (
         <div className="bi-content">
           <div className="bi-type-cards">
@@ -1582,12 +1645,10 @@ const BudgetInput = () => {
         </div>
       )}
 
-      {/* ══════════════════════════════════════════════════════════
-          STEP 2 — OPEX
-      ══════════════════════════════════════════════════════════ */}
+      {/* STEP 2 — OPEX */}
       {step === 2 && budgetType === "opex" && (
         <div className="bi-content">
-          {/* Form Pos Anggaran */}
+          {/* Pos Anggaran */}
           <div className="bi-form-card">
             <div className="bi-form-header">
               <FileText size={20} />
@@ -1601,13 +1662,11 @@ const BudgetInput = () => {
                 customMasters={customMasters}
                 onAddCustom={(o) => setCustomMasters([...customMasters, o])}
                 deletedIds={deletedOpexIds}
-                onDeleteMaster={handleDeleteOpexMaster}
+                onDeleteMaster={(id) => setDeletedOpexIds((p) => [...p, id])}
               />
             </div>
-
             {selectedOpexMaster && (
               <>
-                {/* Banner: data existing dimuat otomatis */}
                 {isExistingOpex && selectedOpexMaster.aset?.length > 0 && (
                   <div className="bi-autofill-banner">
                     <CheckCircle size={15} />
@@ -1669,12 +1728,10 @@ const BudgetInput = () => {
                   <Plus size={14} /> Input Manual
                 </button>
               </div>
-
               <AsetSearchDropdown
                 onSelect={addOpexFromInventory}
                 existingCodes={opexAssets.map((a) => a.asset_code)}
               />
-
               {opexAssets.length === 0 && (
                 <div
                   className="bi-capex-assets-empty"
@@ -1687,7 +1744,6 @@ const BudgetInput = () => {
                   </span>
                 </div>
               )}
-
               {opexAssets.map((asset, idx) => (
                 <div
                   key={asset.id}
@@ -1808,6 +1864,49 @@ const BudgetInput = () => {
                 </div>
               ))}
 
+              {/* ── No. Invoice + Lampiran Invoice (Opsional) ── */}
+              <div className="bi-invoice-section">
+                <div className="bi-invoice-section-title">
+                  <Paperclip size={14} />
+                  <span>Invoice &amp; Lampiran</span>
+                  <span className="bi-invoice-optional-badge">Opsional</span>
+                </div>
+                <div className="bi-form-grid" style={{ marginBottom: 10 }}>
+                  <div className="bi-form-group full">
+                    <label>
+                      No. Invoice{" "}
+                      <span className="bi-optional-note">
+                        — kosongkan jika belum ada
+                      </span>
+                    </label>
+                    <input
+                      value={opexInvoice.no_invoice}
+                      onChange={(e) =>
+                        setOpexInvoice({
+                          ...opexInvoice,
+                          no_invoice: e.target.value,
+                        })
+                      }
+                      placeholder="INV/2026/001"
+                    />
+                  </div>
+                </div>
+                <div className="bi-form-group">
+                  <label>
+                    Lampiran Invoice{" "}
+                    <span className="bi-optional-note">
+                      — kosongkan jika belum ada
+                    </span>
+                  </label>
+                  <InvoiceAttachment
+                    files={opexInvoice.lampiran}
+                    onChange={(lamps) =>
+                      setOpexInvoice({ ...opexInvoice, lampiran: lamps })
+                    }
+                  />
+                </div>
+              </div>
+
               <div className="bi-summary">
                 <div className="bi-summary-item">
                   <span>Nilai Kontrak</span>
@@ -1843,12 +1942,9 @@ const BudgetInput = () => {
         </div>
       )}
 
-      {/* ══════════════════════════════════════════════════════════
-          STEP 2 — CAPEX
-      ══════════════════════════════════════════════════════════ */}
+      {/* STEP 2 — CAPEX */}
       {step === 2 && budgetType === "capex" && (
         <div className="bi-content">
-          {/* Pos Anggaran */}
           <div className="bi-form-card">
             <div className="bi-form-header">
               <FileText size={20} />
@@ -1864,10 +1960,9 @@ const BudgetInput = () => {
                   setCustomCapexMasters([...customCapexMasters, o])
                 }
                 deletedIds={deletedCapexIds}
-                onDeleteMaster={handleDeleteCapexMaster}
+                onDeleteMaster={(id) => setDeletedCapexIds((p) => [...p, id])}
               />
             </div>
-
             {selectedCapexMaster && (
               <>
                 {isExistingCapex && (
@@ -1934,7 +2029,6 @@ const BudgetInput = () => {
             )}
           </div>
 
-          {/* Daftar Pekerjaan */}
           {!selectedCapexId ? (
             <div className="bi-form-card">
               <div className="bi-no-anggaran-hint">
@@ -1971,7 +2065,6 @@ const BudgetInput = () => {
                       <Trash2 size={14} /> Hapus Pekerjaan
                     </button>
                   </div>
-
                   <div className="bi-form-grid">
                     <div className="bi-form-group full">
                       <label>Nama Pekerjaan *</label>
@@ -2144,12 +2237,10 @@ const BudgetInput = () => {
                         <Plus size={14} /> Input Manual
                       </button>
                     </div>
-
                     <AsetSearchDropdown
                       onSelect={(aset) => addCapexFromInventory(proj.id, aset)}
                       existingCodes={proj.assets.map((a) => a.asset_code)}
                     />
-
                     {proj.assets.length === 0 ? (
                       <div
                         className="bi-capex-assets-empty"
@@ -2333,7 +2424,6 @@ const BudgetInput = () => {
                         </div>
                       ))
                     )}
-
                     {proj.assets.length > 0 && (
                       <div className="bi-project-asset-summary">
                         <span>Total Nilai Aset Pekerjaan #{idx + 1}:</span>
