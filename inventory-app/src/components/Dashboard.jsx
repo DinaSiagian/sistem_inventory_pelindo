@@ -66,112 +66,88 @@ const dataKondisi = [
 const totalKondisi = dataKondisi.reduce((sum, d) => sum + d.value, 0);
 
 // ================================================================
-// MOCK DATA — CAPEX sesuai struktur tabel database
-// nm_anggaran_capex, thn_rkap_awal, thn_rkap_akhir, thn_anggaran
-// Satu program bisa muncul di beberapa thn_anggaran (multi-year spending)
+// MOCK DATA — CAPEX
+//
+// PERBAIKAN SESUAI SARAN MENTOR:
+// Setiap row adalah 1 PROGRAM (unik berdasarkan nm_anggaran_capex).
+// nilai_anggaran = total anggaran program (1x, tidak diulang per tahun).
+// realisasi_per_tahun = breakdown realisasi aktual tiap tahun anggaran.
+// Dengan begini, progress bar = total realisasi semua tahun / nilai_anggaran (komposit).
 // ================================================================
-const mockCapexRows = [
+const mockCapexPrograms = [
   {
     nm_anggaran_capex: "Implementasi dan Standarisasi IT Infrastruktur",
     thn_rkap_awal: 2024,
     thn_rkap_akhir: 2024,
-    thn_anggaran: 2024,
-    nilai_anggaran: 1200000000,
-    realisasi: 1200000000,
+    nilai_anggaran: 1200000000, // Total anggaran program (1x, tidak dikali jumlah tahun)
     status: "selesai",
+    realisasi_per_tahun: [{ tahun: 2024, realisasi: 1200000000 }],
   },
   {
     nm_anggaran_capex: "Penyediaan Network di Branch SPMT",
     thn_rkap_awal: 2024,
     thn_rkap_akhir: 2024,
-    thn_anggaran: 2024,
     nilai_anggaran: 800000000,
-    realisasi: 800000000,
     status: "selesai",
+    realisasi_per_tahun: [{ tahun: 2024, realisasi: 800000000 }],
   },
   {
     nm_anggaran_capex:
       "Penyiapan Infrastruktur IT (Kantor Pusat, Pelindo Place, Pelindo Tower, Malahayati, Lhokseumawe, Bima, Badas, Parepare, Gresik, Tanjung Emas, Mekar Putih, Meulaboh, Kuala Langsa dan Bumiharjo) PT Pelindo Multi Terminal",
     thn_rkap_awal: 2024,
     thn_rkap_akhir: 2024,
-    thn_anggaran: 2024,
     nilai_anggaran: 3500000000,
-    realisasi: 3500000000,
     status: "selesai",
+    realisasi_per_tahun: [{ tahun: 2024, realisasi: 3500000000 }],
   },
   {
     nm_anggaran_capex:
       "Revisi Capex (Pemenuhan Kebutuhan Gate dan PNC Transformasi pada Branch SPMT)",
     thn_rkap_awal: 2024,
     thn_rkap_akhir: 2025,
-    thn_anggaran: 2025,
-    nilai_anggaran: 1500000000,
-    realisasi: 1200000000,
+    nilai_anggaran: 1500000000, // 1 program senilai 1,5M, dikerjakan 2024-2025
     status: "berjalan",
+    realisasi_per_tahun: [{ tahun: 2025, realisasi: 1200000000 }],
   },
   {
     nm_anggaran_capex:
       "Transformasi dan Digitalisasi PT Pelindo Multi Terminal",
     thn_rkap_awal: 2025,
     thn_rkap_akhir: 2026,
-    thn_anggaran: 2025,
-    nilai_anggaran: 2000000000,
-    realisasi: 1600000000,
+    nilai_anggaran: 2000000000, // 1 program senilai 2M, realisasi tersebar 2025+2026
     status: "berjalan",
+    realisasi_per_tahun: [
+      { tahun: 2025, realisasi: 1600000000 },
+      { tahun: 2026, realisasi: 800000000 },
+    ],
   },
   {
     nm_anggaran_capex:
       "Standarisasi Perangkat Jaringan di Lingkungan PT Pelindo Multi Terminal",
     thn_rkap_awal: 2025,
     thn_rkap_akhir: 2026,
-    thn_anggaran: 2025,
-    nilai_anggaran: 1800000000,
-    realisasi: 1300000000,
+    nilai_anggaran: 1800000000, // 1 program senilai 1,8M, realisasi tersebar 2025+2026
     status: "berjalan",
+    realisasi_per_tahun: [
+      { tahun: 2025, realisasi: 1300000000 },
+      { tahun: 2026, realisasi: 400000000 },
+    ],
   },
   {
     nm_anggaran_capex: "Penyiapan Infrastruktur IT pada Kegiatan Roro",
     thn_rkap_awal: 2025,
     thn_rkap_akhir: 2026,
-    thn_anggaran: 2025,
-    nilai_anggaran: 900000000,
-    realisasi: 650000000,
+    nilai_anggaran: 900000000, // 1 program senilai 900Jt, realisasi tersebar 2025+2026
     status: "berjalan",
-  },
-  {
-    nm_anggaran_capex:
-      "Transformasi dan Digitalisasi PT Pelindo Multi Terminal",
-    thn_rkap_awal: 2025,
-    thn_rkap_akhir: 2026,
-    thn_anggaran: 2026,
-    nilai_anggaran: 2000000000,
-    realisasi: 800000000,
-    status: "berjalan",
-  },
-  {
-    nm_anggaran_capex:
-      "Standarisasi Perangkat Jaringan di Lingkungan PT Pelindo Multi Terminal",
-    thn_rkap_awal: 2025,
-    thn_rkap_akhir: 2026,
-    thn_anggaran: 2026,
-    nilai_anggaran: 1800000000,
-    realisasi: 400000000,
-    status: "berjalan",
-  },
-  {
-    nm_anggaran_capex: "Penyiapan Infrastruktur IT pada Kegiatan Roro",
-    thn_rkap_awal: 2025,
-    thn_rkap_akhir: 2026,
-    thn_anggaran: 2026,
-    nilai_anggaran: 900000000,
-    realisasi: 150000000,
-    status: "berjalan",
+    realisasi_per_tahun: [
+      { tahun: 2025, realisasi: 650000000 },
+      { tahun: 2026, realisasi: 150000000 },
+    ],
   },
 ];
 
 // ================================================================
 // MOCK DATA — OPEX per tahun
-// Satu tahun bisa banyak item beban/pekerjaan
 // ================================================================
 const mockOpexPerTahun = {
   2023: [
@@ -508,6 +484,30 @@ const ALERT_STYLE = {
 };
 
 // ================================================================
+// STATUS CONFIG
+// ================================================================
+const statusConfig = {
+  selesai: {
+    color: "#27ae60",
+    bg: "#e8f8f0",
+    label: "Selesai",
+    dot: "#27ae60",
+  },
+  berjalan: {
+    color: "#004494",
+    bg: "#e8f0fb",
+    label: "Berjalan",
+    dot: "#004494",
+  },
+  belum: {
+    color: "#b0b8c1",
+    bg: "#f1f2f6",
+    label: "Belum Mulai",
+    dot: "#b0b8c1",
+  },
+};
+
+// ================================================================
 // SUB-COMPONENTS
 // ================================================================
 const CustomKondisiLegend = () => (
@@ -666,81 +666,70 @@ const AlertItem = ({
 );
 
 // ================================================================
-// STATUS CONFIG
-// ================================================================
-const statusConfig = {
-  selesai: {
-    color: "#27ae60",
-    bg: "#e8f8f0",
-    label: "Selesai",
-    dot: "#27ae60",
-  },
-  berjalan: {
-    color: "#004494",
-    bg: "#e8f0fb",
-    label: "Berjalan",
-    dot: "#004494",
-  },
-  belum: {
-    color: "#b0b8c1",
-    bg: "#f1f2f6",
-    label: "Belum Mulai",
-    dot: "#b0b8c1",
-  },
-};
-
-// ================================================================
-// CAPEX CARD
-// - Semua tahun tampil sekaligus dengan progress bar masing-masing
-// - Klik chevron per-tahun → muncul dropdown detail pekerjaan tahun itu
+// CAPEX CARD — VERSI BARU (KOMPOSIT PER PROGRAM)
+//
+// LOGIKA PERBAIKAN:
+// 1. Setiap program ditampilkan 1x (tidak duplikat per thn_anggaran)
+// 2. nilai_anggaran = total anggaran program (1x)
+// 3. total_realisasi = SUM(realisasi_per_tahun) semua tahun
+// 4. Progress = total_realisasi / nilai_anggaran (komposit lintas tahun)
+// 5. Filter tahun di header → hanya tampilkan program yg aktif di tahun tsb
+//    (thn_rkap_awal <= selectedYear <= thn_rkap_akhir)
+// 6. Klik chevron → muncul breakdown realisasi per tahun untuk program tsb
 // ================================================================
 const CapexMultiYearCard = ({ selectedYear }) => {
-  // selectedCapexTahun: tahun yang dipilih di dropdown (null = belum pilih)
-  const [selectedCapexTahun, setSelectedCapexTahun] = useState(null);
-  // openYear: baris tahun yang dropdown detailnya terbuka
-  const [openYear, setOpenYear] = useState(null);
+  const [openProgram, setOpenProgram] = useState(null);
+  const [filterMode, setFilterMode] = useState("semua"); // "semua" | "tahun"
 
-  // Sync dropdown ke selectedYear dari header saat pertama render / ganti tahun
   React.useEffect(() => {
-    setSelectedCapexTahun(selectedYear);
-    setOpenYear(null);
+    setOpenProgram(null);
   }, [selectedYear]);
 
-  // Group rows by thn_anggaran
-  const byTahun = useMemo(() => {
-    const map = {};
-    mockCapexRows.forEach((row) => {
-      const y = String(row.thn_anggaran);
-      if (!map[y]) map[y] = [];
-      map[y].push(row);
-    });
-    return map;
-  }, []);
+  // Hitung total_realisasi tiap program (komposit semua tahun)
+  const programsWithTotal = useMemo(
+    () =>
+      mockCapexPrograms.map((p) => {
+        const totalRealisasi = p.realisasi_per_tahun.reduce(
+          (s, r) => s + r.realisasi,
+          0,
+        );
+        const pct =
+          p.nilai_anggaran > 0 ? (totalRealisasi / p.nilai_anggaran) * 100 : 0;
+        return { ...p, totalRealisasi, pct };
+      }),
+    [],
+  );
 
-  const tahunList = Object.keys(byTahun).sort();
+  // Filter program berdasarkan mode
+  const visiblePrograms = useMemo(() => {
+    if (filterMode === "tahun") {
+      const yr = parseInt(selectedYear);
+      return programsWithTotal.filter(
+        (p) => p.thn_rkap_awal <= yr && p.thn_rkap_akhir >= yr,
+      );
+    }
+    return programsWithTotal;
+  }, [filterMode, selectedYear, programsWithTotal]);
 
-  const totalAnggaran = mockCapexRows.reduce((s, r) => s + r.nilai_anggaran, 0);
-  const totalRealisasi = mockCapexRows.reduce((s, r) => s + r.realisasi, 0);
-  const pctTotal =
-    totalAnggaran > 0 ? (totalRealisasi / totalAnggaran) * 100 : 0;
+  // Grand total (hanya program yg visible)
+  const grandTotalAnggaran = visiblePrograms.reduce(
+    (s, p) => s + p.nilai_anggaran,
+    0,
+  );
+  const grandTotalRealisasi = visiblePrograms.reduce(
+    (s, p) => s + p.totalRealisasi,
+    0,
+  );
+  const grandPct =
+    grandTotalAnggaran > 0
+      ? (grandTotalRealisasi / grandTotalAnggaran) * 100
+      : 0;
 
-  const tahunSummary = tahunList.map((y) => {
-    const rows = byTahun[y];
-    const anggaran = rows.reduce((s, r) => s + r.nilai_anggaran, 0);
-    const realisasi = rows.reduce((s, r) => s + r.realisasi, 0);
-    const pct = anggaran > 0 ? (realisasi / anggaran) * 100 : 0;
-    const hasBerjalan = rows.some((r) => r.status === "berjalan");
-    const hasSelesai = rows.some((r) => r.status === "selesai");
-    const status = hasBerjalan ? "berjalan" : hasSelesai ? "selesai" : "belum";
-    return { tahun: y, anggaran, realisasi, pct, status, rows };
-  });
-
-  const tahunAktif = tahunSummary.filter((t) => t.status !== "belum").length;
-
-  // Data untuk tahun yang dipilih (untuk stacked bar & rows)
-  const visibleSummary = selectedCapexTahun
-    ? tahunSummary.filter((t) => t.tahun === selectedCapexTahun)
-    : [];
+  // Rentang tahun seluruh program
+  const allThnAwal = mockCapexPrograms.map((p) => p.thn_rkap_awal);
+  const allThnAkhir = mockCapexPrograms.map((p) => p.thn_rkap_akhir);
+  const minThn = Math.min(...allThnAwal);
+  const maxThn = Math.max(...allThnAkhir);
 
   return (
     <div className="dashboard-card capex-card">
@@ -748,7 +737,9 @@ const CapexMultiYearCard = ({ selectedYear }) => {
       <div className="card-header" style={{ marginBottom: "12px" }}>
         <div>
           <h3 className="section-title">Anggaran CAPEX</h3>
-          <span className="section-subtitle">Multi-Year · Semua Program</span>
+          <span className="section-subtitle">
+            Komposit Per Program · {mockCapexPrograms.length} Program
+          </span>
         </div>
         <div style={{ textAlign: "right", flexShrink: 0, marginLeft: "12px" }}>
           <div
@@ -770,17 +761,77 @@ const CapexMultiYearCard = ({ selectedYear }) => {
               lineHeight: 1.2,
             }}
           >
-            {formatRupiahShort(totalAnggaran)}
+            {formatRupiahShort(grandTotalAnggaran)}
           </div>
           <div
             style={{ fontSize: "0.72rem", color: "#7f8c8d", marginTop: "2px" }}
           >
-            {tahunList[0]}–{tahunList[tahunList.length - 1]}
+            {minThn}–{maxThn}
           </div>
         </div>
       </div>
 
-      {/* ── Overall progress (selalu tampil) ── */}
+      {/* ── Toggle filter: Semua / Tahun ini ── */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+          marginBottom: "14px",
+        }}
+      >
+        <span
+          style={{
+            fontSize: "0.72rem",
+            fontWeight: 700,
+            color: "#7f8c8d",
+            textTransform: "uppercase",
+            letterSpacing: "0.5px",
+          }}
+        >
+          Tampilkan:
+        </span>
+        <div
+          style={{
+            display: "flex",
+            background: "#f1f2f6",
+            borderRadius: "8px",
+            padding: "3px",
+            gap: "2px",
+          }}
+        >
+          {[
+            { val: "semua", label: "Semua Program" },
+            { val: "tahun", label: `Aktif ${selectedYear}` },
+          ].map((opt) => (
+            <button
+              key={opt.val}
+              onClick={() => {
+                setFilterMode(opt.val);
+                setOpenProgram(null);
+              }}
+              style={{
+                padding: "5px 12px",
+                borderRadius: "6px",
+                border: "none",
+                cursor: "pointer",
+                fontSize: "0.78rem",
+                fontWeight: 700,
+                background: filterMode === opt.val ? "white" : "transparent",
+                color: filterMode === opt.val ? "#004494" : "#95a5a6",
+                boxShadow:
+                  filterMode === opt.val ? "0 1px 4px rgba(0,0,0,0.1)" : "none",
+                transition: "all 0.2s",
+                fontFamily: "inherit",
+              }}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Overall progress bar ── */}
       <div
         style={{
           display: "flex",
@@ -792,188 +843,118 @@ const CapexMultiYearCard = ({ selectedYear }) => {
         <span style={{ fontSize: "0.8rem", color: "#7f8c8d", fontWeight: 600 }}>
           Total Realisasi:{" "}
           <strong style={{ color: "#2c3e50" }}>
-            {formatRupiahShort(totalRealisasi)}
+            {formatRupiahShort(grandTotalRealisasi)}
           </strong>
         </span>
         <span
           style={{ fontSize: "0.88rem", fontWeight: 800, color: "#004494" }}
         >
-          {pctTotal.toFixed(1)}%
+          {grandPct.toFixed(1)}%
         </span>
       </div>
-      <div className="capex-bar-scroll-wrap" style={{ marginBottom: "16px" }}>
+      <div
+        style={{
+          height: "8px",
+          borderRadius: "4px",
+          background: "#e8ecf0",
+          overflow: "hidden",
+          marginBottom: "16px",
+        }}
+      >
         <div
-          className="capex-stacked-bar-bg"
-          style={{ minWidth: `${tahunSummary.length * 60}px` }}
-        >
-          {tahunSummary.map((t) => {
-            const segW = (t.anggaran / totalAnggaran) * 100;
-            const fillW = t.anggaran > 0 ? (t.realisasi / t.anggaran) * 100 : 0;
-            const cfg = statusConfig[t.status];
-            const isActive = t.tahun === selectedCapexTahun;
-            return (
-              <div
-                key={t.tahun}
-                className={`capex-stacked-segment ${isActive ? "capex-stacked-segment--active" : ""}`}
-                style={{ width: `${segW}%` }}
-                title={`${t.tahun}: ${formatRupiahShort(t.realisasi)} / ${formatRupiahShort(t.anggaran)} (${fillW.toFixed(1)}%)`}
-              >
-                <div
-                  className="capex-stacked-fill"
-                  style={{ width: `${fillW}%`, background: cfg.color }}
-                />
-              </div>
-            );
-          })}
-        </div>
-        <div
-          className="capex-stacked-labels"
-          style={{ minWidth: `${tahunSummary.length * 60}px` }}
-        >
-          {tahunSummary.map((t) => {
-            const segW = (t.anggaran / totalAnggaran) * 100;
-            const isActive = t.tahun === selectedCapexTahun;
-            return (
-              <div
-                key={t.tahun}
-                style={{
-                  width: `${segW}%`,
-                  textAlign: "center",
-                  fontSize: "0.68rem",
-                  fontWeight: isActive ? 800 : 500,
-                  color: isActive ? "#004494" : "#95a5a6",
-                }}
-              >
-                {t.tahun}
-              </div>
-            );
-          })}
-        </div>
+          style={{
+            height: "100%",
+            width: `${Math.min(grandPct, 100)}%`,
+            background: "linear-gradient(90deg, #004494, #0066cc)",
+            borderRadius: "4px",
+            transition: "width 0.7s ease",
+          }}
+        />
       </div>
 
-      {/* ── Dropdown pilih tahun anggaran ── */}
-      <div style={{ marginBottom: "14px" }}>
-        <label
-          style={{
-            fontSize: "0.72rem",
-            fontWeight: 700,
-            color: "#7f8c8d",
-            textTransform: "uppercase",
-            letterSpacing: "0.5px",
-            display: "block",
-            marginBottom: "6px",
-          }}
-        >
-          Pilih Tahun Anggaran
-        </label>
-        <div style={{ position: "relative" }}>
-          <select
-            value={selectedCapexTahun ?? ""}
-            onChange={(e) => {
-              setSelectedCapexTahun(e.target.value || null);
-              setOpenYear(null);
-            }}
-            style={{
-              width: "100%",
-              padding: "9px 36px 9px 12px",
-              borderRadius: "8px",
-              border: `1.5px solid ${selectedCapexTahun ? "#004494" : "#d0d7e2"}`,
-              background: "white",
-              fontSize: "0.88rem",
-              fontWeight: selectedCapexTahun ? 700 : 400,
-              color: selectedCapexTahun ? "#2c3e50" : "#95a5a6",
-              cursor: "pointer",
-              appearance: "none",
-              WebkitAppearance: "none",
-              fontFamily: "inherit",
-              outline: "none",
-              boxShadow: selectedCapexTahun
-                ? "0 0 0 3px rgba(0,68,148,0.1)"
-                : "none",
-              transition: "all 0.2s ease",
-            }}
-          >
-            <option value="">-- Pilih tahun anggaran --</option>
-            {tahunSummary.map((t) => {
-              const cfg = statusConfig[t.status];
-              return (
-                <option key={t.tahun} value={t.tahun}>
-                  {t.tahun} · {cfg.label} · {t.pct.toFixed(1)}%
-                </option>
-              );
-            })}
-          </select>
-          {/* Custom chevron icon */}
+      {/* ── Daftar Program (komposit) ── */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+        {visiblePrograms.length === 0 && (
           <div
             style={{
-              position: "absolute",
-              right: "12px",
-              top: "50%",
-              transform: "translateY(-50%)",
-              pointerEvents: "none",
-              color: selectedCapexTahun ? "#004494" : "#b0b8c1",
-              fontSize: "0.75rem",
+              textAlign: "center",
+              padding: "24px 0",
+              color: "#b0b8c1",
+              fontSize: "0.85rem",
             }}
           >
-            <FaChevronDown />
+            Tidak ada program aktif di tahun {selectedYear}
           </div>
-        </div>
-      </div>
+        )}
 
-      {/* ── Baris progress per tahun — muncul setelah tahun dipilih ── */}
-      {selectedCapexTahun ? (
-        <div
-          className="capex-year-rows"
-          style={{ animation: "capexDropIn 0.2s ease-out" }}
-        >
-          {visibleSummary.map((t) => {
-            const cfg = statusConfig[t.status];
-            const isOpen = openYear === t.tahun;
+        {visiblePrograms.map((program, idx) => {
+          const cfg = statusConfig[program.status];
+          const isOpen = openProgram === idx;
+          const isMultiYear = program.thn_rkap_awal !== program.thn_rkap_akhir;
 
-            return (
+          return (
+            <div
+              key={idx}
+              style={{
+                borderRadius: "8px",
+                border: `1px solid ${isOpen ? "#c7d9f8" : "#e8ecf0"}`,
+                background: isOpen ? "#eef4ff" : "#fafbfc",
+                overflow: "hidden",
+                transition: "all 0.2s ease",
+              }}
+            >
+              {/* Row header */}
               <div
-                key={t.tahun}
+                onClick={() => setOpenProgram(isOpen ? null : idx)}
                 style={{
-                  borderRadius: "8px",
-                  border: `1px solid #c7d9f8`,
-                  background: "#eef4ff",
-                  overflow: "hidden",
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: "10px",
+                  padding: "10px 12px",
+                  cursor: "pointer",
                 }}
               >
-                {/* Row header — klik untuk toggle dropdown detail pekerjaan */}
-                <div
-                  className="capex-year-row"
-                  onClick={() => setOpenYear(isOpen ? null : t.tahun)}
-                  style={{ cursor: "pointer" }}
-                >
-                  {/* Kiri: dot + tahun + badge status */}
+                {/* Dot status */}
+                <div style={{ paddingTop: "4px", flexShrink: 0 }}>
+                  <span
+                    style={{
+                      width: "8px",
+                      height: "8px",
+                      borderRadius: "50%",
+                      background: cfg.dot,
+                      display: "inline-block",
+                    }}
+                  />
+                </div>
+
+                {/* Nama program + rentang tahun */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div
+                    style={{
+                      fontSize: "0.78rem",
+                      fontWeight: 600,
+                      color: "#2c3e50",
+                      lineHeight: 1.4,
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden",
+                    }}
+                    title={program.nm_anggaran_capex}
+                  >
+                    {program.nm_anggaran_capex}
+                  </div>
+
+                  {/* Badge: rentang tahun + multi-year indicator */}
                   <div
                     style={{
                       display: "flex",
                       alignItems: "center",
                       gap: "6px",
-                      minWidth: "100px",
+                      marginTop: "4px",
+                      flexWrap: "wrap",
                     }}
                   >
-                    <span
-                      style={{
-                        width: "8px",
-                        height: "8px",
-                        borderRadius: "50%",
-                        background: cfg.dot,
-                        flexShrink: 0,
-                        display: "inline-block",
-                      }}
-                    />
-                    <span
-                      style={{
-                        fontSize: "0.85rem",
-                        fontWeight: 800,
-                        color: cfg.color,
-                      }}
-                    >
-                      {t.tahun}
-                    </span>
                     <span
                       style={{
                         fontSize: "0.6rem",
@@ -982,311 +963,276 @@ const CapexMultiYearCard = ({ selectedYear }) => {
                         borderRadius: "8px",
                         background: cfg.bg,
                         color: cfg.color,
-                        whiteSpace: "nowrap",
                       }}
                     >
                       {cfg.label}
                     </span>
-                  </div>
-
-                  {/* Tengah: progress bar */}
-                  <div style={{ flex: 1, margin: "0 10px" }}>
-                    <div
+                    <span
                       style={{
-                        height: "6px",
-                        borderRadius: "3px",
-                        background: "#d0dcf0",
-                        overflow: "hidden",
+                        fontSize: "0.6rem",
+                        fontWeight: 600,
+                        padding: "1px 6px",
+                        borderRadius: "8px",
+                        background: "#f1f2f6",
+                        color: "#7f8c8d",
                       }}
                     >
-                      <div
+                      RKAP {program.thn_rkap_awal}
+                      {program.thn_rkap_awal !== program.thn_rkap_akhir
+                        ? `–${program.thn_rkap_akhir}`
+                        : ""}
+                    </span>
+                    {isMultiYear && (
+                      <span
                         style={{
-                          height: "100%",
-                          width: `${Math.min(t.pct, 100)}%`,
-                          background: cfg.color,
-                          borderRadius: "3px",
-                          transition: "width 0.7s ease",
+                          fontSize: "0.6rem",
+                          fontWeight: 700,
+                          padding: "1px 6px",
+                          borderRadius: "8px",
+                          background: "#fff3e0",
+                          color: "#e67e22",
                         }}
-                      />
-                    </div>
+                      >
+                        Multi-Year
+                      </span>
+                    )}
                   </div>
 
-                  {/* Kanan: nilai + persen + chevron */}
+                  {/* Progress bar */}
+                  <div
+                    style={{
+                      marginTop: "6px",
+                      height: "5px",
+                      borderRadius: "3px",
+                      background: "#e8ecf0",
+                      overflow: "hidden",
+                    }}
+                  >
+                    <div
+                      style={{
+                        height: "100%",
+                        width: `${Math.min(program.pct, 100)}%`,
+                        background: cfg.color,
+                        borderRadius: "3px",
+                        transition: "width 0.6s ease",
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Nilai + pct + chevron */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    flexShrink: 0,
+                  }}
+                >
+                  <div style={{ textAlign: "right" }}>
+                    <div
+                      style={{
+                        fontSize: "0.75rem",
+                        fontWeight: 700,
+                        color: "#2c3e50",
+                      }}
+                    >
+                      {formatRupiahShort(program.totalRealisasi)}
+                    </div>
+                    <div style={{ fontSize: "0.67rem", color: "#95a5a6" }}>
+                      / {formatRupiahShort(program.nilai_anggaran)}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "0.68rem",
+                        fontWeight: 800,
+                        color: cfg.color,
+                      }}
+                    >
+                      {program.pct.toFixed(1)}%
+                    </div>
+                  </div>
+                  <span
+                    style={{
+                      color: isOpen ? "#004494" : "#b0b8c1",
+                      fontSize: "0.65rem",
+                      transition: "color 0.2s",
+                    }}
+                  >
+                    {isOpen ? <FaChevronUp /> : <FaChevronDown />}
+                  </span>
+                </div>
+              </div>
+
+              {/* DROPDOWN: breakdown realisasi per tahun */}
+              {isOpen && (
+                <div
+                  style={{
+                    borderTop: "1px solid #c7d9f8",
+                    background: "white",
+                    padding: "10px 14px",
+                    animation: "capexDropIn 0.18s ease-out",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: "0.67rem",
+                      fontWeight: 700,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.5px",
+                      color: "#95a5a6",
+                      marginBottom: "8px",
+                    }}
+                  >
+                    Breakdown Realisasi Per Tahun
+                  </div>
+
+                  {program.realisasi_per_tahun.map((r, i) => {
+                    const rowPct =
+                      program.nilai_anggaran > 0
+                        ? (r.realisasi / program.nilai_anggaran) * 100
+                        : 0;
+                    return (
+                      <div
+                        key={i}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "10px",
+                          padding: "6px 0",
+                          borderBottom:
+                            i < program.realisasi_per_tahun.length - 1
+                              ? "1px solid #f5f6f8"
+                              : "none",
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: "0.78rem",
+                            fontWeight: 700,
+                            color: "#004494",
+                            minWidth: "40px",
+                          }}
+                        >
+                          {r.tahun}
+                        </div>
+                        <div
+                          style={{
+                            flex: 1,
+                            height: "4px",
+                            borderRadius: "2px",
+                            background: "#f1f2f6",
+                            overflow: "hidden",
+                          }}
+                        >
+                          <div
+                            style={{
+                              height: "100%",
+                              width: `${Math.min(rowPct, 100)}%`,
+                              background: "#004494",
+                              borderRadius: "2px",
+                            }}
+                          />
+                        </div>
+                        <div style={{ textAlign: "right", minWidth: "90px" }}>
+                          <span
+                            style={{
+                              fontSize: "0.75rem",
+                              fontWeight: 700,
+                              color: "#2c3e50",
+                            }}
+                          >
+                            {formatRupiahShort(r.realisasi)}
+                          </span>
+                          <span
+                            style={{
+                              fontSize: "0.65rem",
+                              color: "#95a5a6",
+                              marginLeft: "4px",
+                            }}
+                          >
+                            ({rowPct.toFixed(1)}%)
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* Sub-total komposit */}
                   <div
                     style={{
                       display: "flex",
+                      justifyContent: "space-between",
                       alignItems: "center",
-                      gap: "8px",
+                      paddingTop: "8px",
+                      marginTop: "4px",
+                      borderTop: "1.5px solid #e8ecf0",
                     }}
                   >
-                    <div style={{ textAlign: "right", minWidth: "140px" }}>
-                      <span
+                    <div>
+                      <div
                         style={{
-                          fontSize: "0.78rem",
-                          fontWeight: 700,
-                          color: "#2c3e50",
-                        }}
-                      >
-                        {formatRupiahShort(t.realisasi)}
-                      </span>
-                      <span
-                        style={{
-                          fontSize: "0.75rem",
+                          fontSize: "0.67rem",
                           color: "#95a5a6",
-                          fontWeight: 400,
+                          fontWeight: 600,
                         }}
                       >
-                        {" "}
-                        / {formatRupiahShort(t.anggaran)}
+                        Total Realisasi (semua tahun)
+                      </div>
+                      <div style={{ fontSize: "0.67rem", color: "#95a5a6" }}>
+                        dari Anggaran Program:{" "}
+                        {formatRupiahShort(program.nilai_anggaran)}
+                      </div>
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <span
+                        style={{
+                          fontSize: "0.82rem",
+                          fontWeight: 800,
+                          color: "#27ae60",
+                        }}
+                      >
+                        {formatRupiahShort(program.totalRealisasi)}
                       </span>
                       <div
                         style={{
-                          fontSize: "0.68rem",
+                          fontSize: "0.7rem",
                           fontWeight: 700,
                           color: cfg.color,
                         }}
                       >
-                        {t.pct.toFixed(1)}%
+                        {program.pct.toFixed(1)}% terserap
                       </div>
-                    </div>
-                    <div
-                      style={{
-                        color: isOpen ? "#004494" : "#b0b8c1",
-                        fontSize: "0.7rem",
-                        transition: "color 0.2s",
-                        width: "14px",
-                        flexShrink: 0,
-                      }}
-                    >
-                      {isOpen ? <FaChevronUp /> : <FaChevronDown />}
                     </div>
                   </div>
                 </div>
-
-                {/* DROPDOWN: daftar pekerjaan */}
-                {isOpen && (
-                  <div
-                    style={{
-                      borderTop: "1px solid #c7d9f8",
-                      background: "white",
-                      padding: "10px 14px",
-                      animation: "capexDropIn 0.18s ease-out",
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontSize: "0.67rem",
-                        fontWeight: 700,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.5px",
-                        color: "#95a5a6",
-                        marginBottom: "8px",
-                      }}
-                    >
-                      {t.rows.length} Pekerjaan · Thn Anggaran {t.tahun}
-                    </div>
-
-                    {t.rows.map((row, idx) => {
-                      const pct =
-                        row.nilai_anggaran > 0
-                          ? (row.realisasi / row.nilai_anggaran) * 100
-                          : 0;
-                      const rowCfg = statusConfig[row.status];
-                      return (
-                        <div
-                          key={idx}
-                          style={{
-                            display: "flex",
-                            alignItems: "flex-start",
-                            gap: "10px",
-                            padding: "7px 0",
-                            borderBottom:
-                              idx < t.rows.length - 1
-                                ? "1px solid #f5f6f8"
-                                : "none",
-                          }}
-                        >
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div
-                              style={{
-                                fontSize: "0.78rem",
-                                fontWeight: 600,
-                                color: "#2c3e50",
-                                lineHeight: 1.35,
-                                display: "-webkit-box",
-                                WebkitLineClamp: 2,
-                                WebkitBoxOrient: "vertical",
-                                overflow: "hidden",
-                              }}
-                              title={row.nm_anggaran_capex}
-                            >
-                              {row.nm_anggaran_capex}
-                            </div>
-                            <div
-                              style={{
-                                fontSize: "0.64rem",
-                                color: "#95a5a6",
-                                marginTop: "2px",
-                              }}
-                            >
-                              RKAP {row.thn_rkap_awal}
-                              {row.thn_rkap_akhir !== row.thn_rkap_awal
-                                ? `–${row.thn_rkap_akhir}`
-                                : ""}
-                            </div>
-                          </div>
-                          <div
-                            style={{
-                              flexShrink: 0,
-                              width: "68px",
-                              paddingTop: "3px",
-                            }}
-                          >
-                            <div
-                              style={{
-                                height: "4px",
-                                borderRadius: "2px",
-                                background: "#f1f2f6",
-                                overflow: "hidden",
-                              }}
-                            >
-                              <div
-                                style={{
-                                  height: "100%",
-                                  width: `${Math.min(pct, 100)}%`,
-                                  background: rowCfg.color,
-                                  borderRadius: "2px",
-                                }}
-                              />
-                            </div>
-                            <div
-                              style={{
-                                fontSize: "0.64rem",
-                                fontWeight: 700,
-                                color: rowCfg.color,
-                                textAlign: "right",
-                                marginTop: "2px",
-                              }}
-                            >
-                              {pct.toFixed(0)}%
-                            </div>
-                          </div>
-                          <div
-                            style={{
-                              textAlign: "right",
-                              flexShrink: 0,
-                              minWidth: "105px",
-                            }}
-                          >
-                            <div
-                              style={{
-                                fontSize: "0.75rem",
-                                fontWeight: 700,
-                                color: "#2c3e50",
-                              }}
-                            >
-                              {formatRupiahShort(row.realisasi)}
-                            </div>
-                            <div
-                              style={{ fontSize: "0.67rem", color: "#95a5a6" }}
-                            >
-                              / {formatRupiahShort(row.nilai_anggaran)}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-
-                    {/* Sub-total */}
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        paddingTop: "8px",
-                        marginTop: "4px",
-                        borderTop: "1.5px solid #e8ecf0",
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontSize: "0.74rem",
-                          fontWeight: 700,
-                          color: "#7f8c8d",
-                        }}
-                      >
-                        Total Tahun {t.tahun}
-                      </span>
-                      <div>
-                        <span
-                          style={{
-                            fontSize: "0.78rem",
-                            fontWeight: 800,
-                            color: "#27ae60",
-                          }}
-                        >
-                          {formatRupiahShort(t.realisasi)}
-                        </span>
-                        <span style={{ fontSize: "0.7rem", color: "#95a5a6" }}>
-                          {" "}
-                          dari {formatRupiahShort(t.anggaran)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        /* ── Placeholder: belum pilih tahun ── */
-        <div
-          style={{
-            border: "1.5px dashed #d0d7e2",
-            borderRadius: "10px",
-            padding: "28px 20px",
-            textAlign: "center",
-            marginBottom: "14px",
-            background: "#fafbfc",
-          }}
-        >
-          <div style={{ fontSize: "1.6rem", marginBottom: "8px" }}>📅</div>
-          <div
-            style={{
-              fontSize: "0.85rem",
-              fontWeight: 700,
-              color: "#7f8c8d",
-              marginBottom: "4px",
-            }}
-          >
-            Pilih tahun anggaran terlebih dahulu
-          </div>
-          <div style={{ fontSize: "0.75rem", color: "#b0b8c1" }}>
-            Progress per tahun akan tampil di sini
-          </div>
-        </div>
-      )}
+              )}
+            </div>
+          );
+        })}
+      </div>
 
       {/* ── Footer ── */}
-      <div className="capex-footer-summary">
+      <div className="capex-footer-summary" style={{ marginTop: "16px" }}>
         <div className="capex-footer-item">
           <span>Sudah Terserap</span>
           <strong style={{ color: "#27ae60" }}>
-            {formatRupiahShort(totalRealisasi)}
+            {formatRupiahShort(grandTotalRealisasi)}
           </strong>
         </div>
         <div className="capex-footer-divider" />
         <div className="capex-footer-item">
           <span>Sisa Anggaran</span>
           <strong style={{ color: "#e74c3c" }}>
-            {formatRupiahShort(totalAnggaran - totalRealisasi)}
+            {formatRupiahShort(grandTotalAnggaran - grandTotalRealisasi)}
           </strong>
         </div>
         <div className="capex-footer-divider" />
         <div className="capex-footer-item">
-          <span>Rentang Tahun</span>
-          <strong style={{ color: "#004494" }}>{tahunAktif} Tahun Aktif</strong>
+          <span>Total Program</span>
+          <strong style={{ color: "#004494" }}>
+            {mockCapexPrograms.length} Program
+          </strong>
         </div>
       </div>
     </div>
@@ -1295,14 +1241,11 @@ const CapexMultiYearCard = ({ selectedYear }) => {
 
 // ================================================================
 // OPEX CARD
-// - Default: total progress + mini bar per pos (tanpa angka detail)
-// - Klik "Lihat Detail" → muncul semua nama pos + bisa klik tiap item untuk expand
 // ================================================================
 const OpexBudgetCard = ({ tahun, dataOpex }) => {
   const [showDetail, setShowDetail] = useState(false);
   const [openItem, setOpenItem] = useState(null);
 
-  // Reset saat tahun berubah
   React.useEffect(() => {
     setShowDetail(false);
     setOpenItem(null);
@@ -1324,7 +1267,6 @@ const OpexBudgetCard = ({ tahun, dataOpex }) => {
         </div>
       </div>
 
-      {/* ── Total overview ── */}
       <div className="budget-value-row">
         <h2 className="current-value" style={{ color }}>
           {formatRupiahShort(totalRealisasi)}
@@ -1342,7 +1284,6 @@ const OpexBudgetCard = ({ tahun, dataOpex }) => {
         {formatRupiahShort(totalRkap - totalRealisasi)}
       </p>
 
-      {/* ── Mini bar ringkasan per pos (selalu tampil, tanpa angka detail) ── */}
       <div
         style={{
           borderTop: "1px solid #f1f2f6",
@@ -1412,7 +1353,6 @@ const OpexBudgetCard = ({ tahun, dataOpex }) => {
         })}
       </div>
 
-      {/* ── Tombol Lihat Detail ── */}
       <button
         onClick={() => setShowDetail((v) => !v)}
         style={{
@@ -1440,7 +1380,6 @@ const OpexBudgetCard = ({ tahun, dataOpex }) => {
           : `Lihat Detail (${dataOpex.length} Pos Anggaran)`}
       </button>
 
-      {/* ── Detail per-item: muncul saat showDetail ── */}
       {showDetail && (
         <div
           style={{
@@ -1486,7 +1425,6 @@ const OpexBudgetCard = ({ tahun, dataOpex }) => {
                   key={opex.id}
                   style={{ borderBottom: "1px solid #f1f2f6" }}
                 >
-                  {/* Row item — klik untuk expand detail angka */}
                   <div
                     onClick={() => setOpenItem(isOpen ? null : opex.id)}
                     style={{
@@ -1557,7 +1495,6 @@ const OpexBudgetCard = ({ tahun, dataOpex }) => {
                     </span>
                   </div>
 
-                  {/* Detail item: RKAP, Realisasi, Sisa */}
                   {isOpen && (
                     <div
                       style={{
@@ -1658,8 +1595,6 @@ const OpexBudgetCard = ({ tahun, dataOpex }) => {
 };
 
 // ================================================================
-
-// ================================================================
 // MAIN DASHBOARD
 // ================================================================
 const tahunOptions = ["2023", "2024", "2025", "2026"];
@@ -1671,7 +1606,6 @@ const Dashboard = () => {
 
   const dataTren =
     filterTren === "harian" ? dataPeminjamanHarian : dataPeminjamanBulanan;
-
   const opexTahunIni = mockOpexPerTahun[tahunAnggaran] ?? [];
 
   const alerts = useMemo(() => calculateAlerts(opexTahunIni), [tahunAnggaran]);
@@ -1680,7 +1614,6 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-wrapper">
-      {/* Animasi dropdown */}
       <style>{`
         @keyframes capexDropIn {
           from { opacity: 0; transform: translateY(-6px); }

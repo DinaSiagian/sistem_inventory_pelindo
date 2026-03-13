@@ -189,7 +189,7 @@ export const mockCapex = [
     nilai_anggaran_kad: null,
     nilai_anggaran_rkap: 5800000000,
     projects: [
-      // ── Pekerjaan 1: Planning & Control, CCTV, SD-WAN — 5 branch ──
+      // ── Pekerjaan 1 ──
       {
         id_pekerjaan: 1,
         id_anggaran_tahunan: "2440015",
@@ -281,7 +281,7 @@ export const mockCapex = [
           },
         ],
       },
-      // ── Pekerjaan 2: Gate System — 5 branch ──
+      // ── Pekerjaan 2 ──
       {
         id_pekerjaan: 2,
         id_anggaran_tahunan: "2440015",
@@ -346,7 +346,7 @@ export const mockCapex = [
           },
         ],
       },
-      // ── Pekerjaan 3: Gate System + Planning & Control — Balikpapan & Bagendang ──
+      // ── Pekerjaan 3 ──
       {
         id_pekerjaan: 3,
         id_anggaran_tahunan: "2440015",
@@ -402,7 +402,7 @@ export const mockCapex = [
           },
         ],
       },
-      // ── Pekerjaan 4: Gate System — Makassar ──
+      // ── Pekerjaan 4 ──
       {
         id_pekerjaan: 4,
         id_anggaran_tahunan: "2440015",
@@ -553,7 +553,7 @@ export const mockCapex = [
   },
 
   // ═══════════════════════════════════════════════════════════════
-  // ANGGARAN 2440013 — Penyiapan Infrastruktur IT (Kantor Pusat + banyak branch)
+  // ANGGARAN 2440013 — Penyiapan Infrastruktur IT
   // thn_anggaran: 2024
   // ═══════════════════════════════════════════════════════════════
   {
@@ -664,7 +664,7 @@ export const mockCapex = [
 
   // ═══════════════════════════════════════════════════════════════
   // ANGGARAN 2440020 — Revisi Capex (Pemenuhan Kebutuhan Gate dan PNC)
-  // thn_anggaran: 2025 (thn_rkap_awal: 2024)
+  // thn_anggaran: 2025
   // ═══════════════════════════════════════════════════════════════
   {
     id_anggaran_tahunan_capex: 4,
@@ -678,7 +678,7 @@ export const mockCapex = [
     nilai_anggaran_kad: null,
     nilai_anggaran_rkap: 8500000000,
     projects: [
-      // ── Pekerjaan 7: Gate System Transformasi — JNM, TWG, TSK, DMI, BLW ──
+      // ── Pekerjaan 7 ──
       {
         id_pekerjaan: 7,
         id_anggaran_tahunan: "2440020",
@@ -743,7 +743,7 @@ export const mockCapex = [
           },
         ],
       },
-      // ── Pekerjaan 8: Planning & Control Transformasi — JNM, TWG, TSK, DMI, BLW, KPT ──
+      // ── Pekerjaan 8 ──
       {
         id_pekerjaan: 8,
         id_anggaran_tahunan: "2440020",
@@ -817,7 +817,7 @@ export const mockCapex = [
           },
         ],
       },
-      // ── Pekerjaan 9: Gate System, PNC, Perangkat Pendukung Transformasi ──
+      // ── Pekerjaan 9 ──
       {
         id_pekerjaan: 9,
         id_anggaran_tahunan: "2440020",
@@ -963,7 +963,7 @@ export const mockCapex = [
           },
         ],
       },
-      // ── Pekerjaan 10: Public Announcer, Kelengkapan Gate, Radio P2P ──
+      // ── Pekerjaan 10 ──
       {
         id_pekerjaan: 10,
         id_anggaran_tahunan: "2440020",
@@ -1065,7 +1065,7 @@ export const mockCapex = [
     nilai_anggaran_kad: null,
     nilai_anggaran_rkap: 12000000000,
     projects: [
-      // ── Pekerjaan 11: Gate System, PNC, Perangkat Roro — 7 branch ──
+      // ── Pekerjaan 11 ──
       {
         id_pekerjaan: 11,
         id_anggaran_tahunan: "2540011",
@@ -1157,13 +1157,14 @@ export const mockCapex = [
           },
         ],
       },
-      // ── Pekerjaan 12: Public Announcer — 11 branch ──
+      // ── Pekerjaan 12 ──
+      // PERBAIKAN: nm_pekerjaan disesuaikan dengan Excel (Belawan,Dumai tanpa spasi)
       {
         id_pekerjaan: 12,
         id_anggaran_tahunan: "2540011",
         jenis_anggaran: "Capex",
         nm_pekerjaan:
-          "Penyediaan Kebutuhan Public Announcer Pendukung Transformasi dan Digitalisasi Branch (Balikpapan, Belawan, Dumai, Trisakti, Makassar, Parepare, Garongkong, Sibolga, Tanjung Emas, Tanjung Intan dan Gresik) PT Pelindo Multi Terminal",
+          "Penyediaan Kebutuhan Public Announcer Pendukung Transformasi dan Digitalisasi Branch (Balikpapan, Belawan,Dumai, Trisakti, Makassar, Parepare, Garongkong, Sibolga, Tanjung Emas, Tanjung Intan dan Gresik) PT Pelindo Multi Terminal",
         nilai_rab: 2200000000,
         nilai_kontrak: 2050000000,
         no_pr: "8260000748",
@@ -1285,7 +1286,7 @@ export const mockCapex = [
           },
         ],
       },
-      // ── Pekerjaan 13: Perangkat Jaringan, SIEM, Pendukung Gate ──
+      // ── Pekerjaan 13 ──
       {
         id_pekerjaan: 13,
         id_anggaran_tahunan: "2540011",
@@ -1386,7 +1387,7 @@ export const mockCapex = [
           },
         ],
       },
-      // ── Pekerjaan 14: CCTV & PA Traffic Monitoring — 15 branch ──
+      // ── Pekerjaan 14 ──
       {
         id_pekerjaan: 14,
         id_anggaran_tahunan: "2540011",
@@ -1731,7 +1732,6 @@ export const mockCapex = [
 
 // ================================================================
 // MOCK DATA PEMINJAMAN
-// Digunakan untuk alert: aset sering rusak & peminjaman overdue
 // ================================================================
 export const mockBorrows = [
   {
@@ -1836,15 +1836,6 @@ export const formatRupiah = (value) =>
 
 // ================================================================
 // calculateAlerts()
-// Menghitung semua smart alerts dari data mock di atas.
-// Return: array of alert objects, sorted by priority (high first).
-//
-// Alert types:
-//   1. FREQUENT_DAMAGE  — aset dikembalikan rusak ≥2x
-//   2. OVERDUE_BORROW   — peminjaman belum dikembalikan & sudah lewat due_date
-//   3. OPEX_CRITICAL    — serapan anggaran OPEX ≥ 80%
-//   4. CAPEX_NO_ASSET   — project CAPEX sudah kontrak tapi assets kosong
-//   5. CAPEX_IMBALANCE  — selisih SUM(acquisition_value) vs nilai_kontrak > 5%
 // ================================================================
 export const calculateAlerts = () => {
   const alerts = [];

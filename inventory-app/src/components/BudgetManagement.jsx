@@ -139,7 +139,6 @@ const newId = () =>
 const initMockCapex = [
   // ================================================================
   // 2440013 — Penyiapan Infrastruktur IT Kantor Pusat & Branch
-  // nilai_rab & nilai_kontrak kosong di Excel
   // ================================================================
   {
     kd_anggaran_capex: "CAP-2440013",
@@ -164,15 +163,86 @@ const initMockCapex = [
         no_sp3: "",
         tgl_sp3: "2024-09-06",
         tgl_bamk: "2024-09-06",
-        assets: [],
+        assets: [
+          {
+            asset_code: "SPMT-KPT-DTC-SRV-01",
+            name: "Server Rack Kantor Pusat — Rack 1",
+            brand: "Dell",
+            model: "PowerEdge R750",
+            serial_number: "DELL-KPT-SRV-001",
+            procurement_date: "2024-09-10",
+            acquisition_value: 450000000,
+          },
+          {
+            asset_code: "SPMT-KPT-DTC-SRV-02",
+            name: "Server Rack Kantor Pusat — Rack 2",
+            brand: "Dell",
+            model: "PowerEdge R750",
+            serial_number: "DELL-KPT-SRV-002",
+            procurement_date: "2024-09-10",
+            acquisition_value: 450000000,
+          },
+          {
+            asset_code: "SPMT-KPT-DTC-PKR-01",
+            name: "Core Switch Data Center Kantor Pusat",
+            brand: "Cisco",
+            model: "Nexus 9300-48S",
+            serial_number: "CSC-KPT-CSW-001",
+            procurement_date: "2024-09-10",
+            acquisition_value: 520000000,
+          },
+          {
+            asset_code: "SPMT-PLT-GDG-PKR-01",
+            name: "Access Switch Pelindo Tower — Lantai 1-5",
+            brand: "Cisco",
+            model: "Catalyst 9200L-24P",
+            serial_number: "CSC-PLT-ASW-001",
+            procurement_date: "2024-09-10",
+            acquisition_value: 180000000,
+          },
+          {
+            asset_code: "SPMT-PLP-GDG-PKR-01",
+            name: "Access Switch Pelindo Place",
+            brand: "Cisco",
+            model: "Catalyst 9200L-24P",
+            serial_number: "CSC-PLP-ASW-001",
+            procurement_date: "2024-09-10",
+            acquisition_value: 180000000,
+          },
+          {
+            asset_code: "SPMT-KPT-DTC-PKR-02",
+            name: "Firewall Data Center Kantor Pusat",
+            brand: "Fortinet",
+            model: "FortiGate 200F",
+            serial_number: "FGT-KPT-FWL-001",
+            procurement_date: "2024-09-10",
+            acquisition_value: 380000000,
+          },
+          {
+            asset_code: "SPMT-TJE-DTC-PKR-01",
+            name: "Core Switch Tanjung Emas",
+            brand: "Cisco",
+            model: "Catalyst 9300-24P",
+            serial_number: "CSC-TJE-CSW-001",
+            procurement_date: "2024-09-10",
+            acquisition_value: 245000000,
+          },
+          {
+            asset_code: "SPMT-GRK-DTC-PKR-01",
+            name: "Core Switch Gresik",
+            brand: "Cisco",
+            model: "Catalyst 9300-24P",
+            serial_number: "CSC-GRK-CSW-001",
+            procurement_date: "2024-09-10",
+            acquisition_value: 245000000,
+          },
+        ],
       },
     ],
   },
 
   // ================================================================
   // 2440014 — Penyediaan Network di Branch SPMT
-  // nilai_anggaran_rkap: 3.200.000.000 (dari mockData.js)
-  // nilai_kontrak: 1.500.000.000 (dari mockData.js)
   // ================================================================
   {
     kd_anggaran_capex: "CAP-2440014",
@@ -197,14 +267,68 @@ const initMockCapex = [
         no_sp3: "",
         tgl_sp3: "2024-08-02",
         tgl_bamk: "2024-08-09",
-        assets: [],
+        assets: [
+          {
+            asset_code: "SPMT-MLH-DTC-PKR-02",
+            name: "Core Switch Malahayati",
+            brand: "Cisco",
+            model: "Catalyst 9300-48P",
+            serial_number: "CSC-MLH-CSW-001",
+            procurement_date: "2024-08-15",
+            acquisition_value: 320000000,
+          },
+          {
+            asset_code: "SPMT-LHK-DTC-PKR-02",
+            name: "Core Switch Lhokseumawe",
+            brand: "Cisco",
+            model: "Catalyst 9300-48P",
+            serial_number: "CSC-LHK-CSW-001",
+            procurement_date: "2024-08-15",
+            acquisition_value: 320000000,
+          },
+          {
+            asset_code: "SPMT-LMB-DTC-PKR-01",
+            name: "Core Switch Lembar",
+            brand: "Cisco",
+            model: "Catalyst 9300-24P",
+            serial_number: "CSC-LMB-CSW-001",
+            procurement_date: "2024-08-15",
+            acquisition_value: 280000000,
+          },
+          {
+            asset_code: "SPMT-PPR-DTC-PKR-02",
+            name: "Core Switch Parepare",
+            brand: "Cisco",
+            model: "Catalyst 9300-24P",
+            serial_number: "CSC-PPR-CSW-001",
+            procurement_date: "2024-08-15",
+            acquisition_value: 280000000,
+          },
+          {
+            asset_code: "SPMT-GRG-DTC-PKR-01",
+            name: "Access Switch Garongkong",
+            brand: "Cisco",
+            model: "Catalyst 2960-X 24TS",
+            serial_number: "CSC-GRG-ASW-001",
+            procurement_date: "2024-08-15",
+            acquisition_value: 150000000,
+          },
+          {
+            asset_code: "SPMT-MLH-DTC-PKR-03",
+            name: "Firewall UTM Malahayati",
+            brand: "Fortinet",
+            model: "FortiGate 80F",
+            serial_number: "FGT-MLH-FWL-001",
+            procurement_date: "2024-08-15",
+            acquisition_value: 150000000,
+          },
+        ],
       },
     ],
   },
 
   // ================================================================
   // 2440015 — Implementasi dan Standarisasi IT Infrastruktur
-  // nilai_anggaran_rkap: 5.800.000.000 (dari mockData.js)
   // ================================================================
   {
     kd_anggaran_capex: "CAP-2440015",
@@ -229,7 +353,80 @@ const initMockCapex = [
         no_sp3: "",
         tgl_sp3: "2024-08-02",
         tgl_bamk: "2024-08-06",
-        assets: [],
+        assets: [
+          {
+            asset_code: "SPMT-MLH-LPG-KMR-01",
+            name: "CCTV IP Camera Malahayati",
+            brand: "Hikvision",
+            model: "DS-2CD2T47G2-L",
+            serial_number: "HVK-MLH-KMR-001",
+            procurement_date: "2024-08-12",
+            acquisition_value: 85000000,
+          },
+          {
+            asset_code: "SPMT-LHK-LPG-KMR-01",
+            name: "CCTV IP Camera Lhokseumawe",
+            brand: "Hikvision",
+            model: "DS-2CD2T47G2-L",
+            serial_number: "HVK-LHK-KMR-001",
+            procurement_date: "2024-08-12",
+            acquisition_value: 85000000,
+          },
+          {
+            asset_code: "SPMT-LMB-LPG-KMR-01",
+            name: "CCTV IP Camera Lembar",
+            brand: "Hikvision",
+            model: "DS-2CD2T47G2-L",
+            serial_number: "HVK-LMB-KMR-001",
+            procurement_date: "2024-08-12",
+            acquisition_value: 85000000,
+          },
+          {
+            asset_code: "SPMT-MLH-DTC-PKR-01",
+            name: "Router SD-WAN Malahayati",
+            brand: "Cisco",
+            model: "ISR 4331",
+            serial_number: "CSC-MLH-RTR-001",
+            procurement_date: "2024-08-12",
+            acquisition_value: 185000000,
+          },
+          {
+            asset_code: "SPMT-LHK-DTC-PKR-01",
+            name: "Router SD-WAN Lhokseumawe",
+            brand: "Cisco",
+            model: "ISR 4331",
+            serial_number: "CSC-LHK-RTR-001",
+            procurement_date: "2024-08-12",
+            acquisition_value: 185000000,
+          },
+          {
+            asset_code: "SPMT-PPR-DTC-PKR-01",
+            name: "Router SD-WAN Parepare",
+            brand: "Cisco",
+            model: "ISR 4331",
+            serial_number: "CSC-PPR-RTR-001",
+            procurement_date: "2024-08-12",
+            acquisition_value: 185000000,
+          },
+          {
+            asset_code: "SPMT-MLH-DTC-SRV-01",
+            name: "Server Planning & Control Malahayati",
+            brand: "Dell",
+            model: "PowerEdge R450",
+            serial_number: "DELL-MLH-SRV-001",
+            procurement_date: "2024-08-12",
+            acquisition_value: 195000000,
+          },
+          {
+            asset_code: "SPMT-GRG-DTC-SRV-01",
+            name: "Server Planning & Control Garongkong",
+            brand: "Dell",
+            model: "PowerEdge R450",
+            serial_number: "DELL-GRG-SRV-001",
+            procurement_date: "2024-08-12",
+            acquisition_value: 195000000,
+          },
+        ],
       },
       {
         id_pekerjaan: "PKJ-2440015-002",
@@ -245,7 +442,53 @@ const initMockCapex = [
         no_sp3: "",
         tgl_sp3: "2024-08-02",
         tgl_bamk: "2024-08-02",
-        assets: [],
+        assets: [
+          {
+            asset_code: "SPMT-MLH-LPG-DMG-01",
+            name: "Gate Controller Malahayati",
+            brand: "Genetec",
+            model: "AutoVu SharpX",
+            serial_number: "GTC-MLH-GCL-001",
+            procurement_date: "2024-08-08",
+            acquisition_value: 210000000,
+          },
+          {
+            asset_code: "SPMT-LHK-LPG-DMG-01",
+            name: "Gate Controller Lhokseumawe",
+            brand: "Genetec",
+            model: "AutoVu SharpX",
+            serial_number: "GTC-LHK-GCL-001",
+            procurement_date: "2024-08-08",
+            acquisition_value: 210000000,
+          },
+          {
+            asset_code: "SPMT-LMB-LPG-DMG-01",
+            name: "Gate Controller Lembar",
+            brand: "Genetec",
+            model: "AutoVu SharpX",
+            serial_number: "GTC-LMB-GCL-001",
+            procurement_date: "2024-08-08",
+            acquisition_value: 185000000,
+          },
+          {
+            asset_code: "SPMT-PPR-LPG-DMG-01",
+            name: "Gate Controller Parepare",
+            brand: "Genetec",
+            model: "AutoVu SharpX",
+            serial_number: "GTC-PPR-GCL-001",
+            procurement_date: "2024-08-08",
+            acquisition_value: 185000000,
+          },
+          {
+            asset_code: "SPMT-GRG-LPG-DMG-01",
+            name: "Gate Controller Garongkong",
+            brand: "Genetec",
+            model: "AutoVu SharpX",
+            serial_number: "GTC-GRG-GCL-001",
+            procurement_date: "2024-08-08",
+            acquisition_value: 190000000,
+          },
+        ],
       },
       {
         id_pekerjaan: "PKJ-2440015-003",
@@ -261,7 +504,44 @@ const initMockCapex = [
         no_sp3: "",
         tgl_sp3: "2024-09-02",
         tgl_bamk: "2024-09-02",
-        assets: [],
+        assets: [
+          {
+            asset_code: "SPMT-BLP-LPG-DMG-01",
+            name: "Gate Controller Balikpapan",
+            brand: "Genetec",
+            model: "AutoVu SharpX",
+            serial_number: "GTC-BLP-GCL-001",
+            procurement_date: "2024-09-24",
+            acquisition_value: 210000000,
+          },
+          {
+            asset_code: "SPMT-BGD-LPG-DMG-01",
+            name: "Gate Controller Bagendang",
+            brand: "Genetec",
+            model: "AutoVu SharpX",
+            serial_number: "GTC-BGD-GCL-001",
+            procurement_date: "2024-09-24",
+            acquisition_value: 190000000,
+          },
+          {
+            asset_code: "SPMT-BLP-DTC-SRV-01",
+            name: "Server Planning & Control Balikpapan",
+            brand: "Dell",
+            model: "PowerEdge R450",
+            serial_number: "DELL-BLP-SRV-001",
+            procurement_date: "2024-09-24",
+            acquisition_value: 195000000,
+          },
+          {
+            asset_code: "SPMT-BGD-DTC-SRV-01",
+            name: "Server Planning & Control Bagendang",
+            brand: "Dell",
+            model: "PowerEdge R450",
+            serial_number: "DELL-BGD-SRV-001",
+            procurement_date: "2024-09-24",
+            acquisition_value: 155000000,
+          },
+        ],
       },
       {
         id_pekerjaan: "PKJ-2440015-004",
@@ -277,14 +557,50 @@ const initMockCapex = [
         no_sp3: "",
         tgl_sp3: "2024-09-17",
         tgl_bamk: "2024-09-17",
-        assets: [],
+        assets: [
+          {
+            asset_code: "SPMT-MKS-LPG-DMG-01",
+            name: "Gate Controller Makassar — Pintu 1",
+            brand: "Genetec",
+            model: "AutoVu SharpX",
+            serial_number: "GTC-MKS-GCL-001",
+            procurement_date: "2024-09-20",
+            acquisition_value: 210000000,
+          },
+          {
+            asset_code: "SPMT-MKS-LPG-DMG-02",
+            name: "Gate Controller Makassar — Pintu 2",
+            brand: "Genetec",
+            model: "AutoVu SharpX",
+            serial_number: "GTC-MKS-GCL-002",
+            procurement_date: "2024-09-20",
+            acquisition_value: 210000000,
+          },
+          {
+            asset_code: "SPMT-MKS-LPG-KMR-01",
+            name: "CCTV Overhead Gate Makassar",
+            brand: "Hikvision",
+            model: "DS-2CD2T47G2-L",
+            serial_number: "HVK-MKS-KMR-001",
+            procurement_date: "2024-09-20",
+            acquisition_value: 95000000,
+          },
+          {
+            asset_code: "SPMT-MKS-DTC-PKR-01",
+            name: "UPS Gate Room Makassar",
+            brand: "APC",
+            model: "Smart-UPS 3000VA",
+            serial_number: "APC-MKS-UPS-001",
+            procurement_date: "2024-09-20",
+            acquisition_value: 125000000,
+          },
+        ],
       },
     ],
   },
 
   // ================================================================
   // 2440020 — Gate System & Planning Control Transformasi
-  // nilai_rab & nilai_kontrak kosong di Excel
   // ================================================================
   {
     kd_anggaran_capex: "CAP-2440020",
@@ -310,7 +626,53 @@ const initMockCapex = [
         no_sp3: "KP.20.01/3/1/2/PGDN/SDMU/PLMT-25",
         tgl_sp3: "2025-01-03",
         tgl_bamk: "2025-01-15",
-        assets: [],
+        assets: [
+          {
+            asset_code: "SPMT-JNM-LPG-DMG-01",
+            name: "Gate Controller Jamrud Nilam Mirah",
+            brand: "Genetec",
+            model: "AutoVu SharpX",
+            serial_number: "GTC-JNM-GCL-001",
+            procurement_date: "2025-01-07",
+            acquisition_value: 420000000,
+          },
+          {
+            asset_code: "SPMT-TWG-LPG-DMG-01",
+            name: "Gate Controller Tanjung Wangi",
+            brand: "Genetec",
+            model: "AutoVu SharpX",
+            serial_number: "GTC-TWG-GCL-001",
+            procurement_date: "2025-01-07",
+            acquisition_value: 400000000,
+          },
+          {
+            asset_code: "SPMT-TSK-LPG-DMG-01",
+            name: "Gate Controller Trisakti",
+            brand: "Genetec",
+            model: "AutoVu SharpX",
+            serial_number: "GTC-TSK-GCL-001",
+            procurement_date: "2025-01-07",
+            acquisition_value: 400000000,
+          },
+          {
+            asset_code: "SPMT-DMI-LPG-DMG-01",
+            name: "Gate Controller Dumai",
+            brand: "Genetec",
+            model: "AutoVu SharpX",
+            serial_number: "GTC-DMI-GCL-001",
+            procurement_date: "2025-01-07",
+            acquisition_value: 410000000,
+          },
+          {
+            asset_code: "SPMT-BLW-LPG-DMG-01",
+            name: "Gate Controller Belawan",
+            brand: "Genetec",
+            model: "AutoVu SharpX",
+            serial_number: "GTC-BLW-GCL-001",
+            procurement_date: "2025-01-07",
+            acquisition_value: 420000000,
+          },
+        ],
       },
       {
         id_pekerjaan: "PKJ-2440020-002",
@@ -326,7 +688,62 @@ const initMockCapex = [
         no_sp3: "KP.20.01/10/1/4/PGDN/SDMU/PLMT-25",
         tgl_sp3: "2025-01-10",
         tgl_bamk: "2025-01-15",
-        assets: [],
+        assets: [
+          {
+            asset_code: "SPMT-JNM-DTC-SRV-01",
+            name: "Server Planning & Control Jamrud Nilam Mirah",
+            brand: "Dell",
+            model: "PowerEdge R550",
+            serial_number: "DELL-JNM-SRV-001",
+            procurement_date: "2025-01-13",
+            acquisition_value: 310000000,
+          },
+          {
+            asset_code: "SPMT-TWG-DTC-SRV-01",
+            name: "Server Planning & Control Tanjung Wangi",
+            brand: "Dell",
+            model: "PowerEdge R550",
+            serial_number: "DELL-TWG-SRV-001",
+            procurement_date: "2025-01-13",
+            acquisition_value: 310000000,
+          },
+          {
+            asset_code: "SPMT-TSK-DTC-SRV-01",
+            name: "Server Planning & Control Trisakti",
+            brand: "Dell",
+            model: "PowerEdge R550",
+            serial_number: "DELL-TSK-SRV-001",
+            procurement_date: "2025-01-13",
+            acquisition_value: 310000000,
+          },
+          {
+            asset_code: "SPMT-DMI-DTC-SRV-01",
+            name: "Server Planning & Control Dumai",
+            brand: "Dell",
+            model: "PowerEdge R550",
+            serial_number: "DELL-DMI-SRV-001",
+            procurement_date: "2025-01-13",
+            acquisition_value: 310000000,
+          },
+          {
+            asset_code: "SPMT-BLW-DTC-SRV-01",
+            name: "Server Planning & Control Belawan",
+            brand: "Dell",
+            model: "PowerEdge R550",
+            serial_number: "DELL-BLW-SRV-001",
+            procurement_date: "2025-01-13",
+            acquisition_value: 310000000,
+          },
+          {
+            asset_code: "SPMT-KPT-DTC-SRV-03",
+            name: "Server Aggregasi Planning & Control — Kantor Pusat",
+            brand: "Dell",
+            model: "PowerEdge R750",
+            serial_number: "DELL-KPT-SRV-003",
+            procurement_date: "2025-01-13",
+            acquisition_value: 230000000,
+          },
+        ],
       },
       {
         id_pekerjaan: "PKJ-2440020-003",
@@ -342,7 +759,134 @@ const initMockCapex = [
         no_sp3: "KP.20.01/21/1/4/PGDN/SDMU/PLMT-25",
         tgl_sp3: "2025-01-21",
         tgl_bamk: "2025-02-07",
-        assets: [],
+        assets: [
+          {
+            asset_code: "SPMT-BLW-LPG-KMR-01",
+            name: "CCTV Traffic Monitoring Belawan — Gate Utama",
+            brand: "Axis",
+            model: "P3245-V",
+            serial_number: "AXIS-BLW-KMR-001",
+            procurement_date: "2025-01-24",
+            acquisition_value: 95000000,
+          },
+          {
+            asset_code: "SPMT-DMI-LPG-KMR-01",
+            name: "CCTV Traffic Monitoring Dumai — Gate Utama",
+            brand: "Axis",
+            model: "P3245-V",
+            serial_number: "AXIS-DMI-KMR-001",
+            procurement_date: "2025-01-24",
+            acquisition_value: 95000000,
+          },
+          {
+            asset_code: "SPMT-JNM-LPG-KMR-01",
+            name: "CCTV Traffic Monitoring Jamrud Nilam Mirah",
+            brand: "Axis",
+            model: "P3245-V",
+            serial_number: "AXIS-JNM-KMR-001",
+            procurement_date: "2025-01-24",
+            acquisition_value: 95000000,
+          },
+          {
+            asset_code: "SPMT-BLW-DTC-PKR-01",
+            name: "UPS Rack Belawan — Data Center",
+            brand: "APC",
+            model: "Smart-UPS 3000VA RM",
+            serial_number: "APC-BLW-UPS-001",
+            procurement_date: "2025-01-24",
+            acquisition_value: 125000000,
+          },
+          {
+            asset_code: "SPMT-DMI-DTC-PKR-01",
+            name: "UPS Rack Dumai — Data Center",
+            brand: "APC",
+            model: "Smart-UPS 3000VA RM",
+            serial_number: "APC-DMI-UPS-001",
+            procurement_date: "2025-01-24",
+            acquisition_value: 125000000,
+          },
+          {
+            asset_code: "SPMT-KPT-DTC-PKR-03",
+            name: "Network Management System (NMS) Appliance — Kantor Pusat",
+            brand: "Paessler",
+            model: "PRTG Enterprise Monitor",
+            serial_number: "PRTG-KPT-NMS-001",
+            procurement_date: "2025-01-24",
+            acquisition_value: 380000000,
+          },
+          {
+            asset_code: "SPMT-KPT-DTC-PKR-04",
+            name: "Patch Panel 48-Port — Kantor Pusat",
+            brand: "Panduit",
+            model: "CP24BLY",
+            serial_number: "PDT-KPT-PNL-001",
+            procurement_date: "2025-01-24",
+            acquisition_value: 45000000,
+          },
+          {
+            asset_code: "SPMT-JNM-DTC-PKR-01",
+            name: "Access Switch Gate Area Jamrud Nilam Mirah",
+            brand: "Cisco",
+            model: "Catalyst 2960-X 24TS",
+            serial_number: "CSC-JNM-ASW-001",
+            procurement_date: "2025-01-24",
+            acquisition_value: 155000000,
+          },
+          {
+            asset_code: "SPMT-TWG-DTC-PKR-01",
+            name: "Access Switch Gate Area Tanjung Wangi",
+            brand: "Cisco",
+            model: "Catalyst 2960-X 24TS",
+            serial_number: "CSC-TWG-ASW-001",
+            procurement_date: "2025-01-24",
+            acquisition_value: 155000000,
+          },
+          {
+            asset_code: "SPMT-TSK-DTC-PKR-02",
+            name: "Access Switch Gate Area Trisakti",
+            brand: "Cisco",
+            model: "Catalyst 2960-X 24TS",
+            serial_number: "CSC-TSK-ASW-002",
+            procurement_date: "2025-01-24",
+            acquisition_value: 155000000,
+          },
+          {
+            asset_code: "SPMT-TSK-DTC-PKR-03",
+            name: "Firewall UTM Trisakti",
+            brand: "Fortinet",
+            model: "FortiGate 80F",
+            serial_number: "FGT-TSK-FWL-001",
+            procurement_date: "2025-01-24",
+            acquisition_value: 155000000,
+          },
+          {
+            asset_code: "SPMT-TWG-DTC-PKR-02",
+            name: "Firewall UTM Tanjung Wangi",
+            brand: "Fortinet",
+            model: "FortiGate 80F",
+            serial_number: "FGT-TWG-FWL-001",
+            procurement_date: "2025-01-24",
+            acquisition_value: 155000000,
+          },
+          {
+            asset_code: "SPMT-JNM-DTC-PKR-02",
+            name: "Firewall UTM Jamrud Nilam Mirah",
+            brand: "Fortinet",
+            model: "FortiGate 80F",
+            serial_number: "FGT-JNM-FWL-001",
+            procurement_date: "2025-01-24",
+            acquisition_value: 155000000,
+          },
+          {
+            asset_code: "SPMT-KPT-DTC-PKR-05",
+            name: "Storage NAS Monitoring Data — Kantor Pusat",
+            brand: "Synology",
+            model: "RS2423+",
+            serial_number: "SYN-KPT-NAS-001",
+            procurement_date: "2025-01-24",
+            acquisition_value: 360000000,
+          },
+        ],
       },
       {
         id_pekerjaan: "PKJ-2440020-004",
@@ -358,14 +902,77 @@ const initMockCapex = [
         no_sp3: "PD.05.01/23/10/2/PGDN/SDMU/PLMT-25",
         tgl_sp3: "2025-10-23",
         tgl_bamk: "2025-10-02",
-        assets: [],
+        assets: [
+          {
+            asset_code: "SPMT-BLW-LPG-ANS-01",
+            name: "IP Public Announcer Belawan — Gate",
+            brand: "Bosch",
+            model: "PRA-CSI2",
+            serial_number: "BSH-BLW-ANS-001",
+            procurement_date: "2025-10-29",
+            acquisition_value: 145000000,
+          },
+          {
+            asset_code: "SPMT-JNM-LPG-ANS-01",
+            name: "IP Public Announcer Jamrud Nilam Mirah — Gate",
+            brand: "Bosch",
+            model: "PRA-CSI2",
+            serial_number: "BSH-JNM-ANS-001",
+            procurement_date: "2025-10-29",
+            acquisition_value: 145000000,
+          },
+          {
+            asset_code: "SPMT-DMI-LPG-ANS-01",
+            name: "IP Public Announcer Dumai — Gate",
+            brand: "Bosch",
+            model: "PRA-CSI2",
+            serial_number: "BSH-DMI-ANS-001",
+            procurement_date: "2025-10-29",
+            acquisition_value: 145000000,
+          },
+          {
+            asset_code: "SPMT-BLW-LPG-PKR-01",
+            name: "Radio Point-to-Point Belawan — Link Kantor Pusat",
+            brand: "Ubiquiti",
+            model: "airFiber 5XHD",
+            serial_number: "UBQ-BLW-P2P-001",
+            procurement_date: "2025-10-29",
+            acquisition_value: 280000000,
+          },
+          {
+            asset_code: "SPMT-DMI-LPG-PKR-01",
+            name: "Radio Point-to-Point Dumai — Link Kantor Pusat",
+            brand: "Ubiquiti",
+            model: "airFiber 5XHD",
+            serial_number: "UBQ-DMI-P2P-001",
+            procurement_date: "2025-10-29",
+            acquisition_value: 280000000,
+          },
+          {
+            asset_code: "SPMT-TSK-LPG-PKR-01",
+            name: "Radio Point-to-Point Trisakti — Link Kantor Pusat",
+            brand: "Ubiquiti",
+            model: "airFiber 5XHD",
+            serial_number: "UBQ-TSK-P2P-001",
+            procurement_date: "2025-10-29",
+            acquisition_value: 280000000,
+          },
+          {
+            asset_code: "SPMT-TWG-LPG-PKR-01",
+            name: "Barrier Gate Otomatis Tanjung Wangi",
+            brand: "FAAC",
+            model: "B680H",
+            serial_number: "FAAC-TWG-BGT-001",
+            procurement_date: "2025-10-29",
+            acquisition_value: 405000000,
+          },
+        ],
       },
     ],
   },
 
   // ================================================================
   // 2540010 — Penyiapan Infrastruktur Gate System RoRo
-  // nilai_rab & nilai_kontrak kosong di Excel
   // ================================================================
   {
     kd_anggaran_capex: "CAP-2540010",
@@ -390,15 +997,68 @@ const initMockCapex = [
         no_sp3: "PD.01/31/7/2/PGDN/SDMU/PLMT-25",
         tgl_sp3: "2025-07-31",
         tgl_bamk: "2025-09-01",
-        assets: [],
+        assets: [
+          {
+            asset_code: "SPMT-TJE-LPG-DMG-02",
+            name: "Gate Controller RoRo Tanjung Emas — Dermaga 1",
+            brand: "Genetec",
+            model: "AutoVu Sharp XP",
+            serial_number: "GTC-TJE-GCL-002",
+            procurement_date: "2025-08-04",
+            acquisition_value: 560000000,
+          },
+          {
+            asset_code: "SPMT-TJE-LPG-DMG-03",
+            name: "Gate Controller RoRo Tanjung Emas — Dermaga 2",
+            brand: "Genetec",
+            model: "AutoVu Sharp XP",
+            serial_number: "GTC-TJE-GCL-003",
+            procurement_date: "2025-08-04",
+            acquisition_value: 560000000,
+          },
+          {
+            asset_code: "SPMT-TJE-LPG-KMR-02",
+            name: "CCTV Dermaga RoRo Tanjung Emas — 4K PTZ",
+            brand: "Axis",
+            model: "Q6135-LE PTZ",
+            serial_number: "AXIS-TJE-KMR-002",
+            procurement_date: "2025-08-04",
+            acquisition_value: 185000000,
+          },
+          {
+            asset_code: "SPMT-TJE-LPG-ANS-02",
+            name: "IP Public Announcer Dermaga RoRo Tanjung Emas",
+            brand: "Bosch",
+            model: "PRA-CSI2",
+            serial_number: "BSH-TJE-ANS-002",
+            procurement_date: "2025-08-04",
+            acquisition_value: 145000000,
+          },
+          {
+            asset_code: "SPMT-TJE-LPG-PKR-01",
+            name: "Barrier Gate Otomatis RoRo Tanjung Emas — Pintu 1",
+            brand: "FAAC",
+            model: "B680H",
+            serial_number: "FAAC-TJE-BGT-001",
+            procurement_date: "2025-08-04",
+            acquisition_value: 135000000,
+          },
+          {
+            asset_code: "SPMT-TJE-LPG-PKR-02",
+            name: "Barrier Gate Otomatis RoRo Tanjung Emas — Pintu 2",
+            brand: "FAAC",
+            model: "B680H",
+            serial_number: "FAAC-TJE-BGT-002",
+            procurement_date: "2025-08-04",
+            acquisition_value: 95000000,
+          },
+        ],
       },
     ],
   },
 
   // ================================================================
   // 2540011 — Transformasi dan Digitalisasi Operasional
-  // nilai_anggaran_rkap: 12.000.000.000 (dari mockData.js)
-  // PKJ-001: kontrak 3.950.000.000 | PKJ-004: kontrak 2.870.000.000
   // ================================================================
   {
     kd_anggaran_capex: "CAP-2540011",
@@ -423,7 +1083,80 @@ const initMockCapex = [
         no_sp3: "PD.05.01/30/6/3/PGDN/SDMU/PLMT-25",
         tgl_sp3: "2025-06-30",
         tgl_bamk: "2025-07-01",
-        assets: [],
+        assets: [
+          {
+            asset_code: "SPMT-LMB-LPG-DMG-02",
+            name: "Gate Controller RoRo Lembar Gilimas",
+            brand: "Genetec",
+            model: "AutoVu Sharp XP",
+            serial_number: "GTC-LMB-GCL-002",
+            procurement_date: "2025-07-07",
+            acquisition_value: 560000000,
+          },
+          {
+            asset_code: "SPMT-TWG-LPG-DMG-02",
+            name: "Gate Controller RoRo Tanjung Wangi",
+            brand: "Genetec",
+            model: "AutoVu Sharp XP",
+            serial_number: "GTC-TWG-GCL-002",
+            procurement_date: "2025-07-07",
+            acquisition_value: 560000000,
+          },
+          {
+            asset_code: "SPMT-TJE-LPG-DMG-01",
+            name: "Gate Controller Tanjung Emas",
+            brand: "Genetec",
+            model: "AutoVu Sharp XP",
+            serial_number: "GTC-TJE-GCL-001",
+            procurement_date: "2025-07-07",
+            acquisition_value: 560000000,
+          },
+          {
+            asset_code: "SPMT-SBG-LPG-DMG-01",
+            name: "Gate Controller Sibolga",
+            brand: "Genetec",
+            model: "AutoVu SharpX",
+            serial_number: "GTC-SBG-GCL-001",
+            procurement_date: "2025-07-07",
+            acquisition_value: 420000000,
+          },
+          {
+            asset_code: "SPMT-BLP-LPG-DMG-02",
+            name: "Gate Controller RoRo Balikpapan",
+            brand: "Genetec",
+            model: "AutoVu Sharp XP",
+            serial_number: "GTC-BLP-GCL-002",
+            procurement_date: "2025-07-07",
+            acquisition_value: 560000000,
+          },
+          {
+            asset_code: "SPMT-PPR-LPG-DMG-02",
+            name: "Gate Controller RoRo Parepare",
+            brand: "Genetec",
+            model: "AutoVu Sharp XP",
+            serial_number: "GTC-PPR-GCL-002",
+            procurement_date: "2025-07-07",
+            acquisition_value: 450000000,
+          },
+          {
+            asset_code: "SPMT-TBK-LPG-DMG-01",
+            name: "Gate Controller Tanjung Balai Karimun",
+            brand: "Genetec",
+            model: "AutoVu SharpX",
+            serial_number: "GTC-TBK-GCL-001",
+            procurement_date: "2025-07-07",
+            acquisition_value: 420000000,
+          },
+          {
+            asset_code: "SPMT-TJE-DTC-SRV-01",
+            name: "Server Planning & Control Tanjung Emas",
+            brand: "Dell",
+            model: "PowerEdge R550",
+            serial_number: "DELL-TJE-SRV-001",
+            procurement_date: "2025-07-07",
+            acquisition_value: 420000000,
+          },
+        ],
       },
       {
         id_pekerjaan: "PKJ-2540011-002",
@@ -439,7 +1172,116 @@ const initMockCapex = [
         no_sp3: "PD.05.01/11/8/3/PGDN/SDMU/PLMT-25",
         tgl_sp3: "2025-08-11",
         tgl_bamk: "2025-09-15",
-        assets: [],
+        assets: [
+          {
+            asset_code: "SPMT-BLP-LPG-ANS-01",
+            name: "IP Public Announcer Balikpapan",
+            brand: "Bosch",
+            model: "PRA-CSI2",
+            serial_number: "BSH-BLP-ANS-001",
+            procurement_date: "2025-08-18",
+            acquisition_value: 165000000,
+          },
+          {
+            asset_code: "SPMT-BLW-LPG-ANS-02",
+            name: "IP Public Announcer Belawan",
+            brand: "Bosch",
+            model: "PRA-CSI2",
+            serial_number: "BSH-BLW-ANS-002",
+            procurement_date: "2025-08-18",
+            acquisition_value: 165000000,
+          },
+          {
+            asset_code: "SPMT-DMI-LPG-ANS-02",
+            name: "IP Public Announcer Dumai",
+            brand: "Bosch",
+            model: "PRA-CSI2",
+            serial_number: "BSH-DMI-ANS-002",
+            procurement_date: "2025-08-18",
+            acquisition_value: 165000000,
+          },
+          {
+            asset_code: "SPMT-TSK-LPG-ANS-01",
+            name: "IP Public Announcer Trisakti",
+            brand: "Bosch",
+            model: "PRA-CSI2",
+            serial_number: "BSH-TSK-ANS-001",
+            procurement_date: "2025-08-18",
+            acquisition_value: 165000000,
+          },
+          {
+            asset_code: "SPMT-MKS-LPG-ANS-01",
+            name: "IP Public Announcer Makassar",
+            brand: "Bosch",
+            model: "PRA-CSI2",
+            serial_number: "BSH-MKS-ANS-001",
+            procurement_date: "2025-08-18",
+            acquisition_value: 165000000,
+          },
+          {
+            asset_code: "SPMT-PPR-LPG-ANS-01",
+            name: "IP Public Announcer Parepare",
+            brand: "Bosch",
+            model: "PRA-CSI2",
+            serial_number: "BSH-PPR-ANS-001",
+            procurement_date: "2025-08-18",
+            acquisition_value: 165000000,
+          },
+          {
+            asset_code: "SPMT-GRG-LPG-ANS-01",
+            name: "IP Public Announcer Garongkong",
+            brand: "Bosch",
+            model: "PRA-CSI2",
+            serial_number: "BSH-GRG-ANS-001",
+            procurement_date: "2025-08-18",
+            acquisition_value: 165000000,
+          },
+          {
+            asset_code: "SPMT-SBG-LPG-ANS-01",
+            name: "IP Public Announcer Sibolga",
+            brand: "Bosch",
+            model: "PRA-CSI2",
+            serial_number: "BSH-SBG-ANS-001",
+            procurement_date: "2025-08-18",
+            acquisition_value: 165000000,
+          },
+          {
+            asset_code: "SPMT-TJE-LPG-ANS-01",
+            name: "IP Public Announcer Tanjung Emas",
+            brand: "Bosch",
+            model: "PRA-CSI2",
+            serial_number: "BSH-TJE-ANS-001",
+            procurement_date: "2025-08-18",
+            acquisition_value: 165000000,
+          },
+          {
+            asset_code: "SPMT-TMI-LPG-ANS-01",
+            name: "IP Public Announcer Tanjung Intan",
+            brand: "Bosch",
+            model: "PRA-CSI2",
+            serial_number: "BSH-TMI-ANS-001",
+            procurement_date: "2025-08-18",
+            acquisition_value: 165000000,
+          },
+          {
+            asset_code: "SPMT-GRK-LPG-ANS-01",
+            name: "IP Public Announcer Gresik",
+            brand: "Bosch",
+            model: "PRA-CSI2",
+            serial_number: "BSH-GRK-ANS-001",
+            procurement_date: "2025-08-18",
+            acquisition_value: 165000000,
+          },
+          {
+            asset_code: "SPMT-KPT-DTC-SRV-04",
+            name: "Server Manajemen Announcer — Kantor Pusat",
+            brand: "Dell",
+            model: "PowerEdge R450",
+            serial_number: "DELL-KPT-SRV-004",
+            procurement_date: "2025-08-18",
+            acquisition_value: 210000000,
+          },
+        ],
       },
       {
         id_pekerjaan: "PKJ-2540011-003",
@@ -455,7 +1297,89 @@ const initMockCapex = [
         no_sp3: "PD.01/23/10/2/PGDN/SDMU/PLMT-25",
         tgl_sp3: "2025-10-23",
         tgl_bamk: "2025-10-02",
-        assets: [],
+        assets: [
+          {
+            asset_code: "SPMT-KPT-DTC-SRV-05",
+            name: "SIEM Appliance — Kantor Pusat (Primary)",
+            brand: "IBM",
+            model: "QRadar SIEM 3105",
+            serial_number: "IBM-KPT-SIEM-001",
+            procurement_date: "2025-10-28",
+            acquisition_value: 850000000,
+          },
+          {
+            asset_code: "SPMT-KPT-DTC-SRV-06",
+            name: "SIEM Log Collector — Kantor Pusat",
+            brand: "IBM",
+            model: "QRadar Log Manager",
+            serial_number: "IBM-KPT-SIEM-002",
+            procurement_date: "2025-10-28",
+            acquisition_value: 450000000,
+          },
+          {
+            asset_code: "SPMT-KPT-DTC-PKR-05",
+            name: "Core Switch Backbone — Kantor Pusat (Redundant)",
+            brand: "Cisco",
+            model: "Nexus 9300-48S",
+            serial_number: "CSC-KPT-CSW-002",
+            procurement_date: "2025-10-28",
+            acquisition_value: 520000000,
+          },
+          {
+            asset_code: "SPMT-BLW-DTC-PKR-02",
+            name: "Firewall UTM Belawan",
+            brand: "Fortinet",
+            model: "FortiGate 100F",
+            serial_number: "FGT-BLW-FWL-001",
+            procurement_date: "2025-10-28",
+            acquisition_value: 220000000,
+          },
+          {
+            asset_code: "SPMT-DMI-DTC-PKR-02",
+            name: "Firewall UTM Dumai",
+            brand: "Fortinet",
+            model: "FortiGate 100F",
+            serial_number: "FGT-DMI-FWL-001",
+            procurement_date: "2025-10-28",
+            acquisition_value: 220000000,
+          },
+          {
+            asset_code: "SPMT-MKS-DTC-PKR-02",
+            name: "Firewall UTM Makassar",
+            brand: "Fortinet",
+            model: "FortiGate 100F",
+            serial_number: "FGT-MKS-FWL-001",
+            procurement_date: "2025-10-28",
+            acquisition_value: 220000000,
+          },
+          {
+            asset_code: "SPMT-BLP-DTC-PKR-02",
+            name: "Access Switch Gate Area Balikpapan",
+            brand: "Cisco",
+            model: "Catalyst 2960-X 48TS",
+            serial_number: "CSC-BLP-ASW-002",
+            procurement_date: "2025-10-28",
+            acquisition_value: 180000000,
+          },
+          {
+            asset_code: "SPMT-TJE-DTC-PKR-02",
+            name: "Access Switch Gate Area Tanjung Emas",
+            brand: "Cisco",
+            model: "Catalyst 2960-X 48TS",
+            serial_number: "CSC-TJE-ASW-001",
+            procurement_date: "2025-10-28",
+            acquisition_value: 180000000,
+          },
+          {
+            asset_code: "SPMT-KPT-GDG-PKR-01",
+            name: "Patch Panel Manajemen Kabel — Kantor Pusat",
+            brand: "Panduit",
+            model: "CP48BLY",
+            serial_number: "PDT-KPT-PNL-002",
+            procurement_date: "2025-10-28",
+            acquisition_value: 510000000,
+          },
+        ],
       },
       {
         id_pekerjaan: "PKJ-2540011-004",
@@ -471,15 +1395,158 @@ const initMockCapex = [
         no_sp3: "PD.01/16/10/2/PGDN/SDMU/PLMT-25",
         tgl_sp3: "2025-10-16",
         tgl_bamk: "2025-10-02",
-        assets: [],
+        assets: [
+          {
+            asset_code: "SPMT-BLW-LPG-KMR-02",
+            name: "CCTV Traffic Monitoring Gate — Belawan",
+            brand: "Axis",
+            model: "P3245-V 1080p",
+            serial_number: "AXIS-BLW-KMR-002",
+            procurement_date: "2025-10-22",
+            acquisition_value: 280000000,
+          },
+          {
+            asset_code: "SPMT-DMI-LPG-KMR-02",
+            name: "CCTV Traffic Monitoring Gate — Dumai",
+            brand: "Axis",
+            model: "P3245-V 1080p",
+            serial_number: "AXIS-DMI-KMR-002",
+            procurement_date: "2025-10-22",
+            acquisition_value: 280000000,
+          },
+          {
+            asset_code: "SPMT-MLH-LPG-KMR-02",
+            name: "CCTV Traffic Monitoring Gate — Malahayati",
+            brand: "Axis",
+            model: "P3245-V 1080p",
+            serial_number: "AXIS-MLH-KMR-002",
+            procurement_date: "2025-10-22",
+            acquisition_value: 280000000,
+          },
+          {
+            asset_code: "SPMT-LHK-LPG-KMR-02",
+            name: "CCTV Traffic Monitoring Gate — Lhokseumawe",
+            brand: "Axis",
+            model: "P3245-V 1080p",
+            serial_number: "AXIS-LHK-KMR-002",
+            procurement_date: "2025-10-22",
+            acquisition_value: 280000000,
+          },
+          {
+            asset_code: "SPMT-LMB-LPG-KMR-02",
+            name: "CCTV Traffic Monitoring Gate — Lembar",
+            brand: "Axis",
+            model: "P3245-V 1080p",
+            serial_number: "AXIS-LMB-KMR-002",
+            procurement_date: "2025-10-22",
+            acquisition_value: 280000000,
+          },
+          {
+            asset_code: "SPMT-JNM-LPG-KMR-02",
+            name: "CCTV Traffic Monitoring Gate — Jamrud Nilam Mirah",
+            brand: "Axis",
+            model: "P3245-V 1080p",
+            serial_number: "AXIS-JNM-KMR-002",
+            procurement_date: "2025-10-22",
+            acquisition_value: 280000000,
+          },
+          {
+            asset_code: "SPMT-MKS-LPG-KMR-02",
+            name: "CCTV Traffic Monitoring Gate — Makassar",
+            brand: "Axis",
+            model: "P3245-V 1080p",
+            serial_number: "AXIS-MKS-KMR-002",
+            procurement_date: "2025-10-22",
+            acquisition_value: 280000000,
+          },
+          {
+            asset_code: "SPMT-BLP-LPG-KMR-02",
+            name: "CCTV Traffic Monitoring Gate — Balikpapan",
+            brand: "Axis",
+            model: "P3245-V 1080p",
+            serial_number: "AXIS-BLP-KMR-002",
+            procurement_date: "2025-10-22",
+            acquisition_value: 280000000,
+          },
+          {
+            asset_code: "SPMT-BMH-LPG-KMR-01",
+            name: "CCTV Traffic Monitoring Gate — Bumiharjo Bagendang",
+            brand: "Axis",
+            model: "P3245-V 1080p",
+            serial_number: "AXIS-BMH-KMR-001",
+            procurement_date: "2025-10-22",
+            acquisition_value: 280000000,
+          },
+          {
+            asset_code: "SPMT-TPG-LPG-KMR-01",
+            name: "CCTV Traffic Monitoring Gate — Tanjung Pinang",
+            brand: "Axis",
+            model: "P3245-V 1080p",
+            serial_number: "AXIS-TPG-KMR-001",
+            procurement_date: "2025-10-22",
+            acquisition_value: 280000000,
+          },
+          {
+            asset_code: "SPMT-SBG-LPG-KMR-01",
+            name: "CCTV Traffic Monitoring Gate — Sibolga",
+            brand: "Axis",
+            model: "P3245-V 1080p",
+            serial_number: "AXIS-SBG-KMR-001",
+            procurement_date: "2025-10-22",
+            acquisition_value: 280000000,
+          },
+          {
+            asset_code: "SPMT-TJE-LPG-KMR-01",
+            name: "CCTV Traffic Monitoring Gate — Tanjung Emas",
+            brand: "Axis",
+            model: "P3245-V 1080p",
+            serial_number: "AXIS-TJE-KMR-001",
+            procurement_date: "2025-10-22",
+            acquisition_value: 280000000,
+          },
+          {
+            asset_code: "SPMT-PPR-LPG-KMR-01",
+            name: "CCTV Traffic Monitoring Gate — Parepare",
+            brand: "Axis",
+            model: "P3245-V 1080p",
+            serial_number: "AXIS-PPR-KMR-001",
+            procurement_date: "2025-10-22",
+            acquisition_value: 280000000,
+          },
+          {
+            asset_code: "SPMT-TSK-LPG-KMR-01",
+            name: "CCTV Traffic Monitoring Gate — Trisakti",
+            brand: "Axis",
+            model: "P3245-V 1080p",
+            serial_number: "AXIS-TSK-KMR-001",
+            procurement_date: "2025-10-22",
+            acquisition_value: 280000000,
+          },
+          {
+            asset_code: "SPMT-GRK-LPG-KMR-01",
+            name: "CCTV Traffic Monitoring Gate — Gresik",
+            brand: "Axis",
+            model: "P3245-V 1080p",
+            serial_number: "AXIS-GRK-KMR-001",
+            procurement_date: "2025-10-22",
+            acquisition_value: 280000000,
+          },
+          {
+            asset_code: "SPMT-KPT-DTC-SRV-07",
+            name: "Video Management System (VMS) Server — Kantor Pusat",
+            brand: "Genetec",
+            model: "Security Center 5.11",
+            serial_number: "GTC-KPT-VMS-001",
+            procurement_date: "2025-10-22",
+            acquisition_value: 420000000,
+          },
+        ],
       },
     ],
   },
 
   // ================================================================
   // 2540012 — Pengembangan Infrastruktur Jaringan
-  // nilai_anggaran_rkap: 4.500.000.000 (dari mockData.js)
-  // PKJ-001: kontrak 810.000.000 (dari mockData.js)
   // ================================================================
   {
     kd_anggaran_capex: "CAP-2540012",
@@ -504,7 +1571,53 @@ const initMockCapex = [
         no_sp3: "PD.01/22/7/1/PGDN/DSDM/PLMT-25",
         tgl_sp3: "2025-07-22",
         tgl_bamk: "2025-08-01",
-        assets: [],
+        assets: [
+          {
+            asset_code: "SPMT-TBK-DTC-PKR-01",
+            name: "Core Switch Tanjung Balai Karimun",
+            brand: "Cisco",
+            model: "Catalyst 9300-24P",
+            serial_number: "CSC-TBK-CSW-001",
+            procurement_date: "2025-07-24",
+            acquisition_value: 270000000,
+          },
+          {
+            asset_code: "SPMT-TBK-DTC-PKR-02",
+            name: "Firewall UTM Tanjung Balai Karimun",
+            brand: "Fortinet",
+            model: "FortiGate 100F",
+            serial_number: "FGT-TBK-FWL-001",
+            procurement_date: "2025-07-24",
+            acquisition_value: 220000000,
+          },
+          {
+            asset_code: "SPMT-SPJ-DTC-PKR-01",
+            name: "Core Switch Terminal Selat Panjang",
+            brand: "Cisco",
+            model: "Catalyst 2960-X 24TS",
+            serial_number: "CSC-SPJ-CSW-001",
+            procurement_date: "2025-07-24",
+            acquisition_value: 155000000,
+          },
+          {
+            asset_code: "SPMT-SPJ-DTC-PKR-02",
+            name: "Wireless Access Point Selat Panjang",
+            brand: "Cisco",
+            model: "Aironet 2800",
+            serial_number: "CSC-SPJ-WAP-001",
+            procurement_date: "2025-07-24",
+            acquisition_value: 85000000,
+          },
+          {
+            asset_code: "SPMT-TBK-DTC-PKR-03",
+            name: "Wireless Access Point Tanjung Balai Karimun",
+            brand: "Cisco",
+            model: "Aironet 2800",
+            serial_number: "CSC-TBK-WAP-001",
+            procurement_date: "2025-07-24",
+            acquisition_value: 80000000,
+          },
+        ],
       },
     ],
   },
@@ -948,18 +2061,24 @@ function ModalRealisasi({ anggaran, onClose, onSave }) {
             </div>
             <div className="bm-modal-info-item">
               <span>Sisa</span>
-              <strong className={anggaran.remaining < 0 ? "tc-red" : "tc-green"}>
+              <strong
+                className={anggaran.remaining < 0 ? "tc-red" : "tc-green"}
+              >
                 {fmt(anggaran.remaining)}
               </strong>
             </div>
           </div>
           <div className="bm-form-grid">
             <div className="bm-form-group">
-              <label>Tanggal Realisasi <span className="req">*</span></label>
+              <label>
+                Tanggal Realisasi <span className="req">*</span>
+              </label>
               <input
                 type="date"
                 value={form.tanggal_realisasi}
-                onChange={(e) => setForm({ ...form, tanggal_realisasi: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, tanggal_realisasi: e.target.value })
+                }
               />
             </div>
             <div className="bm-form-group">
@@ -967,22 +2086,36 @@ function ModalRealisasi({ anggaran, onClose, onSave }) {
               <input
                 placeholder="INV/2026/001"
                 value={form.no_invoice}
-                onChange={(e) => setForm({ ...form, no_invoice: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, no_invoice: e.target.value })
+                }
               />
             </div>
             <div className="bm-form-group bm-form-group--full">
-              <label>Jumlah (IDR) <span className="req">*</span></label>
+              <label>
+                Jumlah (IDR) <span className="req">*</span>
+              </label>
               <input
                 type="number"
                 placeholder="0"
                 value={form.jumlah}
                 onChange={(e) => setForm({ ...form, jumlah: e.target.value })}
               />
-              {form.jumlah && <span className="bm-form-hint">≈ {fmt(form.jumlah)}</span>}
+              {form.jumlah && (
+                <span className="bm-form-hint">≈ {fmt(form.jumlah)}</span>
+              )}
             </div>
             <div className="bm-form-group bm-form-group--full">
-              <label>Keterangan <span className="req">*</span></label>
-              <textarea rows="2" value={form.keterangan} onChange={(e) => setForm({ ...form, keterangan: e.target.value })} />
+              <label>
+                Keterangan <span className="req">*</span>
+              </label>
+              <textarea
+                rows="2"
+                value={form.keterangan}
+                onChange={(e) =>
+                  setForm({ ...form, keterangan: e.target.value })
+                }
+              />
             </div>
             <div className="bm-form-group bm-form-group--full">
               <label>
@@ -1047,11 +2180,19 @@ function BalanceBar({ assets, nilaiKontrak }) {
       <div className="bm-balance-divider" />
       <div className="bm-balance-bar-right">
         <div className="bm-balance-selisih-label">Selisih</div>
-        <div className={`bm-balance-selisih-val bm-balance-selisih-val--${info.status}`}>
-          {info.selisih === 0 ? "—" : info.selisih > 0 ? `− ${fmt(info.selisih)}` : `+ ${fmt(Math.abs(info.selisih))}`}
+        <div
+          className={`bm-balance-selisih-val bm-balance-selisih-val--${info.status}`}
+        >
+          {info.selisih === 0
+            ? "—"
+            : info.selisih > 0
+              ? `− ${fmt(info.selisih)}`
+              : `+ ${fmt(Math.abs(info.selisih))}`}
         </div>
         {info.status !== "balanced" && (
-          <div className="bm-balance-selisih-pct">{info.pct.toFixed(1)}% dari kontrak</div>
+          <div className="bm-balance-selisih-pct">
+            {info.pct.toFixed(1)}% dari kontrak
+          </div>
         )}
       </div>
     </div>
@@ -1073,37 +2214,60 @@ function OpexEditPanel({ item, realisasiOpex, onSave, onCancel, showToast }) {
   const [confirm, setConfirm] = useState(null);
 
   const updateReal = (id, field, val) =>
-    setRealisasiList(realisasiList.map((r) => r.id_realisasi === id ? { ...r, [field]: val } : r));
+    setRealisasiList(
+      realisasiList.map((r) =>
+        r.id_realisasi === id ? { ...r, [field]: val } : r,
+      ),
+    );
 
   const addReal = () =>
-    setRealisasiList([...realisasiList, {
-      id_realisasi: newId(),
-      id_anggaran_tahunan: item.raw.id_anggaran_tahunan,
-      tanggal_realisasi: new Date().toISOString().split("T")[0],
-      jumlah: "",
-      keterangan: "",
-      no_invoice: "",
-      id_aset: "",
-      _new: true,
-    }]);
+    setRealisasiList([
+      ...realisasiList,
+      {
+        id_realisasi: newId(),
+        id_anggaran_tahunan: item.raw.id_anggaran_tahunan,
+        tanggal_realisasi: new Date().toISOString().split("T")[0],
+        jumlah: "",
+        keterangan: "",
+        no_invoice: "",
+        id_aset: "",
+        _new: true,
+      },
+    ]);
 
   const removeReal = (id) =>
     setRealisasiList(realisasiList.filter((r) => r.id_realisasi !== id));
 
   const handleSave = () => {
-    onSave({ type: "opex", itemId: item.id, pagu: parseFloat(pagu) || 0, nama, kode, realisasiList });
+    onSave({
+      type: "opex",
+      itemId: item.id,
+      pagu: parseFloat(pagu) || 0,
+      nama,
+      kode,
+      realisasiList,
+    });
     showToast("Perubahan OPEX berhasil disimpan", "success");
     onCancel();
   };
 
   return (
     <>
-      {confirm && <ConfirmDialog msg={confirm.msg} onConfirm={confirm.onConfirm} onCancel={() => setConfirm(null)} />}
+      {confirm && (
+        <ConfirmDialog
+          msg={confirm.msg}
+          onConfirm={confirm.onConfirm}
+          onCancel={() => setConfirm(null)}
+        />
+      )}
       <tr className="bm-edit-drawer anim-in">
         <td colSpan="7">
           <div className="bm-edit-panel">
             <div className="bm-edit-panel-header">
-              <div className="bm-modal-icon" style={{ width: 34, height: 34, borderRadius: 8 }}>
+              <div
+                className="bm-modal-icon"
+                style={{ width: 34, height: 34, borderRadius: 8 }}
+              >
                 <Icon d={Icons.edit} size={16} />
               </div>
               <h3>Edit Pos Anggaran OPEX</h3>
@@ -1119,16 +2283,31 @@ function OpexEditPanel({ item, realisasiOpex, onSave, onCancel, showToast }) {
               <div className="bm-edit-grid bm-edit-grid-2">
                 <div className="bm-edit-field">
                   <label>Kode Anggaran Master</label>
-                  <input value={kode} onChange={(e) => setKode(e.target.value)} placeholder="5030905000" />
+                  <input
+                    value={kode}
+                    onChange={(e) => setKode(e.target.value)}
+                    placeholder="5030905000"
+                  />
                 </div>
                 <div className="bm-edit-field">
                   <label>Pagu Anggaran Tahunan (IDR)</label>
-                  <input type="number" value={pagu} onChange={(e) => setPagu(e.target.value)} />
-                  {pagu && <span className="bm-edit-hint">≈ {fmt(parseFloat(pagu) || 0)}</span>}
+                  <input
+                    type="number"
+                    value={pagu}
+                    onChange={(e) => setPagu(e.target.value)}
+                  />
+                  {pagu && (
+                    <span className="bm-edit-hint">
+                      ≈ {fmt(parseFloat(pagu) || 0)}
+                    </span>
+                  )}
                 </div>
                 <div className="bm-edit-field bm-edit-grid-full">
                   <label>Nama Mata Anggaran</label>
-                  <input value={nama} onChange={(e) => setNama(e.target.value)} />
+                  <input
+                    value={nama}
+                    onChange={(e) => setNama(e.target.value)}
+                  />
                 </div>
               </div>
             </div>
@@ -1136,43 +2315,104 @@ function OpexEditPanel({ item, realisasiOpex, onSave, onCancel, showToast }) {
             <div className="bm-edit-section">
               <div className="bm-edit-section-title">
                 <Icon d={Icons.receipt} size={13} /> Daftar Realisasi
-                <span className="bm-pill blue" style={{ marginLeft: 4 }}>{realisasiList.length}</span>
-                <button className="bm-btn bm-btn-add-sm" style={{ marginLeft: "auto" }} onClick={addReal}>
+                <span className="bm-pill blue" style={{ marginLeft: 4 }}>
+                  {realisasiList.length}
+                </span>
+                <button
+                  className="bm-btn bm-btn-add-sm"
+                  style={{ marginLeft: "auto" }}
+                  onClick={addReal}
+                >
                   <Icon d={Icons.plus} size={13} /> Tambah Baris
                 </button>
               </div>
 
               {realisasiList.length === 0 && (
                 <div className="bm-empty bm-empty--sm">
-                  <Icon d={Icons.receipt} size={16} /><span>Belum ada realisasi</span>
+                  <Icon d={Icons.receipt} size={16} />
+                  <span>Belum ada realisasi</span>
                 </div>
               )}
 
               {realisasiList.map((r, i) => (
-                <div key={r.id_realisasi} className={`bm-real-edit-row ${r._new ? "new-row" : ""}`}>
+                <div
+                  key={r.id_realisasi}
+                  className={`bm-real-edit-row ${r._new ? "new-row" : ""}`}
+                >
                   <div className="bm-edit-field">
                     <label>Tanggal</label>
-                    <input type="date" value={r.tanggal_realisasi} onChange={(e) => updateReal(r.id_realisasi, "tanggal_realisasi", e.target.value)} />
+                    <input
+                      type="date"
+                      value={r.tanggal_realisasi}
+                      onChange={(e) =>
+                        updateReal(
+                          r.id_realisasi,
+                          "tanggal_realisasi",
+                          e.target.value,
+                        )
+                      }
+                    />
                   </div>
                   <div className="bm-edit-field">
                     <label>No. Invoice</label>
-                    <input value={r.no_invoice || ""} onChange={(e) => updateReal(r.id_realisasi, "no_invoice", e.target.value)} placeholder="INV/..." />
+                    <input
+                      value={r.no_invoice || ""}
+                      onChange={(e) =>
+                        updateReal(r.id_realisasi, "no_invoice", e.target.value)
+                      }
+                      placeholder="INV/..."
+                    />
                   </div>
                   <div className="bm-edit-field bm-real-edit-fullrow">
                     <label>Keterangan</label>
-                    <input value={r.keterangan} onChange={(e) => updateReal(r.id_realisasi, "keterangan", e.target.value)} placeholder="Keterangan transaksi..." />
+                    <input
+                      value={r.keterangan}
+                      onChange={(e) =>
+                        updateReal(r.id_realisasi, "keterangan", e.target.value)
+                      }
+                      placeholder="Keterangan transaksi..."
+                    />
                   </div>
                   <div className="bm-edit-field">
                     <label>Jumlah (IDR)</label>
-                    <input type="number" value={r.jumlah} onChange={(e) => updateReal(r.id_realisasi, "jumlah", e.target.value)} />
-                    {r.jumlah && <span className="bm-edit-hint">≈ {fmt(r.jumlah)}</span>}
+                    <input
+                      type="number"
+                      value={r.jumlah}
+                      onChange={(e) =>
+                        updateReal(r.id_realisasi, "jumlah", e.target.value)
+                      }
+                    />
+                    {r.jumlah && (
+                      <span className="bm-edit-hint">≈ {fmt(r.jumlah)}</span>
+                    )}
                   </div>
-                  <div className="bm-edit-field" style={{ position: "relative" }}>
+                  <div
+                    className="bm-edit-field"
+                    style={{ position: "relative" }}
+                  >
                     <label>ID Aset</label>
                     <div style={{ display: "flex", gap: 6 }}>
-                      <input value={r.id_aset || ""} onChange={(e) => updateReal(r.id_realisasi, "id_aset", e.target.value)} placeholder="AST-OPX-..." style={{ flex: 1 }} />
-                      <button className="bm-btn bm-btn-danger" style={{ padding: "6px 10px", flexShrink: 0 }}
-                        onClick={() => setConfirm({ msg: `Hapus realisasi "${r.keterangan || `#${i + 1}`}"?`, onConfirm: () => { removeReal(r.id_realisasi); setConfirm(null); } })}>
+                      <input
+                        value={r.id_aset || ""}
+                        onChange={(e) =>
+                          updateReal(r.id_realisasi, "id_aset", e.target.value)
+                        }
+                        placeholder="AST-OPX-..."
+                        style={{ flex: 1 }}
+                      />
+                      <button
+                        className="bm-btn bm-btn-danger"
+                        style={{ padding: "6px 10px", flexShrink: 0 }}
+                        onClick={() =>
+                          setConfirm({
+                            msg: `Hapus realisasi "${r.keterangan || `#${i + 1}`}"?`,
+                            onConfirm: () => {
+                              removeReal(r.id_realisasi);
+                              setConfirm(null);
+                            },
+                          })
+                        }
+                      >
                         <Icon d={Icons.trash} size={13} />
                       </button>
                     </div>
@@ -1182,8 +2422,12 @@ function OpexEditPanel({ item, realisasiOpex, onSave, onCancel, showToast }) {
             </div>
 
             <div className="bm-edit-actions">
-              <button className="bm-btn bm-btn-cancel" onClick={onCancel}><Icon d={Icons.x} size={13} /> Batal</button>
-              <button className="bm-btn bm-btn-save" onClick={handleSave}><Icon d={Icons.save} size={13} /> Simpan Perubahan</button>
+              <button className="bm-btn bm-btn-cancel" onClick={onCancel}>
+                <Icon d={Icons.x} size={13} /> Batal
+              </button>
+              <button className="bm-btn bm-btn-save" onClick={handleSave}>
+                <Icon d={Icons.save} size={13} /> Simpan Perubahan
+              </button>
             </div>
           </div>
         </td>
@@ -1199,65 +2443,131 @@ function CapexEditPanel({ item, onSave, onCancel, showToast }) {
   const [pagu, setPagu] = useState(String(item.raw.nilai_anggaran_rkap));
   const [nama, setNama] = useState(item.raw.nm_anggaran_capex);
   const [projects, setProjects] = useState(
-    item.projects.map((p) => ({ ...p, assets: p.assets ? p.assets.map((a) => ({ ...a })) : [] })),
+    item.projects.map((p) => ({
+      ...p,
+      assets: p.assets ? p.assets.map((a) => ({ ...a })) : [],
+    })),
   );
   const [confirm, setConfirm] = useState(null);
   const [expandedProj, setExpandedProj] = useState(null);
 
   const updateProj = (id, field, val) =>
-    setProjects(projects.map((p) => p.id_pekerjaan === id ? { ...p, [field]: val } : p));
+    setProjects(
+      projects.map((p) => (p.id_pekerjaan === id ? { ...p, [field]: val } : p)),
+    );
 
   const addProj = () =>
-    setProjects([...projects, {
-      id_pekerjaan: newId(), nm_pekerjaan: "", nilai_rab: "", nilai_kontrak: "",
-      no_pr: "", no_po: "", no_kontrak: "",
-      tgl_kontrak: new Date().toISOString().split("T")[0],
-      durasi_kontrak: "", no_sp3: "", tgl_sp3: "", tgl_bamk: "", assets: [], _new: true,
-    }]);
+    setProjects([
+      ...projects,
+      {
+        id_pekerjaan: newId(),
+        nm_pekerjaan: "",
+        nilai_rab: "",
+        nilai_kontrak: "",
+        no_pr: "",
+        no_po: "",
+        no_kontrak: "",
+        tgl_kontrak: new Date().toISOString().split("T")[0],
+        durasi_kontrak: "",
+        no_sp3: "",
+        tgl_sp3: "",
+        tgl_bamk: "",
+        assets: [],
+        _new: true,
+      },
+    ]);
 
-  const removeProj = (id) => setProjects(projects.filter((p) => p.id_pekerjaan !== id));
+  const removeProj = (id) =>
+    setProjects(projects.filter((p) => p.id_pekerjaan !== id));
 
   const addAsset = (projId) =>
-    setProjects(projects.map((p) =>
-      p.id_pekerjaan === projId
-        ? { ...p, assets: [...p.assets, { asset_code: newId(), name: "", brand: "", model: "", serial_number: "", procurement_date: new Date().toISOString().split("T")[0], acquisition_value: "", _new: true }] }
-        : p,
-    ));
+    setProjects(
+      projects.map((p) =>
+        p.id_pekerjaan === projId
+          ? {
+              ...p,
+              assets: [
+                ...p.assets,
+                {
+                  asset_code: newId(),
+                  name: "",
+                  brand: "",
+                  model: "",
+                  serial_number: "",
+                  procurement_date: new Date().toISOString().split("T")[0],
+                  acquisition_value: "",
+                  _new: true,
+                },
+              ],
+            }
+          : p,
+      ),
+    );
 
   const updateAsset = (projId, assetCode, field, val) =>
-    setProjects(projects.map((p) =>
-      p.id_pekerjaan === projId
-        ? { ...p, assets: p.assets.map((a) => a.asset_code === assetCode ? { ...a, [field]: val } : a) }
-        : p,
-    ));
+    setProjects(
+      projects.map((p) =>
+        p.id_pekerjaan === projId
+          ? {
+              ...p,
+              assets: p.assets.map((a) =>
+                a.asset_code === assetCode ? { ...a, [field]: val } : a,
+              ),
+            }
+          : p,
+      ),
+    );
 
   const removeAsset = (projId, assetCode) =>
-    setProjects(projects.map((p) =>
-      p.id_pekerjaan === projId ? { ...p, assets: p.assets.filter((a) => a.asset_code !== assetCode) } : p,
-    ));
+    setProjects(
+      projects.map((p) =>
+        p.id_pekerjaan === projId
+          ? { ...p, assets: p.assets.filter((a) => a.asset_code !== assetCode) }
+          : p,
+      ),
+    );
 
   const handleSave = () => {
-    onSave({ type: "capex", itemId: item.id, pagu: parseFloat(pagu) || 0, nama, projects });
+    onSave({
+      type: "capex",
+      itemId: item.id,
+      pagu: parseFloat(pagu) || 0,
+      nama,
+      projects,
+    });
     showToast("Perubahan CAPEX berhasil disimpan", "success");
     onCancel();
   };
 
   return (
     <>
-      {confirm && <ConfirmDialog msg={confirm.msg} onConfirm={confirm.onConfirm} onCancel={() => setConfirm(null)} />}
+      {confirm && (
+        <ConfirmDialog
+          msg={confirm.msg}
+          onConfirm={confirm.onConfirm}
+          onCancel={() => setConfirm(null)}
+        />
+      )}
       <tr className="bm-edit-drawer anim-in">
         <td colSpan="7">
           <div className="bm-edit-panel">
             <div className="bm-edit-panel-header">
-              <div className="bm-modal-icon" style={{ width: 34, height: 34, borderRadius: 8 }}>
+              <div
+                className="bm-modal-icon"
+                style={{ width: 34, height: 34, borderRadius: 8 }}
+              >
                 <Icon d={Icons.edit} size={16} />
               </div>
               <h3>Edit Pos Anggaran CAPEX</h3>
-              <button className="bm-btn bm-btn-cancel" onClick={onCancel}><Icon d={Icons.x} size={13} /> Batal</button>
+              <button className="bm-btn bm-btn-cancel" onClick={onCancel}>
+                <Icon d={Icons.x} size={13} /> Batal
+              </button>
             </div>
 
             <div className="bm-edit-section">
-              <div className="bm-edit-section-title"><Icon d={Icons.briefcase} size={13} /> Informasi Anggaran CAPEX</div>
+              <div className="bm-edit-section-title">
+                <Icon d={Icons.briefcase} size={13} /> Informasi Anggaran CAPEX
+              </div>
               <div className="bm-edit-grid bm-edit-grid-2">
                 <div className="bm-edit-field">
                   <label>Kode Anggaran CAPEX</label>
@@ -1265,12 +2575,23 @@ function CapexEditPanel({ item, onSave, onCancel, showToast }) {
                 </div>
                 <div className="bm-edit-field">
                   <label>Nilai Anggaran RKAP (IDR)</label>
-                  <input type="number" value={pagu} onChange={(e) => setPagu(e.target.value)} />
-                  {pagu && <span className="bm-edit-hint">≈ {fmt(parseFloat(pagu) || 0)}</span>}
+                  <input
+                    type="number"
+                    value={pagu}
+                    onChange={(e) => setPagu(e.target.value)}
+                  />
+                  {pagu && (
+                    <span className="bm-edit-hint">
+                      ≈ {fmt(parseFloat(pagu) || 0)}
+                    </span>
+                  )}
                 </div>
                 <div className="bm-edit-field bm-edit-grid-full">
                   <label>Nama Anggaran CAPEX</label>
-                  <input value={nama} onChange={(e) => setNama(e.target.value)} />
+                  <input
+                    value={nama}
+                    onChange={(e) => setNama(e.target.value)}
+                  />
                 </div>
               </div>
             </div>
@@ -1278,14 +2599,23 @@ function CapexEditPanel({ item, onSave, onCancel, showToast }) {
             <div className="bm-edit-section">
               <div className="bm-edit-section-title">
                 <Icon d={Icons.fileText} size={13} /> Daftar Pekerjaan / Kontrak
-                <span className="bm-pill blue" style={{ marginLeft: 4 }}>{projects.length}</span>
-                <button className="bm-btn bm-btn-add-sm" style={{ marginLeft: "auto" }} onClick={addProj}>
+                <span className="bm-pill blue" style={{ marginLeft: 4 }}>
+                  {projects.length}
+                </span>
+                <button
+                  className="bm-btn bm-btn-add-sm"
+                  style={{ marginLeft: "auto" }}
+                  onClick={addProj}
+                >
                   <Icon d={Icons.plus} size={13} /> Tambah Pekerjaan
                 </button>
               </div>
 
               {projects.length === 0 && (
-                <div className="bm-empty bm-empty--sm"><Icon d={Icons.fileText} size={16} /><span>Belum ada pekerjaan</span></div>
+                <div className="bm-empty bm-empty--sm">
+                  <Icon d={Icons.fileText} size={16} />
+                  <span>Belum ada pekerjaan</span>
+                </div>
               )}
 
               {projects.map((proj, idx) => {
@@ -1293,132 +2623,464 @@ function CapexEditPanel({ item, onSave, onCancel, showToast }) {
                 return (
                   <div key={proj.id_pekerjaan} className="bm-proj-edit-card">
                     <div className="bm-proj-edit-card-header">
-                      <button style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", color: "#6366f1" }}
-                        onClick={() => setExpandedProj(isOpen ? null : proj.id_pekerjaan)}>
-                        <Icon d={isOpen ? Icons.chevUp : Icons.chevDown} size={15} />
+                      <button
+                        style={{
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          color: "#6366f1",
+                        }}
+                        onClick={() =>
+                          setExpandedProj(isOpen ? null : proj.id_pekerjaan)
+                        }
+                      >
+                        <Icon
+                          d={isOpen ? Icons.chevUp : Icons.chevDown}
+                          size={15}
+                        />
                       </button>
                       <span className="bm-proj-edit-card-title">
-                        Pekerjaan #{idx + 1}{proj.nm_pekerjaan ? ` — ${proj.nm_pekerjaan.substring(0, 60)}...` : ""}
-                        {proj._new && <span style={{ marginLeft: 8, fontSize: ".65rem", background: "#dcfce7", color: "#15803d", padding: "1px 7px", borderRadius: 99, fontWeight: 700 }}>Baru</span>}
+                        Pekerjaan #{idx + 1}
+                        {proj.nm_pekerjaan
+                          ? ` — ${proj.nm_pekerjaan.substring(0, 60)}...`
+                          : ""}
+                        {proj._new && (
+                          <span
+                            style={{
+                              marginLeft: 8,
+                              fontSize: ".65rem",
+                              background: "#dcfce7",
+                              color: "#15803d",
+                              padding: "1px 7px",
+                              borderRadius: 99,
+                              fontWeight: 700,
+                            }}
+                          >
+                            Baru
+                          </span>
+                        )}
                       </span>
-                      <button className="bm-btn bm-btn-danger" style={{ padding: "4px 10px", fontSize: ".7rem" }}
-                        onClick={() => setConfirm({ msg: `Hapus pekerjaan "${proj.nm_pekerjaan ? proj.nm_pekerjaan.substring(0, 40) + "..." : `#${idx + 1}`}" beserta semua asetnya?`, onConfirm: () => { removeProj(proj.id_pekerjaan); setConfirm(null); } })}>
+                      <button
+                        className="bm-btn bm-btn-danger"
+                        style={{ padding: "4px 10px", fontSize: ".7rem" }}
+                        onClick={() =>
+                          setConfirm({
+                            msg: `Hapus pekerjaan "${proj.nm_pekerjaan ? proj.nm_pekerjaan.substring(0, 40) + "..." : `#${idx + 1}`}" beserta semua asetnya?`,
+                            onConfirm: () => {
+                              removeProj(proj.id_pekerjaan);
+                              setConfirm(null);
+                            },
+                          })
+                        }
+                      >
                         <Icon d={Icons.trash} size={13} /> Hapus
                       </button>
                     </div>
 
                     {isOpen && (
                       <div style={{ padding: "12px 14px" }} className="anim-in">
-                        <div className="bm-edit-grid" style={{ marginBottom: 10 }}>
+                        <div
+                          className="bm-edit-grid"
+                          style={{ marginBottom: 10 }}
+                        >
                           <div className="bm-edit-field bm-edit-grid-full">
                             <label>Nama Pekerjaan</label>
-                            <textarea rows="2" value={proj.nm_pekerjaan} onChange={(e) => updateProj(proj.id_pekerjaan, "nm_pekerjaan", e.target.value)} />
+                            <textarea
+                              rows="2"
+                              value={proj.nm_pekerjaan}
+                              onChange={(e) =>
+                                updateProj(
+                                  proj.id_pekerjaan,
+                                  "nm_pekerjaan",
+                                  e.target.value,
+                                )
+                              }
+                            />
                           </div>
                           <div className="bm-edit-field">
                             <label>Nilai RAB (IDR)</label>
-                            <input type="number" value={proj.nilai_rab || ""} onChange={(e) => updateProj(proj.id_pekerjaan, "nilai_rab", e.target.value)} />
-                            {proj.nilai_rab > 0 && <span className="bm-edit-hint">≈ {fmt(proj.nilai_rab)}</span>}
+                            <input
+                              type="number"
+                              value={proj.nilai_rab || ""}
+                              onChange={(e) =>
+                                updateProj(
+                                  proj.id_pekerjaan,
+                                  "nilai_rab",
+                                  e.target.value,
+                                )
+                              }
+                            />
+                            {proj.nilai_rab > 0 && (
+                              <span className="bm-edit-hint">
+                                ≈ {fmt(proj.nilai_rab)}
+                              </span>
+                            )}
                           </div>
                           <div className="bm-edit-field">
                             <label>Nilai Kontrak (IDR)</label>
-                            <input type="number" value={proj.nilai_kontrak || ""} onChange={(e) => updateProj(proj.id_pekerjaan, "nilai_kontrak", e.target.value)} />
-                            {proj.nilai_kontrak > 0 && <span className="bm-edit-hint">≈ {fmt(proj.nilai_kontrak)}</span>}
+                            <input
+                              type="number"
+                              value={proj.nilai_kontrak || ""}
+                              onChange={(e) =>
+                                updateProj(
+                                  proj.id_pekerjaan,
+                                  "nilai_kontrak",
+                                  e.target.value,
+                                )
+                              }
+                            />
+                            {proj.nilai_kontrak > 0 && (
+                              <span className="bm-edit-hint">
+                                ≈ {fmt(proj.nilai_kontrak)}
+                              </span>
+                            )}
                           </div>
                           <div className="bm-edit-field">
                             <label>No. PR</label>
-                            <input value={proj.no_pr || ""} onChange={(e) => updateProj(proj.id_pekerjaan, "no_pr", e.target.value)} />
+                            <input
+                              value={proj.no_pr || ""}
+                              onChange={(e) =>
+                                updateProj(
+                                  proj.id_pekerjaan,
+                                  "no_pr",
+                                  e.target.value,
+                                )
+                              }
+                            />
                           </div>
                           <div className="bm-edit-field">
                             <label>No. PO</label>
-                            <input value={proj.no_po || ""} onChange={(e) => updateProj(proj.id_pekerjaan, "no_po", e.target.value)} />
+                            <input
+                              value={proj.no_po || ""}
+                              onChange={(e) =>
+                                updateProj(
+                                  proj.id_pekerjaan,
+                                  "no_po",
+                                  e.target.value,
+                                )
+                              }
+                            />
                           </div>
                           <div className="bm-edit-field">
                             <label>No. Kontrak</label>
-                            <input value={proj.no_kontrak || ""} onChange={(e) => updateProj(proj.id_pekerjaan, "no_kontrak", e.target.value)} />
+                            <input
+                              value={proj.no_kontrak || ""}
+                              onChange={(e) =>
+                                updateProj(
+                                  proj.id_pekerjaan,
+                                  "no_kontrak",
+                                  e.target.value,
+                                )
+                              }
+                            />
                           </div>
                           <div className="bm-edit-field">
                             <label>Tgl Kontrak</label>
-                            <input type="date" value={proj.tgl_kontrak || ""} onChange={(e) => updateProj(proj.id_pekerjaan, "tgl_kontrak", e.target.value)} />
+                            <input
+                              type="date"
+                              value={proj.tgl_kontrak || ""}
+                              onChange={(e) =>
+                                updateProj(
+                                  proj.id_pekerjaan,
+                                  "tgl_kontrak",
+                                  e.target.value,
+                                )
+                              }
+                            />
                           </div>
                           <div className="bm-edit-field">
                             <label>Durasi (Hari)</label>
-                            <input type="number" value={proj.durasi_kontrak || ""} onChange={(e) => updateProj(proj.id_pekerjaan, "durasi_kontrak", e.target.value)} />
+                            <input
+                              type="number"
+                              value={proj.durasi_kontrak || ""}
+                              onChange={(e) =>
+                                updateProj(
+                                  proj.id_pekerjaan,
+                                  "durasi_kontrak",
+                                  e.target.value,
+                                )
+                              }
+                            />
                           </div>
                           <div className="bm-edit-field">
                             <label>No. SP3</label>
-                            <input value={proj.no_sp3 || ""} onChange={(e) => updateProj(proj.id_pekerjaan, "no_sp3", e.target.value)} />
+                            <input
+                              value={proj.no_sp3 || ""}
+                              onChange={(e) =>
+                                updateProj(
+                                  proj.id_pekerjaan,
+                                  "no_sp3",
+                                  e.target.value,
+                                )
+                              }
+                            />
                           </div>
                           <div className="bm-edit-field">
                             <label>Tgl SP3</label>
-                            <input type="date" value={proj.tgl_sp3 || ""} onChange={(e) => updateProj(proj.id_pekerjaan, "tgl_sp3", e.target.value)} />
+                            <input
+                              type="date"
+                              value={proj.tgl_sp3 || ""}
+                              onChange={(e) =>
+                                updateProj(
+                                  proj.id_pekerjaan,
+                                  "tgl_sp3",
+                                  e.target.value,
+                                )
+                              }
+                            />
                           </div>
                           <div className="bm-edit-field">
                             <label>Tgl BAMK</label>
-                            <input type="date" value={proj.tgl_bamk || ""} onChange={(e) => updateProj(proj.id_pekerjaan, "tgl_bamk", e.target.value)} />
+                            <input
+                              type="date"
+                              value={proj.tgl_bamk || ""}
+                              onChange={(e) =>
+                                updateProj(
+                                  proj.id_pekerjaan,
+                                  "tgl_bamk",
+                                  e.target.value,
+                                )
+                              }
+                            />
                           </div>
                         </div>
 
-                        <div style={{ borderTop: "1px dashed #c7d2fe", paddingTop: 10 }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                            <Icon d={Icons.layers} size={13} style={{ color: "#6366f1" }} />
-                            <span style={{ fontSize: ".72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".5px", color: "#4338ca" }}>
+                        <div
+                          style={{
+                            borderTop: "1px dashed #c7d2fe",
+                            paddingTop: 10,
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
+                              marginBottom: 8,
+                            }}
+                          >
+                            <Icon
+                              d={Icons.layers}
+                              size={13}
+                              style={{ color: "#6366f1" }}
+                            />
+                            <span
+                              style={{
+                                fontSize: ".72rem",
+                                fontWeight: 700,
+                                textTransform: "uppercase",
+                                letterSpacing: ".5px",
+                                color: "#4338ca",
+                              }}
+                            >
                               Aset ({proj.assets.length})
                             </span>
-                            <button className="bm-btn bm-btn-add-sm" style={{ marginLeft: "auto", fontSize: ".68rem", padding: "4px 10px" }} onClick={() => addAsset(proj.id_pekerjaan)}>
+                            <button
+                              className="bm-btn bm-btn-add-sm"
+                              style={{
+                                marginLeft: "auto",
+                                fontSize: ".68rem",
+                                padding: "4px 10px",
+                              }}
+                              onClick={() => addAsset(proj.id_pekerjaan)}
+                            >
                               <Icon d={Icons.plus} size={12} /> Tambah Aset
                             </button>
                           </div>
                           {proj.assets.map((asset, aIdx) => (
-                            <div key={asset.asset_code} className="bm-asset-edit-row">
+                            <div
+                              key={asset.asset_code}
+                              className="bm-asset-edit-row"
+                            >
                               <div className="bm-asset-edit-row-header">
-                                <span style={{ fontSize: ".7rem", fontWeight: 700, color: "#0369a1" }}>Aset #{aIdx + 1}</span>
-                                {asset._new && <span style={{ fontSize: ".62rem", background: "#dcfce7", color: "#15803d", padding: "1px 7px", borderRadius: 99, fontWeight: 700 }}>Baru</span>}
-                                <button className="bm-btn bm-btn-danger" style={{ marginLeft: "auto", padding: "3px 9px", fontSize: ".68rem" }}
-                                  onClick={() => setConfirm({ msg: `Hapus aset "${asset.name || asset.asset_code}"?`, onConfirm: () => { removeAsset(proj.id_pekerjaan, asset.asset_code); setConfirm(null); } })}>
+                                <span
+                                  style={{
+                                    fontSize: ".7rem",
+                                    fontWeight: 700,
+                                    color: "#0369a1",
+                                  }}
+                                >
+                                  Aset #{aIdx + 1}
+                                </span>
+                                {asset._new && (
+                                  <span
+                                    style={{
+                                      fontSize: ".62rem",
+                                      background: "#dcfce7",
+                                      color: "#15803d",
+                                      padding: "1px 7px",
+                                      borderRadius: 99,
+                                      fontWeight: 700,
+                                    }}
+                                  >
+                                    Baru
+                                  </span>
+                                )}
+                                <button
+                                  className="bm-btn bm-btn-danger"
+                                  style={{
+                                    marginLeft: "auto",
+                                    padding: "3px 9px",
+                                    fontSize: ".68rem",
+                                  }}
+                                  onClick={() =>
+                                    setConfirm({
+                                      msg: `Hapus aset "${asset.name || asset.asset_code}"?`,
+                                      onConfirm: () => {
+                                        removeAsset(
+                                          proj.id_pekerjaan,
+                                          asset.asset_code,
+                                        );
+                                        setConfirm(null);
+                                      },
+                                    })
+                                  }
+                                >
                                   <Icon d={Icons.trash} size={12} /> Hapus
                                 </button>
                               </div>
-                              <div className="bm-edit-grid" style={{ gridTemplateColumns: "repeat(3,1fr)" }}>
+                              <div
+                                className="bm-edit-grid"
+                                style={{ gridTemplateColumns: "repeat(3,1fr)" }}
+                              >
                                 <div className="bm-edit-field">
                                   <label>Kode Aset</label>
                                   <input
-                                    value={asset._new ? (asset.asset_code.startsWith("id-") ? "" : asset.asset_code) : asset.asset_code}
-                                    onChange={(e) => updateAsset(proj.id_pekerjaan, asset.asset_code, "asset_code", e.target.value)}
+                                    value={
+                                      asset._new
+                                        ? asset.asset_code.startsWith("id-")
+                                          ? ""
+                                          : asset.asset_code
+                                        : asset.asset_code
+                                    }
+                                    onChange={(e) =>
+                                      updateAsset(
+                                        proj.id_pekerjaan,
+                                        asset.asset_code,
+                                        "asset_code",
+                                        e.target.value,
+                                      )
+                                    }
                                     readOnly={!asset._new}
-                                    style={!asset._new ? { background: "#f8fafc", color: "#94a3b8" } : {}}
+                                    style={
+                                      !asset._new
+                                        ? {
+                                            background: "#f8fafc",
+                                            color: "#94a3b8",
+                                          }
+                                        : {}
+                                    }
                                   />
                                 </div>
-                                <div className="bm-edit-field" style={{ gridColumn: "2/-1" }}>
+                                <div
+                                  className="bm-edit-field"
+                                  style={{ gridColumn: "2/-1" }}
+                                >
                                   <label>Nama Aset</label>
-                                  <input value={asset.name} onChange={(e) => updateAsset(proj.id_pekerjaan, asset.asset_code, "name", e.target.value)} />
+                                  <input
+                                    value={asset.name}
+                                    onChange={(e) =>
+                                      updateAsset(
+                                        proj.id_pekerjaan,
+                                        asset.asset_code,
+                                        "name",
+                                        e.target.value,
+                                      )
+                                    }
+                                  />
                                 </div>
                                 <div className="bm-edit-field">
                                   <label>Brand</label>
-                                  <input value={asset.brand} onChange={(e) => updateAsset(proj.id_pekerjaan, asset.asset_code, "brand", e.target.value)} />
+                                  <input
+                                    value={asset.brand}
+                                    onChange={(e) =>
+                                      updateAsset(
+                                        proj.id_pekerjaan,
+                                        asset.asset_code,
+                                        "brand",
+                                        e.target.value,
+                                      )
+                                    }
+                                  />
                                 </div>
                                 <div className="bm-edit-field">
                                   <label>Model</label>
-                                  <input value={asset.model} onChange={(e) => updateAsset(proj.id_pekerjaan, asset.asset_code, "model", e.target.value)} />
+                                  <input
+                                    value={asset.model}
+                                    onChange={(e) =>
+                                      updateAsset(
+                                        proj.id_pekerjaan,
+                                        asset.asset_code,
+                                        "model",
+                                        e.target.value,
+                                      )
+                                    }
+                                  />
                                 </div>
                                 <div className="bm-edit-field">
                                   <label>Serial Number</label>
-                                  <input value={asset.serial_number || ""} onChange={(e) => updateAsset(proj.id_pekerjaan, asset.asset_code, "serial_number", e.target.value)} />
+                                  <input
+                                    value={asset.serial_number || ""}
+                                    onChange={(e) =>
+                                      updateAsset(
+                                        proj.id_pekerjaan,
+                                        asset.asset_code,
+                                        "serial_number",
+                                        e.target.value,
+                                      )
+                                    }
+                                  />
                                 </div>
                                 <div className="bm-edit-field">
                                   <label>Tgl Pengadaan</label>
-                                  <input type="date" value={asset.procurement_date} onChange={(e) => updateAsset(proj.id_pekerjaan, asset.asset_code, "procurement_date", e.target.value)} />
+                                  <input
+                                    type="date"
+                                    value={asset.procurement_date}
+                                    onChange={(e) =>
+                                      updateAsset(
+                                        proj.id_pekerjaan,
+                                        asset.asset_code,
+                                        "procurement_date",
+                                        e.target.value,
+                                      )
+                                    }
+                                  />
                                 </div>
                                 <div className="bm-edit-field">
                                   <label>Nilai Perolehan (IDR)</label>
-                                  <input type="number" value={asset.acquisition_value || ""} onChange={(e) => updateAsset(proj.id_pekerjaan, asset.asset_code, "acquisition_value", parseFloat(e.target.value) || 0)} />
-                                  {asset.acquisition_value > 0 && <span className="bm-edit-hint">≈ {fmt(asset.acquisition_value)}</span>}
+                                  <input
+                                    type="number"
+                                    value={asset.acquisition_value || ""}
+                                    onChange={(e) =>
+                                      updateAsset(
+                                        proj.id_pekerjaan,
+                                        asset.asset_code,
+                                        "acquisition_value",
+                                        parseFloat(e.target.value) || 0,
+                                      )
+                                    }
+                                  />
+                                  {asset.acquisition_value > 0 && (
+                                    <span className="bm-edit-hint">
+                                      ≈ {fmt(asset.acquisition_value)}
+                                    </span>
+                                  )}
                                 </div>
                               </div>
                             </div>
                           ))}
                           {proj.assets.length === 0 && (
-                            <div className="bm-empty bm-empty--sm" style={{ border: "1px dashed #c7d2fe", borderRadius: 8 }}>
-                              <Icon d={Icons.package} size={14} /><span>Belum ada aset untuk pekerjaan ini</span>
+                            <div
+                              className="bm-empty bm-empty--sm"
+                              style={{
+                                border: "1px dashed #c7d2fe",
+                                borderRadius: 8,
+                              }}
+                            >
+                              <Icon d={Icons.package} size={14} />
+                              <span>Belum ada aset untuk pekerjaan ini</span>
                             </div>
                           )}
                         </div>
@@ -1430,8 +3092,12 @@ function CapexEditPanel({ item, onSave, onCancel, showToast }) {
             </div>
 
             <div className="bm-edit-actions">
-              <button className="bm-btn bm-btn-cancel" onClick={onCancel}><Icon d={Icons.x} size={13} /> Batal</button>
-              <button className="bm-btn bm-btn-save" onClick={handleSave}><Icon d={Icons.save} size={13} /> Simpan Perubahan</button>
+              <button className="bm-btn bm-btn-cancel" onClick={onCancel}>
+                <Icon d={Icons.x} size={13} /> Batal
+              </button>
+              <button className="bm-btn bm-btn-save" onClick={handleSave}>
+                <Icon d={Icons.save} size={13} /> Simpan Perubahan
+              </button>
             </div>
           </div>
         </td>
@@ -1451,9 +3117,14 @@ function OpexDetail({ item, onAddRealisasi }) {
           <div className="bm-drill-header">
             <Icon d={Icons.receipt} size={14} />
             Riwayat Realisasi
-            <span className="bm-pill blue">{item.realisasiList.length} transaksi</span>
+            <span className="bm-pill blue">
+              {item.realisasiList.length} transaksi
+            </span>
             <div className="bm-drill-actions">
-              <button className="bm-btn-add-realisasi" onClick={() => onAddRealisasi(item)}>
+              <button
+                className="bm-btn-add-realisasi"
+                onClick={() => onAddRealisasi(item)}
+              >
                 <Icon d={Icons.plus} size={13} /> Tambah Realisasi
               </button>
             </div>
@@ -1462,29 +3133,66 @@ function OpexDetail({ item, onAddRealisasi }) {
             <table className="bm-sub-table">
               <thead>
                 <tr>
-                  <th>Tanggal</th><th>Keterangan</th><th>No. Invoice</th><th>Aset</th><th className="ta-r">Jumlah</th>
+                  <th>Tanggal</th>
+                  <th>Keterangan</th>
+                  <th>No. Invoice</th>
+                  <th>Aset</th>
+                  <th className="ta-r">Jumlah</th>
                 </tr>
               </thead>
               <tbody>
-                {[...item.realisasiList].sort((a, b) => new Date(b.tanggal_realisasi) - new Date(a.tanggal_realisasi)).map((r) => (
-                  <tr key={r.id_realisasi}>
-                    <td><div className="bm-date-cell"><Icon d={Icons.calendar} size={11} />{fmtDate(r.tanggal_realisasi)}</div></td>
-                    <td className="fw-med">{r.keterangan}</td>
-                    <td>{r.no_invoice ? <code className="bm-code">{r.no_invoice}</code> : <span className="tc-muted2">—</span>}</td>
-                    <td>{r.id_aset ? <div className="bm-aset-link"><Icon d={Icons.link} size={11} /><code className="bm-code bm-code--aset">{r.id_aset}</code></div> : <span className="bm-no-aset">Tidak ada</span>}</td>
-                    <td className="ta-r tc-red fw-bold">− {fmt(r.jumlah)}</td>
-                  </tr>
-                ))}
+                {[...item.realisasiList]
+                  .sort(
+                    (a, b) =>
+                      new Date(b.tanggal_realisasi) -
+                      new Date(a.tanggal_realisasi),
+                  )
+                  .map((r) => (
+                    <tr key={r.id_realisasi}>
+                      <td>
+                        <div className="bm-date-cell">
+                          <Icon d={Icons.calendar} size={11} />
+                          {fmtDate(r.tanggal_realisasi)}
+                        </div>
+                      </td>
+                      <td className="fw-med">{r.keterangan}</td>
+                      <td>
+                        {r.no_invoice ? (
+                          <code className="bm-code">{r.no_invoice}</code>
+                        ) : (
+                          <span className="tc-muted2">—</span>
+                        )}
+                      </td>
+                      <td>
+                        {r.id_aset ? (
+                          <div className="bm-aset-link">
+                            <Icon d={Icons.link} size={11} />
+                            <code className="bm-code bm-code--aset">
+                              {r.id_aset}
+                            </code>
+                          </div>
+                        ) : (
+                          <span className="bm-no-aset">Tidak ada</span>
+                        )}
+                      </td>
+                      <td className="ta-r tc-red fw-bold">− {fmt(r.jumlah)}</td>
+                    </tr>
+                  ))}
               </tbody>
               <tfoot>
                 <tr className="bm-sub-total">
-                  <td colSpan="4" className="ta-r fw-bold">Total</td>
+                  <td colSpan="4" className="ta-r fw-bold">
+                    Total
+                  </td>
                   <td className="ta-r tc-red fw-bold">{fmt(item.used)}</td>
                 </tr>
               </tfoot>
             </table>
           ) : (
-            <div className="bm-empty"><Icon d={Icons.receipt} size={28} /><span>Belum ada realisasi</span></div>
+            <div className="bm-empty">
+              <Icon d={Icons.receipt} size={28} />
+              <span>Belum ada realisasi</span>
+            </div>
           )}
         </div>
       </td>
@@ -1503,7 +3211,9 @@ function CapexDetail({ item, expandedProject, toggleProject }) {
           <div className="bm-drill-header">
             <Icon d={Icons.fileText} size={14} />
             Daftar Pekerjaan / Kontrak
-            <span className="bm-pill blue">{item.projects.length} pekerjaan</span>
+            <span className="bm-pill blue">
+              {item.projects.length} pekerjaan
+            </span>
           </div>
           {item.projects.length > 0 ? (
             <div className="bm-projects">
@@ -1512,82 +3222,170 @@ function CapexDetail({ item, expandedProject, toggleProject }) {
                 const assetCnt = p.assets ? p.assets.length : 0;
                 const balanceInfo = getBalanceInfo(p.assets, p.nilai_kontrak);
                 return (
-                  <div key={p.id_pekerjaan} className={`bm-proj-card ${open ? "open" : ""}`}>
-                    <div className="bm-proj-row" onClick={() => toggleProject(p.id_pekerjaan)}>
+                  <div
+                    key={p.id_pekerjaan}
+                    className={`bm-proj-card ${open ? "open" : ""}`}
+                  >
+                    <div
+                      className="bm-proj-row"
+                      onClick={() => toggleProject(p.id_pekerjaan)}
+                    >
                       <div className="bm-proj-left">
                         <div className="bm-proj-name">{p.nm_pekerjaan}</div>
                         <div className="bm-proj-meta">
-                          {p.no_kontrak && <span className="bm-meta-item"><Icon d={Icons.fileText} size={11} />{p.no_kontrak}</span>}
-                          {p.tgl_kontrak && <span className="bm-meta-item"><Icon d={Icons.calendar} size={11} />{fmtDate(p.tgl_kontrak)}</span>}
-                          {p.durasi_kontrak && <span className="bm-meta-item">⏱ {p.durasi_kontrak} hari</span>}
+                          {p.no_kontrak && (
+                            <span className="bm-meta-item">
+                              <Icon d={Icons.fileText} size={11} />
+                              {p.no_kontrak}
+                            </span>
+                          )}
+                          {p.tgl_kontrak && (
+                            <span className="bm-meta-item">
+                              <Icon d={Icons.calendar} size={11} />
+                              {fmtDate(p.tgl_kontrak)}
+                            </span>
+                          )}
+                          {p.durasi_kontrak && (
+                            <span className="bm-meta-item">
+                              ⏱ {p.durasi_kontrak} hari
+                            </span>
+                          )}
                         </div>
                         <div className="bm-proj-refs">
-                          {p.no_pr && <span className="bm-ref">PR: {p.no_pr}</span>}
-                          {p.no_po && <span className="bm-ref">PO: {p.no_po}</span>}
-                          {p.no_sp3 && <span className="bm-ref">SP3: {p.no_sp3}</span>}
-                          {p.tgl_sp3 && <span className="bm-ref">Tgl SP3: {fmtDate(p.tgl_sp3)}</span>}
-                          {p.tgl_bamk && <span className="bm-ref">BAMK: {fmtDate(p.tgl_bamk)}</span>}
+                          {p.no_pr && (
+                            <span className="bm-ref">PR: {p.no_pr}</span>
+                          )}
+                          {p.no_po && (
+                            <span className="bm-ref">PO: {p.no_po}</span>
+                          )}
+                          {p.no_sp3 && (
+                            <span className="bm-ref">SP3: {p.no_sp3}</span>
+                          )}
+                          {p.tgl_sp3 && (
+                            <span className="bm-ref">
+                              Tgl SP3: {fmtDate(p.tgl_sp3)}
+                            </span>
+                          )}
+                          {p.tgl_bamk && (
+                            <span className="bm-ref">
+                              BAMK: {fmtDate(p.tgl_bamk)}
+                            </span>
+                          )}
                         </div>
                       </div>
                       <div className="bm-proj-right">
                         <div className="bm-proj-vals">
                           <div className="bm-val-block">
                             <span className="bm-val-lbl">RAB</span>
-                            <span className="bm-val-num rab">{p.nilai_rab > 0 ? fmt(p.nilai_rab) : "—"}</span>
+                            <span className="bm-val-num rab">
+                              {p.nilai_rab > 0 ? fmt(p.nilai_rab) : "—"}
+                            </span>
                           </div>
                           <div className="bm-val-block">
                             <span className="bm-val-lbl">Kontrak</span>
-                            <span className="bm-val-num kontrak">{p.nilai_kontrak > 0 ? fmt(p.nilai_kontrak) : "—"}</span>
+                            <span className="bm-val-num kontrak">
+                              {p.nilai_kontrak > 0 ? fmt(p.nilai_kontrak) : "—"}
+                            </span>
                           </div>
                           {balanceInfo.sumAset > 0 && (
                             <div className="bm-val-block">
                               <span className="bm-val-lbl">Nilai Aset</span>
-                              <span className="bm-val-num aset">{fmt(balanceInfo.sumAset)}</span>
+                              <span className="bm-val-num aset">
+                                {fmt(balanceInfo.sumAset)}
+                              </span>
                             </div>
                           )}
                         </div>
                         <div className="bm-proj-actions">
-                          <BalanceBadge assets={p.assets} nilaiKontrak={p.nilai_kontrak} />
+                          <BalanceBadge
+                            assets={p.assets}
+                            nilaiKontrak={p.nilai_kontrak}
+                          />
                           <span className="bm-pill blue">{assetCnt} Aset</span>
-                          <Icon d={open ? Icons.chevUp : Icons.chevDown} size={16} className={open ? "tc-accent" : "tc-muted2"} />
+                          <Icon
+                            d={open ? Icons.chevUp : Icons.chevDown}
+                            size={16}
+                            className={open ? "tc-accent" : "tc-muted2"}
+                          />
                         </div>
                       </div>
                     </div>
                     {open && (
                       <div className="bm-asset-sub anim-in">
-                        <div className="bm-asset-sub-title"><Icon d={Icons.layers} size={12} />Aset Terdaftar</div>
+                        <div className="bm-asset-sub-title">
+                          <Icon d={Icons.layers} size={12} />
+                          Aset Terdaftar
+                        </div>
                         {assetCnt > 0 ? (
                           <>
-                            <table className="bm-sub-table" style={{ fontSize: ".77rem" }}>
+                            <table
+                              className="bm-sub-table"
+                              style={{ fontSize: ".77rem" }}
+                            >
                               <thead>
-                                <tr><th>Kode Aset</th><th>Nama Aset</th><th>Brand / Model</th><th>S/N</th><th>Tgl</th><th className="ta-r">Nilai</th></tr>
+                                <tr>
+                                  <th>Kode Aset</th>
+                                  <th>Nama Aset</th>
+                                  <th>Brand / Model</th>
+                                  <th>S/N</th>
+                                  <th>Tgl</th>
+                                  <th className="ta-r">Nilai</th>
+                                </tr>
                               </thead>
                               <tbody>
                                 {p.assets.map((a) => (
                                   <tr key={a.asset_code}>
-                                    <td><code className="bm-code">{a.asset_code}</code></td>
+                                    <td>
+                                      <code className="bm-code">
+                                        {a.asset_code}
+                                      </code>
+                                    </td>
                                     <td className="fw-med">{a.name}</td>
-                                    <td className="tc-muted">{a.brand} / {a.model}</td>
-                                    <td className="tc-muted">{a.serial_number || "—"}</td>
+                                    <td className="tc-muted">
+                                      {a.brand} / {a.model}
+                                    </td>
+                                    <td className="tc-muted">
+                                      {a.serial_number || "—"}
+                                    </td>
                                     <td>{fmtDate(a.procurement_date)}</td>
                                     <td className="ta-r fw-bold tc-ink">
-                                      {a.acquisition_value ? fmt(a.acquisition_value) : <span className="bm-no-aset">Belum diisi</span>}
+                                      {a.acquisition_value ? (
+                                        fmt(a.acquisition_value)
+                                      ) : (
+                                        <span className="bm-no-aset">
+                                          Belum diisi
+                                        </span>
+                                      )}
                                     </td>
                                   </tr>
                                 ))}
                               </tbody>
                               <tfoot>
                                 <tr className="bm-sub-total">
-                                  <td colSpan="5" className="ta-r fw-bold">Total Nilai Aset</td>
-                                  <td className="ta-r fw-bold tc-ink">{fmt(p.assets.reduce((s, a) => s + (a.acquisition_value || 0), 0))}</td>
+                                  <td colSpan="5" className="ta-r fw-bold">
+                                    Total Nilai Aset
+                                  </td>
+                                  <td className="ta-r fw-bold tc-ink">
+                                    {fmt(
+                                      p.assets.reduce(
+                                        (s, a) =>
+                                          s + (a.acquisition_value || 0),
+                                        0,
+                                      ),
+                                    )}
+                                  </td>
                                 </tr>
                               </tfoot>
                             </table>
-                            <BalanceBar assets={p.assets} nilaiKontrak={p.nilai_kontrak} />
+                            <BalanceBar
+                              assets={p.assets}
+                              nilaiKontrak={p.nilai_kontrak}
+                            />
                           </>
                         ) : (
                           <div className="bm-empty bm-empty--sm">
-                            <Icon d={Icons.package} size={16} /><span>Belum ada aset terdaftar</span>
+                            <Icon d={Icons.package} size={16} />
+                            <span>Belum ada aset terdaftar</span>
                           </div>
                         )}
                       </div>
@@ -1601,7 +3399,10 @@ function CapexDetail({ item, expandedProject, toggleProject }) {
               </div>
             </div>
           ) : (
-            <div className="bm-empty"><Icon d={Icons.fileText} size={28} /><span>Belum ada pekerjaan/kontrak terdaftar</span></div>
+            <div className="bm-empty">
+              <Icon d={Icons.fileText} size={28} />
+              <span>Belum ada pekerjaan/kontrak terdaftar</span>
+            </div>
           )}
         </div>
       </td>
@@ -1639,7 +3440,12 @@ export default function BudgetManagement() {
     const raw = activeTab === "capex" ? mockCapex : mockOpex;
     return raw
       .map((item) => {
-        let id, name, pagu, used, projects = [], realisasiList = [];
+        let id,
+          name,
+          pagu,
+          used,
+          projects = [],
+          realisasiList = [];
         if (activeTab === "capex") {
           id = item.kd_anggaran_capex;
           name = item.nm_anggaran_capex;
@@ -1650,12 +3456,24 @@ export default function BudgetManagement() {
           id = String(item.id_anggaran_tahunan);
           name = item.nm_anggaran_master;
           pagu = item.nilai_anggaran_tahunan || 0;
-          realisasiList = realisasiOpex.filter((r) => r.id_anggaran_tahunan === item.id_anggaran_tahunan);
+          realisasiList = realisasiOpex.filter(
+            (r) => r.id_anggaran_tahunan === item.id_anggaran_tahunan,
+          );
           used = realisasiList.reduce((s, r) => s + (r.jumlah || 0), 0);
         }
         const remaining = pagu - used;
         const percentage = pagu > 0 ? (used / pagu) * 100 : 0;
-        return { id, name, pagu, used, remaining, percentage, projects, realisasiList, raw: item };
+        return {
+          id,
+          name,
+          pagu,
+          used,
+          remaining,
+          percentage,
+          projects,
+          realisasiList,
+          raw: item,
+        };
       })
       .filter((d) => d.name.toLowerCase().includes(search.toLowerCase()));
   }, [activeTab, search, realisasiOpex, mockCapex, mockOpex]);
@@ -1663,7 +3481,12 @@ export default function BudgetManagement() {
   const totals = useMemo(() => {
     const pagu = data.reduce((s, d) => s + d.pagu, 0);
     const used = data.reduce((s, d) => s + d.used, 0);
-    return { pagu, used, remaining: pagu - used, pct: pagu > 0 ? (used / pagu) * 100 : 0 };
+    return {
+      pagu,
+      used,
+      remaining: pagu - used,
+      pct: pagu > 0 ? (used / pagu) * 100 : 0,
+    };
   }, [data]);
 
   const toggleBudget = (id) => {
@@ -1671,41 +3494,65 @@ export default function BudgetManagement() {
     setExpandedBudget(expandedBudget === id ? null : id);
     setExpandedProject(null);
   };
-  const toggleProject = (id) => setExpandedProject(expandedProject === id ? null : id);
+  const toggleProject = (id) =>
+    setExpandedProject(expandedProject === id ? null : id);
 
   const handleEditClick = (e, id) => {
     e.stopPropagation();
-    if (editingBudget === id) { setEditingBudget(null); }
-    else { setExpandedBudget(id); setEditingBudget(id); }
+    if (editingBudget === id) {
+      setEditingBudget(null);
+    } else {
+      setExpandedBudget(id);
+      setEditingBudget(id);
+    }
   };
 
   const switchTab = (t) => {
-    setActiveTab(t); setExpandedBudget(null); setEditingBudget(null);
-    setExpandedProject(null); setSearch("");
+    setActiveTab(t);
+    setExpandedBudget(null);
+    setEditingBudget(null);
+    setExpandedProject(null);
+    setSearch("");
   };
 
   const handleSaveEdit = (payload) => {
     if (payload.type === "opex") {
-      const otherReal = realisasiOpex.filter((r) => r.id_anggaran_tahunan !== parseInt(payload.itemId));
-      const myRealWithId = payload.realisasiList.map((r) => ({ ...r, jumlah: parseFloat(r.jumlah) || 0, id_anggaran_tahunan: parseInt(payload.itemId) }));
+      const otherReal = realisasiOpex.filter(
+        (r) => r.id_anggaran_tahunan !== parseInt(payload.itemId),
+      );
+      const myRealWithId = payload.realisasiList.map((r) => ({
+        ...r,
+        jumlah: parseFloat(r.jumlah) || 0,
+        id_anggaran_tahunan: parseInt(payload.itemId),
+      }));
       setRealisasiOpex([...otherReal, ...myRealWithId]);
     } else if (payload.type === "capex") {
-      setMockCapex((prev) => prev.map((c) =>
-        c.kd_anggaran_capex === payload.itemId
-          ? { ...c, nilai_anggaran_rkap: payload.pagu, nm_anggaran_capex: payload.nama, projects: payload.projects }
-          : c,
-      ));
+      setMockCapex((prev) =>
+        prev.map((c) =>
+          c.kd_anggaran_capex === payload.itemId
+            ? {
+                ...c,
+                nilai_anggaran_rkap: payload.pagu,
+                nm_anggaran_capex: payload.nama,
+                projects: payload.projects,
+              }
+            : c,
+        ),
+      );
     }
     setEditingBudget(null);
   };
 
   const handleSaveRealisasi = (anggaranItem, formData) => {
-    setRealisasiOpex([...realisasiOpex, {
-      id_realisasi: Date.now(),
-      id_anggaran_tahunan: anggaranItem.id_anggaran_tahunan,
-      ...formData,
-      create_date: new Date().toISOString(),
-    }]);
+    setRealisasiOpex([
+      ...realisasiOpex,
+      {
+        id_realisasi: Date.now(),
+        id_anggaran_tahunan: anggaranItem.id_anggaran_tahunan,
+        ...formData,
+        create_date: new Date().toISOString(),
+      },
+    ]);
     showToast("Realisasi berhasil ditambahkan", "success");
   };
 
@@ -1715,7 +3562,13 @@ export default function BudgetManagement() {
     <>
       <style>{CSS}</style>
       <div className="bm-root">
-        {toast && <Toast msg={toast.msg} type={toast.type} onDone={() => setToast(null)} />}
+        {toast && (
+          <Toast
+            msg={toast.msg}
+            type={toast.type}
+            onDone={() => setToast(null)}
+          />
+        )}
 
         {modalRealisasi && (
           <ModalRealisasi
@@ -1728,22 +3581,40 @@ export default function BudgetManagement() {
         <header className="bm-header">
           <div className="bm-header-text">
             <h1>Anggaran &amp; Realisasi</h1>
-            <p>Monitoring {activeTab === "capex" ? "Investasi (CAPEX)" : "Operasional (OPEX)"}&ensp;·&ensp;Tahun {tahunAnggaran}</p>
+            <p>
+              Monitoring{" "}
+              {activeTab === "capex"
+                ? "Investasi (CAPEX)"
+                : "Operasional (OPEX)"}
+              &ensp;·&ensp;Tahun {tahunAnggaran}
+            </p>
           </div>
           <div className="bm-header-right">
             <div className="bm-year-filter-wrap">
               <span className="bm-year-filter-label">Tahun Anggaran</span>
               <div className="bm-year-pills">
                 {tahunOptions.map((t) => (
-                  <button key={t} className={`bm-year-pill ${tahunAnggaran === t ? "active" : ""}`} onClick={() => setTahunAnggaran(t)}>{t}</button>
+                  <button
+                    key={t}
+                    className={`bm-year-pill ${tahunAnggaran === t ? "active" : ""}`}
+                    onClick={() => setTahunAnggaran(t)}
+                  >
+                    {t}
+                  </button>
                 ))}
               </div>
             </div>
             <div className="bm-tabs">
-              <button className={`bm-tab ${activeTab === "capex" ? "active" : ""}`} onClick={() => switchTab("capex")}>
+              <button
+                className={`bm-tab ${activeTab === "capex" ? "active" : ""}`}
+                onClick={() => switchTab("capex")}
+              >
                 <Icon d={Icons.briefcase} size={15} /> CAPEX
               </button>
-              <button className={`bm-tab ${activeTab === "opex" ? "active" : ""}`} onClick={() => switchTab("opex")}>
+              <button
+                className={`bm-tab ${activeTab === "opex" ? "active" : ""}`}
+                onClick={() => switchTab("opex")}
+              >
                 <Icon d={Icons.monitor} size={15} /> OPEX
               </button>
             </div>
@@ -1752,7 +3623,9 @@ export default function BudgetManagement() {
 
         <section className="bm-kpis">
           <div className="bm-kpi bm-kpi--blue">
-            <div className="bm-kpi-icon"><Icon d={Icons.dollar} size={20} /></div>
+            <div className="bm-kpi-icon">
+              <Icon d={Icons.dollar} size={20} />
+            </div>
             <div>
               <div className="bm-kpi-lbl">Total Pagu Anggaran</div>
               <div className="bm-kpi-val">{fmt(totals.pagu)}</div>
@@ -1760,21 +3633,30 @@ export default function BudgetManagement() {
             </div>
           </div>
           <div className="bm-kpi bm-kpi--amber">
-            <div className="bm-kpi-icon"><Icon d={Icons.trending} size={20} /></div>
+            <div className="bm-kpi-icon">
+              <Icon d={Icons.trending} size={20} />
+            </div>
             <div>
               <div className="bm-kpi-lbl">Total Realisasi</div>
               <div className="bm-kpi-val">{fmt(totals.used)}</div>
-              <div className="bm-kpi-sub">{totals.pct.toFixed(1)}% dari total pagu</div>
+              <div className="bm-kpi-sub">
+                {totals.pct.toFixed(1)}% dari total pagu
+              </div>
             </div>
           </div>
           <div className="bm-kpi bm-kpi--green">
-            <div className="bm-kpi-icon"><Icon d={Icons.wallet} size={20} /></div>
+            <div className="bm-kpi-icon">
+              <Icon d={Icons.wallet} size={20} />
+            </div>
             <div>
               <div className="bm-kpi-lbl">Sisa Anggaran</div>
               <div className="bm-kpi-val">{fmt(totals.remaining)}</div>
               <div className="bm-kpi-sub">
                 <div className="bm-kpi-bar">
-                  <div className={`bm-kpi-bar-fill sc-${sc(totals.pct)}`} style={{ width: `${Math.min(totals.pct, 100)}%` }} />
+                  <div
+                    className={`bm-kpi-bar-fill sc-${sc(totals.pct)}`}
+                    style={{ width: `${Math.min(totals.pct, 100)}%` }}
+                  />
                 </div>
                 <span>{totals.pct.toFixed(1)}% terserap</span>
               </div>
@@ -1784,9 +3666,17 @@ export default function BudgetManagement() {
 
         <div className="bm-banner">
           {activeTab === "capex" ? (
-            <><Icon d={Icons.briefcase} size={13} />Realisasi CAPEX = total <b>nilai_kontrak</b>. Klik ✏ Edit untuk mengubah data langsung di halaman ini.</>
+            <>
+              <Icon d={Icons.briefcase} size={13} />
+              Realisasi CAPEX = total <b>nilai_kontrak</b>. Klik ✏ Edit untuk
+              mengubah data langsung di halaman ini.
+            </>
           ) : (
-            <><Icon d={Icons.monitor} size={13} />Realisasi OPEX = total transaksi. Klik ✏ Edit untuk mengubah data — tidak perlu pindah halaman.</>
+            <>
+              <Icon d={Icons.monitor} size={13} />
+              Realisasi OPEX = total transaksi. Klik ✏ Edit untuk mengubah data
+              — tidak perlu pindah halaman.
+            </>
           )}
         </div>
 
@@ -1795,14 +3685,22 @@ export default function BudgetManagement() {
             <h2>Rincian Pos Anggaran</h2>
             <div className="bm-search">
               <Icon d={Icons.search} size={15} />
-              <input placeholder="Cari nama anggaran…" value={search} onChange={(e) => setSearch(e.target.value)} />
+              <input
+                placeholder="Cari nama anggaran…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
             </div>
           </div>
           <div className="bm-table-scroll">
             <table className="bm-table">
               <thead>
                 <tr>
-                  <th style={{ width: "32%" }}>{activeTab === "capex" ? "Nama Anggaran CAPEX" : "Mata Anggaran OPEX"}</th>
+                  <th style={{ width: "32%" }}>
+                    {activeTab === "capex"
+                      ? "Nama Anggaran CAPEX"
+                      : "Mata Anggaran OPEX"}
+                  </th>
                   <th>Kode / ID</th>
                   <th className="ta-r">Pagu (RKAP)</th>
                   <th className="ta-r">Realisasi</th>
@@ -1813,7 +3711,11 @@ export default function BudgetManagement() {
               </thead>
               <tbody>
                 {data.length === 0 && (
-                  <tr><td colSpan="7" className="bm-empty-cell">Tidak ada data yang cocok.</td></tr>
+                  <tr>
+                    <td colSpan="7" className="bm-empty-cell">
+                      Tidak ada data yang cocok.
+                    </td>
+                  </tr>
                 )}
                 {data.map((item) => {
                   const open = expandedBudget === item.id;
@@ -1821,12 +3723,17 @@ export default function BudgetManagement() {
                   const scClass = sc(item.percentage);
                   return (
                     <React.Fragment key={item.id}>
-                      <tr className={`bm-row ${open ? "bm-row--open" : ""}`} onClick={() => toggleBudget(item.id)}>
+                      <tr
+                        className={`bm-row ${open ? "bm-row--open" : ""}`}
+                        onClick={() => toggleBudget(item.id)}
+                      >
                         <td>
                           <div className="fw-med lh-tight">{item.name}</div>
                           {activeTab === "capex" && item.raw.thn_rkap_awal && (
                             <div className="tc-muted fs-xs">
-                              RKAP {item.raw.thn_rkap_awal}–{item.raw.thn_rkap_akhir}&ensp;·&ensp;Thn {item.raw.thn_anggaran}
+                              RKAP {item.raw.thn_rkap_awal}–
+                              {item.raw.thn_rkap_akhir}&ensp;·&ensp;Thn{" "}
+                              {item.raw.thn_anggaran}
                             </div>
                           )}
                           <div className="tc-muted2 fs-xs mt2">
@@ -1837,33 +3744,77 @@ export default function BudgetManagement() {
                         </td>
                         <td>
                           <code className="bm-code">{item.id}</code>
-                          <div className="tc-muted fs-xs mt2">{item.raw.kd_anggaran_master}</div>
+                          <div className="tc-muted fs-xs mt2">
+                            {item.raw.kd_anggaran_master}
+                          </div>
                         </td>
                         <td className="ta-r fw-med">{fmt(item.pagu)}</td>
-                        <td className={`ta-r fw-bold ${item.used > 0 ? "tc-amber" : "tc-muted"}`}>
+                        <td
+                          className={`ta-r fw-bold ${item.used > 0 ? "tc-amber" : "tc-muted"}`}
+                        >
                           {item.used > 0 ? fmt(item.used) : "—"}
                         </td>
-                        <td className={`ta-r fw-bold ${item.remaining < 0 ? "tc-red" : "tc-green"}`}>
+                        <td
+                          className={`ta-r fw-bold ${item.remaining < 0 ? "tc-red" : "tc-green"}`}
+                        >
                           {fmt(item.remaining)}
                         </td>
                         <td className="ta-c">
                           <div className="bm-pct-wrap">
                             <div className="bm-pct-bar">
-                              <div className={`bm-pct-fill sc-${scClass}`} style={{ width: `${Math.min(item.percentage, 100)}%` }} />
+                              <div
+                                className={`bm-pct-fill sc-${scClass}`}
+                                style={{
+                                  width: `${Math.min(item.percentage, 100)}%`,
+                                }}
+                              />
                             </div>
-                            <span className={`bm-badge sc-${scClass}`}>{item.percentage.toFixed(1)}%</span>
+                            <span className={`bm-badge sc-${scClass}`}>
+                              {item.percentage.toFixed(1)}%
+                            </span>
                           </div>
-                          <div className={`bm-status-lbl sc-${scClass}`}>{statusLabel(item.percentage)}</div>
+                          <div className={`bm-status-lbl sc-${scClass}`}>
+                            {statusLabel(item.percentage)}
+                          </div>
                         </td>
-                        <td className="ta-c" onClick={(e) => e.stopPropagation()}>
-                          <div style={{ display: "flex", justifyContent: "center", gap: 6 }}>
-                            <button className="bm-row-edit-btn" style={{ padding: "5px 9px" }}
-                              onClick={(e) => { e.stopPropagation(); toggleBudget(item.id); }} title="Lihat detail">
-                              <Icon d={open && !editing ? Icons.chevUp : Icons.chevDown} size={14} />
+                        <td
+                          className="ta-c"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "center",
+                              gap: 6,
+                            }}
+                          >
+                            <button
+                              className="bm-row-edit-btn"
+                              style={{ padding: "5px 9px" }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleBudget(item.id);
+                              }}
+                              title="Lihat detail"
+                            >
+                              <Icon
+                                d={
+                                  open && !editing
+                                    ? Icons.chevUp
+                                    : Icons.chevDown
+                                }
+                                size={14}
+                              />
                             </button>
-                            <button className={`bm-row-edit-btn ${editing ? "active" : ""}`}
-                              onClick={(e) => handleEditClick(e, item.id)} title={editing ? "Tutup edit" : "Edit data"}>
-                              <Icon d={editing ? Icons.x : Icons.edit} size={13} />
+                            <button
+                              className={`bm-row-edit-btn ${editing ? "active" : ""}`}
+                              onClick={(e) => handleEditClick(e, item.id)}
+                              title={editing ? "Tutup edit" : "Edit data"}
+                            >
+                              <Icon
+                                d={editing ? Icons.x : Icons.edit}
+                                size={13}
+                              />
                               {editing ? "Tutup" : "Edit"}
                             </button>
                           </div>
@@ -1871,16 +3822,34 @@ export default function BudgetManagement() {
                       </tr>
 
                       {open && !editing && activeTab === "opex" && (
-                        <OpexDetail item={item} onAddRealisasi={setModalRealisasi} />
+                        <OpexDetail
+                          item={item}
+                          onAddRealisasi={setModalRealisasi}
+                        />
                       )}
                       {open && !editing && activeTab === "capex" && (
-                        <CapexDetail item={item} expandedProject={expandedProject} toggleProject={toggleProject} />
+                        <CapexDetail
+                          item={item}
+                          expandedProject={expandedProject}
+                          toggleProject={toggleProject}
+                        />
                       )}
                       {editing && activeTab === "opex" && (
-                        <OpexEditPanel item={item} realisasiOpex={realisasiOpex} onSave={handleSaveEdit} onCancel={() => setEditingBudget(null)} showToast={showToast} />
+                        <OpexEditPanel
+                          item={item}
+                          realisasiOpex={realisasiOpex}
+                          onSave={handleSaveEdit}
+                          onCancel={() => setEditingBudget(null)}
+                          showToast={showToast}
+                        />
                       )}
                       {editing && activeTab === "capex" && (
-                        <CapexEditPanel item={item} onSave={handleSaveEdit} onCancel={() => setEditingBudget(null)} showToast={showToast} />
+                        <CapexEditPanel
+                          item={item}
+                          onSave={handleSaveEdit}
+                          onCancel={() => setEditingBudget(null)}
+                          showToast={showToast}
+                        />
                       )}
                     </React.Fragment>
                   );
