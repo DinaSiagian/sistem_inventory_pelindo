@@ -1,5 +1,4 @@
-import React, { useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
 import {
   Save,
   X,
@@ -9,461 +8,114 @@ import {
   CheckCircle,
   ArrowLeft,
   Package,
-  Layers,
   Search,
   ChevronDown,
   AlertTriangle,
-  Paperclip,
-  Upload,
-  File as FileIcon,
+  Database,
+  Calendar,
+  Layers,
+  ChevronRight,
 } from "lucide-react";
-import "./BudgetInput.css";
 
 // ═══════════════════════════════════════════════════════════════
-// MOCK DATA
+// MOCK DATA — disesuaikan dengan struktur DB
 // ═══════════════════════════════════════════════════════════════
-const inventoryAset = [
-  {
-    kode: "AST-OPX-0001",
-    nama: "Lisensi Microsoft Office 365",
-    brand: "Microsoft",
-    model: "Office 365 E3",
-    nilai_aset: 15000000,
-  },
-  {
-    kode: "AST-OPX-0002",
-    nama: "Sewa Bandwidth MPLS",
-    brand: "Telkom",
-    model: "MPLS 10Mbps",
-    nilai_aset: 24000000,
-  },
-  {
-    kode: "AST-OPX-0003",
-    nama: "Lisensi Antivirus Kaspersky",
-    brand: "Kaspersky",
-    model: "Business Select",
-    nilai_aset: 8500000,
-  },
-  {
-    kode: "AST-NET-0001",
-    nama: "Router Core Cisco",
-    brand: "Cisco",
-    model: "ASR 1001-X",
-    nilai_aset: 185000000,
-  },
-  {
-    kode: "AST-NET-0002",
-    nama: "Switch Distribution Cisco",
-    brand: "Cisco",
-    model: "Catalyst 9300",
-    nilai_aset: 45000000,
-  },
-  {
-    kode: "AST-SRV-0001",
-    nama: "Server Rack Dell PowerEdge",
-    brand: "Dell",
-    model: "PowerEdge R750",
-    nilai_aset: 320000000,
-  },
-  {
-    kode: "AST-SRV-0002",
-    nama: "UPS Server Room",
-    brand: "APC",
-    model: "Smart-UPS 3000",
-    nilai_aset: 28000000,
-  },
-  {
-    kode: "AST-CCTV-001",
-    nama: "Kamera CCTV Dome",
-    brand: "Hikvision",
-    model: "DS-2CD2143G2-I",
-    nilai_aset: 3200000,
-  },
-  {
-    kode: "AST-PCU-0001",
-    nama: "PC Unit Workstation",
-    brand: "HP",
-    model: "EliteDesk 800 G6",
-    nilai_aset: 18500000,
-  },
-  {
-    kode: "AST-PRN-0001",
-    nama: "Printer Laser A4",
-    brand: "Brother",
-    model: "HL-L8360CDW",
-    nilai_aset: 7200000,
-  },
-];
 
-const defaultOpexMasters = [
+// Tabel: budget_masters
+const existingBudgetMasters = [
   {
-    id: "5030905000",
-    kode: "5030905000",
-    nama: "Beban Pemeliharaan Software",
-    nilai_kontrak: 350000000,
-    aset: [
-      {
-        id: "OA1",
-        asset_code: "AST-OPX-0001",
-        name: "Lisensi Microsoft Office 365",
-        brand: "Microsoft",
-        model: "Office 365 E3",
-        nilai_aset: 15000000,
-        procurement_date: "2026-01-01",
-        fromInventory: true,
-      },
-      {
-        id: "OA2",
-        asset_code: "AST-OPX-0003",
-        name: "Lisensi Antivirus Kaspersky",
-        brand: "Kaspersky",
-        model: "Business Select",
-        nilai_aset: 8500000,
-        procurement_date: "2026-01-01",
-        fromInventory: true,
-      },
-    ],
+    kd_anggaran_master: "5030905000",
+    nm_anggaran_master: "Beban Pemeliharaan Software",
+    tipe_anggaran_master: "OPEX",
   },
   {
-    id: "5021300000",
-    kode: "5021300000",
-    nama: "Beban Jaringan dan Koneksi Data",
-    nilai_kontrak: 288000000,
-    aset: [
-      {
-        id: "OA3",
-        asset_code: "AST-OPX-0002",
-        name: "Sewa Bandwidth MPLS",
-        brand: "Telkom",
-        model: "MPLS 10Mbps",
-        nilai_aset: 24000000,
-        procurement_date: "2026-01-01",
-        fromInventory: true,
-      },
-    ],
+    kd_anggaran_master: "5021300000",
+    nm_anggaran_master: "Beban Jaringan dan Koneksi Data",
+    tipe_anggaran_master: "OPEX",
   },
   {
-    id: "5021200000",
-    kode: "5021200000",
-    nama: "Beban Perlengkapan Kantor",
-    nilai_kontrak: 0,
-    aset: [],
+    kd_anggaran_master: "5021200000",
+    nm_anggaran_master: "Beban Perlengkapan Kantor",
+    tipe_anggaran_master: "OPEX",
   },
   {
-    id: "5081500000",
-    kode: "5081500000",
-    nama: "Beban Jasa Konsultan",
-    nilai_kontrak: 0,
-    aset: [],
+    kd_anggaran_master: "5081500000",
+    nm_anggaran_master: "Beban Jasa Konsultan",
+    tipe_anggaran_master: "OPEX",
   },
   {
-    id: "5060700000",
-    kode: "5060700000",
-    nama: "Beban Sumber Daya Pihak Ketiga Peralatan",
-    nilai_kontrak: 0,
-    aset: [],
-  },
-];
-
-const defaultCapexMasters = [
-  {
-    id: "CAP-2540011",
-    kode: "2540011",
-    nama: "Transformasi dan Digitalisasi Operasional",
-    thn_rkap_awal: 2026,
-    thn_rkap_akhir: 2027,
-    nilai_rkap: 3000000000,
-    pekerjaan: [
-      {
-        id: "PKJ-001",
-        nm_pekerjaan: "Pengadaan Server & Storage Data Center",
-        nilai_rab: 850000000,
-        nilai_kontrak: 820000000,
-        no_pr: "PR/2026/001",
-        no_po: "PO/2026/001",
-        no_kontrak: "KTR/IT/2026/001",
-        tgl_kontrak: "2026-01-15",
-        durasi_kontrak: 90,
-        no_sp3: "SP3/2026/001",
-        tgl_sp3: "",
-        tgl_bamk: "",
-        assets: [
-          {
-            id: "A1",
-            asset_code: "AST-SRV-0001",
-            name: "Server Rack Dell PowerEdge",
-            brand: "Dell",
-            model: "PowerEdge R750",
-            serial_number: "",
-            nilai_aset: 320000000,
-            procurement_date: "2026-02-01",
-            fromInventory: true,
-          },
-          {
-            id: "A2",
-            asset_code: "AST-SRV-0002",
-            name: "UPS Server Room",
-            brand: "APC",
-            model: "Smart-UPS 3000",
-            serial_number: "",
-            nilai_aset: 28000000,
-            procurement_date: "2026-02-01",
-            fromInventory: true,
-          },
-        ],
-      },
-      {
-        id: "PKJ-002",
-        nm_pekerjaan: "Upgrade Jaringan LAN Gedung Utama",
-        nilai_rab: 250000000,
-        nilai_kontrak: 238000000,
-        no_pr: "PR/2026/005",
-        no_po: "PO/2026/005",
-        no_kontrak: "KTR/NET/2026/003",
-        tgl_kontrak: "2026-02-01",
-        durasi_kontrak: 60,
-        no_sp3: "",
-        tgl_sp3: "",
-        tgl_bamk: "",
-        assets: [
-          {
-            id: "A3",
-            asset_code: "AST-NET-0002",
-            name: "Switch Distribution Cisco",
-            brand: "Cisco",
-            model: "Catalyst 9300",
-            serial_number: "",
-            nilai_aset: 45000000,
-            procurement_date: "2026-03-01",
-            fromInventory: true,
-          },
-        ],
-      },
-    ],
+    kd_anggaran_master: "5060700000",
+    nm_anggaran_master: "Beban Sumber Daya Pihak Ketiga Peralatan",
+    tipe_anggaran_master: "OPEX",
   },
   {
-    id: "CAP-2540012",
-    kode: "2540012",
-    nama: "Pengembangan Infrastruktur Jaringan",
-    thn_rkap_awal: 2026,
-    thn_rkap_akhir: 2028,
-    nilai_rkap: 5500000000,
-    pekerjaan: [
-      {
-        id: "PKJ-003",
-        nm_pekerjaan: "Pemasangan Fiber Optik Antar Gedung",
-        nilai_rab: 1200000000,
-        nilai_kontrak: 1150000000,
-        no_pr: "PR/2026/010",
-        no_po: "PO/2026/010",
-        no_kontrak: "KTR/NET/2026/010",
-        tgl_kontrak: "2026-01-20",
-        durasi_kontrak: 120,
-        no_sp3: "",
-        tgl_sp3: "",
-        tgl_bamk: "",
-        assets: [
-          {
-            id: "A4",
-            asset_code: "AST-NET-0001",
-            name: "Router Core Cisco",
-            brand: "Cisco",
-            model: "ASR 1001-X",
-            serial_number: "",
-            nilai_aset: 185000000,
-            procurement_date: "2026-03-15",
-            fromInventory: true,
-          },
-        ],
-      },
-    ],
+    kd_anggaran_master: "2540011",
+    nm_anggaran_master: "Transformasi dan Digitalisasi Operasional",
+    tipe_anggaran_master: "CAPEX",
   },
   {
-    id: "CAP-2540015",
-    kode: "2540015",
-    nama: "Pengadaan Peralatan Bongkar Muat",
-    thn_rkap_awal: 2026,
-    thn_rkap_akhir: 2026,
-    nilai_rkap: 12000000000,
-    pekerjaan: [],
+    kd_anggaran_master: "2540012",
+    nm_anggaran_master: "Pengembangan Infrastruktur Jaringan",
+    tipe_anggaran_master: "CAPEX",
   },
   {
-    id: "CAP-2540020",
-    kode: "2540020",
-    nama: "Standarisasi Perangkat IT Kantor",
-    thn_rkap_awal: 2026,
-    thn_rkap_akhir: 2027,
-    nilai_rkap: 2500000000,
-    pekerjaan: [
-      {
-        id: "PKJ-004",
-        nm_pekerjaan: "Pengadaan PC & Laptop Karyawan",
-        nilai_rab: 500000000,
-        nilai_kontrak: 480000000,
-        no_pr: "PR/2026/020",
-        no_po: "PO/2026/020",
-        no_kontrak: "KTR/IT/2026/020",
-        tgl_kontrak: "2026-02-10",
-        durasi_kontrak: 45,
-        no_sp3: "",
-        tgl_sp3: "",
-        tgl_bamk: "",
-        assets: [
-          {
-            id: "A5",
-            asset_code: "AST-PCU-0001",
-            name: "PC Unit Workstation",
-            brand: "HP",
-            model: "EliteDesk 800 G6",
-            serial_number: "",
-            nilai_aset: 18500000,
-            procurement_date: "2026-03-01",
-            fromInventory: true,
-          },
-        ],
-      },
-    ],
+    kd_anggaran_master: "2540015",
+    nm_anggaran_master: "Pengadaan Peralatan Bongkar Muat",
+    tipe_anggaran_master: "CAPEX",
   },
   {
-    id: "CAP-2540025",
-    kode: "2540025",
-    nama: "Pembangunan Sistem CCTV & Keamanan",
-    thn_rkap_awal: 2026,
-    thn_rkap_akhir: 2026,
-    nilai_rkap: 1800000000,
-    pekerjaan: [],
+    kd_anggaran_master: "2540020",
+    nm_anggaran_master: "Standarisasi Perangkat IT Kantor",
+    tipe_anggaran_master: "CAPEX",
   },
 ];
 
 const fmt = (n) => new Intl.NumberFormat("id-ID").format(n || 0);
-const fmtFileSize = (bytes) => {
-  if (!bytes) return "";
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-};
-
-const emptyProject = () => ({
-  id: `p-${Date.now()}-${Math.random()}`,
-  nm_pekerjaan: "",
-  nilai_rab: "",
-  nilai_kontrak: "",
-  no_pr: "",
-  no_po: "",
-  no_kontrak: "",
-  tgl_kontrak: new Date().toISOString().split("T")[0],
-  durasi_kontrak: "",
-  no_sp3: "",
-  tgl_sp3: "",
-  tgl_bamk: "",
-  assets: [],
-});
 
 // ═══════════════════════════════════════════════════════════════
-// InvoiceAttachment — drop zone (reusable)
+// STEP CONFIG
 // ═══════════════════════════════════════════════════════════════
-function InvoiceAttachment({
-  files = [],
-  onChange,
-  label = "Drop atau klik untuk lampirkan invoice",
-}) {
-  const [dragging, setDragging] = useState(false);
-
-  const handleFiles = (incoming) => {
-    const arr = Array.from(incoming).map((f) => ({
-      id: `${Date.now()}-${Math.random().toString(36).slice(2, 5)}`,
-      name: f.name,
-      size: f.size,
-      type: f.type,
-      _file: f,
-    }));
-    onChange([...files, ...arr]);
-  };
-
-  const onDrop = (e) => {
-    e.preventDefault();
-    setDragging(false);
-    if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);
-  };
-
-  const removeFile = (id) => onChange(files.filter((f) => f.id !== id));
-
-  return (
-    <div>
-      <div
-        className={`bi-file-drop${dragging ? " drag-over" : ""}`}
-        onDragOver={(e) => {
-          e.preventDefault();
-          setDragging(true);
-        }}
-        onDragLeave={() => setDragging(false)}
-        onDrop={onDrop}
-        style={{ position: "relative" }}
-      >
-        <input
-          type="file"
-          multiple
-          accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.doc,.docx"
-          style={{
-            position: "absolute",
-            inset: 0,
-            opacity: 0,
-            cursor: "pointer",
-            width: "100%",
-            height: "100%",
-          }}
-          onChange={(e) => {
-            if (e.target.files.length) handleFiles(e.target.files);
-            e.target.value = "";
-          }}
-        />
-        <div className="bi-file-drop-inner">
-          <Upload size={14} color="#1d4ed8" style={{ flexShrink: 0 }} />
-          <span className="bi-file-drop-text">{label}</span>
-          <span className="bi-file-drop-hint">PDF, JPG, PNG, Excel, Word</span>
-        </div>
-      </div>
-      {files.length > 0 && (
-        <div className="bi-file-chips">
-          {files.map((f) => (
-            <span key={f.id} className="bi-file-chip">
-              <FileIcon size={11} color="#3b82f6" style={{ flexShrink: 0 }} />
-              <span className="bi-file-chip-name" title={f.name}>
-                {f.name}
-              </span>
-              <span className="bi-file-chip-size">{fmtFileSize(f.size)}</span>
-              <button
-                className="bi-file-chip-del"
-                onClick={() => removeFile(f.id)}
-                title="Hapus"
-              >
-                <X size={11} />
-              </button>
-            </span>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
+// Flow: Step 1 (Tipe) → Step 2 (Budget Master) → Step 3 (Anggaran Tahunan)
+// Untuk CAPEX ada tambahan: Step 4 (Anggaran CAPEX Detail)
 
 // ═══════════════════════════════════════════════════════════════
 // ConfirmDialog
 // ═══════════════════════════════════════════════════════════════
 function ConfirmDialog({ message, onConfirm, onCancel }) {
   return (
-    <div className="bi-confirm-overlay" onClick={onCancel}>
-      <div className="bi-confirm-box" onClick={(e) => e.stopPropagation()}>
-        <div className="bi-confirm-icon">
-          <AlertTriangle size={26} />
+    <div style={overlayStyle} onClick={onCancel}>
+      <div style={confirmBoxStyle} onClick={(e) => e.stopPropagation()}>
+        <div
+          style={{
+            width: 50,
+            height: 50,
+            borderRadius: "50%",
+            background: "#fff7ed",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#f97316",
+          }}
+        >
+          <AlertTriangle size={24} />
         </div>
-        <p className="bi-confirm-msg">{message}</p>
-        <div className="bi-confirm-actions">
-          <button className="bi-btn bi-btn-secondary" onClick={onCancel}>
+        <p
+          style={{
+            fontSize: "0.9rem",
+            color: "#0f172a",
+            fontWeight: 500,
+            lineHeight: 1.5,
+            textAlign: "center",
+          }}
+        >
+          {message}
+        </p>
+        <div style={{ display: "flex", gap: 10 }}>
+          <button style={btnSecondaryStyle} onClick={onCancel}>
             Batal
           </button>
-          <button className="bi-btn bi-btn-danger" onClick={onConfirm}>
-            <Trash2 size={14} /> Hapus
+          <button style={btnDangerStyle} onClick={onConfirm}>
+            <Trash2 size={13} /> Hapus
           </button>
         </div>
       </div>
@@ -472,266 +124,105 @@ function ConfirmDialog({ message, onConfirm, onCancel }) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// AsetSearchDropdown
+// SearchableSelect — dropdown with search
 // ═══════════════════════════════════════════════════════════════
-function AsetSearchDropdown({
-  onSelect,
-  existingCodes = [],
-  label = "Pilih dari inventory aset…",
+function SearchableSelect({
+  options,
+  value,
+  onChange,
+  placeholder,
+  renderOption,
+  renderSelected,
+  filterFn,
 }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
-  const filtered = inventoryAset.filter(
-    (a) =>
-      !existingCodes.includes(a.kode) &&
-      (a.nama.toLowerCase().includes(q.toLowerCase()) ||
-        a.kode.toLowerCase().includes(q.toLowerCase()) ||
-        a.brand.toLowerCase().includes(q.toLowerCase())),
-  );
+  const filtered = options.filter((o) => (filterFn ? filterFn(o, q) : true));
+  const selected = options.find((o) => o.value === value);
   return (
-    <div className="bi-aset-search-wrap">
-      <div
-        className={`bi-aset-trigger ${open ? "open" : ""}`}
-        onClick={() => setOpen(!open)}
-      >
-        <Search size={14} />
-        <span>{label}</span>
-        <ChevronDown
-          size={14}
-          className={`bi-chevron ${open ? "flipped" : ""}`}
-        />
-      </div>
-      {open && (
-        <>
-          <div
-            className="bi-aset-overlay"
-            onClick={() => {
-              setOpen(false);
-              setQ("");
-            }}
-          />
-          <div className="bi-aset-dropdown">
-            <div className="bi-aset-search-input">
-              <Search size={13} />
-              <input
-                autoFocus
-                placeholder="Cari kode, nama, atau brand…"
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-              />
-            </div>
-            <div className="bi-aset-list-scroll">
-              {filtered.length === 0 ? (
-                <div className="bi-aset-empty">Tidak ada aset yang cocok</div>
-              ) : (
-                filtered.map((a) => (
-                  <div
-                    key={a.kode}
-                    className="bi-aset-option"
-                    onClick={() => {
-                      onSelect(a);
-                      setOpen(false);
-                      setQ("");
-                    }}
-                  >
-                    <div className="bi-aset-option-top">
-                      <code className="bi-aset-code">{a.kode}</code>
-                      <span className="bi-aset-option-name">{a.nama}</span>
-                    </div>
-                    <div className="bi-aset-option-sub">
-                      <span>
-                        {a.brand} / {a.model}
-                      </span>
-                      <span className="bi-aset-nilai">
-                        Rp {fmt(a.nilai_aset)}
-                      </span>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════
-// MataAnggaranDropdown
-// ═══════════════════════════════════════════════════════════════
-function MataAnggaranDropdown({
-  selectedId,
-  onSelect,
-  customMasters,
-  onAddCustom,
-  deletedIds,
-  onDeleteMaster,
-}) {
-  const [open, setOpen] = useState(false);
-  const [q, setQ] = useState("");
-  const [showForm, setShowForm] = useState(false);
-  const [pendingDeleteId, setPendingDeleteId] = useState(null);
-  const [form, setForm] = useState({ kode: "", nama: "", nilai_kontrak: "" });
-
-  const allMasters = [...defaultOpexMasters, ...customMasters].filter(
-    (m) => !deletedIds.includes(m.id),
-  );
-  const selected = allMasters.find((m) => m.id === selectedId);
-  const filtered = allMasters.filter(
-    (m) =>
-      m.nama.toLowerCase().includes(q.toLowerCase()) ||
-      m.kode.toLowerCase().includes(q.toLowerCase()),
-  );
-
-  const handleAdd = () => {
-    if (!form.nama) return;
-    const id = form.kode || `CST-${Date.now()}`;
-    onAddCustom({
-      id,
-      kode: form.kode || `OPX-CST-${String(Date.now()).slice(-4)}`,
-      nama: form.nama,
-      nilai_kontrak: parseFloat(form.nilai_kontrak) || 0,
-      aset: [],
-      isCustom: true,
-    });
-    onSelect(id);
-    setOpen(false);
-    setShowForm(false);
-    setForm({ kode: "", nama: "", nilai_kontrak: "" });
-  };
-
-  const pendingItem = pendingDeleteId
-    ? [...defaultOpexMasters, ...customMasters].find(
-        (m) => m.id === pendingDeleteId,
-      )
-    : null;
-
-  return (
-    <div className="bi-aset-search-wrap">
-      {pendingDeleteId && (
-        <div
-          className="bi-confirm-overlay"
-          onClick={() => setPendingDeleteId(null)}
-        >
-          <div className="bi-confirm-box" onClick={(e) => e.stopPropagation()}>
-            <div className="bi-confirm-icon">
-              <AlertTriangle size={26} />
-            </div>
-            <p className="bi-confirm-msg">
-              Hapus mata anggaran{" "}
-              <strong>
-                "{pendingItem?.kode} — {pendingItem?.nama}"
-              </strong>{" "}
-              dari daftar?
-              {pendingItem?.aset?.length > 0 && (
-                <span
-                  style={{
-                    display: "block",
-                    marginTop: 6,
-                    color: "#ef4444",
-                    fontSize: "0.82rem",
-                  }}
-                >
-                  ⚠ Mata anggaran ini memiliki {pendingItem.aset.length} aset
-                  terdaftar.
-                </span>
-              )}
-            </p>
-            <div className="bi-confirm-actions">
-              <button
-                className="bi-btn bi-btn-secondary"
-                onClick={() => setPendingDeleteId(null)}
-              >
-                Batal
-              </button>
-              <button
-                className="bi-btn bi-btn-danger"
-                onClick={() => {
-                  if (pendingDeleteId === selectedId) onSelect(null);
-                  onDeleteMaster(pendingDeleteId);
-                  setPendingDeleteId(null);
-                }}
-              >
-                <Trash2 size={14} /> Hapus
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+    <div style={{ position: "relative" }}>
       {selected ? (
-        <div className="bi-mata-selected">
-          <div className="bi-mata-selected-info">
-            <div className="bi-mata-selected-top">
-              <code className="bi-aset-code">{selected.kode}</code>
-              <span className="bi-mata-selected-nama">{selected.nama}</span>
-              {selected.isCustom && (
-                <span className="bi-custom-badge">Custom</span>
-              )}
-              {selected.aset?.length > 0 && (
-                <span className="bi-loaded-mini">
-                  {selected.aset.length} aset
-                </span>
-              )}
-            </div>
-            {selected.nilai_kontrak > 0 && (
-              <div className="bi-mata-selected-meta">
-                Nilai Kontrak:{" "}
-                <strong style={{ color: "#dc2626" }}>
-                  Rp {fmt(selected.nilai_kontrak)}
-                </strong>
-              </div>
-            )}
+        <div style={selectedBoxStyle}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            {renderSelected ? renderSelected(selected) : selected.label}
           </div>
-          <button className="bi-btn-change" onClick={() => onSelect(null)}>
+          <button
+            style={{
+              ...btnSmallStyle,
+              background: "#f1f5f9",
+              color: "#64748b",
+              border: "1px solid #e2e8f0",
+            }}
+            onClick={() => onChange(null)}
+          >
             Ganti
           </button>
         </div>
       ) : (
         <>
           <div
-            className={`bi-aset-trigger ${open ? "open" : ""}`}
+            style={{
+              ...triggerStyle,
+              ...(open
+                ? {
+                    borderColor: "#1d4ed8",
+                    boxShadow: "0 0 0 3px rgba(29,78,216,.1)",
+                  }
+                : {}),
+            }}
             onClick={() => setOpen(!open)}
           >
-            <Search size={14} />
-            <span>-- Pilih Mata Anggaran --</span>
+            <Search size={14} style={{ color: "#94a3b8", flexShrink: 0 }} />
+            <span style={{ color: "#94a3b8", fontSize: "0.84rem" }}>
+              {placeholder}
+            </span>
             <ChevronDown
               size={14}
-              className={`bi-chevron ${open ? "flipped" : ""}`}
+              style={{
+                color: "#94a3b8",
+                marginLeft: "auto",
+                transition: "transform 0.2s",
+                transform: open ? "rotate(180deg)" : "rotate(0)",
+              }}
             />
           </div>
           {open && (
             <>
               <div
-                className="bi-aset-overlay"
+                style={{ position: "fixed", inset: 0, zIndex: 40 }}
                 onClick={() => {
                   setOpen(false);
-                  setShowForm(false);
+                  setQ("");
                 }}
               />
-              <div className="bi-aset-dropdown">
-                <div className="bi-aset-search-input">
-                  <Search size={13} />
+              <div style={dropdownStyle}>
+                <div style={searchInputWrapStyle}>
+                  <Search size={13} style={{ color: "#94a3b8" }} />
                   <input
                     autoFocus
-                    placeholder="Cari kode atau nama mata anggaran…"
                     value={q}
                     onChange={(e) => setQ(e.target.value)}
+                    placeholder="Cari…"
+                    style={searchInputStyle}
                   />
                 </div>
-                <div className="bi-aset-list-scroll">
-                  {filtered.map((m) => (
+                <div style={{ maxHeight: 260, overflowY: "auto" }}>
+                  {filtered.length === 0 && (
                     <div
-                      key={m.id}
                       style={{
-                        display: "flex",
-                        alignItems: "center",
-                        padding: "10px 10px 10px 14px",
-                        borderBottom: "1px solid #f1f5f9",
-                        cursor: "pointer",
-                        transition: "background 0.15s",
-                        gap: 8,
+                        padding: "16px",
+                        textAlign: "center",
+                        color: "#94a3b8",
+                        fontSize: "0.8rem",
                       }}
+                    >
+                      Tidak ada hasil
+                    </div>
+                  )}
+                  {filtered.map((o) => (
+                    <div
+                      key={o.value}
+                      style={optionStyle}
                       onMouseEnter={(e) =>
                         (e.currentTarget.style.background = "#eff6ff")
                       }
@@ -739,159 +230,15 @@ function MataAnggaranDropdown({
                         (e.currentTarget.style.background = "transparent")
                       }
                       onClick={() => {
-                        onSelect(m.id);
+                        onChange(o.value);
                         setOpen(false);
+                        setQ("");
                       }}
                     >
-                      <div
-                        style={{
-                          flex: 1,
-                          minWidth: 0,
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: 3,
-                        }}
-                      >
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 6,
-                            flexWrap: "wrap",
-                          }}
-                        >
-                          <code className="bi-aset-code">{m.kode}</code>
-                          <span
-                            style={{
-                              fontWeight: 600,
-                              fontSize: "0.84rem",
-                              color: "#0f172a",
-                            }}
-                          >
-                            {m.nama}
-                          </span>
-                          {m.isCustom && (
-                            <span className="bi-custom-badge">Custom</span>
-                          )}
-                          {m.aset?.length > 0 && (
-                            <span className="bi-loaded-mini">
-                              {m.aset.length} aset terdaftar
-                            </span>
-                          )}
-                        </div>
-                        {m.nilai_kontrak > 0 && (
-                          <div
-                            style={{ fontSize: "0.75rem", color: "#64748b" }}
-                          >
-                            Nilai Kontrak:{" "}
-                            <span style={{ color: "#dc2626", fontWeight: 700 }}>
-                              Rp {fmt(m.nilai_kontrak)}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                      <button
-                        title="Hapus dari daftar"
-                        style={{
-                          flexShrink: 0,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          width: 34,
-                          height: 34,
-                          borderRadius: 8,
-                          border: "1px solid #fca5a5",
-                          background: "#fee2e2",
-                          color: "#dc2626",
-                          cursor: "pointer",
-                          transition: "all 0.15s",
-                          fontSize: "16px",
-                          lineHeight: 1,
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.background = "#dc2626";
-                          e.currentTarget.style.color = "#ffffff";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.background = "#fee2e2";
-                          e.currentTarget.style.color = "#dc2626";
-                        }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setPendingDeleteId(m.id);
-                        }}
-                      >
-                        🗑
-                      </button>
+                      {renderOption ? renderOption(o) : <span>{o.label}</span>}
                     </div>
                   ))}
                 </div>
-                {!showForm ? (
-                  <div
-                    className="bi-add-custom-row"
-                    onClick={() => setShowForm(true)}
-                  >
-                    <Plus size={13} /> Tambah mata anggaran baru (tidak ada di
-                    daftar)
-                  </div>
-                ) : (
-                  <div className="bi-custom-form">
-                    <div className="bi-custom-form-title">
-                      Tambah Mata Anggaran Custom
-                    </div>
-                    <div className="bi-custom-field">
-                      <label className="bi-custom-label">Kode</label>
-                      <input
-                        placeholder="OPX-CST-001 (opsional)"
-                        value={form.kode}
-                        onChange={(e) =>
-                          setForm({ ...form, kode: e.target.value })
-                        }
-                      />
-                    </div>
-                    <div className="bi-custom-field">
-                      <label className="bi-custom-label">
-                        Nama Mata Anggaran <span className="bi-req">*</span>
-                      </label>
-                      <input
-                        placeholder="Nama mata anggaran"
-                        value={form.nama}
-                        onChange={(e) =>
-                          setForm({ ...form, nama: e.target.value })
-                        }
-                      />
-                    </div>
-                    <div className="bi-custom-field">
-                      <label className="bi-custom-label">
-                        Nilai Kontrak (IDR)
-                      </label>
-                      <input
-                        type="number"
-                        placeholder="0"
-                        value={form.nilai_kontrak}
-                        onChange={(e) =>
-                          setForm({ ...form, nilai_kontrak: e.target.value })
-                        }
-                      />
-                    </div>
-                    <div className="bi-custom-form-actions">
-                      <button
-                        className="bi-btn-add"
-                        onClick={handleAdd}
-                        style={{ padding: "6px 14px", fontSize: ".75rem" }}
-                      >
-                        <Plus size={13} /> Tambah
-                      </button>
-                      <button
-                        className="bi-btn bi-btn-secondary"
-                        onClick={() => setShowForm(false)}
-                        style={{ padding: "6px 12px", fontSize: ".75rem" }}
-                      >
-                        Batal
-                      </button>
-                    </div>
-                  </div>
-                )}
               </div>
             </>
           )}
@@ -902,663 +249,111 @@ function MataAnggaranDropdown({
 }
 
 // ═══════════════════════════════════════════════════════════════
-// AnggaranCapexDropdown
-// ═══════════════════════════════════════════════════════════════
-function AnggaranCapexDropdown({
-  selectedId,
-  onSelect,
-  customCapexMasters,
-  onAddCustom,
-  deletedIds,
-  onDeleteMaster,
-}) {
-  const [open, setOpen] = useState(false);
-  const [q, setQ] = useState("");
-  const [showForm, setShowForm] = useState(false);
-  const [pendingDeleteId, setPendingDeleteId] = useState(null);
-  const [form, setForm] = useState({
-    kode: "",
-    nama: "",
-    thn_rkap_awal: new Date().getFullYear(),
-    thn_rkap_akhir: new Date().getFullYear() + 1,
-    nilai_rkap: "",
-  });
-
-  const allCapex = [...defaultCapexMasters, ...customCapexMasters].filter(
-    (c) => !deletedIds.includes(c.id),
-  );
-  const selected = allCapex.find((c) => c.id === selectedId);
-  const filtered = allCapex.filter(
-    (c) =>
-      c.nama.toLowerCase().includes(q.toLowerCase()) ||
-      c.kode.toLowerCase().includes(q.toLowerCase()),
-  );
-
-  const handleAdd = () => {
-    if (!form.nama || !form.kode) return;
-    const id = `CAP-CST-${Date.now()}`;
-    onAddCustom({
-      id,
-      kode: form.kode,
-      nama: form.nama,
-      thn_rkap_awal: parseInt(form.thn_rkap_awal),
-      thn_rkap_akhir: parseInt(form.thn_rkap_akhir),
-      nilai_rkap: parseFloat(form.nilai_rkap) || 0,
-      pekerjaan: [],
-      isCustom: true,
-    });
-    onSelect(id);
-    setOpen(false);
-    setShowForm(false);
-    setForm({
-      kode: "",
-      nama: "",
-      thn_rkap_awal: new Date().getFullYear(),
-      thn_rkap_akhir: new Date().getFullYear() + 1,
-      nilai_rkap: "",
-    });
-  };
-
-  const pendingItem = pendingDeleteId
-    ? [...defaultCapexMasters, ...customCapexMasters].find(
-        (c) => c.id === pendingDeleteId,
-      )
-    : null;
-
-  return (
-    <div className="bi-aset-search-wrap">
-      {pendingDeleteId && (
-        <div
-          className="bi-confirm-overlay"
-          onClick={() => setPendingDeleteId(null)}
-        >
-          <div className="bi-confirm-box" onClick={(e) => e.stopPropagation()}>
-            <div className="bi-confirm-icon">
-              <AlertTriangle size={26} />
-            </div>
-            <p className="bi-confirm-msg">
-              Hapus pos anggaran{" "}
-              <strong>
-                "{pendingItem?.kode} — {pendingItem?.nama}"
-              </strong>{" "}
-              dari daftar?
-              {pendingItem?.pekerjaan?.length > 0 && (
-                <span
-                  style={{
-                    display: "block",
-                    marginTop: 6,
-                    color: "#ef4444",
-                    fontSize: "0.82rem",
-                  }}
-                >
-                  ⚠ Pos ini memiliki {pendingItem.pekerjaan.length} pekerjaan
-                  terdaftar.
-                </span>
-              )}
-            </p>
-            <div className="bi-confirm-actions">
-              <button
-                className="bi-btn bi-btn-secondary"
-                onClick={() => setPendingDeleteId(null)}
-              >
-                Batal
-              </button>
-              <button
-                className="bi-btn bi-btn-danger"
-                onClick={() => {
-                  if (pendingDeleteId === selectedId) onSelect(null);
-                  onDeleteMaster(pendingDeleteId);
-                  setPendingDeleteId(null);
-                }}
-              >
-                <Trash2 size={14} /> Hapus
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      {selected ? (
-        <div className="bi-mata-selected bi-mata-selected--capex">
-          <div className="bi-mata-selected-info">
-            <div className="bi-mata-selected-top">
-              <code className="bi-aset-code bi-aset-code--capex">
-                {selected.kode}
-              </code>
-              <span className="bi-mata-selected-nama">{selected.nama}</span>
-              {selected.isCustom && (
-                <span className="bi-custom-badge bi-custom-badge--capex">
-                  Custom
-                </span>
-              )}
-              {selected.pekerjaan?.length > 0 && (
-                <span className="bi-loaded-mini bi-loaded-mini--capex">
-                  {selected.pekerjaan.length} pekerjaan
-                </span>
-              )}
-            </div>
-            <div className="bi-mata-selected-meta">
-              <span>
-                RKAP {selected.thn_rkap_awal}–{selected.thn_rkap_akhir}
-              </span>
-              <span className="bi-mata-selected-nilai">
-                Rp {fmt(selected.nilai_rkap)}
-              </span>
-            </div>
-          </div>
-          <button className="bi-btn-change" onClick={() => onSelect(null)}>
-            Ganti
-          </button>
-        </div>
-      ) : (
-        <>
-          <div
-            className={`bi-aset-trigger bi-aset-trigger--capex ${open ? "open" : ""}`}
-            onClick={() => setOpen(!open)}
-          >
-            <Search size={14} />
-            <span>-- Pilih Pos Anggaran CAPEX --</span>
-            <ChevronDown
-              size={14}
-              className={`bi-chevron ${open ? "flipped" : ""}`}
-            />
-          </div>
-          {open && (
-            <>
-              <div
-                className="bi-aset-overlay"
-                onClick={() => {
-                  setOpen(false);
-                  setShowForm(false);
-                }}
-              />
-              <div className="bi-aset-dropdown">
-                <div className="bi-aset-search-input">
-                  <Search size={13} />
-                  <input
-                    autoFocus
-                    placeholder="Cari kode atau nama anggaran CAPEX…"
-                    value={q}
-                    onChange={(e) => setQ(e.target.value)}
-                  />
-                </div>
-                <div className="bi-aset-list-scroll">
-                  {filtered.length === 0 ? (
-                    <div className="bi-aset-empty">Tidak ada yang cocok</div>
-                  ) : (
-                    filtered.map((c) => (
-                      <div
-                        key={c.id}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          padding: "10px 10px 10px 14px",
-                          borderBottom: "1px solid #f1f5f9",
-                          cursor: "pointer",
-                          transition: "background 0.15s",
-                          gap: 8,
-                        }}
-                        onMouseEnter={(e) =>
-                          (e.currentTarget.style.background = "#eff6ff")
-                        }
-                        onMouseLeave={(e) =>
-                          (e.currentTarget.style.background = "transparent")
-                        }
-                        onClick={() => {
-                          onSelect(c.id);
-                          setOpen(false);
-                        }}
-                      >
-                        <div
-                          style={{
-                            flex: 1,
-                            minWidth: 0,
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: 3,
-                          }}
-                        >
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 6,
-                              flexWrap: "wrap",
-                            }}
-                          >
-                            <code className="bi-aset-code bi-aset-code--capex">
-                              {c.kode}
-                            </code>
-                            <span
-                              style={{
-                                fontWeight: 600,
-                                fontSize: "0.84rem",
-                                color: "#0f172a",
-                              }}
-                            >
-                              {c.nama}
-                            </span>
-                            {c.isCustom && (
-                              <span className="bi-custom-badge bi-custom-badge--capex">
-                                Custom
-                              </span>
-                            )}
-                            {c.pekerjaan?.length > 0 && (
-                              <span className="bi-loaded-mini bi-loaded-mini--capex">
-                                {c.pekerjaan.length} pekerjaan
-                              </span>
-                            )}
-                          </div>
-                          <div
-                            style={{
-                              display: "flex",
-                              gap: 14,
-                              fontSize: "0.75rem",
-                              color: "#64748b",
-                            }}
-                          >
-                            <span>
-                              RKAP {c.thn_rkap_awal}–{c.thn_rkap_akhir}
-                            </span>
-                            <span style={{ color: "#dc2626", fontWeight: 700 }}>
-                              Rp {fmt(c.nilai_rkap)}
-                            </span>
-                          </div>
-                        </div>
-                        <button
-                          title="Hapus dari daftar"
-                          style={{
-                            flexShrink: 0,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            width: 34,
-                            height: 34,
-                            borderRadius: 8,
-                            border: "1px solid #fca5a5",
-                            background: "#fee2e2",
-                            color: "#dc2626",
-                            cursor: "pointer",
-                            transition: "all 0.15s",
-                            fontSize: "16px",
-                            lineHeight: 1,
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.background = "#dc2626";
-                            e.currentTarget.style.color = "#ffffff";
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.background = "#fee2e2";
-                            e.currentTarget.style.color = "#dc2626";
-                          }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setPendingDeleteId(c.id);
-                          }}
-                        >
-                          🗑
-                        </button>
-                      </div>
-                    ))
-                  )}
-                </div>
-                {!showForm ? (
-                  <div
-                    className="bi-add-custom-row bi-add-custom-row--capex"
-                    onClick={() => setShowForm(true)}
-                  >
-                    <Plus size={13} /> Tambah pos anggaran CAPEX baru (tidak ada
-                    di daftar)
-                  </div>
-                ) : (
-                  <div className="bi-custom-form bi-custom-form--capex">
-                    <div className="bi-custom-form-title">
-                      Tambah Pos Anggaran CAPEX Baru
-                    </div>
-                    <div className="bi-custom-form-grid">
-                      <div className="bi-custom-field">
-                        <label className="bi-custom-label">
-                          Kode Anggaran CAPEX <span className="bi-req">*</span>
-                        </label>
-                        <input
-                          placeholder="Contoh: 2540011"
-                          value={form.kode}
-                          onChange={(e) =>
-                            setForm({ ...form, kode: e.target.value })
-                          }
-                        />
-                      </div>
-                      <div
-                        className="bi-custom-field"
-                        style={{ gridColumn: "1/-1" }}
-                      >
-                        <label className="bi-custom-label">
-                          Nama Anggaran CAPEX <span className="bi-req">*</span>
-                        </label>
-                        <input
-                          placeholder="Contoh: Transformasi dan Digitalisasi..."
-                          value={form.nama}
-                          onChange={(e) =>
-                            setForm({ ...form, nama: e.target.value })
-                          }
-                        />
-                      </div>
-                      <div className="bi-custom-field">
-                        <label className="bi-custom-label">
-                          Tahun RKAP Awal
-                        </label>
-                        <input
-                          type="number"
-                          value={form.thn_rkap_awal}
-                          onChange={(e) =>
-                            setForm({ ...form, thn_rkap_awal: e.target.value })
-                          }
-                        />
-                      </div>
-                      <div className="bi-custom-field">
-                        <label className="bi-custom-label">
-                          Tahun RKAP Akhir
-                        </label>
-                        <input
-                          type="number"
-                          value={form.thn_rkap_akhir}
-                          onChange={(e) =>
-                            setForm({ ...form, thn_rkap_akhir: e.target.value })
-                          }
-                        />
-                      </div>
-                      <div
-                        className="bi-custom-field"
-                        style={{ gridColumn: "1/-1" }}
-                      >
-                        <label className="bi-custom-label">
-                          Nilai Anggaran RKAP (IDR)
-                        </label>
-                        <input
-                          type="number"
-                          placeholder="Contoh: 3000000000"
-                          value={form.nilai_rkap}
-                          onChange={(e) =>
-                            setForm({ ...form, nilai_rkap: e.target.value })
-                          }
-                        />
-                        {form.nilai_rkap && (
-                          <span className="bi-custom-form-hint">
-                            ≈ Rp {fmt(form.nilai_rkap)}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="bi-custom-form-actions">
-                      <button
-                        className="bi-btn-add"
-                        onClick={handleAdd}
-                        style={{ padding: "6px 14px", fontSize: ".75rem" }}
-                      >
-                        <Plus size={13} /> Tambah
-                      </button>
-                      <button
-                        className="bi-btn bi-btn-secondary"
-                        onClick={() => setShowForm(false)}
-                        style={{ padding: "6px 12px", fontSize: ".75rem" }}
-                      >
-                        Batal
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </>
-          )}
-        </>
-      )}
-    </div>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════
-// KOMPONEN UTAMA
+// KOMPONEN UTAMA — BudgetInput
 // ═══════════════════════════════════════════════════════════════
 const BudgetInput = () => {
-  const navigate = useNavigate();
-  const [budgetType, setBudgetType] = useState("opex");
   const [step, setStep] = useState(1);
+  const [tipeAnggaran, setTipeAnggaran] = useState(null); // "OPEX" | "CAPEX"
   const [confirm, setConfirm] = useState(null);
+  const [submitted, setSubmitted] = useState(false);
 
-  const [customMasters, setCustomMasters] = useState([]);
-  const [deletedOpexIds, setDeletedOpexIds] = useState([]);
-  const [customCapexMasters, setCustomCapexMasters] = useState([]);
-  const [deletedCapexIds, setDeletedCapexIds] = useState([]);
-
-  // ── OPEX ──────────────────────────────────────────────────────
-  const [selectedOpexId, setSelectedOpexId] = useState(null);
-  const [opexTahun, setOpexTahun] = useState(new Date().getFullYear());
-  const [opexNilaiKontrak, setOpexNilaiKontrak] = useState("");
-  const [opexAssets, setOpexAssets] = useState([]);
-  // ── OPEX Invoice / Realisasi (optional section) ───────────────
-  const [opexInvoice, setOpexInvoice] = useState({
-    no_invoice: "",
-    lampiran: [],
+  // ── Step 2: Budget Master ──────────────────────────────────
+  const [masterMode, setMasterMode] = useState("existing"); // "existing" | "new"
+  const [selectedMasterId, setSelectedMasterId] = useState(null);
+  const [newMaster, setNewMaster] = useState({
+    kd_anggaran_master: "",
+    nm_anggaran_master: "",
+    tipe_anggaran_master: "",
   });
 
-  // ── CAPEX ──────────────────────────────────────────────────────
-  const [selectedCapexId, setSelectedCapexId] = useState(null);
-  const [capexTahun, setCapexTahun] = useState(new Date().getFullYear());
-  const [capexProjects, setCapexProjects] = useState([]);
+  // ── Step 3: Anggaran Tahunan OPEX ─────────────────────────
+  const [opexForm, setOpexForm] = useState({
+    thn_anggaran: new Date().getFullYear(),
+    nilai_anggaran_tahunan: "",
+  });
 
-  const allMasters = [...defaultOpexMasters, ...customMasters].filter(
-    (m) => !deletedOpexIds.includes(m.id),
-  );
-  const selectedOpexMaster = allMasters.find((m) => m.id === selectedOpexId);
-  const allCapexMasters = [
-    ...defaultCapexMasters,
-    ...customCapexMasters,
-  ].filter((c) => !deletedCapexIds.includes(c.id));
-  const selectedCapexMaster = allCapexMasters.find(
-    (c) => c.id === selectedCapexId,
-  );
-  const isExistingOpex = selectedOpexMaster && !selectedOpexMaster.isCustom;
-  const isExistingCapex =
-    selectedCapexMaster &&
-    !selectedCapexMaster.isCustom &&
-    selectedCapexMaster.pekerjaan?.length > 0;
+  // ── Step 3 (CAPEX): Anggaran Tahunan CAPEX ────────────────
+  const [capexForm, setCapexForm] = useState({
+    kd_anggaran_capex: "",
+    nm_anggaran_capex: "",
+    thn_rkap_awal: new Date().getFullYear(),
+    thn_rkap_akhir: new Date().getFullYear() + 1,
+    thn_anggaran: new Date().getFullYear(),
+    nilai_anggaran_kad: "",
+    nilai_anggaran_rkap: "",
+  });
 
-  const handleSelectOpex = (id) => {
-    setSelectedOpexId(id);
-    if (!id) {
-      setOpexNilaiKontrak("");
-      setOpexAssets([]);
-      return;
-    }
-    const master = allMasters.find((m) => m.id === id);
-    setOpexNilaiKontrak(
-      master?.nilai_kontrak > 0 ? String(master.nilai_kontrak) : "",
-    );
-    setOpexAssets(
-      master?.aset?.length > 0 ? master.aset.map((a) => ({ ...a })) : [],
-    );
-  };
+  // ── Derived ───────────────────────────────────────────────
+  const masterOptions = existingBudgetMasters
+    .filter((m) => !tipeAnggaran || m.tipe_anggaran_master === tipeAnggaran)
+    .map((m) => ({
+      value: m.kd_anggaran_master,
+      label: m.nm_anggaran_master,
+      ...m,
+    }));
 
-  const handleSelectCapex = (id) => {
-    setSelectedCapexId(id);
-    if (!id) {
-      setCapexProjects([]);
-      return;
-    }
-    const master = allCapexMasters.find((c) => c.id === id);
-    setCapexProjects(
-      master?.pekerjaan?.length > 0
-        ? master.pekerjaan.map((p) => ({
-            ...p,
-            assets: p.assets.map((a) => ({ ...a })),
-          }))
-        : [emptyProject()],
-    );
-  };
+  const selectedMaster =
+    masterOptions.find((m) => m.value === selectedMasterId) ||
+    (masterMode === "new" && newMaster.kd_anggaran_master
+      ? {
+          ...newMaster,
+          value: newMaster.kd_anggaran_master,
+          label: newMaster.nm_anggaran_master,
+        }
+      : null);
 
-  // ── OPEX aset ─────────────────────────────────────────────────
-  const addOpexFromInventory = (aset) => {
-    if (opexAssets.find((a) => a.asset_code === aset.kode)) return;
-    setOpexAssets([
-      ...opexAssets,
-      {
-        id: `oa-${Date.now()}`,
-        asset_code: aset.kode,
-        name: aset.nama,
-        brand: aset.brand,
-        model: aset.model,
-        nilai_aset: aset.nilai_aset,
-        procurement_date: new Date().toISOString().split("T")[0],
-        fromInventory: true,
-      },
-    ]);
-  };
-  const addOpexManual = () =>
-    setOpexAssets([
-      ...opexAssets,
-      {
-        id: `oa-${Date.now()}`,
-        asset_code: "",
-        name: "",
-        brand: "",
-        model: "",
-        nilai_aset: "",
-        procurement_date: new Date().toISOString().split("T")[0],
-        fromInventory: false,
-      },
-    ]);
-  const updateOpexAsset = (id, field, val) =>
-    setOpexAssets(
-      opexAssets.map((a) => (a.id === id ? { ...a, [field]: val } : a)),
-    );
-  const doRemoveOpexAsset = (id) =>
-    setOpexAssets(opexAssets.filter((a) => a.id !== id));
-  const askRemoveOpexAsset = (a) =>
-    setConfirm({
-      message: `Hapus aset "${a.name || a.asset_code || "ini"}" dari daftar?`,
-      onConfirm: () => {
-        doRemoveOpexAsset(a.id);
-        setConfirm(null);
-      },
-    });
+  const totalSteps = 3; // Step 1: Tipe → Step 2: Budget Master → Step 3: Anggaran Tahunan
 
-  // ── CAPEX project ─────────────────────────────────────────────
-  const addCapexProject = () =>
-    setCapexProjects([...capexProjects, emptyProject()]);
-  const updateCapexProject = (id, field, val) =>
-    setCapexProjects(
-      capexProjects.map((p) => (p.id === id ? { ...p, [field]: val } : p)),
-    );
-  const doRemoveProject = (id) =>
-    setCapexProjects(capexProjects.filter((p) => p.id !== id));
-  const askRemoveProject = (p) =>
-    setConfirm({
-      message: `Hapus pekerjaan "${p.nm_pekerjaan || "ini"}" beserta semua asetnya?`,
-      onConfirm: () => {
-        doRemoveProject(p.id);
-        setConfirm(null);
-      },
-    });
-
-  // ── CAPEX aset ────────────────────────────────────────────────
-  const addCapexFromInventory = (projId, aset) =>
-    setCapexProjects(
-      capexProjects.map((p) =>
-        p.id === projId && !p.assets.find((a) => a.asset_code === aset.kode)
-          ? {
-              ...p,
-              assets: [
-                ...p.assets,
-                {
-                  id: `ca-${Date.now()}`,
-                  asset_code: aset.kode,
-                  name: aset.nama,
-                  brand: aset.brand,
-                  model: aset.model,
-                  serial_number: "",
-                  nilai_aset: aset.nilai_aset,
-                  procurement_date: new Date().toISOString().split("T")[0],
-                  fromInventory: true,
-                },
-              ],
-            }
-          : p,
-      ),
-    );
-  const addCapexManual = (projId) =>
-    setCapexProjects(
-      capexProjects.map((p) =>
-        p.id === projId
-          ? {
-              ...p,
-              assets: [
-                ...p.assets,
-                {
-                  id: `ca-${Date.now()}`,
-                  asset_code: "",
-                  name: "",
-                  brand: "",
-                  model: "",
-                  serial_number: "",
-                  nilai_aset: "",
-                  procurement_date: new Date().toISOString().split("T")[0],
-                  fromInventory: false,
-                },
-              ],
-            }
-          : p,
-      ),
-    );
-  const updateCapexAsset = (projId, assetId, field, val) =>
-    setCapexProjects(
-      capexProjects.map((p) =>
-        p.id === projId
-          ? {
-              ...p,
-              assets: p.assets.map((a) =>
-                a.id === assetId ? { ...a, [field]: val } : a,
-              ),
-            }
-          : p,
-      ),
-    );
-  const doRemoveCapexAsset = (projId, assetId) =>
-    setCapexProjects(
-      capexProjects.map((p) =>
-        p.id === projId
-          ? { ...p, assets: p.assets.filter((a) => a.id !== assetId) }
-          : p,
-      ),
-    );
-  const askRemoveCapexAsset = (projId, asset) =>
-    setConfirm({
-      message: `Hapus aset "${asset.name || asset.asset_code || "ini"}" dari pekerjaan ini?`,
-      onConfirm: () => {
-        doRemoveCapexAsset(projId, asset.id);
-        setConfirm(null);
-      },
-    });
-
-  // ── Summary ───────────────────────────────────────────────────
-  const totalNilaiAsetOpex = opexAssets.reduce(
-    (s, a) => s + parseFloat(a.nilai_aset || 0),
-    0,
-  );
-  const nilaiKontrakOpex = parseFloat(opexNilaiKontrak || 0);
-  const sisaOpex = nilaiKontrakOpex - totalNilaiAsetOpex;
-  const totalKontrakCapex = capexProjects.reduce(
-    (s, p) => s + parseFloat(p.nilai_kontrak || 0),
-    0,
-  );
-  const nilaiRkapCapex = selectedCapexMaster?.nilai_rkap || 0;
-  const sisaCapex = nilaiRkapCapex - totalKontrakCapex;
+  const canProceedStep1 = !!tipeAnggaran;
+  const canProceedStep2 =
+    masterMode === "existing"
+      ? !!selectedMasterId
+      : !!newMaster.nm_anggaran_master;
+  const canProceedStep3 =
+    tipeAnggaran === "OPEX"
+      ? !!(opexForm.thn_anggaran && opexForm.nilai_anggaran_tahunan)
+      : !!(capexForm.nm_anggaran_capex && capexForm.nilai_anggaran_rkap);
 
   const handleSubmit = () => {
-    alert(`Data ${budgetType.toUpperCase()} berhasil disimpan!`);
-    navigate("/budget");
+    setSubmitted(true);
+    setTimeout(() => setSubmitted(false), 3000);
+    // Reset ke awal
+    setStep(1);
+    setTipeAnggaran(null);
+    setSelectedMasterId(null);
+    setMasterMode("existing");
+    setNewMaster({
+      kd_anggaran_master: "",
+      nm_anggaran_master: "",
+      tipe_anggaran_master: "",
+    });
+    setOpexForm({
+      thn_anggaran: new Date().getFullYear(),
+      nilai_anggaran_tahunan: "",
+    });
+    setCapexForm({
+      kd_anggaran_capex: "",
+      nm_anggaran_capex: "",
+      thn_rkap_awal: new Date().getFullYear(),
+      thn_rkap_akhir: new Date().getFullYear() + 1,
+      thn_anggaran: new Date().getFullYear(),
+      nilai_anggaran_kad: "",
+      nilai_anggaran_rkap: "",
+    });
   };
 
+  const upOpex = (k, v) => setOpexForm((f) => ({ ...f, [k]: v }));
+  const upCapex = (k, v) => setCapexForm((f) => ({ ...f, [k]: v }));
+
+  // ── Step labels ───────────────────────────────────────────
+  const steps = [
+    { num: 1, label: "Tipe Anggaran" },
+    { num: 2, label: "Anggaran Master" },
+    { num: 3, label: "Detail Anggaran" },
+  ];
+
   return (
-    <div className="bi-root">
+    <div style={rootStyle}>
       {confirm && (
         <ConfirmDialog
           message={confirm.message}
@@ -1567,918 +362,1066 @@ const BudgetInput = () => {
         />
       )}
 
-      {/* Header */}
-      <div className="bi-header">
-        <div className="bi-header-left">
-          <button className="bi-btn-back" onClick={() => navigate("/budget")}>
-            <ArrowLeft size={18} />
-          </button>
-          <div>
-            <h1>Input Data Anggaran Baru</h1>
-            <p>
-              Tambah pos anggaran {budgetType === "opex" ? "OPEX" : "CAPEX"} dan
-              realisasinya
-            </p>
-          </div>
-        </div>
-        <span className="bi-year-badge">
-          Tahun: {budgetType === "opex" ? opexTahun : capexTahun}
-        </span>
-      </div>
-
-      {/* Steps */}
-      <div className="bi-steps">
-        <div
-          className={`bi-step ${step >= 1 ? "active" : ""} ${step > 1 ? "done" : ""}`}
-        >
-          <div className="bi-step-num">
-            {step > 1 ? <CheckCircle size={18} /> : "1"}
-          </div>
-          <span>Pilih Tipe Anggaran</span>
-        </div>
-        <div className="bi-step-line" />
-        <div className={`bi-step ${step >= 2 ? "active" : ""}`}>
-          <div className="bi-step-num">2</div>
-          <span>Isi Data Anggaran</span>
-        </div>
-      </div>
-
-      {/* STEP 1 */}
-      {step === 1 && (
-        <div className="bi-content">
-          <div className="bi-type-cards">
-            <div
-              className={`bi-type-card ${budgetType === "opex" ? "selected" : ""}`}
-              onClick={() => setBudgetType("opex")}
-            >
-              <div className="bi-type-icon opex">
-                <Package size={32} />
-              </div>
-              <h3>OPEX</h3>
-              <p>Anggaran Operasional</p>
-              <ul>
-                <li>Pemeliharaan &amp; Lisensi Software</li>
-                <li>Jaringan &amp; Koneksi Data</li>
-                <li>Sewa Peralatan &amp; Jasa</li>
-              </ul>
-            </div>
-            <div
-              className={`bi-type-card ${budgetType === "capex" ? "selected" : ""}`}
-              onClick={() => setBudgetType("capex")}
-            >
-              <div className="bi-type-icon capex">
-                <FileText size={32} />
-              </div>
-              <h3>CAPEX</h3>
-              <p>Anggaran Investasi</p>
-              <ul>
-                <li>Pengadaan Infrastruktur IT</li>
-                <li>Proyek Pembangunan</li>
-                <li>Standarisasi Perangkat</li>
-              </ul>
-            </div>
-          </div>
-          <button className="bi-btn bi-btn-primary" onClick={() => setStep(2)}>
-            Lanjut ke Isi Data{" "}
-            <ArrowLeft size={16} style={{ transform: "rotate(180deg)" }} />
-          </button>
+      {/* ── Toast ── */}
+      {submitted && (
+        <div style={toastStyle}>
+          <CheckCircle size={16} /> Data anggaran berhasil disimpan!
         </div>
       )}
 
-      {/* STEP 2 — OPEX */}
-      {step === 2 && budgetType === "opex" && (
-        <div className="bi-content">
-          {/* Pos Anggaran */}
-          <div className="bi-form-card">
-            <div className="bi-form-header">
-              <FileText size={20} />
-              <h2>Data Pos Anggaran OPEX</h2>
+      {/* ── Header ── */}
+      <div style={headerStyle}>
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <button style={backBtnStyle}>
+            <ArrowLeft size={18} />
+          </button>
+          <div>
+            <h1
+              style={{
+                fontSize: "1.35rem",
+                fontWeight: 800,
+                letterSpacing: "-0.4px",
+                color: "#0f172a",
+              }}
+            >
+              Input Anggaran Baru
+            </h1>
+            <p style={{ fontSize: "0.8rem", color: "#94a3b8", marginTop: 3 }}>
+              Tambah data anggaran master, anggaran tahunan
+              {tipeAnggaran === "CAPEX" ? ", dan detail CAPEX" : ""}
+            </p>
+          </div>
+        </div>
+        {tipeAnggaran && (
+          <span
+            style={{
+              ...typeBadgeStyle,
+              ...(tipeAnggaran === "CAPEX" ? capexBadgeStyle : opexBadgeStyle),
+            }}
+          >
+            {tipeAnggaran}
+          </span>
+        )}
+      </div>
+
+      {/* ── Stepper ── */}
+      <div style={stepperStyle}>
+        {steps.map((s, i) => (
+          <React.Fragment key={s.num}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontWeight: 700,
+                  fontSize: "0.78rem",
+                  transition: "all 0.2s",
+                  background:
+                    step > s.num
+                      ? "#15803d"
+                      : step === s.num
+                        ? tipeAnggaran === "CAPEX"
+                          ? "#1d4ed8"
+                          : "#15803d"
+                        : "#e2e8f0",
+                  color: step >= s.num ? "white" : "#94a3b8",
+                  boxShadow:
+                    step === s.num ? "0 0 0 4px rgba(29,78,216,.15)" : "none",
+                }}
+              >
+                {step > s.num ? <CheckCircle size={16} /> : s.num}
+              </div>
+              <span
+                style={{
+                  fontSize: "0.8rem",
+                  fontWeight: step === s.num ? 700 : 500,
+                  color: step >= s.num ? "#0f172a" : "#94a3b8",
+                }}
+              >
+                {s.label}
+              </span>
             </div>
-            <div className="bi-form-group" style={{ marginBottom: 14 }}>
-              <label>Mata Anggaran *</label>
-              <MataAnggaranDropdown
-                selectedId={selectedOpexId}
-                onSelect={handleSelectOpex}
-                customMasters={customMasters}
-                onAddCustom={(o) => setCustomMasters([...customMasters, o])}
-                deletedIds={deletedOpexIds}
-                onDeleteMaster={(id) => setDeletedOpexIds((p) => [...p, id])}
+            {i < steps.length - 1 && (
+              <div
+                style={{
+                  flex: 1,
+                  height: 2,
+                  background: step > s.num ? "#15803d" : "#e2e8f0",
+                  transition: "background 0.3s",
+                  borderRadius: 99,
+                }}
               />
+            )}
+          </React.Fragment>
+        ))}
+      </div>
+
+      {/* ═══════════════════════════════════════════════════ */}
+      {/* STEP 1 — Pilih Tipe Anggaran */}
+      {/* ═══════════════════════════════════════════════════ */}
+      {step === 1 && (
+        <div style={contentStyle}>
+          <div style={formCardStyle}>
+            <div style={formCardHeaderStyle}>
+              <Layers size={18} style={{ color: "#1d4ed8" }} />
+              <h2 style={cardTitleStyle}>Pilih Tipe Anggaran</h2>
             </div>
-            {selectedOpexMaster && (
-              <>
-                {isExistingOpex && selectedOpexMaster.aset?.length > 0 && (
-                  <div className="bi-autofill-banner">
-                    <CheckCircle size={15} />
-                    <span>
-                      Data existing dimuat otomatis — informasi di bawah terisi
-                      dari sistem. Anda dapat mengedit nilai kontrak dan
-                      menambah/menghapus aset.
-                    </span>
+            <p
+              style={{
+                fontSize: "0.82rem",
+                color: "#64748b",
+                marginBottom: 20,
+              }}
+            >
+              Pilih tipe anggaran yang akan ditambahkan. Tipe ini menentukan
+              alur input selanjutnya.
+            </p>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: 16,
+              }}
+            >
+              {/* OPEX Card */}
+              <div
+                style={{
+                  ...typeCardStyle,
+                  ...(tipeAnggaran === "OPEX" ? typeCardActiveOpex : {}),
+                }}
+                onClick={() => {
+                  setTipeAnggaran("OPEX");
+                  setNewMaster((f) => ({ ...f, tipe_anggaran_master: "OPEX" }));
+                }}
+              >
+                <div
+                  style={{
+                    ...typeIconStyle,
+                    background: tipeAnggaran === "OPEX" ? "#dcfce7" : "#f1f5f9",
+                    color: tipeAnggaran === "OPEX" ? "#15803d" : "#64748b",
+                  }}
+                >
+                  <Package size={28} />
+                </div>
+                <h3
+                  style={{
+                    fontWeight: 800,
+                    fontSize: "1.1rem",
+                    color: tipeAnggaran === "OPEX" ? "#15803d" : "#0f172a",
+                  }}
+                >
+                  OPEX
+                </h3>
+                <p
+                  style={{
+                    fontSize: "0.78rem",
+                    color: "#64748b",
+                    marginTop: 4,
+                  }}
+                >
+                  Anggaran Operasional
+                </p>
+                <ul
+                  style={{
+                    marginTop: 12,
+                    paddingLeft: 0,
+                    listStyle: "none",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 5,
+                  }}
+                >
+                  {[
+                    "Pemeliharaan & Lisensi Software",
+                    "Jaringan & Koneksi Data",
+                    "Sewa Peralatan & Jasa",
+                  ].map((item) => (
+                    <li
+                      key={item}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 6,
+                        fontSize: "0.75rem",
+                        color: "#64748b",
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: 5,
+                          height: 5,
+                          borderRadius: "50%",
+                          background: "#15803d",
+                          flexShrink: 0,
+                        }}
+                      />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+                {tipeAnggaran === "OPEX" && (
+                  <div style={{ position: "absolute", top: 12, right: 12 }}>
+                    <CheckCircle size={20} style={{ color: "#15803d" }} />
                   </div>
                 )}
-                <div className="bi-form-grid">
-                  <div className="bi-form-group">
-                    <label>Tahun Anggaran *</label>
+              </div>
+
+              {/* CAPEX Card */}
+              <div
+                style={{
+                  ...typeCardStyle,
+                  ...(tipeAnggaran === "CAPEX" ? typeCardActiveCapex : {}),
+                }}
+                onClick={() => {
+                  setTipeAnggaran("CAPEX");
+                  setNewMaster((f) => ({
+                    ...f,
+                    tipe_anggaran_master: "CAPEX",
+                  }));
+                }}
+              >
+                <div
+                  style={{
+                    ...typeIconStyle,
+                    background:
+                      tipeAnggaran === "CAPEX" ? "#dbeafe" : "#f1f5f9",
+                    color: tipeAnggaran === "CAPEX" ? "#1d4ed8" : "#64748b",
+                  }}
+                >
+                  <FileText size={28} />
+                </div>
+                <h3
+                  style={{
+                    fontWeight: 800,
+                    fontSize: "1.1rem",
+                    color: tipeAnggaran === "CAPEX" ? "#1d4ed8" : "#0f172a",
+                  }}
+                >
+                  CAPEX
+                </h3>
+                <p
+                  style={{
+                    fontSize: "0.78rem",
+                    color: "#64748b",
+                    marginTop: 4,
+                  }}
+                >
+                  Anggaran Investasi
+                </p>
+                <ul
+                  style={{
+                    marginTop: 12,
+                    paddingLeft: 0,
+                    listStyle: "none",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 5,
+                  }}
+                >
+                  {[
+                    "Pengadaan Infrastruktur IT",
+                    "Proyek Pembangunan",
+                    "Standarisasi Perangkat",
+                  ].map((item) => (
+                    <li
+                      key={item}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 6,
+                        fontSize: "0.75rem",
+                        color: "#64748b",
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: 5,
+                          height: 5,
+                          borderRadius: "50%",
+                          background: "#1d4ed8",
+                          flexShrink: 0,
+                        }}
+                      />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+                {tipeAnggaran === "CAPEX" && (
+                  <div style={{ position: "absolute", top: 12, right: 12 }}>
+                    <CheckCircle size={20} style={{ color: "#1d4ed8" }} />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div style={actionsStyle}>
+            <button
+              style={{
+                ...btnPrimaryStyle,
+                ...(tipeAnggaran === "OPEX" ? btnGreenStyle : {}),
+                opacity: canProceedStep1 ? 1 : 0.4,
+                cursor: canProceedStep1 ? "pointer" : "not-allowed",
+              }}
+              disabled={!canProceedStep1}
+              onClick={() => setStep(2)}
+            >
+              Lanjut — Anggaran Master <ChevronRight size={16} />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════ */}
+      {/* STEP 2 — Budget Master */}
+      {/* ═══════════════════════════════════════════════════ */}
+      {step === 2 && (
+        <div style={contentStyle}>
+          <div style={formCardStyle}>
+            <div style={formCardHeaderStyle}>
+              <Database
+                size={18}
+                style={{
+                  color: tipeAnggaran === "CAPEX" ? "#1d4ed8" : "#15803d",
+                }}
+              />
+              <h2 style={cardTitleStyle}>Data Anggaran Master</h2>
+            </div>
+            <p
+              style={{
+                fontSize: "0.82rem",
+                color: "#64748b",
+                marginBottom: 16,
+              }}
+            >
+              Anggaran master adalah referensi utama klasifikasi anggaran. Pilih
+              yang sudah ada atau buat baru jika belum terdaftar.
+            </p>
+
+            {/* Toggle: Existing vs New */}
+            <div style={toggleWrapStyle}>
+              <button
+                style={{
+                  ...toggleBtnStyle,
+                  ...(masterMode === "existing"
+                    ? tipeAnggaran === "CAPEX"
+                      ? toggleActiveCapex
+                      : toggleActiveOpex
+                    : {}),
+                }}
+                onClick={() => setMasterMode("existing")}
+              >
+                <Search size={13} /> Pilih dari Daftar
+              </button>
+              <button
+                style={{
+                  ...toggleBtnStyle,
+                  ...(masterMode === "new"
+                    ? tipeAnggaran === "CAPEX"
+                      ? toggleActiveCapex
+                      : toggleActiveOpex
+                    : {}),
+                }}
+                onClick={() => setMasterMode("new")}
+              >
+                <Plus size={13} /> Tambah Baru
+              </button>
+            </div>
+
+            {/* Existing Mode */}
+            {masterMode === "existing" && (
+              <div style={{ marginTop: 16 }}>
+                <label style={labelStyle}>
+                  Anggaran Master <span style={{ color: "#dc2626" }}>*</span>
+                </label>
+                <SearchableSelect
+                  options={masterOptions}
+                  value={selectedMasterId}
+                  onChange={setSelectedMasterId}
+                  placeholder="-- Cari & pilih anggaran master --"
+                  filterFn={(o, q) =>
+                    !q ||
+                    o.label.toLowerCase().includes(q.toLowerCase()) ||
+                    o.kd_anggaran_master.toLowerCase().includes(q.toLowerCase())
+                  }
+                  renderOption={(o) => (
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 3,
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 7,
+                        }}
+                      >
+                        <code style={codeStyle}>{o.kd_anggaran_master}</code>
+                        <span
+                          style={{
+                            fontWeight: 600,
+                            fontSize: "0.84rem",
+                            color: "#0f172a",
+                          }}
+                        >
+                          {o.nm_anggaran_master}
+                        </span>
+                        <span
+                          style={{
+                            ...typeBadgeSmall,
+                            ...(o.tipe_anggaran_master === "CAPEX"
+                              ? capexBadgeSmall
+                              : opexBadgeSmall),
+                          }}
+                        >
+                          {o.tipe_anggaran_master}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                  renderSelected={(o) => (
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 4,
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 7,
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <code style={codeStyle}>{o.kd_anggaran_master}</code>
+                        <span
+                          style={{
+                            fontWeight: 700,
+                            fontSize: "0.85rem",
+                            color: "#0f172a",
+                          }}
+                        >
+                          {o.nm_anggaran_master}
+                        </span>
+                        <span
+                          style={{
+                            ...typeBadgeSmall,
+                            ...(o.tipe_anggaran_master === "CAPEX"
+                              ? capexBadgeSmall
+                              : opexBadgeSmall),
+                          }}
+                        >
+                          {o.tipe_anggaran_master}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                />
+                {selectedMasterId && (
+                  <div style={autofillBannerStyle}>
+                    <CheckCircle size={14} />
+                    Data anggaran master dimuat dari sistem — kode dan tipe
+                    tidak dapat diubah.
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* New Mode */}
+            {masterMode === "new" && (
+              <div
+                style={{
+                  marginTop: 16,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 14,
+                }}
+              >
+                <div style={infoBoxStyle}>
+                  <AlertTriangle size={14} />
+                  <span>
+                    Isi nama anggaran master — kode unik akan dibuat otomatis
+                    oleh sistem saat disimpan.
+                  </span>
+                </div>
+                <div style={formGridStyle}>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 5,
+                      gridColumn: "1/-1",
+                    }}
+                  >
+                    <label style={labelStyle}>
+                      Nama Anggaran Master{" "}
+                      <span style={{ color: "#dc2626" }}>*</span>
+                    </label>
                     <input
-                      type="number"
-                      value={opexTahun}
-                      onChange={(e) => setOpexTahun(parseInt(e.target.value))}
+                      style={inputStyle}
+                      value={newMaster.nm_anggaran_master}
+                      onChange={(e) => {
+                        const nama = e.target.value;
+                        // Auto-generate kode: ambil huruf kapital atau prefix angka acak saat simpan
+                        const autoKode = `MST-${Date.now().toString().slice(-6)}`;
+                        setNewMaster((f) => ({
+                          ...f,
+                          nm_anggaran_master: nama,
+                          kd_anggaran_master: autoKode,
+                        }));
+                      }}
+                      placeholder="Contoh: Beban Pemeliharaan Software"
                     />
                   </div>
-                  <div className="bi-form-group">
-                    <label>Nilai Kontrak (IDR) *</label>
-                    <input
-                      type="number"
-                      value={opexNilaiKontrak}
-                      onChange={(e) => setOpexNilaiKontrak(e.target.value)}
-                      placeholder="500000000"
-                    />
-                    {opexNilaiKontrak && (
-                      <span className="bi-helper">
-                        ≈ Rp {fmt(opexNilaiKontrak)}
+                  <div
+                    style={{ display: "flex", flexDirection: "column", gap: 5 }}
+                  >
+                    <label style={labelStyle}>Kode Anggaran Master</label>
+                    <div style={autoKodeBoxStyle}>
+                      <span style={autoKodePrefixStyle}>AUTO</span>
+                      <span style={autoKodeValueStyle}>
+                        {newMaster.nm_anggaran_master ? (
+                          newMaster.kd_anggaran_master
+                        ) : (
+                          <span
+                            style={{ color: "#94a3b8", fontStyle: "italic" }}
+                          >
+                            Akan dibuat otomatis
+                          </span>
+                        )}
                       </span>
-                    )}
+                    </div>
+                    <span style={helperStyle}>
+                      Kode unik dibuat otomatis oleh sistem saat data disimpan
+                    </span>
+                  </div>
+                  <div
+                    style={{ display: "flex", flexDirection: "column", gap: 5 }}
+                  >
+                    <label style={labelStyle}>Tipe Anggaran</label>
+                    <div
+                      style={{
+                        ...inputStyle,
+                        background: "#f8fafc",
+                        color: "#475569",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                      }}
+                    >
+                      <span
+                        style={{
+                          ...typeBadgeSmall,
+                          ...(tipeAnggaran === "CAPEX"
+                            ? capexBadgeSmall
+                            : opexBadgeSmall),
+                        }}
+                      >
+                        {tipeAnggaran}
+                      </span>
+                      <span style={{ fontSize: "0.8rem" }}>
+                        {tipeAnggaran === "OPEX"
+                          ? "Anggaran Operasional"
+                          : "Anggaran Investasi"}
+                      </span>
+                    </div>
+                    <span style={helperStyle}>
+                      Terisi otomatis sesuai tipe yang dipilih di langkah 1
+                    </span>
                   </div>
                 </div>
-              </>
+              </div>
             )}
           </div>
 
-          {/* Daftar Aset */}
-          {!selectedOpexId ? (
-            <div className="bi-form-card">
-              <div className="bi-no-anggaran-hint">
-                <Package size={28} strokeWidth={1.2} />
-                <span>
-                  Pilih mata anggaran OPEX terlebih dahulu untuk melihat atau
-                  menambah daftar aset
-                </span>
-              </div>
+          <div style={actionsStyle}>
+            <button style={btnCancelStyle} onClick={() => setStep(1)}>
+              <ArrowLeft size={15} /> Kembali
+            </button>
+            <button
+              style={{
+                ...btnPrimaryStyle,
+                ...(tipeAnggaran === "OPEX" ? btnGreenStyle : {}),
+                opacity: canProceedStep2 ? 1 : 0.4,
+                cursor: canProceedStep2 ? "pointer" : "not-allowed",
+              }}
+              disabled={!canProceedStep2}
+              onClick={() => setStep(3)}
+            >
+              Lanjut — Detail Anggaran Tahunan <ChevronRight size={16} />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════ */}
+      {/* STEP 3 — Detail Anggaran Tahunan */}
+      {/* ═══════════════════════════════════════════════════ */}
+      {step === 3 && (
+        <div style={contentStyle}>
+          {/* ── Context bar: info master terpilih ── */}
+          <div style={contextBarStyle}>
+            <div style={contextItemStyle}>
+              <span style={contextLabelStyle}>Tipe Anggaran</span>
+              <strong
+                style={{
+                  ...typeBadgeSmall,
+                  ...(tipeAnggaran === "CAPEX"
+                    ? capexBadgeSmall
+                    : opexBadgeSmall),
+                  fontSize: "0.78rem",
+                  padding: "3px 10px",
+                }}
+              >
+                {tipeAnggaran}
+              </strong>
             </div>
-          ) : (
-            <div className="bi-form-card">
-              <div className="bi-form-header">
-                <Package size={20} />
-                <h2>Daftar Aset Terealisasi ({opexAssets.length})</h2>
-                <button
-                  className="bi-btn-add bi-btn-add--sm"
-                  onClick={addOpexManual}
-                >
-                  <Plus size={14} /> Input Manual
-                </button>
+            <div style={contextItemStyle}>
+              <span style={contextLabelStyle}>Kode Anggaran Master</span>
+              <strong>
+                <code style={codeStyle}>
+                  {masterMode === "existing"
+                    ? selectedMasterId
+                    : newMaster.kd_anggaran_master}
+                </code>
+              </strong>
+            </div>
+            <div style={contextItemStyle}>
+              <span style={contextLabelStyle}>Nama Anggaran Master</span>
+              <strong style={{ fontSize: "0.82rem", color: "#0f172a" }}>
+                {masterMode === "existing"
+                  ? masterOptions.find((m) => m.value === selectedMasterId)
+                      ?.nm_anggaran_master
+                  : newMaster.nm_anggaran_master}
+              </strong>
+            </div>
+          </div>
+
+          {/* ── OPEX: Detail Anggaran Tahunan ── */}
+          {tipeAnggaran === "OPEX" && (
+            <div style={formCardStyle}>
+              <div style={formCardHeaderStyle}>
+                <Calendar size={18} style={{ color: "#15803d" }} />
+                <h2 style={cardTitleStyle}>Detail Anggaran Tahunan OPEX</h2>
               </div>
-              <AsetSearchDropdown
-                onSelect={addOpexFromInventory}
-                existingCodes={opexAssets.map((a) => a.asset_code)}
-              />
-              {opexAssets.length === 0 && (
+              <p
+                style={{
+                  fontSize: "0.82rem",
+                  color: "#64748b",
+                  marginBottom: 18,
+                }}
+              >
+                Isi detail anggaran tahunan OPEX. Satu pos anggaran master dapat
+                memiliki beberapa anggaran tahunan.
+              </p>
+              <div style={formGridStyle}>
                 <div
-                  className="bi-capex-assets-empty"
-                  style={{ marginTop: 12 }}
+                  style={{ display: "flex", flexDirection: "column", gap: 5 }}
                 >
-                  <Package size={20} strokeWidth={1.4} />
-                  <span>
-                    Pilih dari inventory atau klik "Input Manual" untuk menambah
-                    aset
+                  <label style={labelStyle}>
+                    Kode Anggaran Master{" "}
+                    <span style={{ color: "#dc2626" }}>*</span>
+                  </label>
+                  <input
+                    style={{
+                      ...inputStyle,
+                      background: "#f8fafc",
+                      color: "#475569",
+                    }}
+                    value={
+                      masterMode === "existing"
+                        ? selectedMasterId
+                        : newMaster.kd_anggaran_master
+                    }
+                    readOnly
+                  />
+                  <span style={helperStyle}>
+                    Terhubung ke data anggaran master
                   </span>
                 </div>
-              )}
-              {opexAssets.map((asset, idx) => (
                 <div
-                  key={asset.id}
-                  className="bi-asset-item"
-                  style={{ marginTop: 12 }}
+                  style={{ display: "flex", flexDirection: "column", gap: 5 }}
                 >
-                  <div className="bi-asset-header">
-                    <div
-                      style={{ display: "flex", alignItems: "center", gap: 10 }}
-                    >
-                      <span className="bi-asset-num">Aset #{idx + 1}</span>
-                      {asset.fromInventory && (
-                        <span className="bi-inventory-badge">
-                          Dari Inventory
-                        </span>
-                      )}
-                      {!asset.fromInventory && (
-                        <span className="bi-manual-badge">Manual</span>
-                      )}
-                    </div>
-                    <button
-                      className="bi-btn-remove"
-                      onClick={() => askRemoveOpexAsset(asset)}
-                    >
-                      <Trash2 size={14} /> Hapus
-                    </button>
-                  </div>
-                  <div className="bi-form-grid">
-                    <div className="bi-form-group">
-                      <label>Kode Aset *</label>
-                      <input
-                        value={asset.asset_code}
-                        readOnly={asset.fromInventory}
-                        className={asset.fromInventory ? "bi-readonly" : ""}
-                        onChange={(e) =>
-                          updateOpexAsset(
-                            asset.id,
-                            "asset_code",
-                            e.target.value,
-                          )
-                        }
-                        placeholder="AST-OPX-XXXX"
-                      />
-                    </div>
-                    <div className="bi-form-group">
-                      <label>Tgl Pengadaan *</label>
-                      <input
-                        type="date"
-                        value={asset.procurement_date}
-                        onChange={(e) =>
-                          updateOpexAsset(
-                            asset.id,
-                            "procurement_date",
-                            e.target.value,
-                          )
-                        }
-                      />
-                    </div>
-                    <div className="bi-form-group full">
-                      <label>Nama Aset *</label>
-                      <input
-                        value={asset.name}
-                        readOnly={asset.fromInventory}
-                        className={asset.fromInventory ? "bi-readonly" : ""}
-                        onChange={(e) =>
-                          updateOpexAsset(asset.id, "name", e.target.value)
-                        }
-                        placeholder="Lisensi Software / Sewa Peralatan"
-                      />
-                    </div>
-                    <div className="bi-form-group">
-                      <label>Brand</label>
-                      <input
-                        value={asset.brand}
-                        readOnly={asset.fromInventory}
-                        className={asset.fromInventory ? "bi-readonly" : ""}
-                        onChange={(e) =>
-                          updateOpexAsset(asset.id, "brand", e.target.value)
-                        }
-                        placeholder="Microsoft"
-                      />
-                    </div>
-                    <div className="bi-form-group">
-                      <label>Model</label>
-                      <input
-                        value={asset.model}
-                        readOnly={asset.fromInventory}
-                        className={asset.fromInventory ? "bi-readonly" : ""}
-                        onChange={(e) =>
-                          updateOpexAsset(asset.id, "model", e.target.value)
-                        }
-                        placeholder="Office 365"
-                      />
-                    </div>
-                    <div className="bi-form-group full">
-                      <label>Nilai Aset (IDR) *</label>
-                      <input
-                        type="number"
-                        value={asset.nilai_aset}
-                        onChange={(e) =>
-                          updateOpexAsset(
-                            asset.id,
-                            "nilai_aset",
-                            e.target.value,
-                          )
-                        }
-                        placeholder="15000000"
-                        className={asset.fromInventory ? "bi-readonly" : ""}
-                        readOnly={asset.fromInventory}
-                      />
-                      {asset.nilai_aset && (
-                        <span className="bi-helper">
-                          ≈ Rp {fmt(asset.nilai_aset)}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-              {/* ── No. Invoice + Lampiran Invoice (Opsional) ── */}
-              <div className="bi-invoice-section">
-                <div className="bi-invoice-section-title">
-                  <Paperclip size={14} />
-                  <span>Invoice &amp; Lampiran</span>
-                  <span className="bi-invoice-optional-badge">Opsional</span>
-                </div>
-                <div className="bi-form-grid" style={{ marginBottom: 10 }}>
-                  <div className="bi-form-group full">
-                    <label>
-                      No. Invoice{" "}
-                      <span className="bi-optional-note">
-                        — kosongkan jika belum ada
-                      </span>
-                    </label>
-                    <input
-                      value={opexInvoice.no_invoice}
-                      onChange={(e) =>
-                        setOpexInvoice({
-                          ...opexInvoice,
-                          no_invoice: e.target.value,
-                        })
-                      }
-                      placeholder="INV/2026/001"
-                    />
-                  </div>
-                </div>
-                <div className="bi-form-group">
-                  <label>
-                    Lampiran Invoice{" "}
-                    <span className="bi-optional-note">
-                      — kosongkan jika belum ada
-                    </span>
+                  <label style={labelStyle}>
+                    Tahun Anggaran <span style={{ color: "#dc2626" }}>*</span>
                   </label>
-                  <InvoiceAttachment
-                    files={opexInvoice.lampiran}
-                    onChange={(lamps) =>
-                      setOpexInvoice({ ...opexInvoice, lampiran: lamps })
+                  <input
+                    type="number"
+                    style={inputStyle}
+                    value={opexForm.thn_anggaran}
+                    onChange={(e) => upOpex("thn_anggaran", e.target.value)}
+                    min="2020"
+                    max="2099"
+                    placeholder="2026"
+                  />
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 5,
+                    gridColumn: "1/-1",
+                  }}
+                >
+                  <label style={labelStyle}>
+                    Nilai Anggaran Tahunan (IDR){" "}
+                    <span style={{ color: "#dc2626" }}>*</span>
+                  </label>
+                  <input
+                    type="number"
+                    style={inputStyle}
+                    value={opexForm.nilai_anggaran_tahunan}
+                    onChange={(e) =>
+                      upOpex("nilai_anggaran_tahunan", e.target.value)
                     }
+                    placeholder="Contoh: 350000000"
+                  />
+                  {opexForm.nilai_anggaran_tahunan && (
+                    <span style={{ ...helperStyle, color: "#15803d" }}>
+                      ≈ Rp {fmt(opexForm.nilai_anggaran_tahunan)}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Summary Preview */}
+              {opexForm.nilai_anggaran_tahunan && (
+                <div style={summaryBoxStyle}>
+                  <div style={summaryItemStyle}>
+                    <span style={summaryLabelStyle}>Kode Anggaran Master</span>
+                    <strong>
+                      <code style={codeStyle}>
+                        {masterMode === "existing"
+                          ? selectedMasterId
+                          : newMaster.kd_anggaran_master}
+                      </code>
+                    </strong>
+                  </div>
+                  <div style={summaryItemStyle}>
+                    <span style={summaryLabelStyle}>Tahun Anggaran</span>
+                    <strong style={{ color: "#0f172a" }}>
+                      {opexForm.thn_anggaran}
+                    </strong>
+                  </div>
+                  <div style={summaryItemStyle}>
+                    <span style={summaryLabelStyle}>
+                      Nilai Anggaran Tahunan
+                    </span>
+                    <strong style={{ color: "#15803d" }}>
+                      Rp {fmt(opexForm.nilai_anggaran_tahunan)}
+                    </strong>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── CAPEX: Detail Anggaran Tahunan ── */}
+          {tipeAnggaran === "CAPEX" && (
+            <div style={formCardStyle}>
+              <div style={formCardHeaderStyle}>
+                <Calendar size={18} style={{ color: "#1d4ed8" }} />
+                <h2 style={cardTitleStyle}>Detail Anggaran Tahunan CAPEX</h2>
+              </div>
+              <p
+                style={{
+                  fontSize: "0.82rem",
+                  color: "#64748b",
+                  marginBottom: 18,
+                }}
+              >
+                Isi detail anggaran CAPEX termasuk periode RKAP dan nilai
+                anggaran. Data pekerjaan/kontrak dikelola terpisah di menu
+                Pekerjaan.
+              </p>
+
+              {/* Baris 1: Kode & Nama CAPEX */}
+              <div style={{ ...formGridStyle, marginBottom: 14 }}>
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 5 }}
+                >
+                  <label style={labelStyle}>
+                    Kode Anggaran Master{" "}
+                    <span style={{ color: "#dc2626" }}>*</span>
+                  </label>
+                  <input
+                    style={{
+                      ...inputStyle,
+                      background: "#f8fafc",
+                      color: "#475569",
+                    }}
+                    value={
+                      masterMode === "existing"
+                        ? selectedMasterId
+                        : newMaster.kd_anggaran_master
+                    }
+                    readOnly
+                  />
+                  <span style={helperStyle}>
+                    Terhubung ke data anggaran master
+                  </span>
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 5,
+                    gridColumn: "1/-1",
+                  }}
+                >
+                  <label style={labelStyle}>
+                    Nama Anggaran CAPEX{" "}
+                    <span style={{ color: "#dc2626" }}>*</span>
+                  </label>
+                  <input
+                    style={inputStyle}
+                    value={capexForm.nm_anggaran_capex}
+                    onChange={(e) => {
+                      const nama = e.target.value;
+                      const autoKd = `CAP-${Date.now().toString().slice(-6)}`;
+                      upCapex("nm_anggaran_capex", nama);
+                      if (
+                        !capexForm.kd_anggaran_capex ||
+                        capexForm.kd_anggaran_capex.startsWith("CAP-")
+                      ) {
+                        upCapex("kd_anggaran_capex", autoKd);
+                      }
+                    }}
+                    placeholder="Contoh: Transformasi dan Digitalisasi Operasional"
+                  />
+                </div>
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 5 }}
+                >
+                  <label style={labelStyle}>Kode Anggaran CAPEX</label>
+                  <div style={autoKodeBoxStyle}>
+                    <span style={autoKodePrefixStyle}>AUTO</span>
+                    <span style={autoKodeValueStyle}>
+                      {capexForm.nm_anggaran_capex ? (
+                        capexForm.kd_anggaran_capex
+                      ) : (
+                        <span style={{ color: "#94a3b8", fontStyle: "italic" }}>
+                          Akan dibuat otomatis
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                  <span style={helperStyle}>
+                    Kode unik dibuat otomatis oleh sistem saat data disimpan
+                  </span>
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div
+                style={{
+                  height: 1,
+                  background: "#e2e8f0",
+                  margin: "4px 0 16px",
+                }}
+              />
+
+              {/* Baris 2: Periode & Tahun Anggaran */}
+              <div
+                style={{
+                  ...formGridStyle,
+                  gridTemplateColumns: "repeat(3, 1fr)",
+                  marginBottom: 14,
+                }}
+              >
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 5 }}
+                >
+                  <label style={labelStyle}>
+                    Tahun RKAP Awal <span style={{ color: "#dc2626" }}>*</span>
+                  </label>
+                  <input
+                    type="number"
+                    style={inputStyle}
+                    value={capexForm.thn_rkap_awal}
+                    onChange={(e) => upCapex("thn_rkap_awal", e.target.value)}
+                    min="2020"
+                    max="2099"
+                  />
+                </div>
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 5 }}
+                >
+                  <label style={labelStyle}>
+                    Tahun RKAP Akhir <span style={{ color: "#dc2626" }}>*</span>
+                  </label>
+                  <input
+                    type="number"
+                    style={inputStyle}
+                    value={capexForm.thn_rkap_akhir}
+                    onChange={(e) => upCapex("thn_rkap_akhir", e.target.value)}
+                    min="2020"
+                    max="2099"
+                  />
+                </div>
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 5 }}
+                >
+                  <label style={labelStyle}>
+                    Tahun Anggaran <span style={{ color: "#dc2626" }}>*</span>
+                  </label>
+                  <input
+                    type="number"
+                    style={inputStyle}
+                    value={capexForm.thn_anggaran}
+                    onChange={(e) => upCapex("thn_anggaran", e.target.value)}
+                    min="2020"
+                    max="2099"
                   />
                 </div>
               </div>
 
-              <div className="bi-summary">
-                <div className="bi-summary-item">
-                  <span>Nilai Kontrak</span>
-                  <strong>Rp {fmt(nilaiKontrakOpex)}</strong>
+              {/* Divider */}
+              <div
+                style={{
+                  height: 1,
+                  background: "#e2e8f0",
+                  margin: "4px 0 16px",
+                }}
+              />
+
+              {/* Baris 3: Nilai Anggaran */}
+              <div style={formGridStyle}>
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 5 }}
+                >
+                  <label style={labelStyle}>Nilai Anggaran KAD (IDR)</label>
+                  <input
+                    type="number"
+                    style={inputStyle}
+                    value={capexForm.nilai_anggaran_kad}
+                    onChange={(e) =>
+                      upCapex("nilai_anggaran_kad", e.target.value)
+                    }
+                    placeholder="0"
+                  />
+                  {capexForm.nilai_anggaran_kad && (
+                    <span style={{ ...helperStyle, color: "#1d4ed8" }}>
+                      ≈ Rp {fmt(capexForm.nilai_anggaran_kad)}
+                    </span>
+                  )}
+                  <span style={helperStyle}>Nilai Anggaran KAD</span>
                 </div>
-                <div className="bi-summary-item">
-                  <span>Total Nilai Aset</span>
-                  <strong className="text-red">
-                    Rp {fmt(totalNilaiAsetOpex)}
-                  </strong>
-                </div>
-                <div className="bi-summary-item">
-                  <span>Sisa Anggaran</span>
-                  <strong className={sisaOpex < 0 ? "text-red" : "text-green"}>
-                    Rp {fmt(sisaOpex)}
-                  </strong>
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 5 }}
+                >
+                  <label style={labelStyle}>
+                    Nilai Anggaran RKAP (IDR){" "}
+                    <span style={{ color: "#dc2626" }}>*</span>
+                  </label>
+                  <input
+                    type="number"
+                    style={inputStyle}
+                    value={capexForm.nilai_anggaran_rkap}
+                    onChange={(e) =>
+                      upCapex("nilai_anggaran_rkap", e.target.value)
+                    }
+                    placeholder="Contoh: 3000000000"
+                  />
+                  {capexForm.nilai_anggaran_rkap && (
+                    <span style={{ ...helperStyle, color: "#1d4ed8" }}>
+                      ≈ Rp {fmt(capexForm.nilai_anggaran_rkap)}
+                    </span>
+                  )}
+                  <span style={helperStyle}>Pagu anggaran RKAP total</span>
                 </div>
               </div>
-            </div>
-          )}
 
-          <div className="bi-actions">
-            <button
-              className="bi-btn bi-btn-secondary"
-              onClick={() => setStep(1)}
-            >
-              <X size={16} /> Batal
-            </button>
-            <button className="bi-btn bi-btn-primary" onClick={handleSubmit}>
-              <Save size={16} /> Simpan Data OPEX
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* STEP 2 — CAPEX */}
-      {step === 2 && budgetType === "capex" && (
-        <div className="bi-content">
-          <div className="bi-form-card">
-            <div className="bi-form-header">
-              <FileText size={20} />
-              <h2>Data Pos Anggaran CAPEX</h2>
-            </div>
-            <div className="bi-form-group" style={{ marginBottom: 14 }}>
-              <label>Pos Anggaran CAPEX *</label>
-              <AnggaranCapexDropdown
-                selectedId={selectedCapexId}
-                onSelect={handleSelectCapex}
-                customCapexMasters={customCapexMasters}
-                onAddCustom={(o) =>
-                  setCustomCapexMasters([...customCapexMasters, o])
-                }
-                deletedIds={deletedCapexIds}
-                onDeleteMaster={(id) => setDeletedCapexIds((p) => [...p, id])}
-              />
-            </div>
-            {selectedCapexMaster && (
-              <>
-                {isExistingCapex && (
-                  <div className="bi-autofill-banner bi-autofill-banner--capex">
-                    <CheckCircle size={15} />
-                    <span>
-                      Data existing dimuat otomatis — informasi di bawah terisi
-                      dari sistem. Anda dapat menambah/menghapus pekerjaan dan
-                      aset.
-                    </span>
-                  </div>
-                )}
-                <div className="bi-form-grid">
-                  <div className="bi-form-group">
-                    <label>Kode Anggaran CAPEX</label>
-                    <input
-                      value={selectedCapexMaster.kode}
-                      readOnly
-                      className="bi-readonly"
-                    />
-                  </div>
-                  <div className="bi-form-group">
-                    <label>Tahun Anggaran *</label>
-                    <input
-                      type="number"
-                      value={capexTahun}
-                      onChange={(e) => setCapexTahun(parseInt(e.target.value))}
-                    />
-                  </div>
-                  <div className="bi-form-group full">
-                    <label>Nama Anggaran CAPEX</label>
-                    <input
-                      value={selectedCapexMaster.nama}
-                      readOnly
-                      className="bi-readonly"
-                    />
-                  </div>
-                  <div className="bi-form-group">
-                    <label>Tahun RKAP Awal</label>
-                    <input
-                      value={selectedCapexMaster.thn_rkap_awal}
-                      readOnly
-                      className="bi-readonly"
-                    />
-                  </div>
-                  <div className="bi-form-group">
-                    <label>Tahun RKAP Akhir</label>
-                    <input
-                      value={selectedCapexMaster.thn_rkap_akhir}
-                      readOnly
-                      className="bi-readonly"
-                    />
-                  </div>
-                  <div className="bi-form-group full">
-                    <label>Nilai Anggaran RKAP (IDR)</label>
-                    <input
-                      value={fmt(selectedCapexMaster.nilai_rkap)}
-                      readOnly
-                      className="bi-readonly"
-                    />
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-
-          {!selectedCapexId ? (
-            <div className="bi-form-card">
-              <div className="bi-no-anggaran-hint">
-                <FileText size={28} strokeWidth={1.2} />
-                <span>
-                  Pilih pos anggaran CAPEX terlebih dahulu untuk melihat atau
-                  menambah daftar pekerjaan
+              {/* Info box: pekerjaan terpisah */}
+              <div
+                style={{
+                  ...infoBoxStyle,
+                  marginTop: 18,
+                  background: "#eff6ff",
+                  border: "1px solid #bfdbfe",
+                }}
+              >
+                <FileText size={14} style={{ color: "#1d4ed8" }} />
+                <span style={{ color: "#1e40af" }}>
+                  <strong>Info:</strong> Data pekerjaan/kontrak (No. PR, PO,
+                  Kontrak, Durasi, dsb.) dikelola secara terpisah di menu{" "}
+                  <strong>Manajemen Pekerjaan</strong> dan berelasi ke anggaran
+                  CAPEX ini.
                 </span>
               </div>
-            </div>
-          ) : (
-            <div className="bi-form-card">
-              <div className="bi-form-header">
-                <FileText size={20} />
-                <h2>Daftar Pekerjaan / Kontrak ({capexProjects.length})</h2>
-                {isExistingCapex && (
-                  <span className="bi-loaded-badge">
-                    <CheckCircle size={12} /> Data existing dimuat otomatis
-                  </span>
-                )}
-                <button className="bi-btn-add" onClick={addCapexProject}>
-                  <Plus size={16} /> Tambah Pekerjaan
-                </button>
-              </div>
 
-              {capexProjects.map((proj, idx) => (
-                <div key={proj.id} className="bi-project-item">
-                  <div className="bi-asset-header">
-                    <span className="bi-asset-num">Pekerjaan #{idx + 1}</span>
-                    <button
-                      className="bi-btn-remove bi-btn-remove--danger"
-                      onClick={() => askRemoveProject(proj)}
-                    >
-                      <Trash2 size={14} /> Hapus Pekerjaan
-                    </button>
-                  </div>
-                  <div className="bi-form-grid">
-                    <div className="bi-form-group full">
-                      <label>Nama Pekerjaan *</label>
-                      <textarea
-                        rows="2"
-                        value={proj.nm_pekerjaan}
-                        onChange={(e) =>
-                          updateCapexProject(
-                            proj.id,
-                            "nm_pekerjaan",
-                            e.target.value,
-                          )
-                        }
-                        placeholder="Pengadaan Server / Instalasi Network..."
-                      />
-                    </div>
-                    <div className="bi-form-group">
-                      <label>Nilai RAB (IDR)</label>
-                      <input
-                        type="number"
-                        value={proj.nilai_rab}
-                        onChange={(e) =>
-                          updateCapexProject(
-                            proj.id,
-                            "nilai_rab",
-                            e.target.value,
-                          )
-                        }
-                        placeholder="850000000"
-                      />
-                      {proj.nilai_rab && (
-                        <span className="bi-helper">
-                          ≈ Rp {fmt(proj.nilai_rab)}
-                        </span>
-                      )}
-                    </div>
-                    <div className="bi-form-group">
-                      <label>Nilai Kontrak (IDR) *</label>
-                      <input
-                        type="number"
-                        value={proj.nilai_kontrak}
-                        onChange={(e) =>
-                          updateCapexProject(
-                            proj.id,
-                            "nilai_kontrak",
-                            e.target.value,
-                          )
-                        }
-                        placeholder="800000000"
-                      />
-                      {proj.nilai_kontrak && (
-                        <span className="bi-helper">
-                          ≈ Rp {fmt(proj.nilai_kontrak)}
-                        </span>
-                      )}
-                    </div>
-                    <div className="bi-form-group">
-                      <label>No. PR</label>
-                      <input
-                        value={proj.no_pr}
-                        onChange={(e) =>
-                          updateCapexProject(proj.id, "no_pr", e.target.value)
-                        }
-                        placeholder="PR-IT-001-2026"
-                      />
-                    </div>
-                    <div className="bi-form-group">
-                      <label>No. PO</label>
-                      <input
-                        value={proj.no_po}
-                        onChange={(e) =>
-                          updateCapexProject(proj.id, "no_po", e.target.value)
-                        }
-                        placeholder="PO-IT-001-2026"
-                      />
-                    </div>
-                    <div className="bi-form-group">
-                      <label>No. Kontrak *</label>
-                      <input
-                        value={proj.no_kontrak}
-                        onChange={(e) =>
-                          updateCapexProject(
-                            proj.id,
-                            "no_kontrak",
-                            e.target.value,
-                          )
-                        }
-                        placeholder="SPK/IT/001/2026"
-                      />
-                    </div>
-                    <div className="bi-form-group">
-                      <label>Tgl Kontrak *</label>
-                      <input
-                        type="date"
-                        value={proj.tgl_kontrak}
-                        onChange={(e) =>
-                          updateCapexProject(
-                            proj.id,
-                            "tgl_kontrak",
-                            e.target.value,
-                          )
-                        }
-                      />
-                    </div>
-                    <div className="bi-form-group">
-                      <label>Durasi (Hari)</label>
-                      <input
-                        type="number"
-                        value={proj.durasi_kontrak}
-                        onChange={(e) =>
-                          updateCapexProject(
-                            proj.id,
-                            "durasi_kontrak",
-                            e.target.value,
-                          )
-                        }
-                        placeholder="90"
-                      />
-                    </div>
-                    <div className="bi-form-group">
-                      <label>No. SP3</label>
-                      <input
-                        value={proj.no_sp3}
-                        onChange={(e) =>
-                          updateCapexProject(proj.id, "no_sp3", e.target.value)
-                        }
-                        placeholder="KP.20.01/XX/X/X"
-                      />
-                    </div>
-                    <div className="bi-form-group">
-                      <label>Tgl SP3</label>
-                      <input
-                        type="date"
-                        value={proj.tgl_sp3}
-                        onChange={(e) =>
-                          updateCapexProject(proj.id, "tgl_sp3", e.target.value)
-                        }
-                      />
-                    </div>
-                    <div className="bi-form-group">
-                      <label>Tgl BA-MK</label>
-                      <input
-                        type="date"
-                        value={proj.tgl_bamk}
-                        onChange={(e) =>
-                          updateCapexProject(
-                            proj.id,
-                            "tgl_bamk",
-                            e.target.value,
-                          )
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  {/* Daftar Aset per Pekerjaan */}
-                  <div className="bi-capex-assets">
-                    <div className="bi-capex-assets-header">
-                      <div className="bi-capex-assets-title">
-                        <Layers size={15} />
-                        <span>Daftar Aset Pekerjaan #{idx + 1}</span>
-                        <span className="bi-asset-count-badge">
-                          {proj.assets.length} aset
-                        </span>
-                      </div>
-                      <button
-                        className="bi-btn-add bi-btn-add--sm"
-                        onClick={() => addCapexManual(proj.id)}
+              {/* Summary Preview */}
+              {capexForm.nilai_anggaran_rkap && (
+                <div
+                  style={{
+                    ...summaryBoxStyle,
+                    borderColor: "#bfdbfe",
+                    background: "#eff6ff",
+                  }}
+                >
+                  <div style={summaryItemStyle}>
+                    <span style={summaryLabelStyle}>Kode CAPEX</span>
+                    <strong>
+                      <code
+                        style={{
+                          ...codeStyle,
+                          background: "#dbeafe",
+                          color: "#1e40af",
+                        }}
                       >
-                        <Plus size={14} /> Input Manual
-                      </button>
-                    </div>
-                    <AsetSearchDropdown
-                      onSelect={(aset) => addCapexFromInventory(proj.id, aset)}
-                      existingCodes={proj.assets.map((a) => a.asset_code)}
-                    />
-                    {proj.assets.length === 0 ? (
-                      <div
-                        className="bi-capex-assets-empty"
-                        style={{ marginTop: 10 }}
-                      >
-                        <Package size={20} strokeWidth={1.4} />
-                        <span>
-                          Pilih dari inventory atau klik "Input Manual" untuk
-                          menambahkan aset
-                        </span>
-                      </div>
-                    ) : (
-                      proj.assets.map((asset, aIdx) => (
-                        <div
-                          key={asset.id}
-                          className="bi-asset-item bi-asset-item--capex"
-                          style={{ marginTop: 10 }}
-                        >
-                          <div className="bi-asset-header">
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 10,
-                              }}
-                            >
-                              <span className="bi-asset-num bi-asset-num--capex">
-                                Aset #{aIdx + 1}
-                              </span>
-                              {asset.fromInventory && (
-                                <span className="bi-inventory-badge bi-inventory-badge--capex">
-                                  Dari Inventory
-                                </span>
-                              )}
-                              {!asset.fromInventory && (
-                                <span className="bi-manual-badge">Manual</span>
-                              )}
-                            </div>
-                            <button
-                              className="bi-btn-remove"
-                              onClick={() =>
-                                askRemoveCapexAsset(proj.id, asset)
-                              }
-                            >
-                              <Trash2 size={14} /> Hapus
-                            </button>
-                          </div>
-                          <div className="bi-form-grid">
-                            <div className="bi-form-group">
-                              <label>Kode Aset *</label>
-                              <input
-                                value={asset.asset_code}
-                                readOnly={asset.fromInventory}
-                                className={
-                                  asset.fromInventory ? "bi-readonly" : ""
-                                }
-                                onChange={(e) =>
-                                  updateCapexAsset(
-                                    proj.id,
-                                    asset.id,
-                                    "asset_code",
-                                    e.target.value,
-                                  )
-                                }
-                                placeholder="AST-CPX-XXXX"
-                              />
-                            </div>
-                            <div className="bi-form-group">
-                              <label>Tgl Pengadaan *</label>
-                              <input
-                                type="date"
-                                value={asset.procurement_date}
-                                onChange={(e) =>
-                                  updateCapexAsset(
-                                    proj.id,
-                                    asset.id,
-                                    "procurement_date",
-                                    e.target.value,
-                                  )
-                                }
-                              />
-                            </div>
-                            <div className="bi-form-group full">
-                              <label>Nama Aset *</label>
-                              <input
-                                value={asset.name}
-                                readOnly={asset.fromInventory}
-                                className={
-                                  asset.fromInventory ? "bi-readonly" : ""
-                                }
-                                onChange={(e) =>
-                                  updateCapexAsset(
-                                    proj.id,
-                                    asset.id,
-                                    "name",
-                                    e.target.value,
-                                  )
-                                }
-                                placeholder="Server / Switch / CCTV..."
-                              />
-                            </div>
-                            <div className="bi-form-group">
-                              <label>Brand</label>
-                              <input
-                                value={asset.brand}
-                                readOnly={asset.fromInventory}
-                                className={
-                                  asset.fromInventory ? "bi-readonly" : ""
-                                }
-                                onChange={(e) =>
-                                  updateCapexAsset(
-                                    proj.id,
-                                    asset.id,
-                                    "brand",
-                                    e.target.value,
-                                  )
-                                }
-                                placeholder="Cisco"
-                              />
-                            </div>
-                            <div className="bi-form-group">
-                              <label>Model</label>
-                              <input
-                                value={asset.model}
-                                readOnly={asset.fromInventory}
-                                className={
-                                  asset.fromInventory ? "bi-readonly" : ""
-                                }
-                                onChange={(e) =>
-                                  updateCapexAsset(
-                                    proj.id,
-                                    asset.id,
-                                    "model",
-                                    e.target.value,
-                                  )
-                                }
-                                placeholder="Catalyst 2960-X"
-                              />
-                            </div>
-                            <div className="bi-form-group">
-                              <label>Serial Number</label>
-                              <input
-                                value={asset.serial_number}
-                                onChange={(e) =>
-                                  updateCapexAsset(
-                                    proj.id,
-                                    asset.id,
-                                    "serial_number",
-                                    e.target.value,
-                                  )
-                                }
-                                placeholder="SN-XXXX-XXXX"
-                              />
-                            </div>
-                            <div className="bi-form-group">
-                              <label>Nilai Aset (IDR)</label>
-                              <input
-                                type="number"
-                                value={asset.nilai_aset}
-                                readOnly={asset.fromInventory}
-                                className={
-                                  asset.fromInventory ? "bi-readonly" : ""
-                                }
-                                onChange={(e) =>
-                                  updateCapexAsset(
-                                    proj.id,
-                                    asset.id,
-                                    "nilai_aset",
-                                    e.target.value,
-                                  )
-                                }
-                                placeholder="0"
-                              />
-                              {asset.nilai_aset && (
-                                <span className="bi-helper">
-                                  ≈ Rp {fmt(asset.nilai_aset)}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                    {proj.assets.length > 0 && (
-                      <div className="bi-project-asset-summary">
-                        <span>Total Nilai Aset Pekerjaan #{idx + 1}:</span>
-                        <strong className="text-blue">
-                          Rp{" "}
-                          {fmt(
-                            proj.assets.reduce(
-                              (s, a) => s + parseFloat(a.nilai_aset || 0),
-                              0,
-                            ),
-                          )}
-                        </strong>
-                      </div>
-                    )}
+                        {capexForm.kd_anggaran_capex || "—"}
+                      </code>
+                    </strong>
                   </div>
+                  <div style={summaryItemStyle}>
+                    <span style={summaryLabelStyle}>Periode RKAP</span>
+                    <strong style={{ color: "#0f172a" }}>
+                      {capexForm.thn_rkap_awal} — {capexForm.thn_rkap_akhir}
+                    </strong>
+                  </div>
+                  <div style={summaryItemStyle}>
+                    <span style={summaryLabelStyle}>Nilai Anggaran RKAP</span>
+                    <strong style={{ color: "#1d4ed8" }}>
+                      Rp {fmt(capexForm.nilai_anggaran_rkap)}
+                    </strong>
+                  </div>
+                  {capexForm.nilai_anggaran_kad && (
+                    <div style={summaryItemStyle}>
+                      <span style={summaryLabelStyle}>Nilai Anggaran KAD</span>
+                      <strong style={{ color: "#1d4ed8" }}>
+                        Rp {fmt(capexForm.nilai_anggaran_kad)}
+                      </strong>
+                    </div>
+                  )}
                 </div>
-              ))}
-
-              <div className="bi-summary">
-                <div className="bi-summary-item">
-                  <span>Total Pagu RKAP</span>
-                  <strong>Rp {fmt(nilaiRkapCapex)}</strong>
-                </div>
-                <div className="bi-summary-item">
-                  <span>Total Nilai Kontrak</span>
-                  <strong className="text-red">
-                    Rp {fmt(totalKontrakCapex)}
-                  </strong>
-                </div>
-                <div className="bi-summary-item">
-                  <span>Sisa Anggaran</span>
-                  <strong className={sisaCapex < 0 ? "text-red" : "text-green"}>
-                    Rp {fmt(sisaCapex)}
-                  </strong>
-                </div>
-                <div className="bi-summary-item">
-                  <span>Total Aset Terdaftar</span>
-                  <strong className="text-blue">
-                    {capexProjects.reduce((s, p) => s + p.assets.length, 0)}{" "}
-                    aset
-                  </strong>
-                </div>
-              </div>
+              )}
             </div>
           )}
 
-          <div className="bi-actions">
-            <button
-              className="bi-btn bi-btn-secondary"
-              onClick={() => setStep(1)}
-            >
-              <X size={16} /> Batal
+          <div style={actionsStyle}>
+            <button style={btnCancelStyle} onClick={() => setStep(2)}>
+              <ArrowLeft size={15} /> Kembali
             </button>
-            <button className="bi-btn bi-btn-primary" onClick={handleSubmit}>
-              <Save size={16} /> Simpan Data CAPEX
+            <button
+              style={{
+                ...btnPrimaryStyle,
+                ...(tipeAnggaran === "OPEX" ? btnGreenStyle : {}),
+                opacity: canProceedStep3 ? 1 : 0.4,
+                cursor: canProceedStep3 ? "pointer" : "not-allowed",
+              }}
+              disabled={!canProceedStep3}
+              onClick={handleSubmit}
+            >
+              <Save size={16} /> Simpan Data {tipeAnggaran}
             </button>
           </div>
         </div>
@@ -2488,3 +1431,453 @@ const BudgetInput = () => {
 };
 
 export default BudgetInput;
+
+// ═══════════════════════════════════════════════════════════════
+// STYLES
+// ═══════════════════════════════════════════════════════════════
+const rootStyle = {
+  fontFamily: "'Plus Jakarta Sans', 'Segoe UI', sans-serif",
+  maxWidth: 860,
+  margin: "0 auto",
+  padding: "2rem 1.5rem",
+  minHeight: "100vh",
+  background: "#f1f5f9",
+  color: "#0f172a",
+  position: "relative",
+};
+const headerStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  marginBottom: "1.5rem",
+  background: "white",
+  padding: "1.1rem 1.4rem",
+  borderRadius: 14,
+  border: "1px solid #e2e8f0",
+  boxShadow: "0 1px 3px rgba(0,0,0,.05)",
+};
+const backBtnStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: 36,
+  height: 36,
+  borderRadius: 10,
+  border: "1px solid #e2e8f0",
+  background: "#f8fafc",
+  color: "#475569",
+  cursor: "pointer",
+};
+const stepperStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+  marginBottom: "1.5rem",
+  background: "white",
+  padding: "1rem 1.4rem",
+  borderRadius: 12,
+  border: "1px solid #e2e8f0",
+};
+const contentStyle = { display: "flex", flexDirection: "column", gap: 16 };
+const formCardStyle = {
+  background: "white",
+  borderRadius: 14,
+  border: "1px solid #e2e8f0",
+  padding: "1.4rem 1.5rem",
+  boxShadow: "0 1px 3px rgba(0,0,0,.04)",
+};
+const formCardHeaderStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: 10,
+  marginBottom: 14,
+  paddingBottom: 12,
+  borderBottom: "1px solid #f1f5f9",
+};
+const cardTitleStyle = {
+  fontSize: "0.95rem",
+  fontWeight: 800,
+  color: "#0f172a",
+  flex: 1,
+};
+const actionsStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "flex-end",
+  gap: 10,
+  background: "white",
+  padding: "1rem 1.4rem",
+  borderRadius: 12,
+  border: "1px solid #e2e8f0",
+};
+const btnPrimaryStyle = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 7,
+  padding: "9px 20px",
+  borderRadius: 9,
+  border: "none",
+  background: "linear-gradient(135deg,#1d4ed8,#3b82f6)",
+  color: "white",
+  fontFamily: "inherit",
+  fontSize: "0.82rem",
+  fontWeight: 700,
+  cursor: "pointer",
+  boxShadow: "0 2px 8px rgba(29,78,216,.25)",
+};
+const btnGreenStyle = {
+  background: "linear-gradient(135deg,#15803d,#16a34a)",
+  boxShadow: "0 2px 8px rgba(21,128,61,.25)",
+};
+const btnCancelStyle = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 7,
+  padding: "9px 16px",
+  borderRadius: 9,
+  border: "1px solid #e2e8f0",
+  background: "white",
+  color: "#64748b",
+  fontFamily: "inherit",
+  fontSize: "0.82rem",
+  fontWeight: 600,
+  cursor: "pointer",
+};
+const btnSecondaryStyle = { ...btnCancelStyle };
+const btnDangerStyle = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 6,
+  padding: "8px 16px",
+  borderRadius: 9,
+  border: "none",
+  background: "#dc2626",
+  color: "white",
+  fontFamily: "inherit",
+  fontSize: "0.82rem",
+  fontWeight: 700,
+  cursor: "pointer",
+};
+const btnSmallStyle = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 5,
+  padding: "5px 12px",
+  borderRadius: 7,
+  border: "none",
+  fontSize: "0.72rem",
+  fontWeight: 700,
+  cursor: "pointer",
+  fontFamily: "inherit",
+};
+
+const typeCardStyle = {
+  position: "relative",
+  background: "#f8fafc",
+  border: "2px solid #e2e8f0",
+  borderRadius: 14,
+  padding: "1.2rem 1.1rem",
+  cursor: "pointer",
+  transition: "all 0.2s",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "flex-start",
+};
+const typeCardActiveOpex = {
+  background: "#f0fdf4",
+  borderColor: "#86efac",
+  boxShadow: "0 0 0 4px rgba(21,128,61,.08)",
+};
+const typeCardActiveCapex = {
+  background: "#eff6ff",
+  borderColor: "#93c5fd",
+  boxShadow: "0 0 0 4px rgba(29,78,216,.08)",
+};
+const typeIconStyle = {
+  width: 52,
+  height: 52,
+  borderRadius: 13,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  marginBottom: 12,
+  transition: "all 0.2s",
+};
+
+const typeBadgeStyle = {
+  display: "inline-flex",
+  alignItems: "center",
+  padding: "3px 10px",
+  borderRadius: 6,
+  fontSize: "0.72rem",
+  fontWeight: 800,
+  letterSpacing: "0.4px",
+};
+const typeBadgeSmall = {
+  display: "inline-flex",
+  alignItems: "center",
+  padding: "2px 7px",
+  borderRadius: 4,
+  fontSize: "0.65rem",
+  fontWeight: 700,
+  letterSpacing: "0.3px",
+};
+const opexBadgeStyle = { background: "#dcfce7", color: "#15803d" };
+const capexBadgeStyle = { background: "#dbeafe", color: "#1e40af" };
+const opexBadgeSmall = { background: "#dcfce7", color: "#15803d" };
+const capexBadgeSmall = { background: "#dbeafe", color: "#1e40af" };
+
+const toggleWrapStyle = {
+  display: "flex",
+  background: "#f1f5f9",
+  borderRadius: 10,
+  padding: 3,
+  gap: 3,
+  marginBottom: 4,
+};
+const toggleBtnStyle = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 6,
+  padding: "7px 16px",
+  borderRadius: 8,
+  border: "none",
+  background: "transparent",
+  fontFamily: "inherit",
+  fontSize: "0.8rem",
+  fontWeight: 600,
+  color: "#64748b",
+  cursor: "pointer",
+  transition: "all 0.2s",
+};
+const toggleActiveOpex = {
+  background: "white",
+  color: "#15803d",
+  boxShadow: "0 1px 4px rgba(0,0,0,.08)",
+};
+const toggleActiveCapex = {
+  background: "white",
+  color: "#1d4ed8",
+  boxShadow: "0 1px 4px rgba(0,0,0,.08)",
+};
+
+const labelStyle = {
+  fontSize: "0.72rem",
+  fontWeight: 700,
+  textTransform: "uppercase",
+  letterSpacing: "0.5px",
+  color: "#475569",
+};
+const inputStyle = {
+  padding: "9px 11px",
+  border: "1px solid #e2e8f0",
+  borderRadius: 8,
+  fontFamily: "inherit",
+  fontSize: "0.84rem",
+  color: "#0f172a",
+  outline: "none",
+  width: "100%",
+  transition: "all 0.2s",
+  boxSizing: "border-box",
+  background: "white",
+};
+const helperStyle = { fontSize: "0.7rem", color: "#94a3b8", marginTop: 2 };
+const formGridStyle = {
+  display: "grid",
+  gridTemplateColumns: "1fr 1fr",
+  gap: "12px 16px",
+};
+const codeStyle = {
+  fontFamily: "'JetBrains Mono', 'Courier New', monospace",
+  fontSize: "0.73rem",
+  background: "#f1f5f9",
+  color: "#475569",
+  padding: "2px 7px",
+  borderRadius: 4,
+  border: "1px solid #e2e8f0",
+};
+
+const triggerStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+  padding: "9px 12px",
+  border: "1px solid #e2e8f0",
+  borderRadius: 9,
+  cursor: "pointer",
+  background: "white",
+  transition: "all 0.2s",
+};
+const selectedBoxStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: 10,
+  padding: "10px 14px",
+  border: "1px solid #e2e8f0",
+  borderRadius: 9,
+  background: "#f8fafc",
+};
+const dropdownStyle = {
+  position: "absolute",
+  top: "calc(100% + 5px)",
+  left: 0,
+  right: 0,
+  background: "white",
+  border: "1px solid #e2e8f0",
+  borderRadius: 10,
+  boxShadow: "0 8px 30px rgba(0,0,0,.12)",
+  zIndex: 50,
+  overflow: "hidden",
+};
+const searchInputWrapStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+  padding: "9px 12px",
+  borderBottom: "1px solid #f1f5f9",
+};
+const searchInputStyle = {
+  flex: 1,
+  border: "none",
+  outline: "none",
+  fontFamily: "inherit",
+  fontSize: "0.82rem",
+  color: "#0f172a",
+  background: "transparent",
+};
+const optionStyle = {
+  padding: "10px 14px",
+  cursor: "pointer",
+  transition: "background 0.15s",
+  borderBottom: "1px solid #f8fafc",
+};
+
+const autofillBannerStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: 7,
+  background: "#f0fdf4",
+  border: "1px solid #86efac",
+  borderRadius: 8,
+  padding: "8px 12px",
+  fontSize: "0.75rem",
+  color: "#15803d",
+  fontWeight: 600,
+  marginTop: 10,
+};
+const infoBoxStyle = {
+  display: "flex",
+  alignItems: "flex-start",
+  gap: 8,
+  background: "#fef9c3",
+  border: "1px solid #fde047",
+  borderRadius: 8,
+  padding: "9px 12px",
+  fontSize: "0.75rem",
+  color: "#92400e",
+  fontWeight: 500,
+};
+
+const contextBarStyle = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+  gap: 12,
+  background: "white",
+  padding: "1rem 1.4rem",
+  borderRadius: 12,
+  border: "1px solid #e2e8f0",
+};
+const contextItemStyle = { display: "flex", flexDirection: "column", gap: 5 };
+const contextLabelStyle = {
+  fontSize: "0.65rem",
+  fontWeight: 700,
+  textTransform: "uppercase",
+  letterSpacing: "0.5px",
+  color: "#94a3b8",
+};
+
+const summaryBoxStyle = {
+  marginTop: 16,
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+  gap: 12,
+  background: "#f0fdf4",
+  border: "1px solid #86efac",
+  borderRadius: 10,
+  padding: "1rem 1.2rem",
+};
+const summaryItemStyle = { display: "flex", flexDirection: "column", gap: 4 };
+const summaryLabelStyle = {
+  fontSize: "0.65rem",
+  fontWeight: 700,
+  textTransform: "uppercase",
+  letterSpacing: "0.5px",
+  color: "#94a3b8",
+};
+
+const overlayStyle = {
+  position: "fixed",
+  inset: 0,
+  background: "rgba(15,23,42,.5)",
+  backdropFilter: "blur(3px)",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  zIndex: 9000,
+  padding: 20,
+};
+const confirmBoxStyle = {
+  background: "white",
+  borderRadius: 16,
+  padding: "28px 24px",
+  maxWidth: 360,
+  width: "100%",
+  boxShadow: "0 12px 40px rgba(0,0,0,.14)",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  gap: 14,
+  textAlign: "center",
+};
+const toastStyle = {
+  position: "fixed",
+  bottom: 24,
+  right: 24,
+  background: "#15803d",
+  color: "white",
+  padding: "12px 20px",
+  borderRadius: 12,
+  fontSize: "0.82rem",
+  fontWeight: 600,
+  boxShadow: "0 4px 20px rgba(0,0,0,.15)",
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+  zIndex: 9999,
+};
+
+const autoKodeBoxStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+  padding: "9px 12px",
+  border: "1px dashed #bfdbfe",
+  borderRadius: 8,
+  background: "#eff6ff",
+};
+const autoKodePrefixStyle = {
+  fontSize: "0.65rem",
+  fontWeight: 800,
+  background: "#1d4ed8",
+  color: "white",
+  padding: "2px 7px",
+  borderRadius: 4,
+  letterSpacing: "0.5px",
+  flexShrink: 0,
+};
+const autoKodeValueStyle = {
+  fontFamily: "'JetBrains Mono', monospace",
+  fontSize: "0.78rem",
+  color: "#1d4ed8",
+  fontWeight: 600,
+};

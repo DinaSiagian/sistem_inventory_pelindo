@@ -1,17 +1,7 @@
-// ================================================================
-// BudgetManagement + Inline Edit + Invoice Attachment
-// ================================================================
+import React, { useState, useMemo, useEffect, useRef } from "react";
 
-import React, {
-  useState,
-  useMemo,
-  useRef,
-  useEffect,
-  useCallback,
-} from "react";
-
-// ── Icons mini (lucide-style SVG inline) ──────────────────────────
-const Icon = ({ d, size = 16, ...p }) => (
+// ── Icons ──────────────────────────────────────────────────────────
+const Icon = ({ d, size = 16, style, className }) => (
   <svg
     width={size}
     height={size}
@@ -21,7 +11,8 @@ const Icon = ({ d, size = 16, ...p }) => (
     strokeWidth={2}
     strokeLinecap="round"
     strokeLinejoin="round"
-    {...p}
+    style={style}
+    className={className}
   >
     {Array.isArray(d) ? (
       d.map((dd, i) => <path key={i} d={dd} />)
@@ -31,49 +22,39 @@ const Icon = ({ d, size = 16, ...p }) => (
   </svg>
 );
 
-const Icons = {
-  dollar: "M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6",
-  trending: "M22 7 13.5 15.5 8.5 10.5 2 17M16 7h6v6",
-  wallet:
-    "M21 12V7H5a2 2 0 0 1 0-4h14v4M3 5v14a2 2 0 0 0 2 2h16v-5M16 13a2 2 0 1 0 4 0 2 2 0 0 0-4 0",
+const I = {
+  briefcase:
+    "M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zM16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2",
+  monitor:
+    "M20 3H4a1 1 0 0 0-1 1v13a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1zM8 21h8M12 17v4",
+  layers: "M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5",
   search: "m21 21-6-6m2-5a7 7 0 1 1-14 0 7 7 0 0 1 14 0",
   chevDown: "m6 9 6 6 6-6",
   chevUp: "m18 15-6-6-6 6",
   plus: "M5 12h14M12 5v14",
   x: "M18 6 6 18M6 6l12 12",
-  save: "M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2zM17 21v-8H7v8M7 3v5h8",
   edit: "M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z",
   trash:
     "M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2",
+  save: "M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2zM17 21v-8H7v8M7 3v5h8",
   check: "M20 6 9 17l-5-5",
-  receipt:
-    "M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1zM16 8H8M16 12H8M12 16H8",
-  link: "M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71",
-  briefcase:
-    "M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zM16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2",
-  monitor:
-    "M20 3H4a1 1 0 0 0-1 1v13a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1zM8 21h8M12 17v4",
-  calendar:
-    "M8 2v4M16 2v4M3 10h18M21 8H3a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1z",
-  layers: "m2 20 10-10 10 10M2 4l10 10L22 4",
-  fileText:
-    "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM14 2v6h6M16 13H8M16 17H8M10 9H8",
   package:
     "M16.5 9.4l-9-5.19M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16zM3.27 6.96 12 12.01l8.73-5.05M12 22.08V12",
   warning:
     "M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0-3.42 0zM12 9v4M12 17h.01",
-  alertCirc:
-    "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 8v4M12 16h.01",
-  minusCirc:
-    "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM8 12h8",
+  calendar:
+    "M8 2v4M16 2v4M3 10h18M21 8H3a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1z",
+  fileText:
+    "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM14 2v6h6M16 13H8M16 17H8M10 9H8",
+  arrowLeft: "m12 19-7-7 7-7M19 12H5",
+  database:
+    "M12 2C6.48 2 2 4.24 2 7v10c0 2.76 4.48 5 10 5s10-2.24 10-5V7c0-2.76-4.48-5-10-5zM2 12c0 2.76 4.48 5 10 5s10-2.24 10-5M2 7c0 2.76 4.48 5 10 5s10-2.24 10-5",
+  filter: "M22 3H2l8 9.46V19l4 2v-8.54L22 3z",
+  info: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 16v-4M12 8h.01",
   checkCirc: "M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4 12 14.01l-3-3",
-  paperclip:
-    "M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48",
-  upload: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12",
-  file: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6",
 };
 
-// ── Helpers ───────────────────────────────────────────────────────
+// ── Helpers ──────────────────────────────────────────────────────
 const fmt = (n) =>
   new Intl.NumberFormat("id-ID", {
     style: "currency",
@@ -88,85 +69,158 @@ const fmtDate = (d) =>
         year: "numeric",
       })
     : "—";
-const fmtFileSize = (bytes) => {
-  if (!bytes) return "";
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-};
-const statusClass = (pct) =>
-  pct >= 100 ? "over" : pct >= 80 ? "warn" : pct >= 40 ? "mid" : "safe";
-const statusLabel = (pct) =>
-  pct >= 100
-    ? "Melebihi"
-    : pct >= 80
-      ? "Kritis"
-      : pct >= 40
-        ? "Berjalan"
-        : "Aman";
-const getBalanceInfo = (assets, nilaiKontrak) => {
-  if (!assets || assets.length === 0)
-    return {
-      status: "empty",
-      selisih: nilaiKontrak,
-      label: "Belum Diisi",
-      pct: 0,
-    };
-  const sumAset = assets.reduce((s, a) => s + (a.acquisition_value || 0), 0);
-  if (sumAset === 0)
-    return {
-      status: "empty",
-      selisih: nilaiKontrak,
-      label: "Nilai Kosong",
-      pct: 0,
-    };
-  const selisih = nilaiKontrak - sumAset;
-  const pctSelisih =
-    nilaiKontrak > 0 ? Math.abs(selisih / nilaiKontrak) * 100 : 0;
-  if (selisih === 0)
-    return {
-      status: "balanced",
-      selisih: 0,
-      label: "Balanced",
-      pct: pctSelisih,
-      sumAset,
-    };
-  if (pctSelisih <= 5)
-    return {
-      status: "near",
-      selisih,
-      label: "Hampir Balance",
-      pct: pctSelisih,
-      sumAset,
-    };
-  return {
-    status: "unbalanced",
-    selisih,
-    label: "Belum Balance",
-    pct: pctSelisih,
-    sumAset,
-  };
-};
 const newId = () =>
   `id-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 
-// ── Mock Data ─────────────────────────────────────────────────────
-const initMockCapex = [
+// ── Mock asset database (for auto-fill) ──────────────────────────
+const ASSET_DB = {
+  "SPMT-KPT-DTC-SRV-01": {
+    name: "Server Rack Kantor Pusat — Rack 1",
+    brand: "Dell",
+    model: "PowerEdge R750",
+    category: "Server",
+    location: "Kantor Pusat",
+  },
+  "SPMT-KPT-DTC-SRV-02": {
+    name: "Server Rack Kantor Pusat — Rack 2",
+    brand: "Dell",
+    model: "PowerEdge R750",
+    category: "Server",
+    location: "Kantor Pusat",
+  },
+  "SPMT-KPT-DTC-PKR-01": {
+    name: "Core Switch Data Center Kantor Pusat",
+    brand: "Cisco",
+    model: "Nexus 9300-48S",
+    category: "Network",
+    location: "Kantor Pusat",
+  },
+  "SPMT-PLT-GDG-PKR-01": {
+    name: "Access Switch Pelindo Tower — Lantai 1-5",
+    brand: "Cisco",
+    model: "Catalyst 9200L-24P",
+    category: "Network",
+    location: "Pelindo Tower",
+  },
+  "SPMT-PLP-GDG-PKR-01": {
+    name: "Access Switch Pelindo Place",
+    brand: "Cisco",
+    model: "Catalyst 9200L-24P",
+    category: "Network",
+    location: "Pelindo Place",
+  },
+  "SPMT-KPT-DTC-PKR-02": {
+    name: "Firewall Data Center Kantor Pusat",
+    brand: "Fortinet",
+    model: "FortiGate 200F",
+    category: "Security",
+    location: "Kantor Pusat",
+  },
+  "SPMT-TJE-DTC-PKR-01": {
+    name: "Core Switch Tanjung Emas",
+    brand: "Cisco",
+    model: "Catalyst 9300-24P",
+    category: "Network",
+    location: "Tanjung Emas",
+  },
+  "SPMT-GRK-DTC-PKR-01": {
+    name: "Core Switch Gresik",
+    brand: "Cisco",
+    model: "Catalyst 9300-24P",
+    category: "Network",
+    location: "Gresik",
+  },
+  "SPMT-MLH-DTC-PKR-02": {
+    name: "Core Switch Malahayati",
+    brand: "Cisco",
+    model: "Catalyst 9300-48P",
+    category: "Network",
+    location: "Malahayati",
+  },
+  "SPMT-LHK-DTC-PKR-02": {
+    name: "Core Switch Lhokseumawe",
+    brand: "Cisco",
+    model: "Catalyst 9300-48P",
+    category: "Network",
+    location: "Lhokseumawe",
+  },
+  "SPMT-TBK-DTC-PKR-01": {
+    name: "Core Switch Tanjung Balai Karimun",
+    brand: "Cisco",
+    model: "Catalyst 9300-24P",
+    category: "Network",
+    location: "Tanjung Balai Karimun",
+  },
+  "SPMT-TBK-DTC-PKR-02": {
+    name: "Firewall UTM Tanjung Balai Karimun",
+    brand: "Fortinet",
+    model: "FortiGate 100F",
+    category: "Security",
+    location: "Tanjung Balai Karimun",
+  },
+};
+const SN_DB = {
+  "DELL-KPT-SRV-001": "SPMT-KPT-DTC-SRV-01",
+  "DELL-KPT-SRV-002": "SPMT-KPT-DTC-SRV-02",
+  "CSC-KPT-CSW-001": "SPMT-KPT-DTC-PKR-01",
+  "CSC-PLT-ASW-001": "SPMT-PLT-GDG-PKR-01",
+  "CSC-PLP-ASW-001": "SPMT-PLP-GDG-PKR-01",
+  "FGT-KPT-FWL-001": "SPMT-KPT-DTC-PKR-02",
+  "CSC-TJE-CSW-001": "SPMT-TJE-DTC-PKR-01",
+  "CSC-GRK-CSW-001": "SPMT-GRK-DTC-PKR-01",
+  "CSC-MLH-CSW-001": "SPMT-MLH-DTC-PKR-02",
+  "CSC-LHK-CSW-001": "SPMT-LHK-DTC-PKR-02",
+  "CSC-TBK-CSW-001": "SPMT-TBK-DTC-PKR-01",
+  "FGT-TBK-FWL-001": "SPMT-TBK-DTC-PKR-02",
+};
+
+// ── Mock budget_masters data ──────────────────────────────────────
+const BUDGET_MASTERS = [
   {
-    kd_anggaran_capex: "CAP-2440013",
-    kd_anggaran_master: "2440013",
-    nm_anggaran_capex: "Penyiapan Infrastruktur IT Kantor Pusat & Branch",
-    nilai_anggaran_rkap: 0,
-    thn_rkap_awal: 2024,
-    thn_rkap_akhir: 2024,
-    thn_anggaran: 2024,
+    kd_anggaran_master: "5030905000",
+    nm_anggaran_master: "Beban Pemeliharaan Software",
+    tipe_anggaran_master: "OPEX",
+  },
+  {
+    kd_anggaran_master: "5021300000",
+    nm_anggaran_master: "Beban Jaringan dan Koneksi Data",
+    tipe_anggaran_master: "OPEX",
+  },
+  {
+    kd_anggaran_master: "5021200000",
+    nm_anggaran_master: "Beban Perlengkapan Kantor",
+    tipe_anggaran_master: "OPEX",
+  },
+  {
+    kd_anggaran_master: "5030100000",
+    nm_anggaran_master: "Beban Pemeliharaan Hardware",
+    tipe_anggaran_master: "OPEX",
+  },
+  {
+    kd_anggaran_master: "5040200000",
+    nm_anggaran_master: "Beban Jasa Konsultan IT",
+    tipe_anggaran_master: "OPEX",
+  },
+];
+
+// ── Mock Data ────────────────────────────────────────────────────
+const INIT_CAPEX = [
+  {
+    id: "CAP-2440013",
+    kode: "2440013",
+    nama: "Penyiapan Infrastruktur IT Kantor Pusat & Branch",
+    pagu: 0,
+    thnAwal: 2024,
+    thnAkhir: 2024,
+    thnAnggaran: 2024,
+    type: "capex",
     projects: [
       {
-        id_pekerjaan: "PKJ-2440013-001",
+        id: "PKJ-2440013-001",
         nm_pekerjaan:
           "Penyiapan Infrastruktur IT (Kantor Pusat, Pelindo Place, Pelindo Tower, Malahayati, Lhokseumawe, Bima, Badas, Parepare, Gresik, Tanjung Emas, Mekar Putih, Meulaboh, Kuala Langsa dan Bumiharjo) PT Pelindo Multi Terminal",
         nilai_rab: 0,
-        nilai_kontrak: 0,
+        nilai_kontrak: 2650000000,
         no_pr: "",
         no_po: "8260000074",
         no_kontrak: "SI.01/10/9/2/PPTI/TEKI/PLMT-24",
@@ -177,92 +231,45 @@ const initMockCapex = [
         tgl_bamk: "2024-09-06",
         assets: [
           {
+            id: newId(),
             asset_code: "SPMT-KPT-DTC-SRV-01",
+            serial_number: "DELL-KPT-SRV-001",
             name: "Server Rack Kantor Pusat — Rack 1",
             brand: "Dell",
             model: "PowerEdge R750",
-            serial_number: "DELL-KPT-SRV-001",
+            category: "Server",
+            location: "Kantor Pusat",
             procurement_date: "2024-09-10",
             acquisition_value: 450000000,
           },
           {
+            id: newId(),
             asset_code: "SPMT-KPT-DTC-SRV-02",
+            serial_number: "DELL-KPT-SRV-002",
             name: "Server Rack Kantor Pusat — Rack 2",
             brand: "Dell",
             model: "PowerEdge R750",
-            serial_number: "DELL-KPT-SRV-002",
+            category: "Server",
+            location: "Kantor Pusat",
             procurement_date: "2024-09-10",
             acquisition_value: 450000000,
-          },
-          {
-            asset_code: "SPMT-KPT-DTC-PKR-01",
-            name: "Core Switch Data Center Kantor Pusat",
-            brand: "Cisco",
-            model: "Nexus 9300-48S",
-            serial_number: "CSC-KPT-CSW-001",
-            procurement_date: "2024-09-10",
-            acquisition_value: 520000000,
-          },
-          {
-            asset_code: "SPMT-PLT-GDG-PKR-01",
-            name: "Access Switch Pelindo Tower — Lantai 1-5",
-            brand: "Cisco",
-            model: "Catalyst 9200L-24P",
-            serial_number: "CSC-PLT-ASW-001",
-            procurement_date: "2024-09-10",
-            acquisition_value: 180000000,
-          },
-          {
-            asset_code: "SPMT-PLP-GDG-PKR-01",
-            name: "Access Switch Pelindo Place",
-            brand: "Cisco",
-            model: "Catalyst 9200L-24P",
-            serial_number: "CSC-PLP-ASW-001",
-            procurement_date: "2024-09-10",
-            acquisition_value: 180000000,
-          },
-          {
-            asset_code: "SPMT-KPT-DTC-PKR-02",
-            name: "Firewall Data Center Kantor Pusat",
-            brand: "Fortinet",
-            model: "FortiGate 200F",
-            serial_number: "FGT-KPT-FWL-001",
-            procurement_date: "2024-09-10",
-            acquisition_value: 380000000,
-          },
-          {
-            asset_code: "SPMT-TJE-DTC-PKR-01",
-            name: "Core Switch Tanjung Emas",
-            brand: "Cisco",
-            model: "Catalyst 9300-24P",
-            serial_number: "CSC-TJE-CSW-001",
-            procurement_date: "2024-09-10",
-            acquisition_value: 245000000,
-          },
-          {
-            asset_code: "SPMT-GRK-DTC-PKR-01",
-            name: "Core Switch Gresik",
-            brand: "Cisco",
-            model: "Catalyst 9300-24P",
-            serial_number: "CSC-GRK-CSW-001",
-            procurement_date: "2024-09-10",
-            acquisition_value: 245000000,
           },
         ],
       },
     ],
   },
   {
-    kd_anggaran_capex: "CAP-2440014",
-    kd_anggaran_master: "2440014",
-    nm_anggaran_capex: "Penyediaan Network di Branch SPMT",
-    nilai_anggaran_rkap: 3200000000,
-    thn_rkap_awal: 2024,
-    thn_rkap_akhir: 2024,
-    thn_anggaran: 2024,
+    id: "CAP-2440014",
+    kode: "2440014",
+    nama: "Penyediaan Network di Branch SPMT",
+    pagu: 3200000000,
+    thnAwal: 2024,
+    thnAkhir: 2024,
+    thnAnggaran: 2024,
+    type: "capex",
     projects: [
       {
-        id_pekerjaan: "PKJ-2440014-001",
+        id: "PKJ-2440014-001",
         nm_pekerjaan:
           "Penyediaan Network di Branch SPMT (Malahayati, Lhokseumawe, Lembar, Parepare dan Garongkong)",
         nilai_rab: 1600000000,
@@ -277,76 +284,35 @@ const initMockCapex = [
         tgl_bamk: "2024-08-09",
         assets: [
           {
+            id: newId(),
             asset_code: "SPMT-MLH-DTC-PKR-02",
+            serial_number: "CSC-MLH-CSW-001",
             name: "Core Switch Malahayati",
             brand: "Cisco",
             model: "Catalyst 9300-48P",
-            serial_number: "CSC-MLH-CSW-001",
+            category: "Network",
+            location: "Malahayati",
             procurement_date: "2024-08-15",
             acquisition_value: 320000000,
-          },
-          {
-            asset_code: "SPMT-LHK-DTC-PKR-02",
-            name: "Core Switch Lhokseumawe",
-            brand: "Cisco",
-            model: "Catalyst 9300-48P",
-            serial_number: "CSC-LHK-CSW-001",
-            procurement_date: "2024-08-15",
-            acquisition_value: 320000000,
-          },
-          {
-            asset_code: "SPMT-LMB-DTC-PKR-01",
-            name: "Core Switch Lembar",
-            brand: "Cisco",
-            model: "Catalyst 9300-24P",
-            serial_number: "CSC-LMB-CSW-001",
-            procurement_date: "2024-08-15",
-            acquisition_value: 280000000,
-          },
-          {
-            asset_code: "SPMT-PPR-DTC-PKR-02",
-            name: "Core Switch Parepare",
-            brand: "Cisco",
-            model: "Catalyst 9300-24P",
-            serial_number: "CSC-PPR-CSW-001",
-            procurement_date: "2024-08-15",
-            acquisition_value: 280000000,
-          },
-          {
-            asset_code: "SPMT-GRG-DTC-PKR-01",
-            name: "Access Switch Garongkong",
-            brand: "Cisco",
-            model: "Catalyst 2960-X 24TS",
-            serial_number: "CSC-GRG-ASW-001",
-            procurement_date: "2024-08-15",
-            acquisition_value: 150000000,
-          },
-          {
-            asset_code: "SPMT-MLH-DTC-PKR-03",
-            name: "Firewall UTM Malahayati",
-            brand: "Fortinet",
-            model: "FortiGate 80F",
-            serial_number: "FGT-MLH-FWL-001",
-            procurement_date: "2024-08-15",
-            acquisition_value: 150000000,
           },
         ],
       },
     ],
   },
   {
-    kd_anggaran_capex: "CAP-2440015",
-    kd_anggaran_master: "2440015",
-    nm_anggaran_capex: "Implementasi dan Standarisasi IT Infrastruktur",
-    nilai_anggaran_rkap: 5800000000,
-    thn_rkap_awal: 2024,
-    thn_rkap_akhir: 2024,
-    thn_anggaran: 2024,
+    id: "CAP-2440015",
+    kode: "2440015",
+    nama: "Implementasi dan Standarisasi IT Infrastruktur",
+    pagu: 5800000000,
+    thnAwal: 2024,
+    thnAkhir: 2024,
+    thnAnggaran: 2024,
+    type: "capex",
     projects: [
       {
-        id_pekerjaan: "PKJ-2440015-001",
+        id: "PKJ-2440015-001",
         nm_pekerjaan:
-          "Pekerjaan Implementasi dan Standarisasi IT Infrastruktur (Planning & Control, CCTV dan SD-WAN Branch Malahayati, Lhokseumawe, Lembar, ParePare dan Garongkong) PT Pelindo Multi Terminal",
+          "Pekerjaan Implementasi dan Standarisasi IT Infrastruktur (Planning & Control, CCTV dan SD-WAN Branch) PT Pelindo Multi Terminal",
         nilai_rab: 1250000000,
         nilai_kontrak: 1200000000,
         no_pr: "",
@@ -357,206 +323,24 @@ const initMockCapex = [
         no_sp3: "",
         tgl_sp3: "2024-08-02",
         tgl_bamk: "2024-08-06",
-        assets: [
-          {
-            asset_code: "SPMT-MLH-LPG-KMR-01",
-            name: "CCTV IP Camera Malahayati",
-            brand: "Hikvision",
-            model: "DS-2CD2T47G2-L",
-            serial_number: "HVK-MLH-KMR-001",
-            procurement_date: "2024-08-12",
-            acquisition_value: 85000000,
-          },
-          {
-            asset_code: "SPMT-LHK-LPG-KMR-01",
-            name: "CCTV IP Camera Lhokseumawe",
-            brand: "Hikvision",
-            model: "DS-2CD2T47G2-L",
-            serial_number: "HVK-LHK-KMR-001",
-            procurement_date: "2024-08-12",
-            acquisition_value: 85000000,
-          },
-          {
-            asset_code: "SPMT-MLH-DTC-PKR-01",
-            name: "Router SD-WAN Malahayati",
-            brand: "Cisco",
-            model: "ISR 4331",
-            serial_number: "CSC-MLH-RTR-001",
-            procurement_date: "2024-08-12",
-            acquisition_value: 185000000,
-          },
-          {
-            asset_code: "SPMT-MLH-DTC-SRV-01",
-            name: "Server Planning & Control Malahayati",
-            brand: "Dell",
-            model: "PowerEdge R450",
-            serial_number: "DELL-MLH-SRV-001",
-            procurement_date: "2024-08-12",
-            acquisition_value: 195000000,
-          },
-        ],
-      },
-      {
-        id_pekerjaan: "PKJ-2440015-002",
-        nm_pekerjaan:
-          "Pekerjaan Implementasi dan Standarisasi IT Infrastruktur (Gate System Branch Malahayati, Lhokseumawe, Lembar, ParePare dan Garongkong) PT Pelindo Multi Terminal",
-        nilai_rab: 1000000000,
-        nilai_kontrak: 980000000,
-        no_pr: "",
-        no_po: "6440000027",
-        no_kontrak: "SI.01/8/8/2/PPTI/TEKI/PLMT-24",
-        tgl_kontrak: "2024-08-08",
-        durasi_kontrak: 90,
-        no_sp3: "",
-        tgl_sp3: "2024-08-02",
-        tgl_bamk: "2024-08-02",
-        assets: [
-          {
-            asset_code: "SPMT-MLH-LPG-DMG-01",
-            name: "Gate Controller Malahayati",
-            brand: "Genetec",
-            model: "AutoVu SharpX",
-            serial_number: "GTC-MLH-GCL-001",
-            procurement_date: "2024-08-08",
-            acquisition_value: 210000000,
-          },
-          {
-            asset_code: "SPMT-LHK-LPG-DMG-01",
-            name: "Gate Controller Lhokseumawe",
-            brand: "Genetec",
-            model: "AutoVu SharpX",
-            serial_number: "GTC-LHK-GCL-001",
-            procurement_date: "2024-08-08",
-            acquisition_value: 210000000,
-          },
-          {
-            asset_code: "SPMT-LMB-LPG-DMG-01",
-            name: "Gate Controller Lembar",
-            brand: "Genetec",
-            model: "AutoVu SharpX",
-            serial_number: "GTC-LMB-GCL-001",
-            procurement_date: "2024-08-08",
-            acquisition_value: 185000000,
-          },
-        ],
+        assets: [],
       },
     ],
   },
   {
-    kd_anggaran_capex: "CAP-2440020",
-    kd_anggaran_master: "2440020",
-    nm_anggaran_capex:
-      "Pemenuhan Kebutuhan Gate System & Planning Control Transformasi",
-    nilai_anggaran_rkap: 0,
-    thn_rkap_awal: 2024,
-    thn_rkap_akhir: 2025,
-    thn_anggaran: 2025,
+    id: "CAP-2540011",
+    kode: "2540011",
+    nama: "Transformasi dan Digitalisasi Operasional",
+    pagu: 12000000000,
+    thnAwal: 2025,
+    thnAkhir: 2027,
+    thnAnggaran: 2025,
+    type: "capex",
     projects: [
       {
-        id_pekerjaan: "PKJ-2440020-001",
+        id: "PKJ-2540011-001",
         nm_pekerjaan:
-          "Pemenuhan Kebutuhan Gate System Transformasi pada Branch (Jamrud Nilam Mirah, Tanjung Wangi, Trisakti, Dumai, Belawan) PT Pelindo Multi Terminal",
-        nilai_rab: 0,
-        nilai_kontrak: 0,
-        no_pr: "8260000282",
-        no_po: "6440000675",
-        no_kontrak: "SI.01/7/1/3/PPTI/TEKI/PLMT-25",
-        tgl_kontrak: "2025-01-07",
-        durasi_kontrak: 90,
-        no_sp3: "KP.20.01/3/1/2/PGDN/SDMU/PLMT-25",
-        tgl_sp3: "2025-01-03",
-        tgl_bamk: "2025-01-15",
-        assets: [
-          {
-            asset_code: "SPMT-JNM-LPG-DMG-01",
-            name: "Gate Controller Jamrud Nilam Mirah",
-            brand: "Genetec",
-            model: "AutoVu SharpX",
-            serial_number: "GTC-JNM-GCL-001",
-            procurement_date: "2025-01-07",
-            acquisition_value: 420000000,
-          },
-          {
-            asset_code: "SPMT-TWG-LPG-DMG-01",
-            name: "Gate Controller Tanjung Wangi",
-            brand: "Genetec",
-            model: "AutoVu SharpX",
-            serial_number: "GTC-TWG-GCL-001",
-            procurement_date: "2025-01-07",
-            acquisition_value: 400000000,
-          },
-          {
-            asset_code: "SPMT-BLW-LPG-DMG-01",
-            name: "Gate Controller Belawan",
-            brand: "Genetec",
-            model: "AutoVu SharpX",
-            serial_number: "GTC-BLW-GCL-001",
-            procurement_date: "2025-01-07",
-            acquisition_value: 420000000,
-          },
-        ],
-      },
-    ],
-  },
-  {
-    kd_anggaran_capex: "CAP-2540010",
-    kd_anggaran_master: "2540010",
-    nm_anggaran_capex: "Penyiapan Infrastruktur Gate System RoRo",
-    nilai_anggaran_rkap: 0,
-    thn_rkap_awal: 2025,
-    thn_rkap_akhir: 2025,
-    thn_anggaran: 2025,
-    projects: [
-      {
-        id_pekerjaan: "PKJ-2540010-001",
-        nm_pekerjaan:
-          "Penyiapan Infrastruktur Gate System Pendukung Kegiatan RoRo pada Branch Tanjung Emas PT Pelindo Multi Terminal",
-        nilai_rab: 0,
-        nilai_kontrak: 0,
-        no_pr: "8260000779",
-        no_po: "6440000821",
-        no_kontrak: "PD.01/4/8/1/PPTI/TEKI/PLMT-25",
-        tgl_kontrak: "2025-08-04",
-        durasi_kontrak: 60,
-        no_sp3: "PD.01/31/7/2/PGDN/SDMU/PLMT-25",
-        tgl_sp3: "2025-07-31",
-        tgl_bamk: "2025-09-01",
-        assets: [
-          {
-            asset_code: "SPMT-TJE-LPG-DMG-02",
-            name: "Gate Controller RoRo Tanjung Emas — Dermaga 1",
-            brand: "Genetec",
-            model: "AutoVu Sharp XP",
-            serial_number: "GTC-TJE-GCL-002",
-            procurement_date: "2025-08-04",
-            acquisition_value: 560000000,
-          },
-          {
-            asset_code: "SPMT-TJE-LPG-KMR-02",
-            name: "CCTV Dermaga RoRo Tanjung Emas — 4K PTZ",
-            brand: "Axis",
-            model: "Q6135-LE PTZ",
-            serial_number: "AXIS-TJE-KMR-002",
-            procurement_date: "2025-08-04",
-            acquisition_value: 185000000,
-          },
-        ],
-      },
-    ],
-  },
-  {
-    kd_anggaran_capex: "CAP-2540011",
-    kd_anggaran_master: "2540011",
-    nm_anggaran_capex: "Transformasi dan Digitalisasi Operasional",
-    nilai_anggaran_rkap: 12000000000,
-    thn_rkap_awal: 2025,
-    thn_rkap_akhir: 2027,
-    thn_anggaran: 2025,
-    projects: [
-      {
-        id_pekerjaan: "PKJ-2540011-001",
-        nm_pekerjaan:
-          "Pemenuhan Kebutuhan Gate System, Planning and Control dan Perangkat Pendukung Roro pada Branch (Lembar Gilimas, Tanjung Wangi, Tanjung Emas, Sibolga, Balikpapan, Parepare dan Tanjung Balai Karimun) PT Pelindo Multi Terminal",
+          "Pemenuhan Kebutuhan Gate System, Planning and Control dan Perangkat Pendukung Roro pada Branch PT Pelindo Multi Terminal",
         nilai_rab: 4200000000,
         nilai_kontrak: 3950000000,
         no_pr: "8260000711",
@@ -567,40 +351,22 @@ const initMockCapex = [
         no_sp3: "PD.05.01/30/6/3/PGDN/SDMU/PLMT-25",
         tgl_sp3: "2025-06-30",
         tgl_bamk: "2025-07-01",
-        assets: [
-          {
-            asset_code: "SPMT-LMB-LPG-DMG-02",
-            name: "Gate Controller RoRo Lembar Gilimas",
-            brand: "Genetec",
-            model: "AutoVu Sharp XP",
-            serial_number: "GTC-LMB-GCL-002",
-            procurement_date: "2025-07-07",
-            acquisition_value: 560000000,
-          },
-          {
-            asset_code: "SPMT-TJE-DTC-SRV-01",
-            name: "Server Planning & Control Tanjung Emas",
-            brand: "Dell",
-            model: "PowerEdge R550",
-            serial_number: "DELL-TJE-SRV-001",
-            procurement_date: "2025-07-07",
-            acquisition_value: 420000000,
-          },
-        ],
+        assets: [],
       },
     ],
   },
   {
-    kd_anggaran_capex: "CAP-2540012",
-    kd_anggaran_master: "2540012",
-    nm_anggaran_capex: "Pengembangan Infrastruktur Jaringan",
-    nilai_anggaran_rkap: 4500000000,
-    thn_rkap_awal: 2025,
-    thn_rkap_akhir: 2028,
-    thn_anggaran: 2025,
+    id: "CAP-2540012",
+    kode: "2540012",
+    nama: "Pengembangan Infrastruktur Jaringan",
+    pagu: 4500000000,
+    thnAwal: 2025,
+    thnAkhir: 2028,
+    thnAnggaran: 2025,
+    type: "capex",
     projects: [
       {
-        id_pekerjaan: "PKJ-2540012-001",
+        id: "PKJ-2540012-001",
         nm_pekerjaan:
           "Pemenuhan Kebutuhan Perangkat Network Branch Tanjung Balai Karimun Terminal Selat Panjang PT Pelindo Multi Terminal",
         nilai_rab: 850000000,
@@ -615,22 +381,16 @@ const initMockCapex = [
         tgl_bamk: "2025-08-01",
         assets: [
           {
+            id: newId(),
             asset_code: "SPMT-TBK-DTC-PKR-01",
+            serial_number: "CSC-TBK-CSW-001",
             name: "Core Switch Tanjung Balai Karimun",
             brand: "Cisco",
             model: "Catalyst 9300-24P",
-            serial_number: "CSC-TBK-CSW-001",
+            category: "Network",
+            location: "Tanjung Balai Karimun",
             procurement_date: "2025-07-24",
             acquisition_value: 270000000,
-          },
-          {
-            asset_code: "SPMT-TBK-DTC-PKR-02",
-            name: "Firewall UTM Tanjung Balai Karimun",
-            brand: "Fortinet",
-            model: "FortiGate 100F",
-            serial_number: "FGT-TBK-FWL-001",
-            procurement_date: "2025-07-24",
-            acquisition_value: 220000000,
           },
         ],
       },
@@ -638,63 +398,71 @@ const initMockCapex = [
   },
 ];
 
-const initMockOpex = [
+// OPEX data — field disesuaikan dengan budget_annual_opex + budget_masters
+const INIT_OPEX = [
   {
-    id_anggaran_tahunan: 1,
+    id: "OPX-1",
+    // budget_annual_opex.kd_anggaran_master → relasi ke budget_masters
     kd_anggaran_master: "5030905000",
-    nm_anggaran_master: "Beban Pemeliharaan Software",
+    // budget_masters.nm_anggaran_master (ditampilkan sebagai nama)
+    nama: "Beban Pemeliharaan Software",
+    // budget_annual_opex.thn_anggaran
+    thn_anggaran: 2026,
+    // budget_annual_opex.nilai_anggaran_tahunan (pagu)
     nilai_anggaran_tahunan: 350000000,
+    type: "opex",
+    transaksi: [
+      {
+        id: newId(),
+        tanggal: "2026-02-10",
+        keterangan: "Lisensi Antivirus Kaspersky",
+        no_invoice: "INV/2026/015",
+        aset: "",
+        lampiran: "",
+        jumlah: 8500000,
+      },
+      {
+        id: newId(),
+        tanggal: "2026-01-15",
+        keterangan: "Pembayaran Lisensi Microsoft Office 365",
+        no_invoice: "INV/2026/001",
+        aset: "AST-OPX-0001",
+        lampiran: "",
+        jumlah: 15000000,
+      },
+    ],
   },
   {
-    id_anggaran_tahunan: 2,
+    id: "OPX-2",
     kd_anggaran_master: "5021300000",
-    nm_anggaran_master: "Beban Jaringan dan Koneksi Data",
+    nama: "Beban Jaringan dan Koneksi Data",
+    thn_anggaran: 2026,
     nilai_anggaran_tahunan: 288000000,
+    type: "opex",
+    transaksi: [
+      {
+        id: newId(),
+        tanggal: "2026-01-05",
+        keterangan: "Tagihan MPLS Januari 2026",
+        no_invoice: "INV/2026/002",
+        aset: "",
+        lampiran: "",
+        jumlah: 24000000,
+      },
+    ],
   },
   {
-    id_anggaran_tahunan: 3,
+    id: "OPX-3",
     kd_anggaran_master: "5021200000",
-    nm_anggaran_master: "Beban Perlengkapan Kantor",
+    nama: "Beban Perlengkapan Kantor",
+    thn_anggaran: 2026,
     nilai_anggaran_tahunan: 120000000,
+    type: "opex",
+    transaksi: [],
   },
 ];
 
-const initMockRealisasiOpex = [
-  {
-    id_realisasi: 1,
-    id_anggaran_tahunan: 1,
-    tanggal_realisasi: "2026-01-15",
-    keterangan: "Pembayaran lisensi Microsoft Office 365",
-    no_invoice: "INV/2026/001",
-    jumlah: 15000000,
-    id_aset: "AST-OPX-0001",
-    lampiran: [],
-  },
-  {
-    id_realisasi: 2,
-    id_anggaran_tahunan: 1,
-    tanggal_realisasi: "2026-02-10",
-    keterangan: "Lisensi Antivirus Kaspersky",
-    no_invoice: "INV/2026/015",
-    jumlah: 8500000,
-    id_aset: null,
-    lampiran: [],
-  },
-  {
-    id_realisasi: 3,
-    id_anggaran_tahunan: 2,
-    tanggal_realisasi: "2026-01-05",
-    keterangan: "Tagihan MPLS bulan Januari",
-    no_invoice: "INV/TEL/2026/001",
-    jumlah: 24000000,
-    id_aset: "AST-OPX-0002",
-    lampiran: [],
-  },
-];
-
-// ══════════════════════════════════════════════════════════════════
-// CSS
-// ══════════════════════════════════════════════════════════════════
+// ── CSS ──────────────────────────────────────────────────────────
 const CSS = `
 @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap");
 :root {
@@ -704,397 +472,313 @@ const CSS = `
   --red:#dc2626;--red-lt:#fee2e2;
   --warn:#b45309;--warn-lt:#fef9c3;
   --ink:#0f172a;--ink2:#475569;--ink3:#94a3b8;
-  --border:#e2e8f0;--surface:#ffffff;--bg:#f1f5f9;--bg2:#f8fafc;
-  --accent:var(--blue);
+  --border:#e2e8f0;--surface:#fff;--bg:#f1f5f9;--bg2:#f8fafc;
+  --font:"Plus Jakarta Sans",system-ui,sans-serif;
+  --mono:"JetBrains Mono","Courier New",monospace;
   --shadow-sm:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
   --shadow-md:0 4px 12px rgba(0,0,0,.08),0 2px 4px rgba(0,0,0,.04);
   --shadow-lg:0 12px 40px rgba(0,0,0,.14);
   --r-sm:6px;--r-md:10px;--r-lg:14px;
-  --font:"Plus Jakarta Sans",system-ui,sans-serif;
-  --mono:"JetBrains Mono","Courier New",monospace;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-.bm-root{font-family:var(--font);background:var(--bg);min-height:100vh;padding:2rem 2.25rem;color:var(--ink);font-size:14px;line-height:1.5}
-.fw-med{font-weight:600}.fw-bold{font-weight:700}
-.ta-r{text-align:right}.ta-c{text-align:center}
-.tc-muted{color:var(--ink2)}.tc-muted2{color:var(--ink3)}.tc-accent{color:var(--accent)}
-.tc-red{color:var(--red)}.tc-green{color:var(--green)}.tc-amber{color:var(--amber)}.tc-ink{color:var(--ink)}
-.lh-tight{line-height:1.3}.fs-xs{font-size:.75rem}.mt2{margin-top:3px}
+body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:14px}
 
-.bm-header{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1.75rem}
-.bm-header-text h1{font-size:1.7rem;font-weight:800;color:var(--ink);letter-spacing:-.5px}
-.bm-header-text p{color:var(--ink3);font-size:.85rem;margin-top:3px}
-.bm-header-right{display:flex;flex-direction:column;align-items:flex-end;gap:10px}
-.bm-year-filter-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:5px}
-.bm-year-filter-label{font-size:.72rem;color:var(--ink3);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
-.bm-year-pills{display:flex;background:white;border-radius:12px;padding:4px;gap:4px;box-shadow:0 2px 10px rgba(0,0,0,.08);border:1px solid var(--border)}
-.bm-year-pill{padding:7px 16px;border-radius:8px;border:none;cursor:pointer;font-size:.88rem;font-weight:500;background:transparent;color:var(--ink3);transition:all .2s;font-family:var(--font)}
-.bm-year-pill:hover:not(.active){background:var(--bg);color:var(--ink2)}
-.bm-year-pill.active{font-weight:700;background:linear-gradient(135deg,#1d4ed8,#2563eb);color:white;box-shadow:0 3px 10px rgba(29,78,216,.35);transform:translateY(-1px)}
-.bm-tabs{display:flex;gap:4px;background:var(--surface);padding:4px;border-radius:var(--r-md);border:1px solid var(--border);box-shadow:var(--shadow-sm)}
-.bm-tab{display:flex;align-items:center;gap:6px;padding:7px 18px;border:none;background:transparent;border-radius:var(--r-sm);font-family:var(--font);font-size:.82rem;font-weight:700;color:var(--ink3);cursor:pointer;transition:all .2s}
-.bm-tab:hover{background:var(--bg);color:var(--ink2)}
-.bm-tab.active{background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(29,78,216,.3)}
+/* ── PAGE ── */
+.pg{padding:2rem 2.25rem;min-height:100vh}
+.pg-header{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1.5rem}
+.pg-title h1{font-size:1.55rem;font-weight:800;letter-spacing:-.5px}
+.pg-title p{color:var(--ink3);font-size:.82rem;margin-top:4px}
+.pg-header-right{display:flex;flex-direction:column;align-items:flex-end;gap:10px}
 
-.bm-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.25rem;margin-bottom:1.25rem}
-.bm-kpi{background:var(--surface);border-radius:var(--r-lg);padding:1.3rem 1.4rem;display:flex;align-items:flex-start;gap:1rem;border:1px solid var(--border);box-shadow:var(--shadow-sm);border-top:3px solid var(--border);transition:transform .15s,box-shadow .15s}
-.bm-kpi:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
-.bm-kpi--blue{border-top-color:var(--blue)}.bm-kpi--amber{border-top-color:var(--amber)}.bm-kpi--green{border-top-color:var(--green)}
-.bm-kpi-icon{width:40px;height:40px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.bm-kpi--blue .bm-kpi-icon{background:var(--blue-lt);color:var(--blue)}
-.bm-kpi--amber .bm-kpi-icon{background:var(--amber-lt);color:var(--amber)}
-.bm-kpi--green .bm-kpi-icon{background:var(--green-lt);color:var(--green)}
-.bm-kpi-lbl{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--ink3)}
-.bm-kpi-val{font-size:1.35rem;font-weight:800;letter-spacing:-.4px;color:var(--ink);margin-top:2px}
-.bm-kpi-sub{font-size:.75rem;color:var(--ink3);margin-top:4px}
-.bm-kpi-bar{height:5px;border-radius:99px;background:var(--bg);width:100%;overflow:hidden;margin-top:6px}
-.bm-kpi-bar-fill{height:100%;border-radius:99px;transition:width .6s ease}
+/* ── YEAR PILLS ── */
+.year-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.year-label{font-size:.68rem;color:var(--ink3);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.year-pills{display:flex;background:white;border-radius:12px;padding:3px;gap:3px;box-shadow:0 2px 8px rgba(0,0,0,.07);border:1px solid var(--border)}
+.year-pill{padding:6px 14px;border-radius:8px;border:none;cursor:pointer;font-size:.82rem;font-weight:500;background:transparent;color:var(--ink3);transition:all .2s;font-family:var(--font)}
+.year-pill:hover:not(.active){background:var(--bg);color:var(--ink2)}
+.year-pill.active{font-weight:700;background:linear-gradient(135deg,#1d4ed8,#2563eb);color:white;box-shadow:0 2px 8px rgba(29,78,216,.3);transform:translateY(-1px)}
 
-.bm-banner{display:flex;align-items:center;gap:7px;background:var(--blue-lt);border:1px solid var(--blue-md);border-radius:var(--r-sm);padding:8px 14px;font-size:.8rem;color:#1e40af;margin-bottom:1.25rem}
+/* ── TYPE TABS ── */
+.type-tabs{display:flex;gap:3px;background:var(--surface);padding:3px;border-radius:var(--r-md);border:1px solid var(--border);box-shadow:var(--shadow-sm)}
+.type-tab{display:flex;align-items:center;gap:5px;padding:6px 16px;border:none;background:transparent;border-radius:var(--r-sm);font-family:var(--font);font-size:.8rem;font-weight:700;color:var(--ink3);cursor:pointer;transition:all .2s}
+.type-tab:hover{background:var(--bg);color:var(--ink2)}
+.type-tab.active{background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(29,78,216,.3)}
+.type-tab.all.active{background:linear-gradient(135deg,#1d4ed8,#7c3aed)}
 
-.bm-table-wrap{background:var(--surface);border-radius:var(--r-lg);border:1px solid var(--border);box-shadow:var(--shadow-sm);overflow:hidden}
-.bm-table-bar{display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.5rem;border-bottom:1px solid var(--border)}
-.bm-table-bar h2{font-size:.9rem;font-weight:700;color:var(--ink)}
-.bm-search{display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:6px 12px;color:var(--ink3);transition:border-color .2s}
-.bm-search:focus-within{border-color:var(--blue)}
-.bm-search input{border:none;background:transparent;font-family:var(--font);font-size:.82rem;color:var(--ink);outline:none;width:220px}
-.bm-table-scroll{overflow-x:auto}
-.bm-table{width:100%;border-collapse:collapse;font-size:.83rem}
-.bm-table thead th{background:var(--bg2);padding:10px 14px;text-align:left;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--ink3);border-bottom:1px solid var(--border);white-space:nowrap}
-.bm-table td{padding:13px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
-.bm-row{cursor:pointer;transition:background .15s}
-.bm-row:hover{background:#f8faff}
-.bm-row--open{background:#eff6ff!important}
-.bm-row--open td{border-bottom-color:transparent}
-.bm-empty-cell{text-align:center;padding:3rem;color:var(--ink3);font-size:.85rem}
+/* ── FILTER BAR ── */
+.filter-bar{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;flex-wrap:wrap}
+.filter-section{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:7px 12px;box-shadow:var(--shadow-sm)}
+.filter-section label{font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);white-space:nowrap;display:flex;align-items:center;gap:5px}
+.filter-select{border:none;background:transparent;font-family:var(--font);font-size:.8rem;color:var(--ink);outline:none;cursor:pointer;min-width:160px}
+.filter-search{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:7px 12px;box-shadow:var(--shadow-sm);flex:1;max-width:360px}
+.filter-search:focus-within{border-color:var(--blue)}
+.filter-search input{border:none;background:transparent;font-family:var(--font);font-size:.8rem;color:var(--ink);outline:none;flex:1}
 
-.bm-pct-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:80px}
-.bm-pct-bar{width:70px;height:5px;border-radius:99px;background:var(--bg);overflow:hidden}
-.bm-pct-fill{height:100%;border-radius:99px;transition:width .4s}
-.bm-badge{font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:99px}
-.bm-status-lbl{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-top:1px}
-.sc-safe .bm-pct-fill,.sc-safe.bm-kpi-bar-fill{background:var(--green)}
-.sc-mid .bm-pct-fill,.sc-mid.bm-kpi-bar-fill{background:#3b82f6}
-.sc-warn .bm-pct-fill,.sc-warn.bm-kpi-bar-fill{background:var(--warn)}
-.sc-over .bm-pct-fill,.sc-over.bm-kpi-bar-fill{background:var(--red)}
-.sc-safe.bm-badge{background:var(--green-lt);color:var(--green)}
-.sc-mid.bm-badge{background:var(--blue-lt);color:var(--blue)}
-.sc-warn.bm-badge{background:var(--warn-lt);color:var(--warn)}
-.sc-over.bm-badge{background:var(--red-lt);color:var(--red)}
-.sc-safe.bm-status-lbl{color:var(--green)}.sc-mid.bm-status-lbl{color:var(--blue)}
-.sc-warn.bm-status-lbl{color:var(--warn)}.sc-over.bm-status-lbl{color:var(--red)}
+/* ── TABLE ── */
+.tbl-wrap{background:var(--surface);border-radius:var(--r-lg);border:1px solid var(--border);box-shadow:var(--shadow-sm);overflow:hidden}
+.tbl-header{display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.5rem;border-bottom:1px solid var(--border);gap:1rem;flex-wrap:wrap}
+.tbl-header h2{font-size:.95rem;font-weight:700}
+.tbl-count{font-size:.75rem;color:var(--ink3);font-weight:500;margin-top:2px}
+.tbl-scroll{overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse;font-size:.83rem}
+.tbl thead th{background:var(--bg2);padding:11px 16px;text-align:left;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--ink3);border-bottom:1px solid var(--border);white-space:nowrap}
+.tbl td{padding:14px 16px;border-bottom:1px solid var(--border);vertical-align:middle}
+.tbl tbody tr:last-child td{border-bottom:none}
+.tbl-row{cursor:default;transition:background .15s}
+.tbl-row:hover{background:#f8faff}
+.tbl-empty{text-align:center;padding:3.5rem;color:var(--ink3);font-size:.85rem}
 
-.bm-pill{display:inline-flex;align-items:center;padding:2px 9px;border-radius:99px;font-size:.68rem;font-weight:700}
-.bm-pill.blue{background:var(--blue-lt);color:var(--blue)}
-.bm-code{font-family:var(--mono);font-size:.73rem;background:var(--bg);color:var(--ink2);padding:2px 7px;border-radius:4px;border:1px solid var(--border)}
-.bm-code--aset{background:#eff6ff!important;color:var(--blue)!important;border-color:#bfdbfe!important}
-.bm-type-badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:.68rem;font-weight:700}
-.bm-type-badge.capex{background:#dbeafe;color:#1e40af}
-.bm-type-badge.opex{background:#d1fae5;color:#065f46}
+/* ── TYPE BADGE ── */
+.type-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:4px;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.type-badge.capex{background:#dbeafe;color:#1e40af}
+.type-badge.opex{background:#d1fae5;color:#065f46}
 
-.bm-drill-row>td{padding:0;border-bottom:1px solid var(--border)}
-.bm-drill-wrap{background:#f8faff;border-left:4px solid var(--blue);padding:1.1rem 1.4rem}
-.bm-drill-header{display:flex;align-items:center;gap:7px;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink2);margin-bottom:.9rem;flex-wrap:wrap}
-.bm-drill-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+/* ── CODE ── */
+.code{font-family:var(--mono);font-size:.73rem;background:var(--bg);color:var(--ink2);padding:2px 7px;border-radius:4px;border:1px solid var(--border)}
 
-.bm-sub-table{width:100%;border-collapse:collapse;font-size:.8rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);overflow:hidden}
-.bm-sub-table th{background:#eef2ff;padding:7px 11px;text-align:left;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#4338ca;border-bottom:1px solid #c7d2fe}
-.bm-sub-table td{padding:8px 11px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
-.bm-sub-table tr:last-child td{border-bottom:none}
-.bm-sub-table tbody tr:hover td{background:#f8faff}
-.bm-sub-total td{background:#f8fafc!important;border-top:1.5px solid var(--border)!important;font-size:.8rem}
-.bm-date-cell{display:flex;align-items:center;gap:5px;color:var(--ink2);font-size:.8rem}
-.bm-no-aset{font-size:.72rem;color:var(--ink3);font-style:italic}
+/* ── ACTION BTNS ── */
+.act-btns{display:flex;gap:5px;justify-content:flex-end;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:var(--r-sm);font-family:var(--font);font-size:.72rem;font-weight:700;cursor:pointer;border:none;transition:all .2s;white-space:nowrap}
+.btn-view{background:var(--bg2);color:var(--ink2);border:1px solid var(--border)}
+.btn-view:hover{background:var(--blue-lt);border-color:var(--blue);color:var(--blue)}
+.btn-edit{background:var(--amber-lt);color:var(--amber);border:1px solid #fcd34d}
+.btn-edit:hover{background:#fef08a;border-color:#f59e0b}
+.btn-asset{background:var(--blue-lt);color:var(--blue);border:1px solid var(--blue-md)}
+.btn-asset:hover{background:#bfdbfe}
+.btn-delete{background:var(--red-lt);color:var(--red);border:1px solid #fca5a5}
+.btn-delete:hover{background:#fecaca}
+.btn-save{background:linear-gradient(135deg,var(--blue),#3b82f6);color:white;box-shadow:0 2px 8px rgba(29,78,216,.25)}
+.btn-save:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(29,78,216,.4)}
+.btn-cancel{background:white;color:var(--ink2);border:1px solid var(--border)}
+.btn-cancel:hover{background:var(--bg)}
+.btn-add{background:linear-gradient(135deg,var(--blue),#3b82f6);color:white;font-size:.75rem;padding:7px 14px;box-shadow:0 2px 8px rgba(29,78,216,.2)}
+.btn-add:hover{transform:translateY(-1px)}
+.btn-add-sm{background:linear-gradient(135deg,var(--blue),#3b82f6);color:white;font-size:.68rem;padding:4px 10px;box-shadow:0 1px 5px rgba(29,78,216,.2)}
+.btn-add-sm:hover{transform:translateY(-1px)}
+.btn-danger-sm{background:var(--red-lt);color:var(--red);border:1px solid #fca5a5;font-size:.68rem;padding:4px 10px}
+.btn-danger-sm:hover{background:#fecaca}
 
-/* ── Aset cell: plain, no link icon ── */
-.bm-aset-plain{display:inline-flex;align-items:center}
+/* ── INLINE EDIT ROW ── */
+.edit-drawer>td{padding:0;border-bottom:2px solid var(--blue)}
+.edit-panel{background:#f0f7ff;border-left:4px solid var(--blue);padding:1.4rem 1.6rem;animation:slideIn .2s ease-out}
+.edit-panel-hdr{display:flex;align-items:center;gap:10px;margin-bottom:1.2rem;padding-bottom:.9rem;border-bottom:1px solid #c7d2fe}
+.edit-panel-hdr h3{font-size:.9rem;font-weight:800;flex:1;color:var(--ink)}
+.edit-section{margin-bottom:1.4rem}
+.edit-section-title{display:flex;align-items:center;gap:7px;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--blue);margin-bottom:.8rem;padding-bottom:5px;border-bottom:1px solid #dbeafe}
+.edit-grid{display:grid;gap:.8rem}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g2{grid-template-columns:repeat(2,1fr)}
+.g1{grid-template-columns:1fr}
+.full{grid-column:1/-1}
+.edit-field{display:flex;flex-direction:column;gap:5px}
+.edit-field label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink2)}
+.edit-field input,.edit-field textarea,.edit-field select{padding:8px 10px;border:1px solid var(--border);border-radius:7px;font-family:var(--font);font-size:.82rem;color:var(--ink);outline:none;transition:all .2s;background:white}
+.edit-field input:focus,.edit-field textarea:focus,.edit-field select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(29,78,216,.1)}
+.edit-field input[readonly]{background:#f8fafc;color:var(--ink3)}
+.edit-field textarea{resize:vertical;min-height:52px}
+.edit-hint{font-size:.7rem;color:var(--green);font-weight:600;margin-top:2px}
+.edit-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:1rem;padding-top:.9rem;border-top:1px solid #c7d2fe}
 
-.bm-projects{display:flex;flex-direction:column;gap:8px}
-.bm-proj-card{border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;background:var(--surface);transition:box-shadow .15s}
-.bm-proj-card:hover{box-shadow:var(--shadow-sm)}
-.bm-proj-card.open{border-color:#a5b4fc}
-.bm-proj-row{display:flex;justify-content:space-between;align-items:flex-start;padding:10px 14px;cursor:pointer;gap:1rem;transition:background .15s}
-.bm-proj-row:hover{background:var(--bg2)}
-.bm-proj-card.open .bm-proj-row{background:#eff6ff;border-bottom:1px solid #c7d2fe}
-.bm-proj-left{flex:1}
-.bm-proj-name{font-weight:600;font-size:.82rem;color:#1e3a8a;line-height:1.4;margin-bottom:5px}
-.bm-proj-meta{display:flex;flex-wrap:wrap;gap:10px;font-size:.72rem;color:var(--ink3);margin-bottom:4px}
-.bm-meta-item{display:flex;align-items:center;gap:4px}
-.bm-proj-refs{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:3px}
-.bm-ref{background:#f1f5f9;color:var(--ink2);padding:2px 7px;border-radius:4px;font-family:var(--mono);font-size:.68rem}
-.bm-proj-right{display:flex;align-items:center;gap:16px;flex-shrink:0}
-.bm-proj-vals{display:flex;gap:16px;align-items:flex-end}
-.bm-val-block{display:flex;flex-direction:column;align-items:flex-end}
-.bm-val-lbl{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3)}
-.bm-val-num{font-size:.82rem;font-weight:700}
-.bm-val-num.rab{color:var(--ink3)}.bm-val-num.kontrak{color:var(--red)}.bm-val-num.aset{color:var(--blue)}
-.bm-proj-actions{display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+/* ── ASSET PAGE ── */
+.asset-page{animation:slideIn .2s ease-out}
+.asset-page-hdr{display:flex;align-items:center;gap:12px;margin-bottom:1.5rem}
+.asset-page-hdr h2{font-size:1.2rem;font-weight:800;flex:1}
+.asset-page-hdr p{font-size:.8rem;color:var(--ink3);margin-top:2px}
+.asset-context{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:1rem 1.2rem;margin-bottom:1.25rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.8rem}
+.asset-ctx-item{display:flex;flex-direction:column;gap:3px}
+.asset-ctx-item span{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3)}
+.asset-ctx-item strong{font-size:.82rem;font-weight:700;color:var(--ink)}
+.asset-list{display:flex;flex-direction:column;gap:10px}
+.asset-card{background:white;border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden}
+.asset-card-hdr{display:flex;align-items:center;gap:8px;padding:9px 14px;background:var(--bg2);border-bottom:1px solid var(--border)}
+.asset-card-hdr .num{font-size:.7rem;font-weight:700;color:var(--ink3)}
+.asset-card-hdr .title{font-size:.78rem;font-weight:700;color:var(--ink);flex:1}
+.asset-card-body{padding:12px 14px}
+.autofill-banner{display:flex;align-items:center;gap:7px;background:#f0fdf4;border:1px solid #86efac;border-radius:var(--r-sm);padding:7px 12px;font-size:.75rem;color:var(--green);font-weight:600;margin-bottom:10px}
+.autofill-field{background:#f0fdf4!important;border-color:#86efac!important}
 
-.bm-balance-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:99px;font-size:.65rem;font-weight:700;letter-spacing:.3px;white-space:nowrap}
-.bm-balance-badge--balanced{background:var(--green-lt);color:var(--green);border:1px solid #86efac}
-.bm-balance-badge--near{background:var(--warn-lt);color:var(--warn);border:1px solid #fde047}
-.bm-balance-badge--unbalanced{background:var(--red-lt);color:var(--red);border:1px solid #fca5a5}
-.bm-balance-badge--empty{background:var(--bg2);color:var(--ink3);border:1px solid var(--border)}
-.bm-balance-bar{display:flex;align-items:center;margin-top:8px;border-radius:var(--r-sm);border:1px solid;overflow:hidden;font-size:.78rem}
-.bm-balance-bar--balanced{background:#f0fdf4;border-color:#86efac}
-.bm-balance-bar--near{background:#fffbeb;border-color:#fde047}
-.bm-balance-bar--unbalanced{background:#fff1f2;border-color:#fca5a5}
-.bm-balance-bar-left{flex:1;display:flex}
-.bm-balance-row{flex:1;display:flex;flex-direction:column;gap:2px;padding:10px 14px}
-.bm-balance-row span{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3)}
-.bm-balance-row strong{font-size:.82rem;font-weight:700;color:var(--ink)}
-.bm-balance-divider{width:1px;align-self:stretch}
-.bm-balance-bar--balanced .bm-balance-divider{background:#86efac}
-.bm-balance-bar--near .bm-balance-divider{background:#fde047}
-.bm-balance-bar--unbalanced .bm-balance-divider{background:#fca5a5}
-.bm-balance-bar-right{padding:10px 16px;display:flex;flex-direction:column;align-items:flex-end;gap:2px;min-width:160px}
-.bm-balance-selisih-label{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3)}
-.bm-balance-selisih-val{font-size:.92rem;font-weight:800}
-.bm-balance-selisih-val--balanced{color:var(--green)}
-.bm-balance-selisih-val--near{color:var(--warn)}
-.bm-balance-selisih-val--unbalanced{color:var(--red)}
-.bm-balance-selisih-pct{font-size:.68rem;color:var(--ink3);font-weight:500}
-.bm-asset-sub{background:var(--bg2);border-top:1px solid #e0e7ff;padding:12px 14px}
-.bm-asset-sub-title{display:flex;align-items:center;gap:5px;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--blue);margin-bottom:8px}
-.bm-capex-total{display:flex;justify-content:space-between;align-items:center;padding:9px 14px;background:#fef2f2;border:1px solid #fecaca;border-radius:var(--r-sm);margin-top:6px;font-size:.8rem;font-weight:600;color:var(--ink)}
-.bm-empty{display:flex;flex-direction:column;align-items:center;gap:8px;padding:2rem;color:var(--ink3);font-size:.83rem}
-.bm-empty--sm{padding:.8rem;flex-direction:row;justify-content:center;font-size:.76rem}
+/* ── MODAL CONFIRM ── */
+.overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;z-index:9000;padding:20px;animation:fadeOvl .2s ease}
+.confirm-box{background:white;border-radius:16px;padding:28px 24px;max-width:360px;width:100%;box-shadow:var(--shadow-lg);display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;animation:modalUp .22s cubic-bezier(.16,1,.3,1)}
+.confirm-icon{width:50px;height:50px;background:#fff7ed;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#f97316}
+.confirm-msg{font-size:.9rem;color:var(--ink);font-weight:500;line-height:1.5}
+.confirm-actions{display:flex;gap:10px}
 
-.anim-in{animation:slideIn .22s ease-out}
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--green);color:white;padding:12px 20px;border-radius:12px;font-size:.82rem;font-weight:600;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:8px;z-index:9999;animation:toastIn .3s cubic-bezier(.16,1,.3,1)}
+
+/* ── PILL / BADGE ── */
+.pill{display:inline-flex;align-items:center;padding:2px 9px;border-radius:99px;font-size:.68rem;font-weight:700}
+.pill.blue{background:var(--blue-lt);color:var(--blue)}
+.pill.green{background:var(--green-lt);color:var(--green)}
+.pill.amber{background:var(--amber-lt);color:var(--amber)}
+
+/* ── PROJECT LIST HEADER ── */
+.pl-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.1rem;flex-wrap:wrap;gap:.75rem}
+.pl-header h2{font-size:1rem;font-weight:800;color:var(--ink)}
+.pl-count{font-size:.78rem;color:var(--ink3);font-weight:500;margin-top:2px}
+.pl-empty{background:var(--surface);border:2px dashed var(--border);border-radius:var(--r-lg);text-align:center;padding:4rem;color:var(--ink3);font-size:.88rem}
+
+/* ── PROJECT CARDS STACK ── */
+.pl-stack{display:flex;flex-direction:column;gap:1rem}
+
+/* Individual card */
+.pj-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-sm);overflow:hidden;transition:box-shadow .2s,transform .15s}
+.pj-card:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.pj-card--editing{border-color:var(--blue);box-shadow:0 0 0 3px rgba(29,78,216,.1)}
+
+/* Card header strip */
+.pj-hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:1.25rem;padding:1.1rem 1.4rem 1rem;border-bottom:1px solid var(--border)}
+.pj-hdr-left{display:flex;flex-direction:column;gap:7px;flex:1;min-width:0}
+.pj-badges{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.pj-name{font-size:.95rem;font-weight:700;color:#1e3a8a;line-height:1.55;margin:0}
+.pj-hdr-right{display:flex;gap:6px;align-items:flex-start;flex-shrink:0}
+
+/* Card body: info grid */
+.pj-body{display:grid;grid-template-columns:repeat(4,1fr);gap:0;padding:0}
+.pj-info{display:flex;flex-direction:column;gap:5px;padding:1rem 1.4rem;border-right:1px solid var(--border)}
+.pj-info:last-child{border-right:none}
+.pj-info-label{font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.55px;color:var(--ink3);display:flex;align-items:center;gap:4px}
+.pj-info-val{font-size:.85rem;font-weight:600;color:var(--ink);line-height:1.4}
+.pj-info-sub{font-size:.72rem;color:var(--ink3);margin-top:1px}
+.pj-info-empty{font-size:.85rem;color:var(--ink3)}
+.pj-nilai-big{font-size:1rem;font-weight:800;color:var(--red)}
+
+/* Aset chip inside card */
+.pj-aset-chip{display:inline-flex;align-items:center;gap:5px;background:var(--blue-lt);color:var(--blue);border-radius:8px;padding:4px 10px;font-size:.78rem;font-weight:700}
+.pj-aset-chip.empty{background:var(--bg2);color:var(--ink3)}
+
+/* Edit panel inside card */
+.pj-edit-wrap{border-top:2px solid var(--blue);background:#f0f7ff;animation:slideIn .2s ease-out}
+
+/* ── OPEX CARD ── */
+.opex-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-sm);overflow:hidden;transition:box-shadow .2s,transform .15s}
+.opex-card:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.opex-hdr{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1rem 1.4rem;border-bottom:1px solid var(--border);cursor:pointer;user-select:none}
+.opex-hdr-left{display:flex;flex-direction:column;gap:5px;flex:1;min-width:0}
+.opex-title{font-size:.93rem;font-weight:700;color:var(--ink);line-height:1.4}
+.opex-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.opex-hdr-right{display:flex;gap:6px;align-items:center;flex-shrink:0}
+.opex-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-bottom:1px solid var(--border)}
+.opex-stat{display:flex;flex-direction:column;gap:4px;padding:.85rem 1.4rem;border-right:1px solid var(--border)}
+.opex-stat:last-child{border-right:none}
+.opex-stat-label{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.55px;color:var(--ink3)}
+.opex-stat-val{font-size:.95rem;font-weight:800}
+.opex-stat-sub{font-size:.7rem;color:var(--ink3);margin-top:1px}
+.opex-progbar{height:4px;background:var(--border);border-radius:99px;overflow:hidden;margin-top:5px}
+.opex-progbar-fill{height:100%;border-radius:99px;background:var(--green);transition:width .4s ease}
+/* Riwayat realisasi section */
+.opex-body{animation:slideIn .18s ease-out}
+.opex-body-hdr{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1.4rem;background:var(--bg2);border-bottom:1px solid var(--border)}
+.opex-body-hdr span{font-size:.75rem;font-weight:700;color:var(--ink2);display:flex;align-items:center;gap:6px}
+.rlz-tbl{width:100%;border-collapse:collapse;font-size:.8rem}
+.rlz-tbl th{background:var(--bg2);padding:8px 14px;text-align:left;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);border-bottom:1px solid var(--border);white-space:nowrap}
+.rlz-tbl th:last-child{text-align:right}
+.rlz-tbl td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+.rlz-tbl tbody tr:last-child td{border-bottom:none}
+.rlz-tbl tbody tr:hover{background:#fafbff}
+.rlz-jumlah{font-weight:700;color:var(--red);text-align:right}
+.rlz-empty{text-align:center;padding:2.5rem;color:var(--ink3);font-size:.82rem}
+/* ── REALISASI PAGE ── */
+.rlz-page{animation:slideIn .2s ease-out}
+.rlz-page-hdr{display:flex;align-items:center;gap:12px;margin-bottom:1.5rem}
+.rlz-page-hdr h2{font-size:1.2rem;font-weight:800;flex:1}
+.rlz-page-hdr p{font-size:.8rem;color:var(--ink3);margin-top:2px}
+.rlz-form-card{background:white;border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;margin-bottom:1.25rem}
+.rlz-form-card-hdr{display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--bg2);border-bottom:1px solid var(--border)}
+.rlz-form-card-hdr span{font-size:.78rem;font-weight:700;color:var(--ink);flex:1}
+.rlz-form-body{padding:1.25rem 1.4rem}
+.rlz-field{display:flex;flex-direction:column;gap:5px}
+.rlz-field label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink2)}
+.rlz-field input,.rlz-field textarea,.rlz-field select{padding:8px 10px;border:1px solid var(--border);border-radius:7px;font-family:var(--font);font-size:.82rem;color:var(--ink);outline:none;transition:all .2s;background:white}
+.rlz-field input:focus,.rlz-field textarea:focus,.rlz-field select:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(21,128,61,.1)}
+.rlz-field textarea{resize:vertical;min-height:52px}
+.rlz-dropzone{border:2px dashed var(--border);border-radius:8px;padding:18px 14px;text-align:center;cursor:pointer;background:var(--bg2);transition:all .2s}
+.rlz-dropzone:hover,.rlz-dropzone.drag-over{border-color:var(--green);background:#f0fdf4}
+.rlz-file-preview{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #86efac;border-radius:8px;background:#f0fdf4}
+
+/* ── OPEX EDIT PANEL ── */
+.opex-edit-wrap{border-top:2px solid var(--green);background:#f0fdf4;animation:slideIn .2s ease-out}
+.opex-edit-panel{background:#f0fdf4;border-left:4px solid var(--green);padding:1.4rem 1.6rem}
+.opex-edit-panel .edit-section-title{color:var(--green);border-color:#bbf7d0}
+.opex-edit-panel .edit-field input:focus,
+.opex-edit-panel .edit-field select:focus,
+.opex-edit-panel .edit-field textarea:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(21,128,61,.1)}
+.opex-edit-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:1rem;padding-top:.9rem;border-top:1px solid #bbf7d0}
+.btn-save-green{background:linear-gradient(135deg,var(--green),#16a34a);color:white;box-shadow:0 2px 8px rgba(21,128,61,.25)}
+.btn-save-green:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(21,128,61,.4)}
+
+@media(max-width:900px){.opex-stats{grid-template-columns:1fr}}
+
+@media(max-width:900px){
+  .pj-body{grid-template-columns:1fr 1fr}
+  .pj-info{border-bottom:1px solid var(--border)}
+  .pj-info:nth-child(even){border-right:none}
+}
+
+/* ── SECTION DIVIDER ── */
+.sec-divider{height:1px;background:var(--border);margin:1.2rem 0}
+
+/* ── SUMMARY CARDS ── */
+.summary-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem}
+.sum-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:1.25rem 1.4rem;display:flex;align-items:center;gap:1rem;box-shadow:var(--shadow-sm);transition:box-shadow .2s}
+.sum-card:hover{box-shadow:var(--shadow-md)}
+.sum-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sum-icon.blue{background:var(--blue-lt);color:var(--blue)}
+.sum-icon.green{background:var(--green-lt);color:var(--green)}
+.sum-icon.amber{background:var(--amber-lt);color:var(--amber)}
+.sum-body{flex:1;min-width:0}
+.sum-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--ink3);margin-bottom:4px}
+.sum-value{font-size:1.05rem;font-weight:800;color:var(--ink);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sum-sub{font-size:.7rem;color:var(--ink3);margin-top:4px;font-weight:500}
+@media(max-width:768px){.summary-row{grid-template-columns:1fr}}
+
+/* ── ANIMATIONS ── */
 @keyframes slideIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
-
-/* ══ Edit Panel ══ */
-.bm-row-edit-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;background:white;border:1px solid var(--border);border-radius:var(--r-sm);font-family:var(--font);font-size:.72rem;font-weight:700;color:var(--ink2);cursor:pointer;transition:all .2s;white-space:nowrap}
-.bm-row-edit-btn:hover{background:var(--blue-lt);border-color:var(--blue);color:var(--blue)}
-.bm-row-edit-btn.active{background:var(--blue);border-color:var(--blue);color:white}
-.bm-edit-drawer{background:#f0f7ff;border-left:4px solid var(--blue);padding:0}
-.bm-edit-drawer > td{padding:0;border-bottom:2px solid var(--blue)}
-.bm-edit-panel{padding:1.4rem 1.6rem}
-.bm-edit-panel-header{display:flex;align-items:center;gap:10px;margin-bottom:1.2rem;padding-bottom:.9rem;border-bottom:1px solid #c7d2fe}
-.bm-edit-panel-header h3{font-size:.9rem;font-weight:800;color:var(--ink);flex:1}
-.bm-edit-section{margin-bottom:1.4rem}
-.bm-edit-section-title{display:flex;align-items:center;gap:7px;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--blue);margin-bottom:.8rem;padding-bottom:5px;border-bottom:1px solid #dbeafe}
-.bm-edit-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem}
-.bm-edit-grid-2{grid-template-columns:repeat(2,1fr)}
-.bm-edit-grid-full{grid-column:1/-1}
-.bm-edit-field{display:flex;flex-direction:column;gap:5px}
-.bm-edit-field label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink2)}
-.bm-edit-field input,.bm-edit-field textarea,.bm-edit-field select{padding:8px 10px;border:1px solid var(--border);border-radius:7px;font-family:var(--font);font-size:.82rem;color:var(--ink);outline:none;transition:all .2s;background:white}
-.bm-edit-field input:focus,.bm-edit-field textarea:focus,.bm-edit-field select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(29,78,216,.1)}
-.bm-edit-field textarea{resize:vertical;min-height:52px}
-.bm-edit-field input[readonly]{background:#f8fafc;color:var(--ink3);cursor:default}
-.bm-edit-hint{font-size:.7rem;color:var(--green);font-weight:600;margin-top:2px}
-.bm-edit-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:1rem;padding-top:.9rem;border-top:1px solid #c7d2fe}
-.bm-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-family:var(--font);font-size:.8rem;font-weight:700;cursor:pointer;border:none;transition:all .2s}
-.bm-btn-cancel{background:white;color:var(--ink2);border:1px solid var(--border)}
-.bm-btn-cancel:hover{background:var(--bg)}
-.bm-btn-save{background:linear-gradient(135deg,var(--blue),#3b82f6);color:white;box-shadow:0 2px 8px rgba(29,78,216,.25)}
-.bm-btn-save:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(29,78,216,.4)}
-.bm-btn-danger{background:var(--red-lt);color:var(--red);border:1px solid #fca5a5}
-.bm-btn-danger:hover{background:#fecaca}
-.bm-btn-add-sm{background:linear-gradient(135deg,var(--blue),#3b82f6);color:white;font-size:.72rem;padding:5px 12px;box-shadow:0 1px 5px rgba(29,78,216,.2)}
-.bm-btn-add-sm:hover{transform:translateY(-1px)}
-.bm-btn-add-realisasi{margin-left:auto;display:inline-flex;align-items:center;gap:5px;padding:6px 12px;background:linear-gradient(135deg,var(--blue),#3b82f6);color:white;border:none;border-radius:7px;font-size:.72rem;font-weight:700;cursor:pointer;transition:all .2s;font-family:var(--font);box-shadow:0 2px 8px rgba(29,78,216,.25)}
-.bm-btn-add-realisasi:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(29,78,216,.4)}
-.bm-proj-edit-card{background:white;border:1px solid #c7d2fe;border-radius:var(--r-md);overflow:hidden;margin-bottom:10px}
-.bm-proj-edit-card-header{display:flex;align-items:center;gap:8px;padding:10px 14px;background:#eef2ff;border-bottom:1px solid #c7d2fe}
-.bm-proj-edit-card-title{font-size:.78rem;font-weight:700;color:#3730a3;flex:1}
-.bm-real-edit-row{background:#fffff8;border:1px solid #fde68a;border-radius:var(--r-sm);padding:12px;margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.bm-real-edit-row.new-row{background:#f0fff4;border-color:#86efac}
-.bm-real-edit-fullrow{grid-column:1/-1}
-.bm-asset-edit-row{background:white;border:1px solid #e0e7ff;border-radius:var(--r-sm);padding:10px;margin-top:8px}
-.bm-asset-edit-row-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-
-/* ══ Invoice File Attachment ══ */
-.bm-file-drop-zone{border:2px dashed #c7d2fe;border-radius:8px;padding:9px 12px;background:#f8faff;transition:all .2s;cursor:pointer;position:relative}
-.bm-file-drop-zone:hover,.bm-file-drop-zone.drag-over{border-color:var(--blue);background:#eff6ff}
-.bm-file-drop-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
-.bm-file-drop-inner{display:flex;align-items:center;gap:7px;pointer-events:none}
-.bm-file-drop-inner svg{color:var(--blue);flex-shrink:0}
-.bm-file-drop-text{font-size:.73rem;color:var(--ink2);font-weight:500}
-.bm-file-drop-hint{font-size:.65rem;color:var(--ink3);margin-left:auto}
-.bm-file-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
-.bm-file-chip{display:inline-flex;align-items:center;gap:4px;background:white;border:1px solid #bfdbfe;border-radius:20px;padding:3px 8px 3px 6px;font-size:.68rem;color:#1e40af;font-weight:600;max-width:200px}
-.bm-file-chip-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:120px}
-.bm-file-chip-size{color:#94a3b8;font-weight:400;font-size:.62rem;flex-shrink:0}
-.bm-file-chip-del{display:flex;align-items:center;background:none;border:none;cursor:pointer;padding:0;color:#94a3b8;transition:color .15s;flex-shrink:0;line-height:1}
-.bm-file-chip-del:hover{color:var(--red)}
-/* View chip for lampiran — paperclip icon here is intentional */
-.bm-file-view-chip{display:inline-flex;align-items:center;gap:4px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:20px;padding:2px 8px;font-size:.68rem;color:var(--blue);font-weight:600}
-
-/* ══ Toast & Modal & Confirm ══ */
-.bm-toast{position:fixed;bottom:24px;right:24px;background:var(--ink);color:white;padding:12px 20px;border-radius:12px;font-size:.82rem;font-weight:600;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:8px;z-index:9999;animation:toastIn .3s cubic-bezier(.16,1,.3,1)}
-.bm-toast.success{background:var(--green)}.bm-toast.error{background:var(--red)}
-@keyframes toastIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-.bm-modal-overlay{position:fixed;inset:0;background:rgba(10,22,40,.6);display:flex;align-items:center;justify-content:center;z-index:2000;backdrop-filter:blur(4px);padding:20px;animation:fadeOvl .2s ease}
 @keyframes fadeOvl{from{opacity:0}to{opacity:1}}
-.bm-modal{background:var(--surface);border-radius:18px;width:100%;max-width:540px;box-shadow:var(--shadow-lg);display:flex;flex-direction:column;overflow:hidden;animation:modalUp .25s cubic-bezier(.16,1,.3,1)}
 @keyframes modalUp{from{opacity:0;transform:translateY(24px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
-.bm-modal-header{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;background:var(--bg2);border-bottom:1px solid var(--border)}
-.bm-modal-header-left{display:flex;align-items:center;gap:12px}
-.bm-modal-icon{width:40px;height:40px;border-radius:10px;background:var(--blue-lt);color:var(--blue);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.bm-modal-header h3{font-size:.95rem;font-weight:800;color:var(--ink);margin:0}
-.bm-modal-header p{font-size:.75rem;color:var(--ink3);margin:2px 0 0}
-.bm-modal-close{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ink3);transition:all .2s}
-.bm-modal-close:hover{background:var(--red-lt);border-color:#fecaca;color:var(--red)}
-.bm-modal-body{padding:20px 22px;display:flex;flex-direction:column;gap:16px}
-.bm-modal-info-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
-.bm-modal-info-item{display:flex;flex-direction:column;gap:3px}
-.bm-modal-info-item span{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3)}
-.bm-modal-info-item strong{font-size:.9rem;font-weight:800;color:var(--ink)}
-.bm-form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-.bm-form-group{display:flex;flex-direction:column;gap:6px}
-.bm-form-group--full{grid-column:1/-1}
-.bm-form-group label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink2);display:flex;align-items:center;gap:4px}
-.bm-form-group input,.bm-form-group textarea{padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:.85rem;color:var(--ink);outline:none;transition:all .2s;background:var(--surface)}
-.bm-form-group input:focus,.bm-form-group textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(29,78,216,.1)}
-.bm-form-group textarea{resize:vertical;min-height:56px}
-.bm-form-hint{font-size:.72rem;color:var(--green);font-weight:600}
-.bm-form-hint--muted{color:var(--ink3);font-weight:400}
-.bm-optional-badge{background:#e0f2fe;color:#0369a1;font-size:.62rem;font-weight:700;padding:2px 7px;border-radius:20px;text-transform:none;letter-spacing:0;margin-left:4px}
-.req{color:var(--red);margin-left:1px}
-.bm-modal-footer{display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:16px 22px;background:var(--bg2);border-top:1px solid var(--border)}
-.bm-btn-save-modal{display:inline-flex;align-items:center;gap:6px;padding:9px 20px;background:linear-gradient(135deg,var(--blue),#3b82f6);color:white;border:none;border-radius:8px;font-family:var(--font);font-size:.82rem;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 3px 10px rgba(29,78,216,.3)}
-.bm-btn-save-modal:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(29,78,216,.4)}
-.bm-btn-cancel-modal{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--ink2);font-family:var(--font);font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s}
-.bm-btn-cancel-modal:hover{background:var(--bg)}
-.bm-confirm-overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;z-index:9000;padding:20px}
-.bm-confirm-box{background:white;border-radius:16px;padding:28px 24px;max-width:360px;width:100%;box-shadow:var(--shadow-lg);display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;animation:modalUp .22s cubic-bezier(.16,1,.3,1)}
-.bm-confirm-icon{width:50px;height:50px;background:#fff7ed;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#f97316}
-.bm-confirm-msg{font-size:.9rem;color:var(--ink);font-weight:500;line-height:1.5}
-.bm-confirm-actions{display:flex;gap:10px}
+@keyframes toastIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
 
-/* ══ Lampiran th icon ══ */
-.bm-th-with-icon{display:inline-flex;align-items:center;gap:4px}
-
+/* ── RESPONSIVE ── */
 @media(max-width:768px){
-  .bm-root{padding:1rem}
-  .bm-header{flex-direction:column;align-items:flex-start}
-  .bm-header-right{align-items:flex-start}
-  .bm-search input{width:150px}
-  .bm-edit-grid{grid-template-columns:1fr}
-  .bm-edit-grid-2{grid-template-columns:1fr}
-  .bm-real-edit-row{grid-template-columns:1fr}
+  .pg{padding:1rem}
+  .pg-header{flex-direction:column;align-items:flex-start}
+  .pg-header-right{align-items:flex-start}
+  .g3{grid-template-columns:1fr}
+  .g2{grid-template-columns:1fr}
+  .act-btns{flex-wrap:wrap}
 }
 `;
 
-// ══════════════════════════════════════════════════════════════════
-// InvoiceAttachment — reusable drop-zone component
-// ══════════════════════════════════════════════════════════════════
-function InvoiceAttachment({ files = [], onChange, compact = false }) {
-  const [dragging, setDragging] = useState(false);
-
-  const handleFiles = (incoming) => {
-    const arr = Array.from(incoming);
-    const mapped = arr.map((f) => ({
-      name: f.name,
-      size: f.size,
-      type: f.type,
-      _file: f,
-      id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-    }));
-    onChange([...files, ...mapped]);
-  };
-
-  const onDrop = (e) => {
-    e.preventDefault();
-    setDragging(false);
-    if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);
-  };
-
-  const removeFile = (id) => onChange(files.filter((f) => f.id !== id));
-
-  return (
-    <div>
-      <div
-        className={`bm-file-drop-zone${dragging ? " drag-over" : ""}`}
-        onDragOver={(e) => {
-          e.preventDefault();
-          setDragging(true);
-        }}
-        onDragLeave={() => setDragging(false)}
-        onDrop={onDrop}
-      >
-        <input
-          type="file"
-          multiple
-          accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.doc,.docx"
-          onChange={(e) => {
-            if (e.target.files.length) handleFiles(e.target.files);
-            e.target.value = "";
-          }}
-        />
-        <div className="bm-file-drop-inner">
-          <Icon d={Icons.upload} size={14} />
-          <span className="bm-file-drop-text">
-            {compact
-              ? "Drop atau klik untuk lampirkan invoice"
-              : "Drop file atau klik untuk upload lampiran invoice"}
-          </span>
-          <span className="bm-file-drop-hint">PDF, JPG, PNG, Excel, Word</span>
-        </div>
-      </div>
-      {files.length > 0 && (
-        <div className="bm-file-chips">
-          {files.map((f) => (
-            <span key={f.id} className="bm-file-chip">
-              <Icon
-                d={Icons.file}
-                size={11}
-                style={{ flexShrink: 0, color: "#3b82f6" }}
-              />
-              <span className="bm-file-chip-name" title={f.name}>
-                {f.name}
-              </span>
-              <span className="bm-file-chip-size">{fmtFileSize(f.size)}</span>
-              <button
-                className="bm-file-chip-del"
-                onClick={() => removeFile(f.id)}
-                title="Hapus lampiran"
-              >
-                <Icon d={Icons.x} size={11} />
-              </button>
-            </span>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ══════════════════════════════════════════════════════════════════
-// Toast
-// ══════════════════════════════════════════════════════════════════
-function Toast({ msg, type, onDone }) {
+// ── Toast ────────────────────────────────────────────────────────
+function Toast({ msg, onDone }) {
   useEffect(() => {
     const t = setTimeout(onDone, 2400);
     return () => clearTimeout(t);
   }, []);
   return (
-    <div className={`bm-toast ${type}`}>
-      <Icon d={Icons.check} size={15} />
+    <div className="toast">
+      <Icon d={I.check} size={15} />
       {msg}
     </div>
   );
 }
 
-// ══════════════════════════════════════════════════════════════════
-// ConfirmDialog
-// ══════════════════════════════════════════════════════════════════
-function ConfirmDialog({ msg, onConfirm, onCancel }) {
+// ── Confirm ──────────────────────────────────────────────────────
+function Confirm({ msg, onConfirm, onCancel }) {
   return (
-    <div className="bm-confirm-overlay" onClick={onCancel}>
-      <div className="bm-confirm-box" onClick={(e) => e.stopPropagation()}>
-        <div className="bm-confirm-icon">
-          <Icon d={Icons.warning} size={24} />
+    <div className="overlay" onClick={onCancel}>
+      <div className="confirm-box" onClick={(e) => e.stopPropagation()}>
+        <div className="confirm-icon">
+          <Icon d={I.warning} size={24} />
         </div>
-        <p className="bm-confirm-msg">{msg}</p>
-        <div className="bm-confirm-actions">
-          <button className="bm-btn bm-btn-cancel" onClick={onCancel}>
+        <p className="confirm-msg">{msg}</p>
+        <div className="confirm-actions">
+          <button className="btn btn-cancel" onClick={onCancel}>
             Batal
           </button>
-          <button className="bm-btn bm-btn-danger" onClick={onConfirm}>
-            <Icon d={Icons.trash} size={13} /> Hapus
+          <button className="btn btn-delete" onClick={onConfirm}>
+            <Icon d={I.trash} size={13} /> Hapus
           </button>
         </div>
       </div>
@@ -1102,1943 +786,2141 @@ function ConfirmDialog({ msg, onConfirm, onCancel }) {
   );
 }
 
-// ══════════════════════════════════════════════════════════════════
-// ModalRealisasiOpex — with invoice attachment
-// ══════════════════════════════════════════════════════════════════
-function ModalRealisasi({ anggaran, onClose, onSave }) {
-  const [form, setForm] = useState({
-    tanggal_realisasi: new Date().toISOString().split("T")[0],
-    jumlah: "",
-    keterangan: "",
-    no_invoice: "",
-    id_aset: "",
-    lampiran: [],
-  });
+// ── Asset Entry Page ─────────────────────────────────────────────
+function AssetEntryPage({ project, anggaran, onBack, onSave, showToast }) {
+  const [assets, setAssets] = useState(
+    (project.assets || []).map((a) => ({ ...a, _autofilled: false })),
+  );
+  const [confirm, setConfirm] = useState(null);
 
-  const save = () => {
-    if (!form.jumlah || !form.keterangan || !form.tanggal_realisasi) {
-      alert("Tanggal, jumlah, dan keterangan wajib diisi.");
-      return;
-    }
-    onSave({
-      ...form,
-      jumlah: parseFloat(form.jumlah),
-      id_aset: form.id_aset || null,
-    });
-    onClose();
+  const addAsset = () =>
+    setAssets([
+      ...assets,
+      {
+        id: newId(),
+        asset_code: "",
+        serial_number: "",
+        name: "",
+        brand: "",
+        model: "",
+        category: "",
+        location: "",
+        procurement_date: "",
+        acquisition_value: "",
+        _new: true,
+        _autofilled: false,
+      },
+    ]);
+
+  const update = (id, field, val) =>
+    setAssets((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, [field]: val } : a)),
+    );
+
+  const tryAutofill = (id, field, val) => {
+    setAssets((prev) =>
+      prev.map((a) => {
+        if (a.id !== id) return a;
+        let updated = { ...a, [field]: val, _autofilled: false };
+        let lookup = null;
+
+        if (field === "asset_code" && val) {
+          lookup = ASSET_DB[val.trim()];
+        } else if (field === "serial_number" && val) {
+          const code = SN_DB[val.trim()];
+          if (code) {
+            lookup = ASSET_DB[code];
+            updated.asset_code = code;
+          }
+        }
+
+        if (lookup) {
+          updated = {
+            ...updated,
+            name: lookup.name,
+            brand: lookup.brand,
+            model: lookup.model,
+            category: lookup.category,
+            location: lookup.location,
+            _autofilled: true,
+          };
+        }
+        return updated;
+      }),
+    );
   };
 
-  return (
-    <div className="bm-modal-overlay" onClick={onClose}>
-      <div className="bm-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="bm-modal-header">
-          <div className="bm-modal-header-left">
-            <div className="bm-modal-icon">
-              <Icon d={Icons.receipt} size={18} />
-            </div>
-            <div>
-              <h3>Tambah Realisasi OPEX</h3>
-              <p>{anggaran.nm_anggaran_master}</p>
-            </div>
-          </div>
-          <button className="bm-modal-close" onClick={onClose}>
-            <Icon d={Icons.x} size={16} />
-          </button>
-        </div>
-        <div className="bm-modal-body">
-          <div className="bm-modal-info-bar">
-            <div className="bm-modal-info-item">
-              <span>Pagu</span>
-              <strong>{fmt(anggaran.nilai_anggaran_tahunan)}</strong>
-            </div>
-            <div className="bm-modal-info-item">
-              <span>Terpakai</span>
-              <strong className="tc-amber">{fmt(anggaran.used)}</strong>
-            </div>
-            <div className="bm-modal-info-item">
-              <span>Sisa</span>
-              <strong
-                className={anggaran.remaining < 0 ? "tc-red" : "tc-green"}
-              >
-                {fmt(anggaran.remaining)}
-              </strong>
-            </div>
-          </div>
-          <div className="bm-form-grid">
-            <div className="bm-form-group">
-              <label>
-                Tanggal Realisasi <span className="req">*</span>
-              </label>
-              <input
-                type="date"
-                value={form.tanggal_realisasi}
-                onChange={(e) =>
-                  setForm({ ...form, tanggal_realisasi: e.target.value })
-                }
-              />
-            </div>
-            <div className="bm-form-group">
-              <label>
-                No. Invoice <span className="bm-optional-badge">Opsional</span>
-              </label>
-              <input
-                placeholder="INV/2026/001"
-                value={form.no_invoice}
-                onChange={(e) =>
-                  setForm({ ...form, no_invoice: e.target.value })
-                }
-              />
-            </div>
-            <div className="bm-form-group bm-form-group--full">
-              <label>
-                Jumlah (IDR) <span className="req">*</span>
-              </label>
-              <input
-                type="number"
-                placeholder="0"
-                value={form.jumlah}
-                onChange={(e) => setForm({ ...form, jumlah: e.target.value })}
-              />
-              {form.jumlah && (
-                <span className="bm-form-hint">≈ {fmt(form.jumlah)}</span>
-              )}
-            </div>
-            <div className="bm-form-group bm-form-group--full">
-              <label>
-                Keterangan <span className="req">*</span>
-              </label>
-              <textarea
-                rows="2"
-                value={form.keterangan}
-                onChange={(e) =>
-                  setForm({ ...form, keterangan: e.target.value })
-                }
-              />
-            </div>
-            <div className="bm-form-group bm-form-group--full">
-              <label>
-                ID Aset{" "}
-                <span className="bm-optional-badge">Opsional</span>
-              </label>
-              <input
-                placeholder="Kosongkan jika tidak ada"
-                value={form.id_aset}
-                onChange={(e) => setForm({ ...form, id_aset: e.target.value })}
-              />
-              <span className="bm-form-hint bm-form-hint--muted">
-                Isi jika berhubungan dengan aset di inventory
-              </span>
-            </div>
-            {/* ── Invoice Attachment ── */}
-            <div className="bm-form-group bm-form-group--full">
-              <label>
-                <Icon d={Icons.paperclip} size={11} /> Lampiran Invoice{" "}
-                <span className="bm-optional-badge">Opsional</span>
-              </label>
-              <InvoiceAttachment
-                files={form.lampiran}
-                onChange={(lamps) => setForm({ ...form, lampiran: lamps })}
-              />
-            </div>
-          </div>
-        </div>
-        <div className="bm-modal-footer">
-          <button className="bm-btn-cancel-modal" onClick={onClose}>
-            <Icon d={Icons.x} size={14} /> Batal
-          </button>
-          <button className="bm-btn-save-modal" onClick={save}>
-            <Icon d={Icons.save} size={14} /> Simpan
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
+  const remove = (id) => setAssets((prev) => prev.filter((a) => a.id !== id));
 
-// ══════════════════════════════════════════════════════════════════
-// Balance components
-// ══════════════════════════════════════════════════════════════════
-function BalanceBadge({ assets, nilaiKontrak }) {
-  const info = getBalanceInfo(assets, nilaiKontrak);
-  return (
-    <span className={`bm-balance-badge bm-balance-badge--${info.status}`}>
-      {info.status === "balanced" && <Icon d={Icons.checkCirc} size={10} />}
-      {info.status === "near" && <Icon d={Icons.alertCirc} size={10} />}
-      {info.status === "unbalanced" && <Icon d={Icons.warning} size={10} />}
-      {info.status === "empty" && <Icon d={Icons.minusCirc} size={10} />}
-      {info.label}
-    </span>
-  );
-}
+  const handleSave = () => {
+    const cleaned = assets.map(({ _new, _autofilled, ...a }) => ({
+      ...a,
+      acquisition_value: parseFloat(a.acquisition_value) || 0,
+    }));
+    onSave(project.id, cleaned);
+    showToast(`${cleaned.length} aset berhasil disimpan`);
+    onBack();
+  };
 
-function BalanceBar({ assets, nilaiKontrak }) {
-  const info = getBalanceInfo(assets, nilaiKontrak);
-  if (info.status === "empty") return null;
+  const totalAset = assets.reduce(
+    (s, a) => s + (parseFloat(a.acquisition_value) || 0),
+    0,
+  );
+
   return (
-    <div className={`bm-balance-bar bm-balance-bar--${info.status}`}>
-      <div className="bm-balance-bar-left">
-        <div className="bm-balance-row">
-          <span>Nilai Kontrak</span>
-          <strong>{fmt(nilaiKontrak)}</strong>
-        </div>
-        <div className="bm-balance-row">
-          <span>Total Nilai Aset</span>
-          <strong>{fmt(info.sumAset)}</strong>
-        </div>
-      </div>
-      <div className="bm-balance-divider" />
-      <div className="bm-balance-bar-right">
-        <div className="bm-balance-selisih-label">Selisih</div>
-        <div
-          className={`bm-balance-selisih-val bm-balance-selisih-val--${info.status}`}
+    <div className="asset-page">
+      <div className="asset-page-hdr">
+        <button
+          className="btn btn-cancel"
+          onClick={onBack}
+          style={{ padding: "8px 14px", fontSize: ".8rem" }}
         >
-          {info.selisih === 0
-            ? "—"
-            : info.selisih > 0
-              ? `− ${fmt(info.selisih)}`
-              : `+ ${fmt(Math.abs(info.selisih))}`}
+          <Icon d={I.arrowLeft} size={14} /> Kembali
+        </button>
+        <div style={{ flex: 1 }}>
+          <h2>
+            <Icon
+              d={I.package}
+              size={18}
+              style={{
+                display: "inline",
+                marginRight: 8,
+                color: "var(--blue)",
+              }}
+            />
+            Entry Aset Pekerjaan
+          </h2>
+          <p>{project.nm_pekerjaan?.substring(0, 80)}...</p>
         </div>
-        {info.status !== "balanced" && (
-          <div className="bm-balance-selisih-pct">
-            {info.pct.toFixed(1)}% dari kontrak
+      </div>
+
+      {/* Context bar */}
+      <div className="asset-context">
+        <div className="asset-ctx-item">
+          <span>Anggaran</span>
+          <strong>{anggaran.nama}</strong>
+        </div>
+        <div className="asset-ctx-item">
+          <span>No. Kontrak</span>
+          <strong>{project.no_kontrak || "—"}</strong>
+        </div>
+        <div className="asset-ctx-item">
+          <span>Nilai Kontrak</span>
+          <strong style={{ color: "var(--red)" }}>
+            {project.nilai_kontrak > 0 ? fmt(project.nilai_kontrak) : "—"}
+          </strong>
+        </div>
+        <div className="asset-ctx-item">
+          <span>Total Nilai Aset</span>
+          <strong style={{ color: "var(--blue)" }}>{fmt(totalAset)}</strong>
+        </div>
+      </div>
+
+      {/* Info autofill */}
+      <div
+        style={{
+          background: "#eff6ff",
+          border: "1px solid #bfdbfe",
+          borderRadius: "var(--r-sm)",
+          padding: "9px 14px",
+          marginBottom: "1rem",
+          fontSize: ".78rem",
+          color: "#1e40af",
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+        }}
+      >
+        <Icon d={I.info} size={14} />
+        <span>
+          Masukkan <b>Kode Aset</b> atau <b>Serial Number</b> untuk mengisi
+          otomatis field lainnya dari database inventaris.
+        </span>
+      </div>
+
+      {/* Asset list */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: ".9rem",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span
+            style={{ fontSize: ".8rem", fontWeight: 700, color: "var(--ink)" }}
+          >
+            Daftar Aset
+          </span>
+          <span className="pill blue">{assets.length} aset</span>
+        </div>
+        <button className="btn btn-add" onClick={addAsset}>
+          <Icon d={I.plus} size={14} /> Tambah Aset
+        </button>
+      </div>
+
+      <div className="asset-list">
+        {assets.length === 0 && (
+          <div
+            style={{
+              textAlign: "center",
+              padding: "2.5rem",
+              color: "var(--ink3)",
+              border: "2px dashed var(--border)",
+              borderRadius: "var(--r-md)",
+            }}
+          >
+            <Icon
+              d={I.package}
+              size={32}
+              style={{ display: "block", margin: "0 auto 8px", opacity: 0.4 }}
+            />
+            <span style={{ fontSize: ".85rem" }}>
+              Belum ada aset. Klik "+ Tambah Aset" untuk mulai.
+            </span>
           </div>
         )}
+        {assets.map((a, idx) => (
+          <div key={a.id} className="asset-card">
+            <div className="asset-card-hdr">
+              <span className="num">Aset #{idx + 1}</span>
+              {a._new && (
+                <span className="pill green" style={{ fontSize: ".62rem" }}>
+                  Baru
+                </span>
+              )}
+              {a._autofilled && (
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 4,
+                    fontSize: ".65rem",
+                    background: "#f0fdf4",
+                    color: "#15803d",
+                    border: "1px solid #86efac",
+                    borderRadius: 99,
+                    padding: "2px 8px",
+                    fontWeight: 700,
+                  }}
+                >
+                  <Icon d={I.checkCirc} size={11} /> Auto-filled
+                </span>
+              )}
+              <button
+                className="btn btn-danger-sm"
+                style={{ marginLeft: "auto" }}
+                onClick={() =>
+                  setConfirm({
+                    msg: `Hapus aset "${a.name || a.asset_code || `#${idx + 1}`}"?`,
+                    onConfirm: () => {
+                      remove(a.id);
+                      setConfirm(null);
+                    },
+                  })
+                }
+              >
+                <Icon d={I.trash} size={12} /> Hapus
+              </button>
+            </div>
+            <div className="asset-card-body">
+              {a._autofilled && (
+                <div className="autofill-banner">
+                  <Icon d={I.checkCirc} size={14} />
+                  Data aset ditemukan dan diisi otomatis dari database
+                  inventaris!
+                </div>
+              )}
+              <div className="edit-grid g3">
+                <div className="edit-field">
+                  <label>Kode Aset *</label>
+                  <input
+                    value={a.asset_code}
+                    onChange={(e) =>
+                      tryAutofill(a.id, "asset_code", e.target.value)
+                    }
+                    placeholder="SPMT-KPT-DTC-SRV-01"
+                    className={a._autofilled ? "autofill-field" : ""}
+                  />
+                </div>
+                <div className="edit-field">
+                  <label>Serial Number</label>
+                  <input
+                    value={a.serial_number || ""}
+                    onChange={(e) =>
+                      tryAutofill(a.id, "serial_number", e.target.value)
+                    }
+                    placeholder="DELL-KPT-SRV-001"
+                    className={a._autofilled ? "autofill-field" : ""}
+                  />
+                </div>
+                <div className="edit-field">
+                  <label>Tanggal Pengadaan</label>
+                  <input
+                    type="date"
+                    value={a.procurement_date || ""}
+                    onChange={(e) =>
+                      update(a.id, "procurement_date", e.target.value)
+                    }
+                  />
+                </div>
+                <div className="edit-field full">
+                  <label>Nama Aset *</label>
+                  <input
+                    value={a.name}
+                    onChange={(e) => update(a.id, "name", e.target.value)}
+                    placeholder="Nama aset lengkap"
+                    className={a._autofilled ? "autofill-field" : ""}
+                  />
+                </div>
+                <div className="edit-field">
+                  <label>Merek</label>
+                  <input
+                    value={a.brand || ""}
+                    onChange={(e) => update(a.id, "brand", e.target.value)}
+                    placeholder="Dell, Cisco, ..."
+                    className={a._autofilled ? "autofill-field" : ""}
+                  />
+                </div>
+                <div className="edit-field">
+                  <label>Model / Tipe</label>
+                  <input
+                    value={a.model || ""}
+                    onChange={(e) => update(a.id, "model", e.target.value)}
+                    placeholder="PowerEdge R750"
+                    className={a._autofilled ? "autofill-field" : ""}
+                  />
+                </div>
+                <div className="edit-field">
+                  <label>Kategori</label>
+                  <input
+                    value={a.category || ""}
+                    onChange={(e) => update(a.id, "category", e.target.value)}
+                    placeholder="Server, Network, ..."
+                    className={a._autofilled ? "autofill-field" : ""}
+                  />
+                </div>
+                <div className="edit-field">
+                  <label>Lokasi / Cabang</label>
+                  <input
+                    value={a.location || ""}
+                    onChange={(e) => update(a.id, "location", e.target.value)}
+                    placeholder="Kantor Pusat, Branch, ..."
+                    className={a._autofilled ? "autofill-field" : ""}
+                  />
+                </div>
+                <div className="edit-field">
+                  <label>Nilai Perolehan (IDR)</label>
+                  <input
+                    type="number"
+                    value={a.acquisition_value || ""}
+                    onChange={(e) =>
+                      update(a.id, "acquisition_value", e.target.value)
+                    }
+                    placeholder="0"
+                  />
+                  {a.acquisition_value > 0 && (
+                    <span className="edit-hint">
+                      ≈ {fmt(a.acquisition_value)}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Summary & save */}
+      {assets.length > 0 && (
+        <div
+          style={{
+            marginTop: "1.2rem",
+            background: "white",
+            border: "1px solid var(--border)",
+            borderRadius: "var(--r-md)",
+            padding: "1rem 1.2rem",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "1rem",
+            flexWrap: "wrap",
+          }}
+        >
+          <div>
+            <div
+              style={{
+                fontSize: ".7rem",
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: ".5px",
+                color: "var(--ink3)",
+              }}
+            >
+              Total Nilai Aset
+            </div>
+            <div
+              style={{
+                fontSize: "1.1rem",
+                fontWeight: 800,
+                color: "var(--blue)",
+              }}
+            >
+              {fmt(totalAset)}
+            </div>
+          </div>
+          {project.nilai_kontrak > 0 && (
+            <div>
+              <div
+                style={{
+                  fontSize: ".7rem",
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                  letterSpacing: ".5px",
+                  color: "var(--ink3)",
+                }}
+              >
+                Selisih vs Kontrak
+              </div>
+              <div
+                style={{
+                  fontSize: "1rem",
+                  fontWeight: 700,
+                  color:
+                    totalAset <= project.nilai_kontrak
+                      ? "var(--green)"
+                      : "var(--red)",
+                }}
+              >
+                {fmt(Math.abs(project.nilai_kontrak - totalAset))}
+                <span
+                  style={{
+                    fontSize: ".72rem",
+                    fontWeight: 500,
+                    color: "var(--ink3)",
+                    marginLeft: 6,
+                  }}
+                >
+                  ({totalAset <= project.nilai_kontrak ? "sisa" : "melebihi"})
+                </span>
+              </div>
+            </div>
+          )}
+          <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
+            <button className="btn btn-cancel" onClick={onBack}>
+              Batal
+            </button>
+            <button className="btn btn-save" onClick={handleSave}>
+              <Icon d={I.save} size={14} /> Simpan Aset
+            </button>
+          </div>
+        </div>
+      )}
+
+      {confirm && (
+        <Confirm
+          msg={confirm.msg}
+          onConfirm={confirm.onConfirm}
+          onCancel={() => setConfirm(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+// ── Realisasi Page (halaman penuh tambah/edit transaksi) ─────────
+function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
+  const isEdit = !!editData;
+  const emptyForm = {
+    tanggal: "",
+    keterangan: "",
+    no_invoice: "",
+    aset: "",
+    lampiran: "",
+    jumlah: "",
+  };
+  const [form, setForm] = useState(
+    isEdit ? { ...editData, jumlah: editData.jumlah || "" } : emptyForm,
+  );
+  const up = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+
+  // State untuk file lampiran (opsional)
+  const [lampiranFile, setLampiranFile] = useState(null);
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const handleFileDrop = (e) => {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      setLampiranFile(file);
+      up("lampiran", file.name);
+    }
+  };
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setLampiranFile(file);
+      up("lampiran", file.name);
+    }
+  };
+  const handleRemoveFile = () => {
+    setLampiranFile(null);
+    up("lampiran", "");
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+  const fmtFileSize = (bytes) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
+  const pagu = ang.nilai_anggaran_tahunan || 0;
+  const totalSebelumnya = (ang.transaksi || [])
+    .filter((t) => !isEdit || t.id !== editData.id)
+    .reduce((s, t) => s + (t.jumlah || 0), 0);
+  const jumlahInput =
+    parseFloat(String(form.jumlah).replace(/[^\d.]/g, "")) || 0;
+  const sisaSetelah = pagu - totalSebelumnya - jumlahInput;
+
+  const handleSave = () => {
+    if (!form.tanggal || !form.keterangan || !form.jumlah) return;
+    const jumlah = parseFloat(String(form.jumlah).replace(/[^\d.]/g, "")) || 0;
+    let newList;
+    if (isEdit) {
+      newList = ang.transaksi.map((t) =>
+        t.id === editData.id ? { ...form, jumlah, id: editData.id } : t,
+      );
+    } else {
+      newList = [...(ang.transaksi || []), { ...form, jumlah, id: newId() }];
+    }
+    onSave(ang.id, newList);
+    showToast(
+      isEdit
+        ? "Transaksi realisasi diperbarui"
+        : "Realisasi berhasil ditambahkan",
+    );
+    onBack();
+  };
+
+  return (
+    <div className="rlz-page">
+      <div className="rlz-page-hdr">
+        <button
+          className="btn btn-cancel"
+          onClick={onBack}
+          style={{ padding: "8px 14px", fontSize: ".8rem" }}
+        >
+          <Icon d={I.arrowLeft} size={14} /> Kembali
+        </button>
+        <div style={{ flex: 1 }}>
+          <h2>
+            <Icon
+              d={I.fileText}
+              size={18}
+              style={{
+                display: "inline",
+                marginRight: 8,
+                color: "var(--green)",
+              }}
+            />
+            {isEdit ? "Edit Realisasi" : "Tambah Realisasi"}
+          </h2>
+          <p>
+            {ang.nama} · Tahun Anggaran {ang.thn_anggaran}
+          </p>
+        </div>
+      </div>
+
+      {/* Context bar */}
+      <div className="asset-context" style={{ marginBottom: "1.25rem" }}>
+        <div className="asset-ctx-item">
+          <span>Pos Anggaran</span>
+          <strong>{ang.nama}</strong>
+        </div>
+        <div className="asset-ctx-item">
+          <span>Kode Anggaran</span>
+          <strong>
+            <code className="code">{ang.kd_anggaran_master}</code>
+          </strong>
+        </div>
+        <div className="asset-ctx-item">
+          <span>Tahun Anggaran</span>
+          <strong>{ang.thn_anggaran}</strong>
+        </div>
+        <div className="asset-ctx-item">
+          <span>Nilai Anggaran Tahunan</span>
+          <strong style={{ color: "var(--blue)" }}>{fmt(pagu)}</strong>
+        </div>
+        <div className="asset-ctx-item">
+          <span>Sisa Setelah Input</span>
+          <strong
+            style={{ color: sisaSetelah >= 0 ? "var(--green)" : "var(--red)" }}
+          >
+            {fmt(Math.abs(sisaSetelah))}
+            <span
+              style={{
+                fontSize: ".72rem",
+                fontWeight: 500,
+                color: "var(--ink3)",
+                marginLeft: 4,
+              }}
+            >
+              {sisaSetelah >= 0 ? "tersisa" : "melebihi"}
+            </span>
+          </strong>
+        </div>
+      </div>
+
+      {/* Form card */}
+      <div className="rlz-form-card">
+        <div className="rlz-form-card-hdr">
+          <div
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: 7,
+              background: "var(--green-lt)",
+              color: "var(--green)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Icon d={isEdit ? I.edit : I.plus} size={14} />
+          </div>
+          <span>
+            {isEdit
+              ? "Edit Data Transaksi Realisasi"
+              : "Data Transaksi Realisasi Baru"}
+          </span>
+        </div>
+        <div className="rlz-form-body">
+          <div className="edit-grid g2" style={{ marginBottom: ".9rem" }}>
+            <div className="rlz-field">
+              <label>Tanggal Transaksi *</label>
+              <input
+                type="date"
+                value={form.tanggal}
+                onChange={(e) => up("tanggal", e.target.value)}
+              />
+            </div>
+            <div className="rlz-field">
+              <label>Keterangan *</label>
+              <input
+                value={form.keterangan}
+                onChange={(e) => up("keterangan", e.target.value)}
+                placeholder="Deskripsi transaksi realisasi..."
+              />
+            </div>
+          </div>
+          <div className="edit-grid g2" style={{ marginBottom: ".9rem" }}>
+            <div className="rlz-field">
+              <label>No. Invoice</label>
+              <input
+                value={form.no_invoice}
+                onChange={(e) => up("no_invoice", e.target.value)}
+                placeholder="INV/2026/001"
+              />
+            </div>
+            <div className="rlz-field">
+              <label>Jumlah (IDR) *</label>
+              <input
+                type="number"
+                value={form.jumlah}
+                onChange={(e) => up("jumlah", e.target.value)}
+                placeholder="0"
+              />
+              {jumlahInput > 0 && (
+                <span className="edit-hint">≈ {fmt(jumlahInput)}</span>
+              )}
+            </div>
+          </div>
+          <div className="edit-grid g2">
+            <div className="rlz-field">
+              <label>Aset Terkait</label>
+              <input
+                value={form.aset}
+                onChange={(e) => up("aset", e.target.value)}
+                placeholder="Kode aset (opsional)..."
+              />
+            </div>
+            <div className="rlz-field">
+              <label>
+                Lampiran
+                <span
+                  style={{
+                    fontSize: ".65rem",
+                    fontWeight: 500,
+                    color: "var(--ink3)",
+                    marginLeft: 6,
+                    textTransform: "none",
+                    letterSpacing: 0,
+                  }}
+                >
+                  opsional
+                </span>
+              </label>
+              {/* Hidden file input */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.doc,.docx"
+                style={{ display: "none" }}
+                onChange={handleFileChange}
+              />
+              {lampiranFile ? (
+                /* Tampilan file sudah dipilih */
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    padding: "10px 12px",
+                    border: "1px solid #86efac",
+                    borderRadius: 8,
+                    background: "#f0fdf4",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: 7,
+                      flexShrink: 0,
+                      background: "var(--green-lt)",
+                      color: "var(--green)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Icon d={I.fileText} size={17} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div
+                      style={{
+                        fontSize: ".82rem",
+                        fontWeight: 700,
+                        color: "var(--ink)",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {lampiranFile.name}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: ".7rem",
+                        color: "var(--ink3)",
+                        marginTop: 2,
+                      }}
+                    >
+                      {fmtFileSize(lampiranFile.size)}
+                    </div>
+                  </div>
+                  <button
+                    className="btn btn-danger-sm"
+                    style={{ padding: "4px 8px", flexShrink: 0 }}
+                    onClick={handleRemoveFile}
+                    title="Hapus lampiran"
+                  >
+                    <Icon d={I.x} size={12} />
+                  </button>
+                </div>
+              ) : (
+                /* Drop zone */
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setDragOver(true);
+                  }}
+                  onDragLeave={() => setDragOver(false)}
+                  onDrop={handleFileDrop}
+                  style={{
+                    border: `2px dashed ${dragOver ? "var(--green)" : "var(--border)"}`,
+                    borderRadius: 8,
+                    padding: "18px 14px",
+                    textAlign: "center",
+                    cursor: "pointer",
+                    background: dragOver ? "#f0fdf4" : "var(--bg2)",
+                    transition: "all .2s",
+                  }}
+                >
+                  <Icon
+                    d={I.fileText}
+                    size={22}
+                    style={{
+                      display: "block",
+                      margin: "0 auto 7px",
+                      color: dragOver ? "var(--green)" : "var(--ink3)",
+                      opacity: dragOver ? 1 : 0.5,
+                    }}
+                  />
+                  <div
+                    style={{
+                      fontSize: ".78rem",
+                      color: dragOver ? "var(--green)" : "var(--ink2)",
+                      fontWeight: 600,
+                    }}
+                  >
+                    {dragOver
+                      ? "Lepaskan file di sini"
+                      : "Seret & lepas file, atau klik untuk pilih"}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: ".68rem",
+                      color: "var(--ink3)",
+                      marginTop: 4,
+                    }}
+                  >
+                    PDF, JPG, PNG, Excel, Word — maks. 10 MB
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer simpan */}
+      <div
+        style={{
+          background: "white",
+          border: "1px solid var(--border)",
+          borderRadius: "var(--r-md)",
+          padding: "1rem 1.4rem",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "1rem",
+          flexWrap: "wrap",
+        }}
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+          <div
+            style={{
+              fontSize: ".68rem",
+              fontWeight: 700,
+              textTransform: "uppercase",
+              letterSpacing: ".5px",
+              color: "var(--ink3)",
+            }}
+          >
+            Jumlah Transaksi
+          </div>
+          <div
+            style={{
+              fontSize: "1.1rem",
+              fontWeight: 800,
+              color: "var(--green)",
+            }}
+          >
+            {fmt(jumlahInput)}
+          </div>
+        </div>
+        <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
+          <button className="btn btn-cancel" onClick={onBack}>
+            Batal
+          </button>
+          <button
+            className="btn btn-save-green"
+            onClick={handleSave}
+            style={{
+              opacity:
+                !form.tanggal || !form.keterangan || !form.jumlah ? 0.5 : 1,
+            }}
+          >
+            <Icon d={I.save} size={14} />{" "}
+            {isEdit ? "Perbarui Realisasi" : "Simpan Realisasi"}
+          </button>
+        </div>
       </div>
     </div>
   );
 }
 
-// ══════════════════════════════════════════════════════════════════
-// EDIT PANEL — OPEX (with invoice attachment per realisasi row)
-// ══════════════════════════════════════════════════════════════════
-function OpexEditPanel({ item, realisasiOpex, onSave, onCancel, showToast }) {
-  const [pagu, setPagu] = useState(String(item.raw.nilai_anggaran_tahunan));
-  const [nama, setNama] = useState(item.raw.nm_anggaran_master);
-  const [kode, setKode] = useState(item.raw.kd_anggaran_master);
-  const [realisasiList, setRealisasiList] = useState(
-    realisasiOpex
-      .filter((r) => r.id_anggaran_tahunan === item.raw.id_anggaran_tahunan)
-      .map((r) => ({ ...r, lampiran: r.lampiran || [] })),
-  );
-  const [confirm, setConfirm] = useState(null);
+// ── Edit Panel OPEX ──────────────────────────────────────────────
+// Sesuai dengan tabel budget_annual_opex + relasi ke budget_masters
+function EditOpexPanel({ ang, onSave, onCancel }) {
+  const [form, setForm] = useState({
+    kd_anggaran_master: ang.kd_anggaran_master || "",
+    nama: ang.nama || "",
+    thn_anggaran: ang.thn_anggaran || new Date().getFullYear(),
+    nilai_anggaran_tahunan: ang.nilai_anggaran_tahunan || 0,
+  });
 
-  const updateReal = (id, field, val) =>
-    setRealisasiList(
-      realisasiList.map((r) =>
-        r.id_realisasi === id ? { ...r, [field]: val } : r,
-      ),
-    );
+  const up = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
-  const addReal = () =>
-    setRealisasiList([
-      ...realisasiList,
-      {
-        id_realisasi: newId(),
-        id_anggaran_tahunan: item.raw.id_anggaran_tahunan,
-        tanggal_realisasi: new Date().toISOString().split("T")[0],
-        jumlah: "",
-        keterangan: "",
-        no_invoice: "",
-        id_aset: "",
-        lampiran: [],
-        _new: true,
-      },
-    ]);
+  // Saat pilih kode anggaran master, nama otomatis terisi dari BUDGET_MASTERS
+  const handleMasterChange = (kd) => {
+    const master = BUDGET_MASTERS.find((m) => m.kd_anggaran_master === kd);
+    setForm((f) => ({
+      ...f,
+      kd_anggaran_master: kd,
+      nama: master ? master.nm_anggaran_master : f.nama,
+    }));
+  };
 
-  const removeReal = (id) =>
-    setRealisasiList(realisasiList.filter((r) => r.id_realisasi !== id));
-
-  const handleSave = () => {
+  const save = () => {
     onSave({
-      type: "opex",
-      itemId: item.id,
-      pagu: parseFloat(pagu) || 0,
-      nama,
-      kode,
-      realisasiList,
+      kd_anggaran_master: form.kd_anggaran_master,
+      nama: form.nama,
+      thn_anggaran: parseInt(form.thn_anggaran) || new Date().getFullYear(),
+      nilai_anggaran_tahunan: parseFloat(form.nilai_anggaran_tahunan) || 0,
     });
-    showToast("Perubahan OPEX berhasil disimpan", "success");
-    onCancel();
   };
 
   return (
-    <>
-      {confirm && (
-        <ConfirmDialog
-          msg={confirm.msg}
-          onConfirm={confirm.onConfirm}
-          onCancel={() => setConfirm(null)}
-        />
-      )}
-      <tr className="bm-edit-drawer anim-in">
-        <td colSpan="7">
-          <div className="bm-edit-panel">
-            <div className="bm-edit-panel-header">
-              <div
-                className="bm-modal-icon"
-                style={{ width: 34, height: 34, borderRadius: 8 }}
+    <div className="opex-edit-wrap">
+      <div className="opex-edit-panel">
+        <div className="edit-panel-hdr" style={{ borderColor: "#bbf7d0" }}>
+          <div
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 8,
+              background: "var(--green-lt)",
+              color: "var(--green)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Icon d={I.edit} size={15} />
+          </div>
+          <h3 style={{ color: "var(--green)" }}>Edit Pos Anggaran OPEX</h3>
+          <button className="btn btn-cancel" onClick={onCancel}>
+            <Icon d={I.x} size={13} /> Batal
+          </button>
+        </div>
+
+        {/* Seksi 1: Referensi Anggaran Master */}
+        <div className="edit-section">
+          <div className="edit-section-title">
+            <Icon d={I.database} size={13} /> Referensi Anggaran Master
+          </div>
+          <div className="edit-grid g2">
+            <div className="edit-field">
+              <label>Kode Anggaran Master *</label>
+              <select
+                value={form.kd_anggaran_master}
+                onChange={(e) => handleMasterChange(e.target.value)}
               >
-                <Icon d={Icons.edit} size={16} />
-              </div>
-              <h3>Edit Pos Anggaran OPEX</h3>
-              <button className="bm-btn bm-btn-cancel" onClick={onCancel}>
-                <Icon d={Icons.x} size={13} /> Batal
-              </button>
-            </div>
-
-            <div className="bm-edit-section">
-              <div className="bm-edit-section-title">
-                <Icon d={Icons.fileText} size={13} /> Informasi Anggaran
-              </div>
-              <div className="bm-edit-grid bm-edit-grid-2">
-                <div className="bm-edit-field">
-                  <label>Kode Anggaran Master</label>
-                  <input
-                    value={kode}
-                    onChange={(e) => setKode(e.target.value)}
-                    placeholder="5030905000"
-                  />
-                </div>
-                <div className="bm-edit-field">
-                  <label>Pagu Anggaran Tahunan (IDR)</label>
-                  <input
-                    type="number"
-                    value={pagu}
-                    onChange={(e) => setPagu(e.target.value)}
-                  />
-                  {pagu && (
-                    <span className="bm-edit-hint">
-                      ≈ {fmt(parseFloat(pagu) || 0)}
-                    </span>
-                  )}
-                </div>
-                <div className="bm-edit-field bm-edit-grid-full">
-                  <label>Nama Mata Anggaran</label>
-                  <input
-                    value={nama}
-                    onChange={(e) => setNama(e.target.value)}
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="bm-edit-section">
-              <div className="bm-edit-section-title">
-                <Icon d={Icons.receipt} size={13} /> Daftar Realisasi
-                <span className="bm-pill blue" style={{ marginLeft: 4 }}>
-                  {realisasiList.length}
-                </span>
-                <button
-                  className="bm-btn bm-btn-add-sm"
-                  style={{ marginLeft: "auto" }}
-                  onClick={addReal}
-                >
-                  <Icon d={Icons.plus} size={13} /> Tambah Baris
-                </button>
-              </div>
-
-              {realisasiList.length === 0 && (
-                <div className="bm-empty bm-empty--sm">
-                  <Icon d={Icons.receipt} size={16} />
-                  <span>Belum ada realisasi</span>
-                </div>
-              )}
-
-              {realisasiList.map((r, i) => (
-                <div
-                  key={r.id_realisasi}
-                  className={`bm-real-edit-row ${r._new ? "new-row" : ""}`}
-                >
-                  <div className="bm-edit-field">
-                    <label>Tanggal</label>
-                    <input
-                      type="date"
-                      value={r.tanggal_realisasi}
-                      onChange={(e) =>
-                        updateReal(
-                          r.id_realisasi,
-                          "tanggal_realisasi",
-                          e.target.value,
-                        )
-                      }
-                    />
-                  </div>
-                  <div className="bm-edit-field">
-                    <label>
-                      No. Invoice{" "}
-                      <span
-                        style={{
-                          fontSize: ".6rem",
-                          color: "var(--ink3)",
-                          fontWeight: 400,
-                          textTransform: "none",
-                          letterSpacing: 0,
-                        }}
-                      >
-                        (opsional)
-                      </span>
-                    </label>
-                    <input
-                      value={r.no_invoice || ""}
-                      onChange={(e) =>
-                        updateReal(r.id_realisasi, "no_invoice", e.target.value)
-                      }
-                      placeholder="INV/..."
-                    />
-                  </div>
-                  <div className="bm-edit-field bm-real-edit-fullrow">
-                    <label>Keterangan</label>
-                    <input
-                      value={r.keterangan}
-                      onChange={(e) =>
-                        updateReal(r.id_realisasi, "keterangan", e.target.value)
-                      }
-                      placeholder="Keterangan transaksi..."
-                    />
-                  </div>
-                  <div className="bm-edit-field">
-                    <label>Jumlah (IDR)</label>
-                    <input
-                      type="number"
-                      value={r.jumlah}
-                      onChange={(e) =>
-                        updateReal(r.id_realisasi, "jumlah", e.target.value)
-                      }
-                    />
-                    {r.jumlah && (
-                      <span className="bm-edit-hint">≈ {fmt(r.jumlah)}</span>
-                    )}
-                  </div>
-                  <div
-                    className="bm-edit-field"
-                    style={{ position: "relative" }}
+                <option value="">— Pilih Kode Anggaran —</option>
+                {BUDGET_MASTERS.map((m) => (
+                  <option
+                    key={m.kd_anggaran_master}
+                    value={m.kd_anggaran_master}
                   >
-                    <label>ID Aset</label>
-                    <div style={{ display: "flex", gap: 6 }}>
-                      <input
-                        value={r.id_aset || ""}
-                        onChange={(e) =>
-                          updateReal(r.id_realisasi, "id_aset", e.target.value)
-                        }
-                        placeholder="AST-OPX-..."
-                        style={{ flex: 1 }}
-                      />
-                      <button
-                        className="bm-btn bm-btn-danger"
-                        style={{ padding: "6px 10px", flexShrink: 0 }}
-                        onClick={() =>
-                          setConfirm({
-                            msg: `Hapus realisasi "${r.keterangan || `#${i + 1}`}"?`,
-                            onConfirm: () => {
-                              removeReal(r.id_realisasi);
-                              setConfirm(null);
-                            },
-                          })
-                        }
-                      >
-                        <Icon d={Icons.trash} size={13} />
-                      </button>
-                    </div>
-                  </div>
-                  {/* ── Lampiran Invoice per baris ── */}
-                  <div className="bm-edit-field bm-real-edit-fullrow">
-                    <label>
-                      <Icon
-                        d={Icons.paperclip}
-                        size={11}
-                        style={{ display: "inline", marginRight: 3 }}
-                      />
-                      Lampiran Invoice{" "}
-                      <span
-                        style={{
-                          fontSize: ".6rem",
-                          color: "var(--ink3)",
-                          fontWeight: 400,
-                          textTransform: "none",
-                          letterSpacing: 0,
-                        }}
-                      >
-                        (opsional)
-                      </span>
-                    </label>
-                    <InvoiceAttachment
-                      files={r.lampiran || []}
-                      onChange={(lamps) =>
-                        updateReal(r.id_realisasi, "lampiran", lamps)
-                      }
-                      compact
-                    />
-                  </div>
-                </div>
-              ))}
+                    {m.kd_anggaran_master} — {m.nm_anggaran_master}
+                  </option>
+                ))}
+              </select>
+              <span
+                style={{
+                  fontSize: ".68rem",
+                  color: "var(--ink3)",
+                  marginTop: 2,
+                }}
+              >
+                Berelasi ke tabel Anggaran Master (budget_masters)
+              </span>
             </div>
-
-            <div className="bm-edit-actions">
-              <button className="bm-btn bm-btn-cancel" onClick={onCancel}>
-                <Icon d={Icons.x} size={13} /> Batal
-              </button>
-              <button className="bm-btn bm-btn-save" onClick={handleSave}>
-                <Icon d={Icons.save} size={13} /> Simpan Perubahan
-              </button>
+            <div className="edit-field">
+              <label>Nama Pos Anggaran *</label>
+              <input
+                value={form.nama}
+                onChange={(e) => up("nama", e.target.value)}
+                placeholder="Nama pos anggaran..."
+              />
+              <span
+                style={{
+                  fontSize: ".68rem",
+                  color: "var(--ink3)",
+                  marginTop: 2,
+                }}
+              >
+                Terisi otomatis dari Anggaran Master, dapat diubah
+              </span>
             </div>
           </div>
-        </td>
-      </tr>
-    </>
+        </div>
+
+        {/* Seksi 2: Detail Anggaran Tahunan */}
+        <div className="edit-section">
+          <div className="edit-section-title">
+            <Icon d={I.calendar} size={13} /> Detail Anggaran Tahunan
+          </div>
+          <div className="edit-grid g2">
+            <div className="edit-field">
+              <label>Tahun Anggaran *</label>
+              <input
+                type="number"
+                value={form.thn_anggaran}
+                onChange={(e) => up("thn_anggaran", e.target.value)}
+                placeholder="2026"
+                min="2000"
+                max="2099"
+              />
+            </div>
+            <div className="edit-field">
+              <label>Nilai Anggaran Tahunan (IDR) *</label>
+              <input
+                type="number"
+                value={form.nilai_anggaran_tahunan || ""}
+                onChange={(e) => up("nilai_anggaran_tahunan", e.target.value)}
+                placeholder="0"
+              />
+              {form.nilai_anggaran_tahunan > 0 && (
+                <span className="edit-hint">
+                  ≈ {fmt(form.nilai_anggaran_tahunan)}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="opex-edit-actions">
+          <button className="btn btn-cancel" onClick={onCancel}>
+            <Icon d={I.x} size={13} /> Batal
+          </button>
+          <button className="btn btn-save-green" onClick={save}>
+            <Icon d={I.save} size={13} /> Simpan Anggaran OPEX
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
-// ══════════════════════════════════════════════════════════════════
-// EDIT PANEL — CAPEX
-// ══════════════════════════════════════════════════════════════════
-function CapexEditPanel({ item, onSave, onCancel, showToast }) {
-  const [pagu, setPagu] = useState(String(item.raw.nilai_anggaran_rkap));
-  const [nama, setNama] = useState(item.raw.nm_anggaran_capex);
-  const [projects, setProjects] = useState(
-    item.projects.map((p) => ({
-      ...p,
-      assets: p.assets ? p.assets.map((a) => ({ ...a })) : [],
-    })),
-  );
+// ── OPEX Card — riwayat realisasi per transaksi ─────────────────
+function OpexCard({
+  ang,
+  onSave,
+  onSaveOpex,
+  showToast,
+  onDelete,
+  onOpenRealisasi,
+}) {
+  const [open, setOpen] = useState(false);
+  const [showEditOpex, setShowEditOpex] = useState(false);
   const [confirm, setConfirm] = useState(null);
-  const [expandedProj, setExpandedProj] = useState(null);
 
-  const updateProj = (id, field, val) =>
-    setProjects(
-      projects.map((p) => (p.id_pekerjaan === id ? { ...p, [field]: val } : p)),
-    );
-  const addProj = () =>
-    setProjects([
-      ...projects,
-      {
-        id_pekerjaan: newId(),
-        nm_pekerjaan: "",
-        nilai_rab: "",
-        nilai_kontrak: "",
-        no_pr: "",
-        no_po: "",
-        no_kontrak: "",
-        tgl_kontrak: new Date().toISOString().split("T")[0],
-        durasi_kontrak: "",
-        no_sp3: "",
-        tgl_sp3: "",
-        tgl_bamk: "",
-        assets: [],
-        _new: true,
+  const totalRealisasi = (ang.transaksi || []).reduce(
+    (s, t) => s + (t.jumlah || 0),
+    0,
+  );
+  const pagu = ang.nilai_anggaran_tahunan || 0;
+  const sisa = pagu - totalRealisasi;
+  const pct = pagu > 0 ? Math.min((totalRealisasi / pagu) * 100, 100) : 0;
+  const serapanColor =
+    pct < 30 ? "var(--green)" : pct < 80 ? "var(--amber)" : "var(--red)";
+
+  const deleteRow = (id) => {
+    setConfirm({
+      msg: "Hapus transaksi realisasi ini?",
+      onConfirm: () => {
+        onSave(
+          ang.id,
+          ang.transaksi.filter((t) => t.id !== id),
+        );
+        showToast("Transaksi dihapus");
+        setConfirm(null);
       },
-    ]);
-  const removeProj = (id) =>
-    setProjects(projects.filter((p) => p.id_pekerjaan !== id));
-  const addAsset = (projId) =>
-    setProjects(
-      projects.map((p) =>
-        p.id_pekerjaan === projId
-          ? {
-              ...p,
-              assets: [
-                ...p.assets,
-                {
-                  asset_code: newId(),
-                  name: "",
-                  brand: "",
-                  model: "",
-                  serial_number: "",
-                  procurement_date: new Date().toISOString().split("T")[0],
-                  acquisition_value: "",
-                  _new: true,
-                },
-              ],
-            }
-          : p,
-      ),
-    );
-  const updateAsset = (projId, assetCode, field, val) =>
-    setProjects(
-      projects.map((p) =>
-        p.id_pekerjaan === projId
-          ? {
-              ...p,
-              assets: p.assets.map((a) =>
-                a.asset_code === assetCode ? { ...a, [field]: val } : a,
-              ),
-            }
-          : p,
-      ),
-    );
-  const removeAsset = (projId, assetCode) =>
-    setProjects(
-      projects.map((p) =>
-        p.id_pekerjaan === projId
-          ? { ...p, assets: p.assets.filter((a) => a.asset_code !== assetCode) }
-          : p,
-      ),
-    );
-
-  const handleSave = () => {
-    onSave({
-      type: "capex",
-      itemId: item.id,
-      pagu: parseFloat(pagu) || 0,
-      nama,
-      projects,
     });
-    showToast("Perubahan CAPEX berhasil disimpan", "success");
-    onCancel();
   };
 
+  const masterInfo = BUDGET_MASTERS.find(
+    (m) => m.kd_anggaran_master === ang.kd_anggaran_master,
+  );
+
   return (
-    <>
-      {confirm && (
-        <ConfirmDialog
-          msg={confirm.msg}
-          onConfirm={confirm.onConfirm}
-          onCancel={() => setConfirm(null)}
+    <div className="opex-card">
+      {/* ── Header ── */}
+      <div className="opex-hdr" onClick={() => setOpen((o) => !o)}>
+        <div className="opex-hdr-left">
+          <div className="opex-meta">
+            <span className="type-badge opex">OPEX</span>
+            <code className="code" style={{ fontSize: ".65rem" }}>
+              {ang.kd_anggaran_master}
+            </code>
+            <span style={{ fontSize: ".72rem", color: "var(--ink3)" }}>
+              Tahun Anggaran {ang.thn_anggaran}
+            </span>
+            {masterInfo && (
+              <span
+                style={{
+                  fontSize: ".68rem",
+                  color: "var(--ink3)",
+                  background: "var(--bg)",
+                  border: "1px solid var(--border)",
+                  borderRadius: 4,
+                  padding: "1px 7px",
+                }}
+              >
+                {masterInfo.tipe_anggaran_master}
+              </span>
+            )}
+          </div>
+          <span className="opex-title">{ang.nama}</span>
+        </div>
+        <div className="opex-hdr-right" onClick={(e) => e.stopPropagation()}>
+          <button
+            className={`btn ${showEditOpex ? "btn-cancel" : "btn-edit"}`}
+            onClick={() => {
+              setShowEditOpex((v) => !v);
+              if (!showEditOpex) setOpen(true);
+            }}
+          >
+            <Icon d={showEditOpex ? I.x : I.edit} size={12} />
+            {showEditOpex ? "Tutup" : "Edit"}
+          </button>
+          <button
+            className="btn btn-add-sm"
+            onClick={() => onOpenRealisasi(ang, null)}
+          >
+            <Icon d={I.plus} size={12} /> Tambah Realisasi
+          </button>
+          <button
+            className="btn btn-delete"
+            onClick={() => onDelete && onDelete(ang.id)}
+          >
+            <Icon d={I.trash} size={12} />
+          </button>
+          <Icon
+            d={open ? I.chevUp : I.chevDown}
+            size={16}
+            style={{ color: "var(--ink3)", flexShrink: 0 }}
+          />
+        </div>
+      </div>
+
+      {/* ── Edit Panel OPEX ── */}
+      {showEditOpex && (
+        <EditOpexPanel
+          ang={ang}
+          onSave={(updated) => {
+            onSaveOpex(ang.id, updated);
+            showToast("Pos anggaran OPEX diperbarui");
+            setShowEditOpex(false);
+          }}
+          onCancel={() => setShowEditOpex(false)}
         />
       )}
-      <tr className="bm-edit-drawer anim-in">
-        <td colSpan="7">
-          <div className="bm-edit-panel">
-            <div className="bm-edit-panel-header">
-              <div
-                className="bm-modal-icon"
-                style={{ width: 34, height: 34, borderRadius: 8 }}
-              >
-                <Icon d={Icons.edit} size={16} />
-              </div>
-              <h3>Edit Pos Anggaran CAPEX</h3>
-              <button className="bm-btn bm-btn-cancel" onClick={onCancel}>
-                <Icon d={Icons.x} size={13} /> Batal
-              </button>
-            </div>
-            <div className="bm-edit-section">
-              <div className="bm-edit-section-title">
-                <Icon d={Icons.briefcase} size={13} /> Informasi Anggaran CAPEX
-              </div>
-              <div className="bm-edit-grid bm-edit-grid-2">
-                <div className="bm-edit-field">
-                  <label>Kode Anggaran CAPEX</label>
-                  <input value={item.raw.kd_anggaran_capex} readOnly />
-                </div>
-                <div className="bm-edit-field">
-                  <label>Nilai Anggaran RKAP (IDR)</label>
-                  <input
-                    type="number"
-                    value={pagu}
-                    onChange={(e) => setPagu(e.target.value)}
-                  />
-                  {pagu && (
-                    <span className="bm-edit-hint">
-                      ≈ {fmt(parseFloat(pagu) || 0)}
-                    </span>
-                  )}
-                </div>
-                <div className="bm-edit-field bm-edit-grid-full">
-                  <label>Nama Anggaran CAPEX</label>
-                  <input
-                    value={nama}
-                    onChange={(e) => setNama(e.target.value)}
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="bm-edit-section">
-              <div className="bm-edit-section-title">
-                <Icon d={Icons.fileText} size={13} /> Daftar Pekerjaan / Kontrak
-                <span className="bm-pill blue" style={{ marginLeft: 4 }}>
-                  {projects.length}
-                </span>
-                <button
-                  className="bm-btn bm-btn-add-sm"
-                  style={{ marginLeft: "auto" }}
-                  onClick={addProj}
-                >
-                  <Icon d={Icons.plus} size={13} /> Tambah Pekerjaan
-                </button>
-              </div>
-              {projects.length === 0 && (
-                <div className="bm-empty bm-empty--sm">
-                  <Icon d={Icons.fileText} size={16} />
-                  <span>Belum ada pekerjaan</span>
-                </div>
+
+      {/* ── 3 summary stats ── */}
+      <div className="opex-stats">
+        <div className="opex-stat">
+          <span className="opex-stat-label">Nilai Anggaran Tahunan</span>
+          <span className="opex-stat-val" style={{ color: "var(--blue)" }}>
+            {fmt(pagu)}
+          </span>
+          <span className="opex-stat-sub">Tahun {ang.thn_anggaran}</span>
+        </div>
+        <div className="opex-stat">
+          <span className="opex-stat-label">Total Realisasi</span>
+          <span className="opex-stat-val" style={{ color: "var(--red)" }}>
+            {fmt(totalRealisasi)}
+          </span>
+          <span className="opex-stat-sub">{pct.toFixed(1)}% dari anggaran</span>
+          <div className="opex-progbar">
+            <div
+              className="opex-progbar-fill"
+              style={{ width: `${pct}%`, background: serapanColor }}
+            />
+          </div>
+        </div>
+        <div className="opex-stat">
+          <span className="opex-stat-label">Sisa Anggaran</span>
+          <span
+            className="opex-stat-val"
+            style={{ color: sisa >= 0 ? "var(--green)" : "var(--red)" }}
+          >
+            {fmt(Math.abs(sisa))}
+          </span>
+          <span className="opex-stat-sub">
+            {sisa >= 0 ? "tersisa" : "melebihi anggaran"} ·{" "}
+            {(ang.transaksi || []).length} transaksi
+          </span>
+        </div>
+      </div>
+
+      {/* ── Riwayat realisasi (collapsible) ── */}
+      {open && (
+        <div className="opex-body">
+          <div className="opex-body-hdr">
+            <span>
+              <Icon d={I.calendar} size={13} /> Riwayat Realisasi{" "}
+              <span className="pill green" style={{ marginLeft: 4 }}>
+                {(ang.transaksi || []).length} Transaksi
+              </span>
+            </span>
+          </div>
+          <table className="rlz-tbl">
+            <thead>
+              <tr>
+                <th>Tanggal</th>
+                <th>Keterangan</th>
+                <th>No. Invoice</th>
+                <th>Aset Terkait</th>
+                <th>Lampiran</th>
+                <th style={{ textAlign: "right" }}>Jumlah</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {(ang.transaksi || []).length === 0 && (
+                <tr>
+                  <td colSpan="7" className="rlz-empty">
+                    <Icon
+                      d={I.fileText}
+                      size={28}
+                      style={{
+                        display: "block",
+                        margin: "0 auto 8px",
+                        opacity: 0.3,
+                      }}
+                    />
+                    Belum ada transaksi. Klik "+ Tambah Realisasi" untuk mulai.
+                  </td>
+                </tr>
               )}
-              {projects.map((proj, idx) => {
-                const isOpen = expandedProj === proj.id_pekerjaan;
-                return (
-                  <div key={proj.id_pekerjaan} className="bm-proj-edit-card">
-                    <div className="bm-proj-edit-card-header">
-                      <button
+              {(ang.transaksi || []).map((t) => (
+                <tr key={t.id}>
+                  <td
+                    style={{
+                      color: "var(--ink2)",
+                      fontSize: ".78rem",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    <Icon
+                      d={I.calendar}
+                      size={11}
+                      style={{ marginRight: 4, color: "var(--ink3)" }}
+                    />
+                    {fmtDate(t.tanggal)}
+                  </td>
+                  <td style={{ fontWeight: 500, color: "var(--ink)" }}>
+                    {t.keterangan}
+                  </td>
+                  <td>
+                    {t.no_invoice ? (
+                      <code className="code" style={{ fontSize: ".68rem" }}>
+                        {t.no_invoice}
+                      </code>
+                    ) : (
+                      <span style={{ color: "var(--ink3)" }}>—</span>
+                    )}
+                  </td>
+                  <td>
+                    {t.aset ? (
+                      <span
                         style={{
-                          background: "none",
-                          border: "none",
-                          cursor: "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                          color: "#6366f1",
+                          background: "var(--blue-lt)",
+                          color: "var(--blue)",
+                          borderRadius: 6,
+                          padding: "2px 8px",
+                          fontSize: ".7rem",
+                          fontWeight: 700,
                         }}
-                        onClick={() =>
-                          setExpandedProj(isOpen ? null : proj.id_pekerjaan)
-                        }
                       >
-                        <Icon
-                          d={isOpen ? Icons.chevUp : Icons.chevDown}
-                          size={15}
-                        />
-                      </button>
-                      <span className="bm-proj-edit-card-title">
-                        Pekerjaan #{idx + 1}
-                        {proj.nm_pekerjaan
-                          ? ` — ${proj.nm_pekerjaan.substring(0, 60)}...`
-                          : ""}
-                        {proj._new && (
-                          <span
-                            style={{
-                              marginLeft: 8,
-                              fontSize: ".65rem",
-                              background: "#dcfce7",
-                              color: "#15803d",
-                              padding: "1px 7px",
-                              borderRadius: 99,
-                              fontWeight: 700,
-                            }}
-                          >
-                            Baru
-                          </span>
-                        )}
+                        {t.aset}
                       </span>
-                      <button
-                        className="bm-btn bm-btn-danger"
-                        style={{ padding: "4px 10px", fontSize: ".7rem" }}
-                        onClick={() =>
-                          setConfirm({
-                            msg: `Hapus pekerjaan "${proj.nm_pekerjaan ? proj.nm_pekerjaan.substring(0, 40) + "..." : `#${idx + 1}`}" beserta semua asetnya?`,
-                            onConfirm: () => {
-                              removeProj(proj.id_pekerjaan);
-                              setConfirm(null);
-                            },
-                          })
-                        }
+                    ) : (
+                      <span style={{ color: "var(--ink3)" }}>—</span>
+                    )}
+                  </td>
+                  <td>
+                    {t.lampiran ? (
+                      <span
+                        style={{
+                          fontSize: ".75rem",
+                          color: "var(--blue)",
+                          textDecoration: "underline",
+                          cursor: "pointer",
+                        }}
                       >
-                        <Icon d={Icons.trash} size={13} /> Hapus
+                        {t.lampiran}
+                      </span>
+                    ) : (
+                      <span style={{ color: "var(--ink3)" }}>—</span>
+                    )}
+                  </td>
+                  <td className="rlz-jumlah">− {fmt(t.jumlah)}</td>
+                  <td>
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: 4,
+                        justifyContent: "flex-end",
+                      }}
+                    >
+                      <button
+                        className="btn btn-edit"
+                        style={{ padding: "4px 8px", fontSize: ".65rem" }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onOpenRealisasi(ang, t);
+                        }}
+                      >
+                        <Icon d={I.edit} size={11} />
+                      </button>
+                      <button
+                        className="btn btn-delete"
+                        style={{ padding: "4px 8px", fontSize: ".65rem" }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteRow(t.id);
+                        }}
+                      >
+                        <Icon d={I.trash} size={11} />
                       </button>
                     </div>
-                    {isOpen && (
-                      <div style={{ padding: "12px 14px" }} className="anim-in">
-                        <div
-                          className="bm-edit-grid"
-                          style={{ marginBottom: 10 }}
-                        >
-                          <div className="bm-edit-field bm-edit-grid-full">
-                            <label>Nama Pekerjaan</label>
-                            <textarea
-                              rows="2"
-                              value={proj.nm_pekerjaan}
-                              onChange={(e) =>
-                                updateProj(
-                                  proj.id_pekerjaan,
-                                  "nm_pekerjaan",
-                                  e.target.value,
-                                )
-                              }
-                            />
-                          </div>
-                          <div className="bm-edit-field">
-                            <label>Nilai RAB (IDR)</label>
-                            <input
-                              type="number"
-                              value={proj.nilai_rab || ""}
-                              onChange={(e) =>
-                                updateProj(
-                                  proj.id_pekerjaan,
-                                  "nilai_rab",
-                                  e.target.value,
-                                )
-                              }
-                            />
-                            {proj.nilai_rab > 0 && (
-                              <span className="bm-edit-hint">
-                                ≈ {fmt(proj.nilai_rab)}
-                              </span>
-                            )}
-                          </div>
-                          <div className="bm-edit-field">
-                            <label>Nilai Kontrak (IDR)</label>
-                            <input
-                              type="number"
-                              value={proj.nilai_kontrak || ""}
-                              onChange={(e) =>
-                                updateProj(
-                                  proj.id_pekerjaan,
-                                  "nilai_kontrak",
-                                  e.target.value,
-                                )
-                              }
-                            />
-                            {proj.nilai_kontrak > 0 && (
-                              <span className="bm-edit-hint">
-                                ≈ {fmt(proj.nilai_kontrak)}
-                              </span>
-                            )}
-                          </div>
-                          <div className="bm-edit-field">
-                            <label>No. PR</label>
-                            <input
-                              value={proj.no_pr || ""}
-                              onChange={(e) =>
-                                updateProj(
-                                  proj.id_pekerjaan,
-                                  "no_pr",
-                                  e.target.value,
-                                )
-                              }
-                            />
-                          </div>
-                          <div className="bm-edit-field">
-                            <label>No. PO</label>
-                            <input
-                              value={proj.no_po || ""}
-                              onChange={(e) =>
-                                updateProj(
-                                  proj.id_pekerjaan,
-                                  "no_po",
-                                  e.target.value,
-                                )
-                              }
-                            />
-                          </div>
-                          <div className="bm-edit-field">
-                            <label>No. Kontrak</label>
-                            <input
-                              value={proj.no_kontrak || ""}
-                              onChange={(e) =>
-                                updateProj(
-                                  proj.id_pekerjaan,
-                                  "no_kontrak",
-                                  e.target.value,
-                                )
-                              }
-                            />
-                          </div>
-                          <div className="bm-edit-field">
-                            <label>Tgl Kontrak</label>
-                            <input
-                              type="date"
-                              value={proj.tgl_kontrak || ""}
-                              onChange={(e) =>
-                                updateProj(
-                                  proj.id_pekerjaan,
-                                  "tgl_kontrak",
-                                  e.target.value,
-                                )
-                              }
-                            />
-                          </div>
-                          <div className="bm-edit-field">
-                            <label>Durasi (Hari)</label>
-                            <input
-                              type="number"
-                              value={proj.durasi_kontrak || ""}
-                              onChange={(e) =>
-                                updateProj(
-                                  proj.id_pekerjaan,
-                                  "durasi_kontrak",
-                                  e.target.value,
-                                )
-                              }
-                            />
-                          </div>
-                          <div className="bm-edit-field">
-                            <label>No. SP3</label>
-                            <input
-                              value={proj.no_sp3 || ""}
-                              onChange={(e) =>
-                                updateProj(
-                                  proj.id_pekerjaan,
-                                  "no_sp3",
-                                  e.target.value,
-                                )
-                              }
-                            />
-                          </div>
-                          <div className="bm-edit-field">
-                            <label>Tgl SP3</label>
-                            <input
-                              type="date"
-                              value={proj.tgl_sp3 || ""}
-                              onChange={(e) =>
-                                updateProj(
-                                  proj.id_pekerjaan,
-                                  "tgl_sp3",
-                                  e.target.value,
-                                )
-                              }
-                            />
-                          </div>
-                          <div className="bm-edit-field">
-                            <label>Tgl BAMK</label>
-                            <input
-                              type="date"
-                              value={proj.tgl_bamk || ""}
-                              onChange={(e) =>
-                                updateProj(
-                                  proj.id_pekerjaan,
-                                  "tgl_bamk",
-                                  e.target.value,
-                                )
-                              }
-                            />
-                          </div>
-                        </div>
-                        <div
-                          style={{
-                            borderTop: "1px dashed #c7d2fe",
-                            paddingTop: 10,
-                          }}
-                        >
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 8,
-                              marginBottom: 8,
-                            }}
-                          >
-                            <Icon
-                              d={Icons.layers}
-                              size={13}
-                              style={{ color: "#6366f1" }}
-                            />
-                            <span
-                              style={{
-                                fontSize: ".72rem",
-                                fontWeight: 700,
-                                textTransform: "uppercase",
-                                letterSpacing: ".5px",
-                                color: "#4338ca",
-                              }}
-                            >
-                              Aset ({proj.assets.length})
-                            </span>
-                            <button
-                              className="bm-btn bm-btn-add-sm"
-                              style={{
-                                marginLeft: "auto",
-                                fontSize: ".68rem",
-                                padding: "4px 10px",
-                              }}
-                              onClick={() => addAsset(proj.id_pekerjaan)}
-                            >
-                              <Icon d={Icons.plus} size={12} /> Tambah Aset
-                            </button>
-                          </div>
-                          {proj.assets.map((asset, aIdx) => (
-                            <div
-                              key={asset.asset_code}
-                              className="bm-asset-edit-row"
-                            >
-                              <div className="bm-asset-edit-row-header">
-                                <span
-                                  style={{
-                                    fontSize: ".7rem",
-                                    fontWeight: 700,
-                                    color: "#0369a1",
-                                  }}
-                                >
-                                  Aset #{aIdx + 1}
-                                </span>
-                                {asset._new && (
-                                  <span
-                                    style={{
-                                      fontSize: ".62rem",
-                                      background: "#dcfce7",
-                                      color: "#15803d",
-                                      padding: "1px 7px",
-                                      borderRadius: 99,
-                                      fontWeight: 700,
-                                    }}
-                                  >
-                                    Baru
-                                  </span>
-                                )}
-                                <button
-                                  className="bm-btn bm-btn-danger"
-                                  style={{
-                                    marginLeft: "auto",
-                                    padding: "3px 9px",
-                                    fontSize: ".68rem",
-                                  }}
-                                  onClick={() =>
-                                    setConfirm({
-                                      msg: `Hapus aset "${asset.name || asset.asset_code}"?`,
-                                      onConfirm: () => {
-                                        removeAsset(
-                                          proj.id_pekerjaan,
-                                          asset.asset_code,
-                                        );
-                                        setConfirm(null);
-                                      },
-                                    })
-                                  }
-                                >
-                                  <Icon d={Icons.trash} size={12} /> Hapus
-                                </button>
-                              </div>
-                              <div
-                                className="bm-edit-grid"
-                                style={{ gridTemplateColumns: "repeat(3,1fr)" }}
-                              >
-                                <div className="bm-edit-field">
-                                  <label>Kode Aset</label>
-                                  <input
-                                    value={
-                                      asset._new
-                                        ? asset.asset_code.startsWith("id-")
-                                          ? ""
-                                          : asset.asset_code
-                                        : asset.asset_code
-                                    }
-                                    onChange={(e) =>
-                                      updateAsset(
-                                        proj.id_pekerjaan,
-                                        asset.asset_code,
-                                        "asset_code",
-                                        e.target.value,
-                                      )
-                                    }
-                                    readOnly={!asset._new}
-                                    style={
-                                      !asset._new
-                                        ? {
-                                            background: "#f8fafc",
-                                            color: "#94a3b8",
-                                          }
-                                        : {}
-                                    }
-                                  />
-                                </div>
-                                <div
-                                  className="bm-edit-field"
-                                  style={{ gridColumn: "2/-1" }}
-                                >
-                                  <label>Nama Aset</label>
-                                  <input
-                                    value={asset.name}
-                                    onChange={(e) =>
-                                      updateAsset(
-                                        proj.id_pekerjaan,
-                                        asset.asset_code,
-                                        "name",
-                                        e.target.value,
-                                      )
-                                    }
-                                  />
-                                </div>
-                                <div className="bm-edit-field">
-                                  <label>Brand</label>
-                                  <input
-                                    value={asset.brand}
-                                    onChange={(e) =>
-                                      updateAsset(
-                                        proj.id_pekerjaan,
-                                        asset.asset_code,
-                                        "brand",
-                                        e.target.value,
-                                      )
-                                    }
-                                  />
-                                </div>
-                                <div className="bm-edit-field">
-                                  <label>Model</label>
-                                  <input
-                                    value={asset.model}
-                                    onChange={(e) =>
-                                      updateAsset(
-                                        proj.id_pekerjaan,
-                                        asset.asset_code,
-                                        "model",
-                                        e.target.value,
-                                      )
-                                    }
-                                  />
-                                </div>
-                                <div className="bm-edit-field">
-                                  <label>Serial Number</label>
-                                  <input
-                                    value={asset.serial_number || ""}
-                                    onChange={(e) =>
-                                      updateAsset(
-                                        proj.id_pekerjaan,
-                                        asset.asset_code,
-                                        "serial_number",
-                                        e.target.value,
-                                      )
-                                    }
-                                  />
-                                </div>
-                                <div className="bm-edit-field">
-                                  <label>Tgl Pengadaan</label>
-                                  <input
-                                    type="date"
-                                    value={asset.procurement_date}
-                                    onChange={(e) =>
-                                      updateAsset(
-                                        proj.id_pekerjaan,
-                                        asset.asset_code,
-                                        "procurement_date",
-                                        e.target.value,
-                                      )
-                                    }
-                                  />
-                                </div>
-                                <div className="bm-edit-field">
-                                  <label>Nilai Perolehan (IDR)</label>
-                                  <input
-                                    type="number"
-                                    value={asset.acquisition_value || ""}
-                                    onChange={(e) =>
-                                      updateAsset(
-                                        proj.id_pekerjaan,
-                                        asset.asset_code,
-                                        "acquisition_value",
-                                        parseFloat(e.target.value) || 0,
-                                      )
-                                    }
-                                  />
-                                  {asset.acquisition_value > 0 && (
-                                    <span className="bm-edit-hint">
-                                      ≈ {fmt(asset.acquisition_value)}
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                          {proj.assets.length === 0 && (
-                            <div
-                              className="bm-empty bm-empty--sm"
-                              style={{
-                                border: "1px dashed #c7d2fe",
-                                borderRadius: 8,
-                              }}
-                            >
-                              <Icon d={Icons.package} size={14} />
-                              <span>Belum ada aset untuk pekerjaan ini</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-            <div className="bm-edit-actions">
-              <button className="bm-btn bm-btn-cancel" onClick={onCancel}>
-                <Icon d={Icons.x} size={13} /> Batal
-              </button>
-              <button className="bm-btn bm-btn-save" onClick={handleSave}>
-                <Icon d={Icons.save} size={13} /> Simpan Perubahan
-              </button>
-            </div>
-          </div>
-        </td>
-      </tr>
-    </>
-  );
-}
-
-// ══════════════════════════════════════════════════════════════════
-// OPEX Detail (view mode)
-// CHANGES:
-//   - Kolom ASET: hapus icon link (🔗), tampilkan kode aset plain saja
-//   - Kolom LAMPIRAN header: tambahkan icon paperclip
-// ══════════════════════════════════════════════════════════════════
-function OpexDetail({ item, onAddRealisasi }) {
-  return (
-    <tr className="bm-drill-row">
-      <td colSpan="7">
-        <div className="bm-drill-wrap">
-          <div className="bm-drill-header">
-            <Icon d={Icons.receipt} size={14} />
-            Riwayat Realisasi
-            <span className="bm-pill blue">
-              {item.realisasiList.length} transaksi
-            </span>
-            <div className="bm-drill-actions">
-              <button
-                className="bm-btn-add-realisasi"
-                onClick={() => onAddRealisasi(item)}
-              >
-                <Icon d={Icons.plus} size={13} /> Tambah Realisasi
-              </button>
-            </div>
-          </div>
-          {item.realisasiList.length > 0 ? (
-            <table className="bm-sub-table">
-              <thead>
-                <tr>
-                  <th>Tanggal</th>
-                  <th>Keterangan</th>
-                  <th>No. Invoice</th>
-                  <th>Aset</th>
-                  {/* ── Paperclip icon hanya di header LAMPIRAN ── */}
-                  <th>
-                    <span className="bm-th-with-icon">
-                      <Icon d={Icons.paperclip} size={11} />
-                      Lampiran
-                    </span>
-                  </th>
-                  <th className="ta-r">Jumlah</th>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {[...item.realisasiList]
-                  .sort(
-                    (a, b) =>
-                      new Date(b.tanggal_realisasi) -
-                      new Date(a.tanggal_realisasi),
-                  )
-                  .map((r) => (
-                    <tr key={r.id_realisasi}>
-                      <td>
-                        <div className="bm-date-cell">
-                          <Icon d={Icons.calendar} size={11} />
-                          {fmtDate(r.tanggal_realisasi)}
-                        </div>
-                      </td>
-                      <td className="fw-med">{r.keterangan}</td>
-                      <td>
-                        {r.no_invoice ? (
-                          <code className="bm-code">{r.no_invoice}</code>
-                        ) : (
-                          <span className="tc-muted2">—</span>
-                        )}
-                      </td>
-                      {/* ── Aset: plain code badge, NO link icon ── */}
-                      <td>
-                        {r.id_aset ? (
-                          <span className="bm-aset-plain">
-                            <code className="bm-code bm-code--aset">
-                              {r.id_aset}
-                            </code>
-                          </span>
-                        ) : (
-                          <span className="bm-no-aset">—</span>
-                        )}
-                      </td>
-                      {/* ── Lampiran: paperclip icon muncul di chip ── */}
-                      <td>
-                        {r.lampiran && r.lampiran.length > 0 ? (
-                          <div
-                            style={{
-                              display: "flex",
-                              flexWrap: "wrap",
-                              gap: 4,
-                            }}
-                          >
-                            {r.lampiran.map((f) => (
-                              <span
-                                key={f.id}
-                                className="bm-file-view-chip"
-                                title={f.name}
-                              >
-                                <Icon d={Icons.paperclip} size={10} />
-                                <span
-                                  style={{
-                                    maxWidth: 80,
-                                    overflow: "hidden",
-                                    textOverflow: "ellipsis",
-                                    whiteSpace: "nowrap",
-                                  }}
-                                >
-                                  {f.name}
-                                </span>
-                              </span>
-                            ))}
-                          </div>
-                        ) : (
-                          <span className="bm-no-aset">—</span>
-                        )}
-                      </td>
-                      <td className="ta-r tc-red fw-bold">− {fmt(r.jumlah)}</td>
-                    </tr>
-                  ))}
-              </tbody>
-              <tfoot>
-                <tr className="bm-sub-total">
-                  <td colSpan="5" className="ta-r fw-bold">
+              ))}
+              {(ang.transaksi || []).length > 0 && (
+                <tr style={{ background: "var(--bg2)" }}>
+                  <td
+                    colSpan="5"
+                    style={{
+                      textAlign: "right",
+                      fontWeight: 700,
+                      fontSize: ".78rem",
+                      color: "var(--ink2)",
+                      padding: "8px 14px",
+                    }}
+                  >
                     Total
                   </td>
-                  <td className="ta-r tc-red fw-bold">{fmt(item.used)}</td>
-                </tr>
-              </tfoot>
-            </table>
-          ) : (
-            <div className="bm-empty">
-              <Icon d={Icons.receipt} size={28} />
-              <span>Belum ada realisasi</span>
-            </div>
-          )}
-        </div>
-      </td>
-    </tr>
-  );
-}
-
-// ══════════════════════════════════════════════════════════════════
-// CAPEX Detail (view mode — unchanged)
-// ══════════════════════════════════════════════════════════════════
-function CapexDetail({ item, expandedProject, toggleProject }) {
-  return (
-    <tr className="bm-drill-row">
-      <td colSpan="7">
-        <div className="bm-drill-wrap">
-          <div className="bm-drill-header">
-            <Icon d={Icons.fileText} size={14} />
-            Daftar Pekerjaan / Kontrak
-            <span className="bm-pill blue">
-              {item.projects.length} pekerjaan
-            </span>
-          </div>
-          {item.projects.length > 0 ? (
-            <div className="bm-projects">
-              {item.projects.map((p) => {
-                const open = expandedProject === p.id_pekerjaan;
-                const assetCnt = p.assets ? p.assets.length : 0;
-                const balanceInfo = getBalanceInfo(p.assets, p.nilai_kontrak);
-                return (
-                  <div
-                    key={p.id_pekerjaan}
-                    className={`bm-proj-card ${open ? "open" : ""}`}
+                  <td
+                    className="rlz-jumlah"
+                    style={{ borderTop: "2px solid var(--border)" }}
                   >
-                    <div
-                      className="bm-proj-row"
-                      onClick={() => toggleProject(p.id_pekerjaan)}
-                    >
-                      <div className="bm-proj-left">
-                        <div className="bm-proj-name">{p.nm_pekerjaan}</div>
-                        <div className="bm-proj-meta">
-                          {p.no_kontrak && (
-                            <span className="bm-meta-item">
-                              <Icon d={Icons.fileText} size={11} />
-                              {p.no_kontrak}
-                            </span>
-                          )}
-                          {p.tgl_kontrak && (
-                            <span className="bm-meta-item">
-                              <Icon d={Icons.calendar} size={11} />
-                              {fmtDate(p.tgl_kontrak)}
-                            </span>
-                          )}
-                          {p.durasi_kontrak && (
-                            <span className="bm-meta-item">
-                              ⏱ {p.durasi_kontrak} hari
-                            </span>
-                          )}
-                        </div>
-                        <div className="bm-proj-refs">
-                          {p.no_pr && (
-                            <span className="bm-ref">PR: {p.no_pr}</span>
-                          )}
-                          {p.no_po && (
-                            <span className="bm-ref">PO: {p.no_po}</span>
-                          )}
-                          {p.no_sp3 && (
-                            <span className="bm-ref">SP3: {p.no_sp3}</span>
-                          )}
-                          {p.tgl_sp3 && (
-                            <span className="bm-ref">
-                              Tgl SP3: {fmtDate(p.tgl_sp3)}
-                            </span>
-                          )}
-                          {p.tgl_bamk && (
-                            <span className="bm-ref">
-                              BAMK: {fmtDate(p.tgl_bamk)}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="bm-proj-right">
-                        <div className="bm-proj-vals">
-                          <div className="bm-val-block">
-                            <span className="bm-val-lbl">RAB</span>
-                            <span className="bm-val-num rab">
-                              {p.nilai_rab > 0 ? fmt(p.nilai_rab) : "—"}
-                            </span>
-                          </div>
-                          <div className="bm-val-block">
-                            <span className="bm-val-lbl">Kontrak</span>
-                            <span className="bm-val-num kontrak">
-                              {p.nilai_kontrak > 0 ? fmt(p.nilai_kontrak) : "—"}
-                            </span>
-                          </div>
-                          {balanceInfo.sumAset > 0 && (
-                            <div className="bm-val-block">
-                              <span className="bm-val-lbl">Nilai Aset</span>
-                              <span className="bm-val-num aset">
-                                {fmt(balanceInfo.sumAset)}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                        <div className="bm-proj-actions">
-                          <BalanceBadge
-                            assets={p.assets}
-                            nilaiKontrak={p.nilai_kontrak}
-                          />
-                          <span className="bm-pill blue">{assetCnt} Aset</span>
-                          <Icon
-                            d={open ? Icons.chevUp : Icons.chevDown}
-                            size={16}
-                            className={open ? "tc-accent" : "tc-muted2"}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    {open && (
-                      <div className="bm-asset-sub anim-in">
-                        <div className="bm-asset-sub-title">
-                          <Icon d={Icons.layers} size={12} />
-                          Aset Terdaftar
-                        </div>
-                        {assetCnt > 0 ? (
-                          <>
-                            <table
-                              className="bm-sub-table"
-                              style={{ fontSize: ".77rem" }}
-                            >
-                              <thead>
-                                <tr>
-                                  <th>Kode Aset</th>
-                                  <th>Nama Aset</th>
-                                  <th>Brand / Model</th>
-                                  <th>S/N</th>
-                                  <th>Tgl</th>
-                                  <th className="ta-r">Nilai</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {p.assets.map((a) => (
-                                  <tr key={a.asset_code}>
-                                    <td>
-                                      <code className="bm-code">
-                                        {a.asset_code}
-                                      </code>
-                                    </td>
-                                    <td className="fw-med">{a.name}</td>
-                                    <td className="tc-muted">
-                                      {a.brand} / {a.model}
-                                    </td>
-                                    <td className="tc-muted">
-                                      {a.serial_number || "—"}
-                                    </td>
-                                    <td>{fmtDate(a.procurement_date)}</td>
-                                    <td className="ta-r fw-bold tc-ink">
-                                      {a.acquisition_value ? (
-                                        fmt(a.acquisition_value)
-                                      ) : (
-                                        <span className="bm-no-aset">
-                                          Belum diisi
-                                        </span>
-                                      )}
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                              <tfoot>
-                                <tr className="bm-sub-total">
-                                  <td colSpan="5" className="ta-r fw-bold">
-                                    Total Nilai Aset
-                                  </td>
-                                  <td className="ta-r fw-bold tc-ink">
-                                    {fmt(
-                                      p.assets.reduce(
-                                        (s, a) =>
-                                          s + (a.acquisition_value || 0),
-                                        0,
-                                      ),
-                                    )}
-                                  </td>
-                                </tr>
-                              </tfoot>
-                            </table>
-                            <BalanceBar
-                              assets={p.assets}
-                              nilaiKontrak={p.nilai_kontrak}
-                            />
-                          </>
-                        ) : (
-                          <div className="bm-empty bm-empty--sm">
-                            <Icon d={Icons.package} size={16} />
-                            <span>Belum ada aset terdaftar</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-              <div className="bm-capex-total">
-                <span>Total Nilai Kontrak Terserap</span>
-                <span className="tc-red fw-bold">{fmt(item.used)}</span>
-              </div>
-            </div>
-          ) : (
-            <div className="bm-empty">
-              <Icon d={Icons.fileText} size={28} />
-              <span>Belum ada pekerjaan/kontrak terdaftar</span>
-            </div>
-          )}
+                    {fmt(totalRealisasi)}
+                  </td>
+                  <td style={{ borderTop: "2px solid var(--border)" }}></td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
-      </td>
+      )}
+      {confirm && (
+        <Confirm
+          msg={confirm.msg}
+          onConfirm={confirm.onConfirm}
+          onCancel={() => setConfirm(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+// ── Edit Panel — CAPEX only ──────────────────────────────────────
+function EditProjectPanel({ project, onSave, onCancel, inCard }) {
+  const [form, setForm] = useState({ ...project });
+  const up = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+  const save = () =>
+    onSave({
+      ...form,
+      nilai_rab: parseFloat(form.nilai_rab) || 0,
+      nilai_kontrak: parseFloat(form.nilai_kontrak) || 0,
+      durasi_kontrak: parseInt(form.durasi_kontrak) || 0,
+    });
+
+  const inner = (
+    <div className="edit-panel">
+      <div className="edit-panel-hdr">
+        <div
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: 8,
+            background: "var(--blue-lt)",
+            color: "var(--blue)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Icon d={I.edit} size={15} />
+        </div>
+        <h3>Edit Pekerjaan CAPEX</h3>
+        <button className="btn btn-cancel" onClick={onCancel}>
+          <Icon d={I.x} size={13} /> Batal
+        </button>
+      </div>
+      <div className="edit-section">
+        <div className="edit-section-title">
+          <Icon d={I.fileText} size={13} /> Informasi Pekerjaan
+        </div>
+        <div className="edit-grid g1">
+          <div className="edit-field full">
+            <label>Nama Pekerjaan *</label>
+            <textarea
+              rows="3"
+              value={form.nm_pekerjaan || ""}
+              onChange={(e) => up("nm_pekerjaan", e.target.value)}
+            />
+          </div>
+        </div>
+        <div className="edit-grid g3" style={{ marginTop: ".8rem" }}>
+          <div className="edit-field">
+            <label>Nilai RAB (IDR)</label>
+            <input
+              type="number"
+              value={form.nilai_rab || ""}
+              onChange={(e) => up("nilai_rab", e.target.value)}
+            />
+            {form.nilai_rab > 0 && (
+              <span className="edit-hint">≈ {fmt(form.nilai_rab)}</span>
+            )}
+          </div>
+          <div className="edit-field">
+            <label>Nilai Kontrak (IDR)</label>
+            <input
+              type="number"
+              value={form.nilai_kontrak || ""}
+              onChange={(e) => up("nilai_kontrak", e.target.value)}
+            />
+            {form.nilai_kontrak > 0 && (
+              <span className="edit-hint">≈ {fmt(form.nilai_kontrak)}</span>
+            )}
+          </div>
+          <div className="edit-field">
+            <label>Durasi (Hari)</label>
+            <input
+              type="number"
+              value={form.durasi_kontrak || ""}
+              onChange={(e) => up("durasi_kontrak", e.target.value)}
+            />
+          </div>
+        </div>
+      </div>
+      <div className="edit-section">
+        <div className="edit-section-title">
+          <Icon d={I.fileText} size={13} /> Referensi Dokumen
+        </div>
+        <div className="edit-grid g3">
+          <div className="edit-field">
+            <label>No. PR</label>
+            <input
+              value={form.no_pr || ""}
+              onChange={(e) => up("no_pr", e.target.value)}
+              placeholder="8260000..."
+            />
+          </div>
+          <div className="edit-field">
+            <label>No. PO</label>
+            <input
+              value={form.no_po || ""}
+              onChange={(e) => up("no_po", e.target.value)}
+              placeholder="6440000..."
+            />
+          </div>
+          <div className="edit-field">
+            <label>No. Kontrak</label>
+            <input
+              value={form.no_kontrak || ""}
+              onChange={(e) => up("no_kontrak", e.target.value)}
+              placeholder="SI.01/..."
+            />
+          </div>
+          <div className="edit-field">
+            <label>Tanggal Kontrak</label>
+            <input
+              type="date"
+              value={form.tgl_kontrak || ""}
+              onChange={(e) => up("tgl_kontrak", e.target.value)}
+            />
+          </div>
+          <div className="edit-field">
+            <label>No. SP3</label>
+            <input
+              value={form.no_sp3 || ""}
+              onChange={(e) => up("no_sp3", e.target.value)}
+            />
+          </div>
+          <div className="edit-field">
+            <label>Tanggal SP3</label>
+            <input
+              type="date"
+              value={form.tgl_sp3 || ""}
+              onChange={(e) => up("tgl_sp3", e.target.value)}
+            />
+          </div>
+          <div className="edit-field">
+            <label>Tanggal BAMK</label>
+            <input
+              type="date"
+              value={form.tgl_bamk || ""}
+              onChange={(e) => up("tgl_bamk", e.target.value)}
+            />
+          </div>
+        </div>
+      </div>
+      <div className="edit-actions">
+        <button className="btn btn-cancel" onClick={onCancel}>
+          <Icon d={I.x} size={13} /> Batal
+        </button>
+        <button className="btn btn-save" onClick={save}>
+          <Icon d={I.save} size={13} /> Simpan Pekerjaan
+        </button>
+      </div>
+    </div>
+  );
+  if (inCard) return inner;
+  return (
+    <tr className="edit-drawer">
+      <td colSpan="8">{inner}</td>
     </tr>
   );
 }
 
-// ══════════════════════════════════════════════════════════════════
-// MAIN COMPONENT
-// ══════════════════════════════════════════════════════════════════
+// ── Main Component ───────────────────────────────────────────────
 export default function BudgetManagement() {
-  const [activeTab, setActiveTab] = useState("capex");
-  const [expandedBudget, setExpandedBudget] = useState(null);
-  const [editingBudget, setEditingBudget] = useState(null);
-  const [expandedProject, setExpandedProject] = useState(null);
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [tahun, setTahun] = useState("all");
+  const [anggaranFilter, setAnggaranFilter] = useState("all");
   const [search, setSearch] = useState("");
+  const [editingProject, setEditingProject] = useState(null);
+  const [assetPage, setAssetPage] = useState(null);
+  const [realisasiPage, setRealisasiPage] = useState(null); // { ang, editData }
+  const [toast, setToast] = useState(null);
+  const [confirm, setConfirm] = useState(null);
+
+  // Buka halaman tambah/edit realisasi OPEX
+  // editData = null → tambah baru, editData = transaksi object → edit
+  const handleOpenRealisasi = (ang, editData) => {
+    setRealisasiPage({ ang, editData });
+  };
+
+  const [capexData, setCapexData] = useState(INIT_CAPEX);
+  const [opexData, setOpexData] = useState(INIT_OPEX);
+
+  const showToast = (msg) => setToast(msg);
+
   const currentYear = new Date().getFullYear();
-  const [tahunAnggaran, setTahunAnggaran] = useState(String(currentYear));
-  const tahunOptions = [
+  const yearOptions = [
+    "all",
     String(currentYear - 3),
     String(currentYear - 2),
     String(currentYear - 1),
     String(currentYear),
   ];
 
-  const [mockCapex, setMockCapex] = useState(initMockCapex);
-  const [mockOpex] = useState(initMockOpex);
-  const [realisasiOpex, setRealisasiOpex] = useState(initMockRealisasiOpex);
-  const [modalRealisasi, setModalRealisasi] = useState(null);
-  const [toast, setToast] = useState(null);
+  const allProjects = useMemo(() => {
+    return capexData.flatMap((ang) =>
+      ang.projects.map((p) => ({
+        ...p,
+        _angId: ang.id,
+        _angNama: ang.nama,
+        _angKode: ang.kode,
+        _type: "capex",
+        _thn: ang.thnAnggaran,
+      })),
+    );
+  }, [capexData]);
 
-  const showToast = (msg, type = "success") => setToast({ msg, type });
+  const filteredOpex = useMemo(() => {
+    return opexData.filter((ang) => {
+      if (tahun !== "all" && String(ang.thn_anggaran) !== tahun) return false;
+      return true;
+    });
+  }, [opexData, tahun]);
 
-  const data = useMemo(() => {
-    const raw = activeTab === "capex" ? mockCapex : mockOpex;
-    return raw
-      .map((item) => {
-        let id,
-          name,
-          pagu,
-          used,
-          projects = [],
-          realisasiList = [];
-        if (activeTab === "capex") {
-          id = item.kd_anggaran_capex;
-          name = item.nm_anggaran_capex;
-          pagu = item.nilai_anggaran_rkap || 0;
-          projects = item.projects || [];
-          used = projects.reduce((s, p) => s + (p.nilai_kontrak || 0), 0);
-        } else {
-          id = String(item.id_anggaran_tahunan);
-          name = item.nm_anggaran_master;
-          pagu = item.nilai_anggaran_tahunan || 0;
-          realisasiList = realisasiOpex.filter(
-            (r) => r.id_anggaran_tahunan === item.id_anggaran_tahunan,
-          );
-          used = realisasiList.reduce((s, r) => s + (r.jumlah || 0), 0);
-        }
-        const remaining = pagu - used;
-        const percentage = pagu > 0 ? (used / pagu) * 100 : 0;
-        return {
-          id,
-          name,
-          pagu,
-          used,
-          remaining,
-          percentage,
-          projects,
-          realisasiList,
-          raw: item,
-        };
-      })
-      .filter((d) => d.name.toLowerCase().includes(search.toLowerCase()));
-  }, [activeTab, search, realisasiOpex, mockCapex, mockOpex]);
+  const tahunList = useMemo(() => {
+    const s = new Set([
+      ...capexData.map((a) => String(a.thnAnggaran)),
+      ...opexData.map((a) => String(a.thn_anggaran)),
+    ]);
+    return Array.from(s).sort();
+  }, [capexData, opexData]);
 
-  const totals = useMemo(() => {
-    const pagu = data.reduce((s, d) => s + d.pagu, 0);
-    const used = data.reduce((s, d) => s + d.used, 0);
+  const anggaranList = useMemo(() => {
+    const filtered = allProjects.filter((p) => {
+      if (tahun !== "all" && String(p._thn) !== tahun) return false;
+      return true;
+    });
+    const map = new Map();
+    filtered.forEach((p) => {
+      if (!map.has(p._angId))
+        map.set(p._angId, { id: p._angId, nama: p._angNama });
+    });
+    return Array.from(map.values());
+  }, [allProjects, tahun]);
+
+  const filteredProjects = useMemo(() => {
+    if (typeFilter === "opex") return [];
+    return allProjects.filter((p) => {
+      if (tahun !== "all" && String(p._thn) !== tahun) return false;
+      if (anggaranFilter !== "all" && p._angId !== anggaranFilter) return false;
+      if (
+        search &&
+        !p.nm_pekerjaan?.toLowerCase().includes(search.toLowerCase()) &&
+        !p.no_kontrak?.toLowerCase().includes(search.toLowerCase()) &&
+        !p._angNama?.toLowerCase().includes(search.toLowerCase())
+      )
+        return false;
+      return true;
+    });
+  }, [allProjects, typeFilter, tahun, anggaranFilter, search]);
+
+  useEffect(() => {
+    setAnggaranFilter("all");
+  }, [typeFilter, tahun]);
+
+  const summaryStats = useMemo(() => {
+    const capexBase = allProjects.filter((p) => {
+      if (tahun !== "all" && String(p._thn) !== tahun) return false;
+      return true;
+    });
+    const opexBase = filteredOpex;
+    const totalPaguCapex = capexData
+      .filter((a) => tahun === "all" || String(a.thnAnggaran) === tahun)
+      .reduce((s, a) => s + (a.pagu || 0), 0);
+    const totalPaguOpex = opexBase.reduce(
+      (s, a) => s + (a.nilai_anggaran_tahunan || 0),
+      0,
+    );
+    const totalPagu =
+      typeFilter === "opex"
+        ? totalPaguOpex
+        : typeFilter === "capex"
+          ? totalPaguCapex
+          : totalPaguCapex + totalPaguOpex;
+    const totalKontrak = capexBase.reduce(
+      (s, p) => s + (p.nilai_kontrak || 0),
+      0,
+    );
+    const totalAset = capexBase.reduce(
+      (s, p) =>
+        s +
+        (p.assets || []).reduce((ss, a) => ss + (a.acquisition_value || 0), 0),
+      0,
+    );
+    const totalRealisasiOpex = opexBase.reduce(
+      (s, a) =>
+        s + (a.transaksi || []).reduce((ss, t) => ss + (t.jumlah || 0), 0),
+      0,
+    );
     return {
-      pagu,
-      used,
-      remaining: pagu - used,
-      pct: pagu > 0 ? (used / pagu) * 100 : 0,
+      totalPagu,
+      totalKontrak,
+      totalAset,
+      totalRealisasiOpex,
+      count: capexBase.length,
     };
-  }, [data]);
+  }, [allProjects, filteredOpex, capexData, typeFilter, tahun]);
 
-  const toggleBudget = (id) => {
-    if (editingBudget === id) return;
-    setExpandedBudget(expandedBudget === id ? null : id);
-    setExpandedProject(null);
-  };
-  const toggleProject = (id) =>
-    setExpandedProject(expandedProject === id ? null : id);
-  const handleEditClick = (e, id) => {
-    e.stopPropagation();
-    if (editingBudget === id) {
-      setEditingBudget(null);
-    } else {
-      setExpandedBudget(id);
-      setEditingBudget(id);
-    }
-  };
-  const switchTab = (t) => {
-    setActiveTab(t);
-    setExpandedBudget(null);
-    setEditingBudget(null);
-    setExpandedProject(null);
-    setSearch("");
+  const getAnggaran = (angId, type) => {
+    if (type === "capex") return capexData.find((a) => a.id === angId);
+    return opexData.find((a) => a.id === angId);
   };
 
-  const handleSaveEdit = (payload) => {
-    if (payload.type === "opex") {
-      const otherReal = realisasiOpex.filter(
-        (r) => r.id_anggaran_tahunan !== parseInt(payload.itemId),
-      );
-      const myRealWithId = payload.realisasiList.map((r) => ({
-        ...r,
-        jumlah: parseFloat(r.jumlah) || 0,
-        id_anggaran_tahunan: parseInt(payload.itemId),
-      }));
-      setRealisasiOpex([...otherReal, ...myRealWithId]);
-    } else if (payload.type === "capex") {
-      setMockCapex((prev) =>
-        prev.map((c) =>
-          c.kd_anggaran_capex === payload.itemId
-            ? {
-                ...c,
-                nilai_anggaran_rkap: payload.pagu,
-                nm_anggaran_capex: payload.nama,
-                projects: payload.projects,
-              }
-            : c,
+  const handleSaveOpexTransaksi = (angId, transaksi) => {
+    setOpexData((prev) =>
+      prev.map((a) => (a.id === angId ? { ...a, transaksi } : a)),
+    );
+  };
+
+  // Handler edit data pos anggaran OPEX (kd_anggaran_master, nama, thn_anggaran, nilai_anggaran_tahunan)
+  const handleSaveOpexData = (angId, updated) => {
+    setOpexData((prev) =>
+      prev.map((a) => (a.id === angId ? { ...a, ...updated } : a)),
+    );
+  };
+
+  const handleDeleteOpex = (angId) => {
+    setConfirm({
+      msg: "Hapus pos anggaran OPEX ini beserta semua transaksinya?",
+      onConfirm: () => {
+        setOpexData((prev) => prev.filter((a) => a.id !== angId));
+        showToast("Pos anggaran OPEX dihapus");
+        setConfirm(null);
+      },
+    });
+  };
+
+  const handleSaveProject = (projId, updatedProj) => {
+    setCapexData((prev) =>
+      prev.map((ang) => ({
+        ...ang,
+        projects: ang.projects.map((p) =>
+          p.id === projId ? { ...p, ...updatedProj } : p,
+        ),
+      })),
+    );
+    setEditingProject(null);
+    showToast("Pekerjaan berhasil diperbarui");
+  };
+
+  const handleSaveAssets = (projId, assets) => {
+    setCapexData((prev) =>
+      prev.map((ang) => ({
+        ...ang,
+        projects: ang.projects.map((p) =>
+          p.id === projId ? { ...p, assets } : p,
+        ),
+      })),
+    );
+  };
+
+  const handleDeleteProject = (projId, angId, type) => {
+    if (type === "capex")
+      setCapexData((prev) =>
+        prev.map((ang) =>
+          ang.id === angId
+            ? { ...ang, projects: ang.projects.filter((p) => p.id !== projId) }
+            : ang,
         ),
       );
-    }
-    setEditingBudget(null);
+    showToast("Pekerjaan berhasil dihapus");
   };
 
-  const handleSaveRealisasi = (anggaranItem, formData) => {
-    setRealisasiOpex([
-      ...realisasiOpex,
-      {
-        id_realisasi: Date.now(),
-        id_anggaran_tahunan: anggaranItem.id_anggaran_tahunan,
-        ...formData,
-        create_date: new Date().toISOString(),
-      },
-    ]);
-    showToast("Realisasi berhasil ditambahkan", "success");
-  };
+  if (assetPage) {
+    return (
+      <>
+        <style>{CSS}</style>
+        <div className="pg">
+          {toast && <Toast msg={toast} onDone={() => setToast(null)} />}
+          <AssetEntryPage
+            project={assetPage.project}
+            anggaran={assetPage.anggaran}
+            onBack={() => setAssetPage(null)}
+            onSave={handleSaveAssets}
+            showToast={showToast}
+          />
+        </div>
+      </>
+    );
+  }
 
-  const sc = (pct) => statusClass(pct);
+  if (realisasiPage) {
+    // Ambil data ang terbaru dari opexData (sudah bisa berubah)
+    const angTerbaru =
+      opexData.find((a) => a.id === realisasiPage.ang.id) || realisasiPage.ang;
+    return (
+      <>
+        <style>{CSS}</style>
+        <div className="pg">
+          {toast && <Toast msg={toast} onDone={() => setToast(null)} />}
+          <RealisasiPage
+            ang={angTerbaru}
+            editData={realisasiPage.editData}
+            onBack={() => setRealisasiPage(null)}
+            onSave={handleSaveOpexTransaksi}
+            showToast={showToast}
+          />
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
       <style>{CSS}</style>
-      <div className="bm-root">
-        {toast && (
-          <Toast
-            msg={toast.msg}
-            type={toast.type}
-            onDone={() => setToast(null)}
-          />
-        )}
-        {modalRealisasi && (
-          <ModalRealisasi
-            anggaran={modalRealisasi}
-            onClose={() => setModalRealisasi(null)}
-            onSave={(fd) => handleSaveRealisasi(modalRealisasi.raw, fd)}
+      <div className="pg">
+        {toast && <Toast msg={toast} onDone={() => setToast(null)} />}
+        {confirm && (
+          <Confirm
+            msg={confirm.msg}
+            onConfirm={confirm.onConfirm}
+            onCancel={() => setConfirm(null)}
           />
         )}
 
-        <header className="bm-header">
-          <div className="bm-header-text">
-            <h1>Anggaran &amp; Realisasi</h1>
-            <p>
-              Monitoring{" "}
-              {activeTab === "capex"
-                ? "Investasi (CAPEX)"
-                : "Operasional (OPEX)"}
-              &ensp;·&ensp;Tahun {tahunAnggaran}
-            </p>
+        {/* Header */}
+        <header className="pg-header">
+          <div className="pg-title">
+            <h1>Anggaran &amp; Pekerjaan</h1>
+            <p>Monitoring list pekerjaan CAPEX / OPEX berdasarkan anggaran</p>
           </div>
-          <div className="bm-header-right">
-            <div className="bm-year-filter-wrap">
-              <span className="bm-year-filter-label">Tahun Anggaran</span>
-              <div className="bm-year-pills">
-                {tahunOptions.map((t) => (
+          <div className="pg-header-right">
+            <div className="year-wrap">
+              <span className="year-label">Tahun Anggaran</span>
+              <div className="year-pills">
+                {yearOptions.map((y) => (
                   <button
-                    key={t}
-                    className={`bm-year-pill ${tahunAnggaran === t ? "active" : ""}`}
-                    onClick={() => setTahunAnggaran(t)}
+                    key={y}
+                    className={`year-pill ${tahun === y ? "active" : ""}`}
+                    onClick={() => setTahun(y)}
                   >
-                    {t}
+                    {y === "all" ? "Semua" : y}
                   </button>
                 ))}
               </div>
             </div>
-            <div className="bm-tabs">
+            <div className="type-tabs">
               <button
-                className={`bm-tab ${activeTab === "capex" ? "active" : ""}`}
-                onClick={() => switchTab("capex")}
+                className={`type-tab all ${typeFilter === "all" ? "active" : ""}`}
+                onClick={() => setTypeFilter("all")}
               >
-                <Icon d={Icons.briefcase} size={15} /> CAPEX
+                <Icon d={I.layers} size={14} /> Semua
               </button>
               <button
-                className={`bm-tab ${activeTab === "opex" ? "active" : ""}`}
-                onClick={() => switchTab("opex")}
+                className={`type-tab ${typeFilter === "capex" ? "active" : ""}`}
+                onClick={() => setTypeFilter("capex")}
               >
-                <Icon d={Icons.monitor} size={15} /> OPEX
+                <Icon d={I.briefcase} size={14} /> CAPEX
+              </button>
+              <button
+                className={`type-tab ${typeFilter === "opex" ? "active" : ""}`}
+                onClick={() => setTypeFilter("opex")}
+              >
+                <Icon d={I.monitor} size={14} /> OPEX
               </button>
             </div>
           </div>
         </header>
 
-        <section className="bm-kpis">
-          <div className="bm-kpi bm-kpi--blue">
-            <div className="bm-kpi-icon">
-              <Icon d={Icons.dollar} size={20} />
-            </div>
-            <div>
-              <div className="bm-kpi-lbl">Total Pagu Anggaran</div>
-              <div className="bm-kpi-val">{fmt(totals.pagu)}</div>
-              <div className="bm-kpi-sub">{data.length} pos anggaran aktif</div>
-            </div>
+        {/* Filter bar */}
+        <div className="filter-bar">
+          <div className="filter-section">
+            <label>
+              <Icon d={I.filter} size={12} /> Nama Anggaran
+            </label>
+            <select
+              className="filter-select"
+              value={anggaranFilter}
+              onChange={(e) => setAnggaranFilter(e.target.value)}
+            >
+              <option value="all">Semua Anggaran</option>
+              {anggaranList.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.nama.length > 45
+                    ? a.nama.substring(0, 45) + "..."
+                    : a.nama}
+                </option>
+              ))}
+            </select>
           </div>
-          <div className="bm-kpi bm-kpi--amber">
-            <div className="bm-kpi-icon">
-              <Icon d={Icons.trending} size={20} />
-            </div>
-            <div>
-              <div className="bm-kpi-lbl">Total Realisasi</div>
-              <div className="bm-kpi-val">{fmt(totals.used)}</div>
-              <div className="bm-kpi-sub">
-                {totals.pct.toFixed(1)}% dari total pagu
-              </div>
-            </div>
+          <div className="filter-search">
+            <Icon d={I.search} size={15} />
+            <input
+              placeholder="Cari nama pekerjaan atau no. kontrak…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </div>
-          <div className="bm-kpi bm-kpi--green">
-            <div className="bm-kpi-icon">
-              <Icon d={Icons.wallet} size={20} />
-            </div>
-            <div>
-              <div className="bm-kpi-lbl">Sisa Anggaran</div>
-              <div className="bm-kpi-val">{fmt(totals.remaining)}</div>
-              <div className="bm-kpi-sub">
-                <div className="bm-kpi-bar">
-                  <div
-                    className={`bm-kpi-bar-fill sc-${sc(totals.pct)}`}
-                    style={{ width: `${Math.min(totals.pct, 100)}%` }}
-                  />
-                </div>
-                <span>{totals.pct.toFixed(1)}% terserap</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <div className="bm-banner">
-          {activeTab === "capex" ? (
-            <>
-              <Icon d={Icons.briefcase} size={13} />
-              Realisasi CAPEX = total <b>nilai_kontrak</b>. Klik ✏ Edit untuk
-              mengubah data langsung di halaman ini.
-            </>
-          ) : (
-            <>
-              <Icon d={Icons.monitor} size={13} />
-              Realisasi OPEX = total transaksi. Klik ✏ Edit untuk mengubah data
-              — termasuk menambah lampiran invoice.
-            </>
-          )}
         </div>
 
-        <section className="bm-table-wrap">
-          <div className="bm-table-bar">
-            <h2>Rincian Pos Anggaran</h2>
-            <div className="bm-search">
-              <Icon d={Icons.search} size={15} />
-              <input
-                placeholder="Cari nama anggaran…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
+        {/* Summary Cards */}
+        <div className="summary-row">
+          <div className="sum-card">
+            <div className="sum-icon blue">
+              <Icon d={I.briefcase} size={20} />
+            </div>
+            <div className="sum-body">
+              <div className="sum-label">Total Anggaran</div>
+              <div className="sum-value">{fmt(summaryStats.totalPagu)}</div>
+              <div className="sum-sub">{summaryStats.count} pekerjaan</div>
             </div>
           </div>
-          <div className="bm-table-scroll">
-            <table className="bm-table">
-              <thead>
-                <tr>
-                  <th style={{ width: "32%" }}>
-                    {activeTab === "capex"
-                      ? "Nama Anggaran CAPEX"
-                      : "Mata Anggaran OPEX"}
-                  </th>
-                  <th>Kode / ID</th>
-                  <th className="ta-r">Pagu (RKAP)</th>
-                  <th className="ta-r">Realisasi</th>
-                  <th className="ta-r">Sisa</th>
-                  <th className="ta-c">Serapan</th>
-                  <th className="ta-c">Aksi</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.length === 0 && (
-                  <tr>
-                    <td colSpan="7" className="bm-empty-cell">
-                      Tidak ada data yang cocok.
-                    </td>
-                  </tr>
+          <div className="sum-card">
+            <div className="sum-icon amber">
+              <Icon d={I.fileText} size={20} />
+            </div>
+            <div className="sum-body">
+              <div className="sum-label">Total Realisasi Kontrak</div>
+              <div className="sum-value">{fmt(summaryStats.totalKontrak)}</div>
+              <div className="sum-sub">
+                {summaryStats.totalPagu > 0
+                  ? `${((summaryStats.totalKontrak / summaryStats.totalPagu) * 100).toFixed(1)}% dari anggaran`
+                  : "—"}
+              </div>
+            </div>
+          </div>
+          <div className="sum-card">
+            <div className="sum-icon green">
+              <Icon d={I.package} size={20} />
+            </div>
+            <div className="sum-body">
+              <div className="sum-label">Total Nilai Aset</div>
+              <div className="sum-value">{fmt(summaryStats.totalAset)}</div>
+              <div className="sum-sub">
+                {summaryStats.totalKontrak > 0
+                  ? `${((summaryStats.totalAset / summaryStats.totalKontrak) * 100).toFixed(1)}% dari kontrak`
+                  : "—"}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* CAPEX Section */}
+        {typeFilter !== "opex" && (
+          <>
+            <div className="pl-header">
+              <div>
+                <h2>Daftar Pekerjaan CAPEX</h2>
+                <div className="pl-count">
+                  {filteredProjects.length} pekerjaan ditemukan
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                {tahun !== "all" && (
+                  <span className="pill blue">Tahun {tahun}</span>
                 )}
-                {data.map((item) => {
-                  const open = expandedBudget === item.id;
-                  const editing = editingBudget === item.id;
-                  const scClass = sc(item.percentage);
-                  return (
-                    <React.Fragment key={item.id}>
-                      <tr
-                        className={`bm-row ${open ? "bm-row--open" : ""}`}
-                        onClick={() => toggleBudget(item.id)}
-                      >
-                        <td>
-                          <div className="fw-med lh-tight">{item.name}</div>
-                          {activeTab === "capex" && item.raw.thn_rkap_awal && (
-                            <div className="tc-muted fs-xs">
-                              RKAP {item.raw.thn_rkap_awal}–
-                              {item.raw.thn_rkap_akhir}&ensp;·&ensp;Thn{" "}
-                              {item.raw.thn_anggaran}
-                            </div>
-                          )}
-                          <div className="tc-muted2 fs-xs mt2">
-                            {activeTab === "capex"
-                              ? `${item.projects.length} pekerjaan · ${item.projects.reduce((s, p) => s + (p.assets?.length || 0), 0)} aset`
-                              : `${item.realisasiList.length} transaksi realisasi`}
-                          </div>
-                        </td>
-                        <td>
-                          <code className="bm-code">{item.id}</code>
-                          <div className="tc-muted fs-xs mt2">
-                            {item.raw.kd_anggaran_master}
-                          </div>
-                        </td>
-                        <td className="ta-r fw-med">{fmt(item.pagu)}</td>
-                        <td
-                          className={`ta-r fw-bold ${item.used > 0 ? "tc-amber" : "tc-muted"}`}
-                        >
-                          {item.used > 0 ? fmt(item.used) : "—"}
-                        </td>
-                        <td
-                          className={`ta-r fw-bold ${item.remaining < 0 ? "tc-red" : "tc-green"}`}
-                        >
-                          {fmt(item.remaining)}
-                        </td>
-                        <td className="ta-c">
-                          <div className="bm-pct-wrap">
-                            <div className="bm-pct-bar">
-                              <div
-                                className={`bm-pct-fill sc-${scClass}`}
-                                style={{
-                                  width: `${Math.min(item.percentage, 100)}%`,
-                                }}
-                              />
-                            </div>
-                            <span className={`bm-badge sc-${scClass}`}>
-                              {item.percentage.toFixed(1)}%
-                            </span>
-                          </div>
-                          <div className={`bm-status-lbl sc-${scClass}`}>
-                            {statusLabel(item.percentage)}
-                          </div>
-                        </td>
-                        <td
-                          className="ta-c"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <div
+              </div>
+            </div>
+
+            {filteredProjects.length === 0 && (
+              <div className="pl-empty">
+                <Icon
+                  d={I.search}
+                  size={36}
+                  style={{
+                    opacity: 0.25,
+                    display: "block",
+                    margin: "0 auto 12px",
+                  }}
+                />
+                Tidak ada pekerjaan CAPEX yang cocok dengan filter.
+              </div>
+            )}
+
+            <div className="pl-stack">
+              {filteredProjects.map((proj) => {
+                const isEditing = editingProject === proj.id;
+                const assetCount = (proj.assets || []).length;
+                const assetTotal = (proj.assets || []).reduce(
+                  (s, a) => s + (a.acquisition_value || 0),
+                  0,
+                );
+                return (
+                  <div
+                    key={proj.id}
+                    className={`pj-card${isEditing ? " pj-card--editing" : ""}`}
+                  >
+                    <div className="pj-hdr">
+                      <div className="pj-hdr-left">
+                        <div className="pj-badges">
+                          <span className="type-badge capex">CAPEX</span>
+                          <span
+                            className="pill"
                             style={{
-                              display: "flex",
-                              justifyContent: "center",
-                              gap: 6,
+                              background: "var(--bg)",
+                              color: "var(--ink3)",
+                              fontSize: ".65rem",
+                              border: "1px solid var(--border)",
                             }}
                           >
-                            <button
-                              className="bm-row-edit-btn"
-                              style={{ padding: "5px 9px" }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleBudget(item.id);
-                              }}
-                              title="Lihat detail"
-                            >
-                              <Icon
-                                d={
-                                  open && !editing
-                                    ? Icons.chevUp
-                                    : Icons.chevDown
-                                }
-                                size={14}
-                              />
-                            </button>
-                            <button
-                              className={`bm-row-edit-btn ${editing ? "active" : ""}`}
-                              onClick={(e) => handleEditClick(e, item.id)}
-                              title={editing ? "Tutup edit" : "Edit data"}
-                            >
-                              <Icon
-                                d={editing ? Icons.x : Icons.edit}
-                                size={13}
-                              />
-                              {editing ? "Tutup" : "Edit"}
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
+                            {proj._thn}
+                          </span>
+                          <span
+                            style={{ fontSize: ".72rem", color: "var(--ink3)" }}
+                          >
+                            {proj._angNama?.substring(0, 40)}
+                            {proj._angNama?.length > 40 ? "…" : ""}
+                          </span>
+                          <code className="code" style={{ fontSize: ".65rem" }}>
+                            {proj._angKode}
+                          </code>
+                        </div>
+                        <p className="pj-name">{proj.nm_pekerjaan}</p>
+                      </div>
+                      <div className="pj-hdr-right">
+                        <button
+                          className={`btn ${isEditing ? "btn-cancel" : "btn-edit"}`}
+                          onClick={() =>
+                            setEditingProject(isEditing ? null : proj.id)
+                          }
+                        >
+                          <Icon d={isEditing ? I.x : I.edit} size={13} />
+                          {isEditing ? "Tutup" : "Edit"}
+                        </button>
+                        <button
+                          className="btn btn-asset"
+                          onClick={() => {
+                            const ang = getAnggaran(proj._angId, proj._type);
+                            setAssetPage({ project: proj, anggaran: ang });
+                          }}
+                        >
+                          <Icon d={I.package} size={13} /> Entry Aset
+                        </button>
+                        <button
+                          className="btn btn-delete"
+                          onClick={() =>
+                            setConfirm({
+                              msg: `Hapus pekerjaan "${proj.nm_pekerjaan?.substring(0, 40)}..."?`,
+                              onConfirm: () => {
+                                handleDeleteProject(
+                                  proj.id,
+                                  proj._angId,
+                                  proj._type,
+                                );
+                                setConfirm(null);
+                              },
+                            })
+                          }
+                        >
+                          <Icon d={I.trash} size={13} />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="pj-body">
+                      <div className="pj-info">
+                        <span className="pj-info-label">
+                          <Icon d={I.briefcase} size={10} /> Nilai Kontrak
+                        </span>
+                        {proj.nilai_kontrak > 0 ? (
+                          <span className="pj-nilai-big">
+                            {fmt(proj.nilai_kontrak)}
+                          </span>
+                        ) : (
+                          <span className="pj-info-empty">—</span>
+                        )}
+                        {proj.nilai_rab > 0 && (
+                          <span className="pj-info-sub">
+                            RAB: {fmt(proj.nilai_rab)}
+                          </span>
+                        )}
+                      </div>
+                      <div className="pj-info">
+                        <span className="pj-info-label">
+                          <Icon d={I.fileText} size={10} /> No. Kontrak
+                        </span>
+                        {proj.no_kontrak ? (
+                          <code
+                            className="code"
+                            style={{
+                              fontSize: ".72rem",
+                              alignSelf: "flex-start",
+                            }}
+                          >
+                            {proj.no_kontrak}
+                          </code>
+                        ) : (
+                          <span className="pj-info-empty">—</span>
+                        )}
+                        {proj.no_po && (
+                          <span className="pj-info-sub">PO: {proj.no_po}</span>
+                        )}
+                        {proj.no_pr && (
+                          <span className="pj-info-sub">PR: {proj.no_pr}</span>
+                        )}
+                      </div>
+                      <div className="pj-info">
+                        <span className="pj-info-label">
+                          <Icon d={I.calendar} size={10} /> Tanggal Kontrak
+                        </span>
+                        {proj.tgl_kontrak ? (
+                          <span className="pj-info-val">
+                            {fmtDate(proj.tgl_kontrak)}
+                          </span>
+                        ) : (
+                          <span className="pj-info-empty">—</span>
+                        )}
+                        {proj.durasi_kontrak > 0 && (
+                          <span className="pj-info-sub">
+                            ⏱ {proj.durasi_kontrak} hari
+                          </span>
+                        )}
+                        {proj.tgl_bamk && (
+                          <span className="pj-info-sub">
+                            BAMK: {fmtDate(proj.tgl_bamk)}
+                          </span>
+                        )}
+                      </div>
+                      <div className="pj-info">
+                        <span className="pj-info-label">
+                          <Icon d={I.package} size={10} /> Aset Tercatat
+                        </span>
+                        <span
+                          className={`pj-aset-chip${assetCount === 0 ? " empty" : ""}`}
+                        >
+                          <Icon d={I.package} size={13} />
+                          {assetCount} aset
+                        </span>
+                        {assetCount > 0 && (
+                          <span
+                            className="pj-info-sub"
+                            style={{ color: "var(--blue)", fontWeight: 600 }}
+                          >
+                            {fmt(assetTotal)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    {isEditing && (
+                      <div className="pj-edit-wrap">
+                        <EditProjectPanel
+                          project={proj}
+                          onSave={(updated) =>
+                            handleSaveProject(proj.id, updated)
+                          }
+                          onCancel={() => setEditingProject(null)}
+                          inCard
+                        />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
 
-                      {open && !editing && activeTab === "opex" && (
-                        <OpexDetail
-                          item={item}
-                          onAddRealisasi={setModalRealisasi}
-                        />
-                      )}
-                      {open && !editing && activeTab === "capex" && (
-                        <CapexDetail
-                          item={item}
-                          expandedProject={expandedProject}
-                          toggleProject={toggleProject}
-                        />
-                      )}
-                      {editing && activeTab === "opex" && (
-                        <OpexEditPanel
-                          item={item}
-                          realisasiOpex={realisasiOpex}
-                          onSave={handleSaveEdit}
-                          onCancel={() => setEditingBudget(null)}
-                          showToast={showToast}
-                        />
-                      )}
-                      {editing && activeTab === "capex" && (
-                        <CapexEditPanel
-                          item={item}
-                          onSave={handleSaveEdit}
-                          onCancel={() => setEditingBudget(null)}
-                          showToast={showToast}
-                        />
-                      )}
-                    </React.Fragment>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </section>
+        {/* OPEX Section */}
+        {typeFilter !== "capex" && (
+          <>
+            {typeFilter === "all" && (
+              <div
+                className="sec-divider"
+                style={{ margin: "1.75rem 0 1.25rem" }}
+              />
+            )}
+            <div className="pl-header">
+              <div>
+                <h2>Pos Anggaran OPEX</h2>
+                <div className="pl-count">
+                  {filteredOpex.length} pos anggaran · klik untuk lihat riwayat
+                  realisasi
+                </div>
+              </div>
+              {tahun !== "all" && (
+                <span className="pill green">Tahun Anggaran {tahun}</span>
+              )}
+            </div>
+
+            {filteredOpex.length === 0 && (
+              <div className="pl-empty">
+                <Icon
+                  d={I.search}
+                  size={36}
+                  style={{
+                    opacity: 0.25,
+                    display: "block",
+                    margin: "0 auto 12px",
+                  }}
+                />
+                Tidak ada pos anggaran OPEX untuk filter ini.
+              </div>
+            )}
+
+            <div className="pl-stack">
+              {filteredOpex.map((ang) => (
+                <OpexCard
+                  key={ang.id}
+                  ang={ang}
+                  onSave={handleSaveOpexTransaksi}
+                  onSaveOpex={handleSaveOpexData}
+                  showToast={showToast}
+                  onDelete={handleDeleteOpex}
+                  onOpenRealisasi={handleOpenRealisasi}
+                />
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </>
   );
