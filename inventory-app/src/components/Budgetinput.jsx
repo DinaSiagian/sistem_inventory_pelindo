@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import {
   Save,
   X,
@@ -15,13 +15,15 @@ import {
   Calendar,
   Layers,
   ChevronRight,
+  Edit,
+  Clock,
+  Check
 } from "lucide-react";
 
 // ═══════════════════════════════════════════════════════════════
 // MOCK DATA — disesuaikan dengan struktur DB
 // ═══════════════════════════════════════════════════════════════
 
-// Tabel: budget_masters
 const existingBudgetMasters = [
   {
     kd_anggaran_master: "5030905000",
@@ -70,13 +72,10 @@ const existingBudgetMasters = [
   },
 ];
 
-const fmt = (n) => new Intl.NumberFormat("id-ID").format(n || 0);
-
-// ═══════════════════════════════════════════════════════════════
-// STEP CONFIG
-// ═══════════════════════════════════════════════════════════════
-// Flow: Step 1 (Tipe) → Step 2 (Budget Master) → Step 3 (Anggaran Tahunan)
-// Untuk CAPEX ada tambahan: Step 4 (Anggaran CAPEX Detail)
+const fmt = (n) => {
+  if (n === 0 || !n) return "—";
+  return new Intl.NumberFormat("id-ID").format(n);
+};
 
 // ═══════════════════════════════════════════════════════════════
 // ConfirmDialog
@@ -124,7 +123,7 @@ function ConfirmDialog({ message, onConfirm, onCancel }) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// SearchableSelect — dropdown with search
+// SearchableSelect
 // ═══════════════════════════════════════════════════════════════
 function SearchableSelect({
   options,
@@ -266,21 +265,59 @@ const BudgetInput = () => {
     tipe_anggaran_master: "",
   });
 
-  // ── Step 3: Anggaran Tahunan OPEX ─────────────────────────
+  // ── Pilihan Tahun Dropdown (2000 sampai P+1) ───────────────
+  const yearOptions = useMemo(() => {
+    const currentYear = new Date().getFullYear();
+    const maxYear = currentYear + 1; // P + 1
+    const minYear = 2000;
+    const years = [];
+    for (let y = maxYear; y >= minYear; y--) {
+      years.push(y);
+    }
+    return years;
+  }, []);
+
+  // ── Step 3: Modal Input State ─────────────────────────────
+  const [showAddModal, setShowAddModal] = useState(false);
+
   const [opexForm, setOpexForm] = useState({
+    nama_anggaran: "",
     thn_anggaran: new Date().getFullYear(),
     nilai_anggaran_tahunan: "",
   });
 
-  // ── Step 3 (CAPEX): Anggaran Tahunan CAPEX ────────────────
   const [capexForm, setCapexForm] = useState({
-    kd_anggaran_capex: "",
     nm_anggaran_capex: "",
     thn_rkap_awal: new Date().getFullYear(),
     thn_rkap_akhir: new Date().getFullYear() + 1,
     thn_anggaran: new Date().getFullYear(),
     nilai_anggaran_kad: "",
     nilai_anggaran_rkap: "",
+  });
+
+  // ── MOCK DATA TABEL ANGGARAN TAHUNAN ──────────────────────
+  const [yearlyBudgets, setYearlyBudgets] = useState([
+    { 
+      id: 1, 
+      nama_anggaran: "Beban Pemeliharaan Software",
+      tahun: 2026, 
+      anggaran: 900000000, 
+      bymhd: 100000000, 
+      total: 1000000000,
+      history: [
+        { id: "h1", tanggal: "2026-01-01", real: 1000000000, bymhd: 0, jumlah: 1000000000, ket: "Input Awal" },
+        { id: "h2", tanggal: "2026-02-01", real: 0, bymhd: 100000000, jumlah: 100000000, ket: "BYMHD" },
+        { id: "h3", tanggal: "2026-03-03", real: -100000000, bymhd: 0, jumlah: -100000000, ket: "Pengurangan" }
+      ]
+    },
+  ]);
+
+  // ── STATE UNTUK HALAMAN EDIT & HISTORY (Step 3) ─────────────
+  const [editingRow, setEditingRow] = useState(null);
+  const [historyModal, setHistoryModal] = useState(null);
+  const [editForm, setEditForm] = useState({
+    perubahan: "",
+    nilai_perubahan: ""
   });
 
   // ── Derived ───────────────────────────────────────────────
@@ -300,52 +337,124 @@ const BudgetInput = () => {
           value: newMaster.kd_anggaran_master,
           label: newMaster.nm_anggaran_master,
         }
-      : null);
-
-  const totalSteps = 3; // Step 1: Tipe → Step 2: Budget Master → Step 3: Anggaran Tahunan
+      : { label: "Nama Anggaran Master" }); 
 
   const canProceedStep1 = !!tipeAnggaran;
-  const canProceedStep2 =
-    masterMode === "existing"
-      ? !!selectedMasterId
-      : !!newMaster.nm_anggaran_master;
-  const canProceedStep3 =
-    tipeAnggaran === "OPEX"
-      ? !!(opexForm.thn_anggaran && opexForm.nilai_anggaran_tahunan)
-      : !!(capexForm.nm_anggaran_capex && capexForm.nilai_anggaran_rkap);
+  const canProceedStep2 = masterMode === "existing" ? !!selectedMasterId : !!newMaster.nm_anggaran_master;
 
-  const handleSubmit = () => {
+  const canSaveModal = tipeAnggaran === "OPEX" 
+    ? !!(opexForm.nama_anggaran && opexForm.thn_anggaran && opexForm.nilai_anggaran_tahunan)
+    : !!(capexForm.nm_anggaran_capex && capexForm.thn_anggaran && capexForm.nilai_anggaran_rkap);
+
+  const handleSubmitAll = () => {
     setSubmitted(true);
     setTimeout(() => setSubmitted(false), 3000);
-    // Reset ke awal
     setStep(1);
     setTipeAnggaran(null);
     setSelectedMasterId(null);
     setMasterMode("existing");
-    setNewMaster({
-      kd_anggaran_master: "",
-      nm_anggaran_master: "",
-      tipe_anggaran_master: "",
+    setNewMaster({ kd_anggaran_master: "", nm_anggaran_master: "", tipe_anggaran_master: "" });
+    setOpexForm({ nama_anggaran: "", thn_anggaran: new Date().getFullYear(), nilai_anggaran_tahunan: "" });
+    setCapexForm({ kd_anggaran_capex: "", nm_anggaran_capex: "", thn_rkap_awal: new Date().getFullYear(), thn_rkap_akhir: new Date().getFullYear() + 1, thn_anggaran: new Date().getFullYear(), nilai_anggaran_kad: "", nilai_anggaran_rkap: "" });
+    setEditingRow(null);
+  };
+
+  const handleOpenAddModal = () => {
+    if (tipeAnggaran === "OPEX") {
+      setOpexForm(f => ({ ...f, nama_anggaran: selectedMaster.label }));
+    } else {
+      setCapexForm(f => ({ ...f, nm_anggaran_capex: selectedMaster.label }));
+    }
+    setShowAddModal(true);
+  };
+
+  const handleAddYearlyBudget = () => {
+    const isOpex = tipeAnggaran === "OPEX";
+    const tahun = isOpex ? parseInt(opexForm.thn_anggaran) : parseInt(capexForm.thn_anggaran);
+    const anggaran = isOpex ? parseFloat(opexForm.nilai_anggaran_tahunan) : parseFloat(capexForm.nilai_anggaran_rkap);
+    const nama = isOpex ? opexForm.nama_anggaran : capexForm.nm_anggaran_capex;
+    
+    if(!tahun || !anggaran || !nama) return;
+
+    const newEntry = {
+      id: Date.now(),
+      nama_anggaran: nama,
+      tahun: tahun,
+      anggaran: anggaran,
+      bymhd: 0,
+      total: anggaran,
+      history: [
+        {
+          id: Date.now(),
+          tanggal: new Date().toISOString().split('T')[0],
+          real: anggaran,
+          bymhd: 0,
+          jumlah: anggaran,
+          ket: "Input Awal"
+        }
+      ]
+    };
+
+    setYearlyBudgets([...yearlyBudgets, newEntry]);
+    
+    if(isOpex) setOpexForm({ nama_anggaran: "", thn_anggaran: new Date().getFullYear(), nilai_anggaran_tahunan: "" });
+    else setCapexForm({ nm_anggaran_capex: "", kd_anggaran_capex: "", thn_rkap_awal: new Date().getFullYear(), thn_rkap_akhir: new Date().getFullYear() + 1, thn_anggaran: new Date().getFullYear(), nilai_anggaran_kad: "", nilai_anggaran_rkap: "" });
+    
+    setShowAddModal(false);
+    showLocalToast("Anggaran berhasil ditambahkan ke daftar.");
+  };
+
+  const handleSaveEdit = () => {
+    const val = parseFloat(editForm.nilai_perubahan) || 0;
+    if (val === 0) return;
+
+    let dReal = 0;
+    let dBymhd = 0;
+
+    if (editForm.perubahan === "penambahan") dReal = val;
+    if (editForm.perubahan === "pengurangan") dReal = -val;
+    if (editForm.perubahan === "bymhd") dBymhd = val;
+    if (editForm.perubahan === "transfer") dReal = -val; 
+
+    const dTotal = dReal + dBymhd;
+
+    const newHistory = {
+      id: Date.now(),
+      tanggal: new Date().toISOString().split('T')[0],
+      real: dReal,
+      bymhd: dBymhd,
+      jumlah: dTotal,
+      ket: editForm.perubahan.charAt(0).toUpperCase() + editForm.perubahan.slice(1)
+    };
+
+    const updatedBudgets = yearlyBudgets.map(b => {
+      if (b.id === editingRow.id) {
+        return {
+          ...b,
+          anggaran: b.anggaran + dReal,
+          bymhd: b.bymhd + dBymhd,
+          total: b.total + dTotal,
+          history: [...(b.history || []), newHistory]
+        };
+      }
+      return b;
     });
-    setOpexForm({
-      thn_anggaran: new Date().getFullYear(),
-      nilai_anggaran_tahunan: "",
-    });
-    setCapexForm({
-      kd_anggaran_capex: "",
-      nm_anggaran_capex: "",
-      thn_rkap_awal: new Date().getFullYear(),
-      thn_rkap_akhir: new Date().getFullYear() + 1,
-      thn_anggaran: new Date().getFullYear(),
-      nilai_anggaran_kad: "",
-      nilai_anggaran_rkap: "",
-    });
+
+    setYearlyBudgets(updatedBudgets);
+    showLocalToast("Perubahan anggaran berhasil disimpan.");
+    setEditingRow(null);
+    setEditForm({ perubahan: "", nilai_perubahan: "" });
+  };
+
+  const [localToast, setLocalToast] = useState(null);
+  const showLocalToast = (msg) => {
+    setLocalToast(msg);
+    setTimeout(() => setLocalToast(null), 3000);
   };
 
   const upOpex = (k, v) => setOpexForm((f) => ({ ...f, [k]: v }));
   const upCapex = (k, v) => setCapexForm((f) => ({ ...f, [k]: v }));
 
-  // ── Step labels ───────────────────────────────────────────
   const steps = [
     { num: 1, label: "Tipe Anggaran" },
     { num: 2, label: "Anggaran Master" },
@@ -362,10 +471,169 @@ const BudgetInput = () => {
         />
       )}
 
-      {/* ── Toast ── */}
       {submitted && (
         <div style={toastStyle}>
           <CheckCircle size={16} /> Data anggaran berhasil disimpan!
+        </div>
+      )}
+      
+      {localToast && (
+        <div style={toastStyle}>
+          <Check size={16} /> {localToast}
+        </div>
+      )}
+
+      {/* ── MODAL POP-UP HISTORY ── */}
+      {historyModal && (
+        <div style={overlayStyle} onClick={() => setHistoryModal(null)}>
+          <div style={{...confirmBoxStyle, maxWidth: 680, alignItems: 'stretch', padding: 0, overflow: 'hidden'}} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', padding: '20px 24px', borderBottom: '1px solid #e2e8f0' }}>
+              <div>
+                <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                  <Clock size={16} style={{ color: '#3b82f6' }}/> Riwayat Perubahan Anggaran
+                </h3>
+                <p style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500 }}>{historyModal.nama_anggaran} · Tahun {historyModal.tahun}</p>
+              </div>
+              <button style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 8, padding: 6, cursor: 'pointer', color: '#64748b', transition: 'all 0.2s' }} onClick={() => setHistoryModal(null)}>
+                <X size={16}/>
+              </button>
+            </div>
+            
+            <div style={{ overflowX: 'auto', padding: '0' }}>
+              <table style={{...tableStyle, borderTop: 'none'}}>
+                <thead>
+                  <tr>
+                    <th style={{...thStyle, width: 40, textAlign: "center"}}>No</th>
+                    <th style={{...thStyle, width: 100}}>Tanggal</th>
+                    <th style={thStyle}>Keterangan</th>
+                    <th style={{...thStyle, textAlign: "right"}}>Real</th>
+                    <th style={{...thStyle, textAlign: "right"}}>BYMHD</th>
+                    <th style={{...thStyle, textAlign: "right"}}>Jumlah</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {!historyModal.history || historyModal.history.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} style={{ textAlign: 'center', padding: '30px', color: '#94a3b8', fontSize: '0.85rem' }}>Tidak ada riwayat perubahan.</td>
+                    </tr>
+                  ) : (
+                    historyModal.history.map((h, i) => (
+                      <tr key={h.id} style={trStyle}>
+                        <td style={{...tdStyle, textAlign: "center", fontWeight: 700, color: "#64748b"}}>{i + 1}</td>
+                        <td style={{...tdStyle, color: "#475569"}}>{h.tanggal}</td>
+                        <td style={{...tdStyle, fontWeight: 600, color: "#0f172a"}}>{h.ket}</td>
+                        <td style={{...tdStyle, textAlign: "right", fontFamily: "'JetBrains Mono', monospace", color: h.real < 0 ? "#dc2626" : "#0f172a"}}>{fmt(h.real)}</td>
+                        <td style={{...tdStyle, textAlign: "right", fontFamily: "'JetBrains Mono', monospace", color: h.bymhd < 0 ? "#dc2626" : "#0f172a"}}>{fmt(h.bymhd)}</td>
+                        <td style={{...tdStyle, textAlign: "right", fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, color: h.jumlah < 0 ? "#dc2626" : "#1d4ed8"}}>{fmt(h.jumlah)}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+                <tfoot>
+                  <tr style={{ background: '#f1f5f9' }}>
+                    <td colSpan={3} style={{...tdStyle, textAlign: "right", fontWeight: 800, fontSize: "0.75rem", color: "#334155"}}>TOTAL AKHIR</td>
+                    <td style={{...tdStyle, textAlign: "right", fontFamily: "'JetBrains Mono', monospace", fontWeight: 800, color: "#0f172a"}}>{fmt(historyModal.history?.reduce((acc, curr) => acc + curr.real, 0) || 0)}</td>
+                    <td style={{...tdStyle, textAlign: "right", fontFamily: "'JetBrains Mono', monospace", fontWeight: 800, color: "#0f172a"}}>{fmt(historyModal.history?.reduce((acc, curr) => acc + curr.bymhd, 0) || 0)}</td>
+                    <td style={{...tdStyle, textAlign: "right", fontFamily: "'JetBrains Mono', monospace", fontWeight: 800, color: "#1d4ed8", fontSize: "0.95rem"}}>{fmt(historyModal.history?.reduce((acc, curr) => acc + curr.jumlah, 0) || 0)}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+            
+            <div style={{ padding: '16px 24px', background: '#f8fafc', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'flex-end' }}>
+              <button style={btnCancelStyle} onClick={() => setHistoryModal(null)}>Tutup Riwayat</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL POP-UP INPUT ANGGARAN BARU (Desain 1 Kolom Tersusun Bawah) ── */}
+      {showAddModal && (
+        <div style={overlayStyle} onClick={() => setShowAddModal(false)}>
+          <div style={{...confirmBoxStyle, maxWidth: 420, alignItems: "stretch", padding: "24px", textAlign: "left"}} onClick={e => e.stopPropagation()}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+              <h3 style={{ fontSize: "1.1rem", fontWeight: 800, color: "#0f172a", display: "flex", alignItems: "center", gap: 8 }}>
+                <Plus size={18} style={{ color: tipeAnggaran === "CAPEX" ? "#1d4ed8" : "#15803d" }}/> Input Anggaran Baru
+              </h3>
+              <button style={{ background: "transparent", border: "none", cursor: "pointer", color: "#64748b" }} onClick={() => setShowAddModal(false)}>
+                <X size={18} />
+              </button>
+            </div>
+            
+            {/* Layout 1 Kolom Menurun agar mata fokus membaca ke bawah */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              {/* NAMA ANGGARAN */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <label style={labelStyle}>Nama Anggaran <span style={{ color: "#dc2626" }}>*</span></label>
+                <input
+                  style={inputStyle}
+                  value={tipeAnggaran === "OPEX" ? opexForm.nama_anggaran : capexForm.nm_anggaran_capex}
+                  onChange={(e) => tipeAnggaran === "OPEX" ? upOpex("nama_anggaran", e.target.value) : upCapex("nm_anggaran_capex", e.target.value)}
+                  placeholder="Contoh: Beban Pemeliharaan Software"
+                />
+              </div>
+
+              {/* TAHUN ANGGARAN */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <label style={labelStyle}>Tahun Anggaran <span style={{ color: "#dc2626" }}>*</span></label>
+                <select
+                  style={inputStyle}
+                  value={tipeAnggaran === "OPEX" ? opexForm.thn_anggaran : capexForm.thn_anggaran}
+                  onChange={(e) => tipeAnggaran === "OPEX" ? upOpex("thn_anggaran", e.target.value) : upCapex("thn_anggaran", e.target.value)}
+                >
+                  <option value="">-- Pilih Tahun --</option>
+                  {yearOptions.map(y => <option key={y} value={y}>{y}</option>)}
+                </select>
+              </div>
+
+              {/* NILAI ANGGARAN */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <label style={labelStyle}>Nilai Anggaran (IDR) <span style={{ color: "#dc2626" }}>*</span></label>
+                <input
+                  type="number"
+                  style={inputStyle}
+                  value={tipeAnggaran === "OPEX" ? opexForm.nilai_anggaran_tahunan : capexForm.nilai_anggaran_rkap}
+                  onChange={(e) => tipeAnggaran === "OPEX" ? upOpex("nilai_anggaran_tahunan", e.target.value) : upCapex("nilai_anggaran_rkap", e.target.value)}
+                  placeholder="0"
+                />
+              </div>
+
+              {/* FIELD TAMBAHAN KHUSUS CAPEX */}
+              {tipeAnggaran === "CAPEX" && (
+                <>
+                  <div style={{ display: "flex", gap: 12 }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6, flex: 1 }}>
+                      <label style={labelStyle}>Thn RKAP Awal</label>
+                      <select style={inputStyle} value={capexForm.thn_rkap_awal} onChange={e => upCapex("thn_rkap_awal", e.target.value)}>
+                        {yearOptions.map(y => <option key={y} value={y}>{y}</option>)}
+                      </select>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6, flex: 1 }}>
+                      <label style={labelStyle}>Thn RKAP Akhir</label>
+                      <select style={inputStyle} value={capexForm.thn_rkap_akhir} onChange={e => upCapex("thn_rkap_akhir", e.target.value)}>
+                        {yearOptions.map(y => <option key={y} value={y}>{y}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    <label style={labelStyle}>Nilai Anggaran KAD</label>
+                    <input type="number" style={inputStyle} value={capexForm.nilai_anggaran_kad} onChange={(e) => upCapex("nilai_anggaran_kad", e.target.value)} placeholder="0" />
+                  </div>
+                </>
+              )}
+            </div>
+            
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 28, borderTop: "1px solid #f1f5f9", paddingTop: 16 }}>
+              <button style={btnCancelStyle} onClick={() => setShowAddModal(false)}>Batal</button>
+              <button 
+                style={{...btnPrimaryStyle, ...(tipeAnggaran === "OPEX" ? btnGreenStyle : {})}} 
+                onClick={handleAddYearlyBudget}
+                disabled={!canSaveModal}
+              >
+                <Save size={14} /> Simpan Data
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -871,7 +1139,6 @@ const BudgetInput = () => {
                       value={newMaster.nm_anggaran_master}
                       onChange={(e) => {
                         const nama = e.target.value;
-                        // Auto-generate kode: ambil huruf kapital atau prefix angka acak saat simpan
                         const autoKode = `MST-${Date.now().toString().slice(-6)}`;
                         setNewMaster((f) => ({
                           ...f,
@@ -964,7 +1231,7 @@ const BudgetInput = () => {
       )}
 
       {/* ═══════════════════════════════════════════════════ */}
-      {/* STEP 3 — Detail Anggaran Tahunan */}
+      {/* STEP 3 — Detail Anggaran Tahunan (Tabel & Input Baru/Edit) */}
       {/* ═══════════════════════════════════════════════════ */}
       {step === 3 && (
         <div style={contentStyle}>
@@ -975,9 +1242,7 @@ const BudgetInput = () => {
               <strong
                 style={{
                   ...typeBadgeSmall,
-                  ...(tipeAnggaran === "CAPEX"
-                    ? capexBadgeSmall
-                    : opexBadgeSmall),
+                  ...(tipeAnggaran === "CAPEX" ? capexBadgeSmall : opexBadgeSmall),
                   fontSize: "0.78rem",
                   padding: "3px 10px",
                 }}
@@ -989,441 +1254,180 @@ const BudgetInput = () => {
               <span style={contextLabelStyle}>Kode Anggaran Master</span>
               <strong>
                 <code style={codeStyle}>
-                  {masterMode === "existing"
-                    ? selectedMasterId
-                    : newMaster.kd_anggaran_master}
+                  {masterMode === "existing" ? selectedMasterId : newMaster.kd_anggaran_master}
                 </code>
               </strong>
             </div>
             <div style={contextItemStyle}>
               <span style={contextLabelStyle}>Nama Anggaran Master</span>
               <strong style={{ fontSize: "0.82rem", color: "#0f172a" }}>
-                {masterMode === "existing"
-                  ? masterOptions.find((m) => m.value === selectedMasterId)
-                      ?.nm_anggaran_master
-                  : newMaster.nm_anggaran_master}
+                {selectedMaster.label}
               </strong>
             </div>
           </div>
 
-          {/* ── OPEX: Detail Anggaran Tahunan ── */}
-          {tipeAnggaran === "OPEX" && (
-            <div style={formCardStyle}>
+          {/* ── TAMPILAN HALAMAN EDIT (Jika ada baris yang diklik Edit) ── */}
+          {editingRow ? (
+            <div style={{ ...formCardStyle, animation: "fadeUp 0.2s ease" }}>
               <div style={formCardHeaderStyle}>
-                <Calendar size={18} style={{ color: "#15803d" }} />
-                <h2 style={cardTitleStyle}>Detail Anggaran Tahunan OPEX</h2>
+                <Edit size={18} style={{ color: "#d97706" }} />
+                <h2 style={cardTitleStyle}>Edit / Revisi Anggaran</h2>
               </div>
-              <p
-                style={{
-                  fontSize: "0.82rem",
-                  color: "#64748b",
-                  marginBottom: 18,
-                }}
-              >
-                Isi detail anggaran tahunan OPEX. Satu pos anggaran master dapat
-                memiliki beberapa anggaran tahunan.
-              </p>
-              <div style={formGridStyle}>
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 5 }}
-                >
-                  <label style={labelStyle}>
-                    Kode Anggaran Master{" "}
-                    <span style={{ color: "#dc2626" }}>*</span>
-                  </label>
-                  <input
-                    style={{
-                      ...inputStyle,
-                      background: "#f8fafc",
-                      color: "#475569",
-                    }}
-                    value={
-                      masterMode === "existing"
-                        ? selectedMasterId
-                        : newMaster.kd_anggaran_master
-                    }
-                    readOnly
-                  />
-                  <span style={helperStyle}>
-                    Terhubung ke data anggaran master
-                  </span>
+              
+              {/* Info read-only */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 24, padding: "16px", background: "#f8fafc", borderRadius: "10px", border: "1px solid #e2e8f0" }}>
+                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={labelStyle}>Nama Anggaran</span>
+                    <strong style={{ color: "#0f172a", fontSize: "0.85rem" }}>{editingRow.nama_anggaran}</strong>
+                 </div>
+                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={labelStyle}>Tahun</span>
+                    <strong style={{ color: "#0f172a", fontSize: "0.85rem" }}>{editingRow.tahun}</strong>
+                 </div>
+                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={labelStyle}>Total Anggaran Berjalan</span>
+                    <strong style={{ color: "#1d4ed8", fontSize: "1rem" }}>Rp {fmt(editingRow.total)}</strong>
+                 </div>
+              </div>
+
+              {/* Form Input Revisi - Satu kolom menurun */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 500 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <label style={labelStyle}>Jenis Perubahan <span style={{ color: "#dc2626" }}>*</span></label>
+                  <select 
+                    style={inputStyle} 
+                    value={editForm.perubahan} 
+                    onChange={(e) => setEditForm({...editForm, perubahan: e.target.value})}
+                  >
+                    <option value="">-- Pilih Jenis Perubahan --</option>
+                    <option value="penambahan">Penambahan Anggaran</option>
+                    <option value="pengurangan">Pengurangan Anggaran</option>
+                    <option value="bymhd">BYMHD (Biaya Yang Masih Harus Dibayar)</option>
+                    <option value="transfer">Transfer Anggaran</option>
+                  </select>
                 </div>
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 5 }}
-                >
-                  <label style={labelStyle}>
-                    Tahun Anggaran <span style={{ color: "#dc2626" }}>*</span>
-                  </label>
-                  <input
-                    type="number"
-                    style={inputStyle}
-                    value={opexForm.thn_anggaran}
-                    onChange={(e) => upOpex("thn_anggaran", e.target.value)}
-                    min="2020"
-                    max="2099"
-                    placeholder="2026"
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <label style={labelStyle}>Nilai Perubahan (IDR) <span style={{ color: "#dc2626" }}>*</span></label>
+                  <input 
+                    type="number" 
+                    style={inputStyle} 
+                    placeholder="Contoh: 50000000"
+                    value={editForm.nilai_perubahan}
+                    onChange={(e) => setEditForm({...editForm, nilai_perubahan: e.target.value})}
                   />
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 5,
-                    gridColumn: "1/-1",
-                  }}
-                >
-                  <label style={labelStyle}>
-                    Nilai Anggaran Tahunan (IDR){" "}
-                    <span style={{ color: "#dc2626" }}>*</span>
-                  </label>
-                  <input
-                    type="number"
-                    style={inputStyle}
-                    value={opexForm.nilai_anggaran_tahunan}
-                    onChange={(e) =>
-                      upOpex("nilai_anggaran_tahunan", e.target.value)
-                    }
-                    placeholder="Contoh: 350000000"
-                  />
-                  {opexForm.nilai_anggaran_tahunan && (
-                    <span style={{ ...helperStyle, color: "#15803d" }}>
-                      ≈ Rp {fmt(opexForm.nilai_anggaran_tahunan)}
+                  {editForm.nilai_perubahan && (
+                    <span style={{ ...helperStyle, color: "#d97706", fontWeight: 600 }}>
+                      ≈ Rp {fmt(editForm.nilai_perubahan)}
                     </span>
                   )}
                 </div>
               </div>
 
-              {/* Summary Preview */}
-              {opexForm.nilai_anggaran_tahunan && (
-                <div style={summaryBoxStyle}>
-                  <div style={summaryItemStyle}>
-                    <span style={summaryLabelStyle}>Kode Anggaran Master</span>
-                    <strong>
-                      <code style={codeStyle}>
-                        {masterMode === "existing"
-                          ? selectedMasterId
-                          : newMaster.kd_anggaran_master}
-                      </code>
-                    </strong>
-                  </div>
-                  <div style={summaryItemStyle}>
-                    <span style={summaryLabelStyle}>Tahun Anggaran</span>
-                    <strong style={{ color: "#0f172a" }}>
-                      {opexForm.thn_anggaran}
-                    </strong>
-                  </div>
-                  <div style={summaryItemStyle}>
-                    <span style={summaryLabelStyle}>
-                      Nilai Anggaran Tahunan
-                    </span>
-                    <strong style={{ color: "#15803d" }}>
-                      Rp {fmt(opexForm.nilai_anggaran_tahunan)}
-                    </strong>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ── CAPEX: Detail Anggaran Tahunan ── */}
-          {tipeAnggaran === "CAPEX" && (
-            <div style={formCardStyle}>
-              <div style={formCardHeaderStyle}>
-                <Calendar size={18} style={{ color: "#1d4ed8" }} />
-                <h2 style={cardTitleStyle}>Detail Anggaran Tahunan CAPEX</h2>
+              <div style={{ display: "flex", gap: 12, marginTop: 32, justifyContent: "flex-end", borderTop: "1px solid #f1f5f9", paddingTop: 16 }}>
+                 <button style={btnCancelStyle} onClick={() => { setEditingRow(null); setEditForm({ perubahan: "", nilai_perubahan: ""}); }}>
+                    Batal
+                 </button>
+                 <button 
+                    style={{ ...btnPrimaryStyle, background: "linear-gradient(135deg,#d97706,#f59e0b)", boxShadow: "0 2px 8px rgba(217,119,6,.25)" }} 
+                    onClick={handleSaveEdit}
+                    disabled={!editForm.perubahan || !editForm.nilai_perubahan}
+                 >
+                    <Save size={14} /> Submit Perubahan
+                 </button>
               </div>
-              <p
-                style={{
-                  fontSize: "0.82rem",
-                  color: "#64748b",
-                  marginBottom: 18,
-                }}
-              >
-                Isi detail anggaran CAPEX termasuk periode RKAP dan nilai
-                anggaran. Data pekerjaan/kontrak dikelola terpisah di menu
-                Pekerjaan.
-              </p>
+            </div>
+          ) : (
+            /* ── TAMPILAN NORMAL (Tabel) ── */
+            <>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                <h2 style={{ fontSize: "1.05rem", fontWeight: 800, color: "#0f172a" }}>Daftar Anggaran Tahunan</h2>
+                <button 
+                  style={{ ...btnPrimaryStyle, ...(tipeAnggaran === "OPEX" ? btnGreenStyle : {}) }} 
+                  onClick={handleOpenAddModal}
+                >
+                  <Plus size={14} /> Input Data Baru
+                </button>
+              </div>
 
-              {/* Baris 1: Kode & Nama CAPEX */}
-              <div style={{ ...formGridStyle, marginBottom: 14 }}>
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 5 }}
-                >
-                  <label style={labelStyle}>
-                    Kode Anggaran Master{" "}
-                    <span style={{ color: "#dc2626" }}>*</span>
-                  </label>
-                  <input
-                    style={{
-                      ...inputStyle,
-                      background: "#f8fafc",
-                      color: "#475569",
-                    }}
-                    value={
-                      masterMode === "existing"
-                        ? selectedMasterId
-                        : newMaster.kd_anggaran_master
-                    }
-                    readOnly
-                  />
-                  <span style={helperStyle}>
-                    Terhubung ke data anggaran master
-                  </span>
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 5,
-                    gridColumn: "1/-1",
-                  }}
-                >
-                  <label style={labelStyle}>
-                    Nama Anggaran CAPEX{" "}
-                    <span style={{ color: "#dc2626" }}>*</span>
-                  </label>
-                  <input
-                    style={inputStyle}
-                    value={capexForm.nm_anggaran_capex}
-                    onChange={(e) => {
-                      const nama = e.target.value;
-                      const autoKd = `CAP-${Date.now().toString().slice(-6)}`;
-                      upCapex("nm_anggaran_capex", nama);
-                      if (
-                        !capexForm.kd_anggaran_capex ||
-                        capexForm.kd_anggaran_capex.startsWith("CAP-")
-                      ) {
-                        upCapex("kd_anggaran_capex", autoKd);
-                      }
-                    }}
-                    placeholder="Contoh: Transformasi dan Digitalisasi Operasional"
-                  />
-                </div>
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 5 }}
-                >
-                  <label style={labelStyle}>Kode Anggaran CAPEX</label>
-                  <div style={autoKodeBoxStyle}>
-                    <span style={autoKodePrefixStyle}>AUTO</span>
-                    <span style={autoKodeValueStyle}>
-                      {capexForm.nm_anggaran_capex ? (
-                        capexForm.kd_anggaran_capex
+              <div style={{ ...formCardStyle, padding: 0, overflow: "hidden" }}>
+                <div style={{ overflowX: "auto" }}>
+                  <table style={tableStyle}>
+                    <thead>
+                      <tr>
+                        <th style={{...thStyle, width: 50, textAlign: "center"}}>No</th>
+                        <th style={thStyle}>Tahun</th>
+                        <th style={{...thStyle, textAlign: "right"}}>Anggaran Murni</th>
+                        <th style={{...thStyle, textAlign: "right"}}>Anggaran BYMHD</th>
+                        <th style={{...thStyle, textAlign: "right"}}>Total Anggaran</th>
+                        <th style={{...thStyle, textAlign: "center", width: 100}}>Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {yearlyBudgets.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} style={{ textAlign: "center", padding: "32px 16px", color: "#94a3b8", fontSize: "0.8rem" }}>
+                            Belum ada anggaran tahunan yang ditambahkan.
+                          </td>
+                        </tr>
                       ) : (
-                        <span style={{ color: "#94a3b8", fontStyle: "italic" }}>
-                          Akan dibuat otomatis
-                        </span>
+                        yearlyBudgets.map((item, index) => (
+                          <tr key={item.id} style={trStyle}>
+                            <td style={{...tdStyle, textAlign: "center", fontWeight: 700, color: "#64748b"}}>{index + 1}</td>
+                            <td style={{...tdStyle, fontWeight: 700}}>{item.tahun}</td>
+                            <td style={{...tdStyle, textAlign: "right", fontFamily: "'JetBrains Mono', monospace", color: "#334155"}}>{fmt(item.anggaran)}</td>
+                            <td style={{...tdStyle, textAlign: "right", fontFamily: "'JetBrains Mono', monospace", color: "#d97706"}}>{fmt(item.bymhd)}</td>
+                            <td style={{...tdStyle, textAlign: "right", fontFamily: "'JetBrains Mono', monospace", fontWeight: 800, color: tipeAnggaran === "CAPEX" ? "#1d4ed8" : "#15803d"}}>{fmt(item.total)}</td>
+                            <td style={{...tdStyle, textAlign: "center"}}>
+                              <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>
+                                <button title="Revisi / Edit" style={actionBtnStyle} onClick={() => setEditingRow(item)}>
+                                  <Edit size={13} style={{ color: "#d97706" }}/>
+                                </button>
+                                <button title="Lihat History Perubahan" style={actionBtnStyle} onClick={() => setHistoryModal(item)}>
+                                  <Clock size={13} style={{ color: "#3b82f6" }}/>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
                       )}
-                    </span>
-                  </div>
-                  <span style={helperStyle}>
-                    Kode unik dibuat otomatis oleh sistem saat data disimpan
-                  </span>
+                    </tbody>
+                    {yearlyBudgets.length > 0 && (
+                      <tfoot>
+                        <tr style={{ background: tipeAnggaran === "CAPEX" ? "#eff6ff" : "#f0fdf4" }}>
+                          <td colSpan={4} style={{...tdStyle, textAlign: "right", fontWeight: 800, fontSize: "0.75rem", color: tipeAnggaran === "CAPEX" ? "#1e40af" : "#14532d"}}>
+                            GRAND TOTAL SELURUH TAHUN
+                          </td>
+                          <td style={{...tdStyle, textAlign: "right", fontWeight: 800, fontSize: "0.95rem", color: tipeAnggaran === "CAPEX" ? "#1d4ed8" : "#15803d"}}>
+                            {fmt(yearlyBudgets.reduce((acc, curr) => acc + curr.total, 0))}
+                          </td>
+                          <td style={tdStyle}></td>
+                        </tr>
+                      </tfoot>
+                    )}
+                  </table>
                 </div>
               </div>
 
-              {/* Divider */}
-              <div
-                style={{
-                  height: 1,
-                  background: "#e2e8f0",
-                  margin: "4px 0 16px",
-                }}
-              />
-
-              {/* Baris 2: Periode & Tahun Anggaran */}
-              <div
-                style={{
-                  ...formGridStyle,
-                  gridTemplateColumns: "repeat(3, 1fr)",
-                  marginBottom: 14,
-                }}
-              >
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 5 }}
-                >
-                  <label style={labelStyle}>
-                    Tahun RKAP Awal <span style={{ color: "#dc2626" }}>*</span>
-                  </label>
-                  <input
-                    type="number"
-                    style={inputStyle}
-                    value={capexForm.thn_rkap_awal}
-                    onChange={(e) => upCapex("thn_rkap_awal", e.target.value)}
-                    min="2020"
-                    max="2099"
-                  />
-                </div>
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 5 }}
-                >
-                  <label style={labelStyle}>
-                    Tahun RKAP Akhir <span style={{ color: "#dc2626" }}>*</span>
-                  </label>
-                  <input
-                    type="number"
-                    style={inputStyle}
-                    value={capexForm.thn_rkap_akhir}
-                    onChange={(e) => upCapex("thn_rkap_akhir", e.target.value)}
-                    min="2020"
-                    max="2099"
-                  />
-                </div>
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 5 }}
-                >
-                  <label style={labelStyle}>
-                    Tahun Anggaran <span style={{ color: "#dc2626" }}>*</span>
-                  </label>
-                  <input
-                    type="number"
-                    style={inputStyle}
-                    value={capexForm.thn_anggaran}
-                    onChange={(e) => upCapex("thn_anggaran", e.target.value)}
-                    min="2020"
-                    max="2099"
-                  />
-                </div>
-              </div>
-
-              {/* Divider */}
-              <div
-                style={{
-                  height: 1,
-                  background: "#e2e8f0",
-                  margin: "4px 0 16px",
-                }}
-              />
-
-              {/* Baris 3: Nilai Anggaran */}
-              <div style={formGridStyle}>
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 5 }}
-                >
-                  <label style={labelStyle}>Nilai Anggaran KAD (IDR)</label>
-                  <input
-                    type="number"
-                    style={inputStyle}
-                    value={capexForm.nilai_anggaran_kad}
-                    onChange={(e) =>
-                      upCapex("nilai_anggaran_kad", e.target.value)
-                    }
-                    placeholder="0"
-                  />
-                  {capexForm.nilai_anggaran_kad && (
-                    <span style={{ ...helperStyle, color: "#1d4ed8" }}>
-                      ≈ Rp {fmt(capexForm.nilai_anggaran_kad)}
-                    </span>
-                  )}
-                  <span style={helperStyle}>Nilai Anggaran KAD</span>
-                </div>
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 5 }}
-                >
-                  <label style={labelStyle}>
-                    Nilai Anggaran RKAP (IDR){" "}
-                    <span style={{ color: "#dc2626" }}>*</span>
-                  </label>
-                  <input
-                    type="number"
-                    style={inputStyle}
-                    value={capexForm.nilai_anggaran_rkap}
-                    onChange={(e) =>
-                      upCapex("nilai_anggaran_rkap", e.target.value)
-                    }
-                    placeholder="Contoh: 3000000000"
-                  />
-                  {capexForm.nilai_anggaran_rkap && (
-                    <span style={{ ...helperStyle, color: "#1d4ed8" }}>
-                      ≈ Rp {fmt(capexForm.nilai_anggaran_rkap)}
-                    </span>
-                  )}
-                  <span style={helperStyle}>Pagu anggaran RKAP total</span>
-                </div>
-              </div>
-
-              {/* Info box: pekerjaan terpisah */}
-              <div
-                style={{
-                  ...infoBoxStyle,
-                  marginTop: 18,
-                  background: "#eff6ff",
-                  border: "1px solid #bfdbfe",
-                }}
-              >
-                <FileText size={14} style={{ color: "#1d4ed8" }} />
-                <span style={{ color: "#1e40af" }}>
-                  <strong>Info:</strong> Data pekerjaan/kontrak (No. PR, PO,
-                  Kontrak, Durasi, dsb.) dikelola secara terpisah di menu{" "}
-                  <strong>Manajemen Pekerjaan</strong> dan berelasi ke anggaran
-                  CAPEX ini.
-                </span>
-              </div>
-
-              {/* Summary Preview */}
-              {capexForm.nilai_anggaran_rkap && (
-                <div
+              {/* 3. Action Buttons */}
+              <div style={actionsStyle}>
+                <button style={btnCancelStyle} onClick={() => setStep(2)}>
+                  <ArrowLeft size={15} /> Kembali
+                </button>
+                <button
                   style={{
-                    ...summaryBoxStyle,
-                    borderColor: "#bfdbfe",
-                    background: "#eff6ff",
+                    ...btnPrimaryStyle,
+                    ...(tipeAnggaran === "OPEX" ? btnGreenStyle : {}),
+                    opacity: yearlyBudgets.length > 0 ? 1 : 0.4,
+                    cursor: yearlyBudgets.length > 0 ? "pointer" : "not-allowed",
                   }}
+                  disabled={yearlyBudgets.length === 0}
+                  onClick={handleSubmitAll}
                 >
-                  <div style={summaryItemStyle}>
-                    <span style={summaryLabelStyle}>Kode CAPEX</span>
-                    <strong>
-                      <code
-                        style={{
-                          ...codeStyle,
-                          background: "#dbeafe",
-                          color: "#1e40af",
-                        }}
-                      >
-                        {capexForm.kd_anggaran_capex || "—"}
-                      </code>
-                    </strong>
-                  </div>
-                  <div style={summaryItemStyle}>
-                    <span style={summaryLabelStyle}>Periode RKAP</span>
-                    <strong style={{ color: "#0f172a" }}>
-                      {capexForm.thn_rkap_awal} — {capexForm.thn_rkap_akhir}
-                    </strong>
-                  </div>
-                  <div style={summaryItemStyle}>
-                    <span style={summaryLabelStyle}>Nilai Anggaran RKAP</span>
-                    <strong style={{ color: "#1d4ed8" }}>
-                      Rp {fmt(capexForm.nilai_anggaran_rkap)}
-                    </strong>
-                  </div>
-                  {capexForm.nilai_anggaran_kad && (
-                    <div style={summaryItemStyle}>
-                      <span style={summaryLabelStyle}>Nilai Anggaran KAD</span>
-                      <strong style={{ color: "#1d4ed8" }}>
-                        Rp {fmt(capexForm.nilai_anggaran_kad)}
-                      </strong>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
+                  <Save size={16} /> Simpan Seluruh Data {tipeAnggaran}
+                </button>
+              </div>
+            </>
           )}
-
-          <div style={actionsStyle}>
-            <button style={btnCancelStyle} onClick={() => setStep(2)}>
-              <ArrowLeft size={15} /> Kembali
-            </button>
-            <button
-              style={{
-                ...btnPrimaryStyle,
-                ...(tipeAnggaran === "OPEX" ? btnGreenStyle : {}),
-                opacity: canProceedStep3 ? 1 : 0.4,
-                cursor: canProceedStep3 ? "pointer" : "not-allowed",
-              }}
-              disabled={!canProceedStep3}
-              onClick={handleSubmit}
-            >
-              <Save size={16} /> Simpan Data {tipeAnggaran}
-            </button>
-          </div>
         </div>
       )}
     </div>
@@ -1786,28 +1790,10 @@ const contextBarStyle = {
   padding: "1rem 1.4rem",
   borderRadius: 12,
   border: "1px solid #e2e8f0",
+  marginBottom: 20
 };
 const contextItemStyle = { display: "flex", flexDirection: "column", gap: 5 };
 const contextLabelStyle = {
-  fontSize: "0.65rem",
-  fontWeight: 700,
-  textTransform: "uppercase",
-  letterSpacing: "0.5px",
-  color: "#94a3b8",
-};
-
-const summaryBoxStyle = {
-  marginTop: 16,
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-  gap: 12,
-  background: "#f0fdf4",
-  border: "1px solid #86efac",
-  borderRadius: 10,
-  padding: "1rem 1.2rem",
-};
-const summaryItemStyle = { display: "flex", flexDirection: "column", gap: 4 };
-const summaryLabelStyle = {
   fontSize: "0.65rem",
   fontWeight: 700,
   textTransform: "uppercase",
@@ -1880,4 +1866,42 @@ const autoKodeValueStyle = {
   fontSize: "0.78rem",
   color: "#1d4ed8",
   fontWeight: 600,
+};
+
+/* ── STYLES TAMBAHAN UNTUK TABEL ANGGARAN TAHUNAN ── */
+const tableStyle = {
+  width: "100%",
+  borderCollapse: "collapse",
+  fontSize: "0.8rem",
+  color: "#0f172a"
+};
+const thStyle = {
+  padding: "10px 16px",
+  borderBottom: "1px solid #e2e8f0",
+  background: "#f8fafc",
+  fontSize: "0.7rem",
+  fontWeight: 800,
+  textTransform: "uppercase",
+  letterSpacing: "0.5px",
+  color: "#64748b",
+  textAlign: "left"
+};
+const tdStyle = {
+  padding: "12px 16px",
+  borderBottom: "1px solid #f1f5f9",
+  verticalAlign: "middle"
+};
+const trStyle = {
+  transition: "background 0.15s",
+};
+const actionBtnStyle = {
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: "6px",
+  borderRadius: "6px",
+  border: "1px solid #e2e8f0",
+  background: "white",
+  cursor: "pointer",
+  transition: "all 0.15s"
 };

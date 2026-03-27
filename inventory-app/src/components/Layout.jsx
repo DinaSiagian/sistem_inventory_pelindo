@@ -37,7 +37,7 @@ const Layout = () => {
       label: "Anggaran (CAPEX/OPEX)",
       icon: <FaMoneyBillWave />,
     },
-    { path: "/budget/input", label: "Input Anggaran", icon: <FaPlusCircle /> },
+    { path: "/budget/input", label: "Input Data", icon: <FaPlusCircle /> },
     { category: "Administrasi" },
     { path: "/users", label: "User Management", icon: <FaUsers /> },
   ];

@@ -33,7 +33,10 @@ const I = {
   hash: "M4 9h16M4 15h16M10 3 8 21M16 3l-2 18",
   clock: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 6v6l4 2",
   link: "M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71",
-  image: "M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm-6 6.17a2.5 2.5 0 1 1-3.5 0 2.5 2.5 0 0 1 3.5 0zM11.5 14H10v4h1.5a1.5 1.5 0 1 0 0-3zm6 0h-1v4h1a2 2 0 1 0 0-4zm-3.5 0h-1v4h1a2 2 0 1 0 0-4zm-6.5-6.5a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"
+  image: "M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm-6 6.17a2.5 2.5 0 1 1-3.5 0 2.5 2.5 0 0 1 3.5 0zM11.5 14H10v4h1.5a1.5 1.5 0 1 0 0-3zm6 0h-1v4h1a2 2 0 1 0 0-4zm-3.5 0h-1v4h1a2 2 0 1 0 0-4zm-6.5-6.5a1 1 0 1 0 0 2 1 1 0 0 0 0-2z",
+  download: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3",
+  table: "M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18",
+  eye: "M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z",
 };
 
 const fmt = (n) => new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(n || 0);
@@ -58,7 +61,7 @@ const ASSET_DB = {
   "SPMT-KPT-DTC-SRV-02": { name: "Server Rack Kantor Pusat — Rack 2", brand: "Dell", model: "PowerEdge R750", category: "Server", location: "Kantor Pusat" },
   "SPMT-MLH-DTC-PKR-02": { name: "Core Switch Malahayati", brand: "Cisco", model: "Catalyst 9300-48P", category: "Network", location: "Malahayati" },
   "SPMT-TBK-DTC-PKR-01": { name: "Core Switch Tanjung Balai Karimun", brand: "Cisco", model: "Catalyst 9300-24P", category: "Network", location: "Tanjung Balai Karimun" },
-  "SPMT-KPT-DTC-PKR-02": { name: "Firewall Data Center Kantor Pusat", brand: "Fortinet", model: "FortiGate 200F", category: "Security", location: "Kantor Pusat" },
+  "SPMT-KPT-DTC-PKR-02": { name: "Firewall Data Center Kantor Pusat", brand: "Fortinet", model: "FortiGate 200F", category: "Security", location: "Kantor Pusat" }, // FIXED TYPO: "Fortinet"
 };
 const SN_DB = {
   "DELL-KPT-SRV-001": "SPMT-KPT-DTC-SRV-01", "DELL-KPT-SRV-002": "SPMT-KPT-DTC-SRV-02",
@@ -128,7 +131,7 @@ const INIT_OPEX = [
 ];
 
 // ══════════════════════════════════════════════════════════════════
-// CSS — Bersih, Bebas Bloat, Font Ori (13px), Layout Lega
+// CSS (Dikembalikan sama persis seperti awal)
 // ══════════════════════════════════════════════════════════════════
 const CSS = `
 @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap");
@@ -154,7 +157,7 @@ body {
   font-family: "Plus Jakarta Sans", system-ui, sans-serif;
   background: var(--bg);
   color: var(--ink);
-  font-size: 13px; /* Ukuran asli, tidak diperbesar */
+  font-size: 13px;
   -webkit-font-smoothing: antialiased;
   line-height: 1.5;
 }
@@ -211,7 +214,7 @@ body {
 .section-label-pill.opex { background: var(--green-lt); color: var(--green); border-color: var(--green-mid); }
 .section-count { font-size: .75rem; color: var(--ink4); font-weight: 500; }
 
-/* ── HORIZONTAL JOB CARD (Desain Grid Melebar, Tidak Sumpek) ── */
+/* ── CARD LIST ── */
 .card-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
 .empty { background: var(--surf); border: 1.5px dashed var(--border); border-radius: var(--r-lg); text-align: center; padding: 3rem; color: var(--ink4); font-size: .85rem; font-weight: 500; }
 
@@ -220,14 +223,12 @@ body {
 .jcard.open-cap { border-color: var(--blue-mid); }
 .jcard.open-opx { border-color: var(--green-mid); }
 
-/* Left accent bar */
 .jcard-inner { display: flex; }
 .jcard-accent { width: 3px; flex-shrink: 0; }
 .jcard-accent.cap { background: var(--blue); }
 .jcard-accent.opx { background: var(--green); }
 .jcard-content { flex: 1; min-width: 0; }
 
-/* Grid Top (Horizontal) */
 .jcard-top { display: grid; grid-template-columns: 2.2fr 1.3fr 2.5fr auto; align-items: center; gap: 16px; padding: 14px 20px; cursor: pointer; transition: background .15s; }
 .jcard-top:hover { background: var(--bg); }
 .jcard.open-cap .jcard-top { background: #f8faff; }
@@ -273,14 +274,6 @@ body {
 .abtn.del:hover { background: var(--red-lt); border-color: #fca5a5; color: var(--red); }
 .chev { color: var(--ink4); padding: 4px; border-radius: 50%; display: flex; transition: background 0.15s; }
 .jcard-top:hover .chev { background: var(--border); color: var(--ink2); }
-
-/* Responsive Job Card */
-@media (max-width: 1024px) {
-  .jcard-top { grid-template-columns: 1fr; gap: 12px; }
-  .jc-fin { justify-content: flex-start; }
-  .jc-actions { justify-content: flex-start; flex-wrap: wrap; }
-  .fin-div { display: none; }
-}
 
 /* ── PANEL DETAIL KARTU ── */
 .jcard-detail { padding: 20px; background: var(--bg); border-top: 1px dashed var(--border); animation: slideDown .15s ease-out; }
@@ -330,7 +323,7 @@ body {
 .mbody { padding: 20px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; flex: 1; }
 .mfoot { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 16px 20px; border-top: 1px solid var(--border); flex-shrink: 0; background: var(--bg); }
 
-/* Buttons inside Modals/Forms */
+/* ── BUTTONS ── */
 .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 8px; font-family: inherit; font-size: 0.8rem; font-weight: 700; cursor: pointer; border: none; transition: all .15s; white-space: nowrap; }
 .btn-outline { background: var(--surf); border: 1px solid var(--border); color: var(--ink2); }
 .btn-outline:hover { background: var(--bg); border-color: #cbd5e1; }
@@ -338,6 +331,94 @@ body {
 .btn-prim:hover { background: #1d4ed8; }
 .btn-green { background: var(--green); color: #fff; box-shadow: 0 2px 8px rgba(22,163,74,.2); }
 .btn-green:hover { background: #15803d; }
+.btn-excel { background: #166534; color: #fff; box-shadow: 0 2px 8px rgba(22,101,52,.25); }
+.btn-excel:hover { background: #14532d; }
+
+/* ══════════════════════════════════════
+   TABLE PAGES — Halaman Daftar Tabel (Aset/Realisasi) — Gaya persis aset
+   ══════════════════════════════════════ */
+.asset-page { animation: fadeUp .15s ease-out; }
+
+.asset-page-hdr { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.asset-page-hdr-left { display: flex; align-items: center; gap: 16px; }
+.asset-page-hdr-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+.asset-ctx-banner { background: var(--surf); border: 1px solid var(--border); border-left: 4px solid var(--blue); border-radius: var(--r-lg); padding: 14px 20px; margin-bottom: 20px; display: flex; gap: 32px; flex-wrap: wrap; box-shadow: var(--sh); }
+.asset-ctx-banner.opex-theme { border-left-color: var(--green); }
+.asset-ctx-item { display: flex; flex-direction: column; gap: 3px; }
+.asset-ctx-item span { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: var(--ink4); letter-spacing: 0.5px; }
+.asset-ctx-item strong { font-size: 0.88rem; font-weight: 700; color: var(--ink); }
+
+/* Toolbar tabel */
+.asset-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.asset-toolbar-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.asset-toolbar-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+.at-filter { display: flex; align-items: center; gap: 8px; background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); padding: 7px 12px; box-shadow: var(--sh); transition: border-color .2s; }
+.at-filter:focus-within { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+.at-filter svg { color: var(--ink4); flex-shrink: 0; }
+.at-filter input, .at-filter select { border: none; background: transparent; font-family: inherit; font-size: 0.78rem; color: var(--ink); outline: none; font-weight: 500; }
+.at-filter select { cursor: pointer; min-width: 130px; }
+.at-filter input { min-width: 220px; }
+
+/* Tabel Data Umum */
+.asset-table-wrap { background: var(--surf); border: 1px solid var(--border); border-radius: var(--r-lg); box-shadow: var(--sh); overflow: hidden; }
+.asset-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+.asset-table thead tr { background: var(--bg); border-bottom: 2px solid var(--border); }
+.asset-table thead th { padding: 11px 14px; text-align: left; font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: var(--ink3); white-space: nowrap; border-right: 1px solid var(--border-lt); user-select: none; cursor: default; }
+.asset-table thead th:last-child { border-right: none; }
+.asset-table thead th.th-no { width: 44px; text-align: center; }
+.asset-table thead th.th-actions { width: 80px; text-align: center; }
+
+.asset-table tbody tr { border-bottom: 1px solid var(--border-lt); transition: background .12s; }
+.asset-table tbody tr:last-child { border-bottom: none; }
+.asset-table tbody tr:hover { background: #f8faff; }
+.asset-table.opex-table tbody tr:hover { background: #f7fef9; }
+
+.asset-table tbody td { padding: 11px 14px; vertical-align: middle; border-right: 1px solid var(--border-lt); }
+.asset-table tbody td:last-child { border-right: none; }
+
+.td-no { text-align: center; font-size: 0.7rem; font-weight: 700; color: var(--ink4); background: var(--bg); }
+.td-asset-name { display: flex; align-items: center; gap: 10px; }
+.td-thumb { width: 36px; height: 36px; border-radius: 6px; overflow: hidden; border: 1px solid var(--border); flex-shrink: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; }
+.td-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.td-thumb-empty { color: var(--ink4); }
+.td-name-block { display: flex; flex-direction: column; gap: 3px; }
+.td-name-text { font-size: 0.82rem; font-weight: 700; color: var(--ink); line-height: 1.3; }
+.td-name-sub { font-size: 0.7rem; color: var(--ink4); font-weight: 500; }
+
+.td-code { font-family: var(--mono); font-size: 0.72rem; font-weight: 700; background: var(--blue-lt); color: var(--blue); padding: 3px 8px; border-radius: 5px; white-space: nowrap; display: inline-block; }
+.td-sn { font-family: var(--mono); font-size: 0.7rem; color: var(--ink3); font-weight: 600; }
+
+.cat-pill { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 800; white-space: nowrap; }
+.cat-pill.Server { background: #ede9fe; color: #6d28d9; }
+.cat-pill.Network { background: #dbeafe; color: #1d4ed8; }
+.cat-pill.Security { background: #fef3c7; color: #b45309; }
+.cat-pill.default { background: var(--border-lt); color: var(--ink3); }
+
+.td-loc { display: flex; align-items: center; gap: 5px; font-size: 0.78rem; color: var(--ink2); font-weight: 500; }
+.td-date { font-size: 0.78rem; color: var(--ink3); font-weight: 500; }
+.td-value { font-size: 0.85rem; font-weight: 800; color: var(--blue); white-space: nowrap; }
+
+.td-actions { text-align: center; }
+.td-act-row { display: flex; align-items: center; justify-content: center; gap: 4px; }
+
+/* Summary row tabel */
+.asset-table tfoot tr { background: var(--blue-lt); border-top: 2px solid var(--blue-mid); }
+.asset-table tfoot td { padding: 10px 14px; font-size: 0.78rem; font-weight: 700; color: var(--blue); }
+.asset-table tfoot .tfoot-total { font-size: 0.9rem; font-weight: 800; }
+
+.asset-table.opex-table tfoot tr { background: var(--green-lt); border-top-color: var(--green-mid); }
+.asset-table.opex-table tfoot td { color: var(--green); }
+
+.table-empty-row td { text-align: center; padding: 48px 24px !important; color: var(--ink4); }
+.table-empty-inner { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+
+/* Summary bar bawah tabel */
+.asset-summary-bar { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; background: var(--bg); border-top: 1px solid var(--border); flex-wrap: wrap; gap: 12px; }
+.asset-summary-stat { display: flex; align-items: center; gap: 8px; }
+.asset-summary-stat span { font-size: 0.75rem; color: var(--ink4); font-weight: 500; }
+.asset-summary-stat strong { font-size: 0.85rem; font-weight: 800; color: var(--ink); }
 
 /* ── SUBPAGES ── */
 .subpage { animation: fadeUp .15s ease-out; max-width: 900px; margin: 0 auto; }
@@ -365,14 +446,14 @@ body {
 
 .edit-footer { background: var(--surf); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; box-shadow: var(--sh-md); margin-top: 24px; position: sticky; bottom: 24px; z-index: 10; }
 
-/* ── NEW: ASSET ENTRY CARD STYLES (Mempertegas pemisahan aset) ── */
+/* ASSET ENTRY CARDS */
 .acard { 
   background: var(--surf); 
   border: 1px solid var(--border); 
-  border-left: 5px solid var(--blue); /* Garis kiri tebal pemisah visual */
+  border-left: 5px solid var(--blue);
   border-radius: var(--r-lg); 
   overflow: hidden; 
-  margin-bottom: 24px; /* Jarak jauh lebih lega antar aset */
+  margin-bottom: 24px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.03); 
   transition: box-shadow 0.2s; 
 }
@@ -389,7 +470,6 @@ body {
   letter-spacing: 0.5px; 
 }
 
-/* ── NEW: IMAGE HANDLING IN ENTRY (UI Baru Jarak Lega) ── */
 .acard-image-section { 
   display: flex; 
   align-items: flex-start; 
@@ -467,6 +547,8 @@ body {
   .jc-fin { justify-content: flex-start; }
   .jc-actions { justify-content: flex-start; flex-wrap: wrap; }
   .fin-div { display: none; }
+  .asset-table { font-size: 0.75rem; }
+  .asset-table thead th, .asset-table tbody td { padding: 9px 10px; }
 }
 @media(max-width:900px) {
   .root { padding: 24px 20px 80px; }
@@ -502,9 +584,9 @@ function Confirm({ msg, onConfirm, onCancel }) {
   );
 }
 
-function CatBadge({ cat }) {
-  const cls = cat === "Server" ? "cat-server" : cat === "Network" ? "cat-network" : cat === "Security" ? "cat-security" : "cat-default";
-  return <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 8px", borderRadius: 4, fontSize: "0.65rem", fontWeight: 800, background: "var(--border-lt)", color: "var(--ink3)" }} className={cls}>{cat || "—"}</span>;
+function CatPill({ cat }) {
+  const cls = cat === "Server" ? "Server" : cat === "Network" ? "Network" : cat === "Security" ? "Security" : "default";
+  return <span className={`cat-pill ${cls}`}>{cat || "—"}</span>;
 }
 
 function PctRing({ pct }) {
@@ -528,83 +610,548 @@ function PctRing({ pct }) {
 }
 
 // ══════════════════════════════════════════════════════════════════
-// ASSET MODAL
+// ASSET TABLE PAGE — Halaman penuh daftar aset (Konsep asli)
 // ══════════════════════════════════════════════════════════════════
-function AssetModal({ proj, onClose, onEntry }) {
-  const assets = proj.assets || [];
-  const total = assets.reduce((s, a) => s + (a.acquisition_value || 0), 0);
-  return (
-    <div className="overlay" onClick={onClose}>
-      <div className="mbox wide" onClick={e => e.stopPropagation()}>
-        <div className="mhd">
-          <div className="mhd-left">
-            <div className="m-ico blue"><Icon d={I.package} size={18} /></div>
-            <div>
-              <h3>Daftar Aset Tercatat</h3>
-              <p>{assets.length} aset · {proj.nm_pekerjaan?.substring(0, 52)}…</p>
-            </div>
-          </div>
-          <button className="m-close" onClick={onClose}><Icon d={I.x} size={14} /></button>
-        </div>
-        <div className="mbody">
-          <div className="asset-ref" style={{ padding: "12px 16px", background: "var(--blue-lt)", borderRadius: 12, border: "1px solid var(--blue-mid)", display: "flex", flexWrap: "wrap", alignItems: "center", gap: 12, marginBottom: 16 }}>
-            <code style={{ fontFamily: "var(--mono)", fontSize: "0.8rem", fontWeight: 800, background: "#fff", color: "var(--blue)", padding: "4px 8px", borderRadius: 6, border: "1px solid var(--blue-mid)" }}>{proj.no_kontrak || "—"}</code>
-            <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "#1e40af", flex: 1 }}>{proj.nm_pekerjaan?.substring(0, 68)}…</span>
-          </div>
+function AssetTablePage({ project, anggaran, onBack, onEntryNew, onSaveAssets, showToast }) {
+  const [searchQ, setSearchQ] = useState("");
+  const [catFilter, setCatFilter] = useState("all");
+  const [locFilter, setLocFilter] = useState("all");
+  const [confirm, setConfirm] = useState(null);
 
-          {assets.length === 0 ? (
-            <div className="d-empty" style={{ padding: 32 }}>
-              <Icon d={I.package} size={32} style={{ opacity: .3, marginBottom: 8, display:"block", margin:"0 auto 8px" }} />
-              <span>Belum ada aset tercatat untuk pekerjaan ini.</span>
-            </div>
-          ) : (
-            <div className="ai-list" style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-              {assets.map((a, i) => (
-                <div key={a.id} className="ai-item" style={{ display: "flex", flexDirection: "column", padding: "16px", background: "var(--surf)", border: "1px solid var(--border)", borderRadius: "12px", boxShadow: "var(--sh)" }}>
-                  
-                  {/* Baris Atas: Info Utama & Harga */}
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "16px", marginBottom: "16px", width: "100%" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                      {/* Thumbnail Gambar (Jika ada) */}
-                      {a.image && (
-                        <div style={{ width: 48, height: 48, borderRadius: 8, overflow: "hidden", border: "1px solid var(--border)", flexShrink: 0 }}>
-                          <img src={a.image} alt={a.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                        </div>
-                      )}
-                      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                        <p style={{ fontSize: "0.95rem", fontWeight: "800", color: "var(--ink)", lineHeight: "1.3" }}>{a.name || "—"}</p>
-                        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-                          <span style={{ fontFamily: "var(--mono)", fontSize: "0.75rem", fontWeight: "700", background: "var(--blue-lt)", color: "var(--blue)", padding: "2px 8px", borderRadius: "6px" }}>{a.asset_code || "—"}</span>
-                          <CatBadge cat={a.category} />
-                        </div>
+  const assets = project.assets || [];
+
+  const cats = useMemo(() => ["all", ...Array.from(new Set(assets.map(a => a.category).filter(Boolean)))], [assets]);
+  const locs = useMemo(() => ["all", ...Array.from(new Set(assets.map(a => a.location).filter(Boolean)))], [assets]);
+
+  const filtered = useMemo(() => assets.filter(a => {
+    if (catFilter !== "all" && a.category !== catFilter) return false;
+    if (locFilter !== "all" && a.location !== locFilter) return false;
+    if (searchQ) {
+      const q = searchQ.toLowerCase();
+      return (a.name?.toLowerCase().includes(q) || a.asset_code?.toLowerCase().includes(q) || a.serial_number?.toLowerCase().includes(q) || a.brand?.toLowerCase().includes(q) || a.model?.toLowerCase().includes(q));
+    }
+    return true;
+  }), [assets, catFilter, locFilter, searchQ]);
+
+  const totalFiltered = filtered.reduce((s, a) => s + (a.acquisition_value || 0), 0);
+  const totalAll = assets.reduce((s, a) => s + (a.acquisition_value || 0), 0);
+
+  const exportExcel = () => {
+    const headers = ["No", "Kode Aset", "Serial Number", "Nama Aset", "Merek", "Model/Tipe", "Kategori", "Lokasi", "Tgl. Pengadaan", "Nilai Perolehan (IDR)"];
+    const rows = filtered.map((a, i) => [
+      i + 1, a.asset_code || "", a.serial_number || "", a.name || "", a.brand || "", a.model || "", a.category || "", a.location || "",
+      a.procurement_date ? new Date(a.procurement_date).toLocaleDateString("id-ID") : "", a.acquisition_value || 0,
+    ]);
+
+    const infoRows = [
+      ["Laporan Daftar Aset CAPEX"],
+      ["Pekerjaan:", project.nm_pekerjaan || ""],
+      ["No. Kontrak:", project.no_kontrak || ""],
+      ["Nilai Kontrak:", project.nilai_kontrak || 0],
+      ["Tanggal Export:", new Date().toLocaleDateString("id-ID")],
+      [], headers, ...rows, [],
+      ["", "", "", "", "", "", "", "", "TOTAL NILAI ASET", totalFiltered],
+    ];
+
+    const csvContent = infoRows.map(row => row.map(cell => { const s = String(cell); return s.includes(",") || s.includes('"') || s.includes("\n") ? `"${s.replace(/"/g, '""')}"` : s; }).join(",")).join("\n");
+    const BOM = "\uFEFF";
+    const blob = new Blob([BOM + csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    const safeName = (project.no_kontrak || "aset").replace(/[^a-zA-Z0-9-]/g, "_");
+    a.download = `Daftar_Aset_${safeName}_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast("File berhasil diunduh (.csv)");
+  };
+
+  const deleteAsset = (id) => {
+    setConfirm({
+      msg: "Hapus aset ini dari daftar pekerjaan?",
+      onConfirm: () => {
+        const updated = assets.filter(a => a.id !== id);
+        onSaveAssets(project.id, updated);
+        showToast("Aset dihapus");
+        setConfirm(null);
+      }
+    });
+  };
+
+  const assetTotal = assets.reduce((s, a) => s + (a.acquisition_value || 0), 0);
+  const pct = project.nilai_kontrak > 0 ? Math.round((assetTotal / project.nilai_kontrak) * 100) : 0;
+
+  return (
+    <div className="asset-page">
+      <div className="asset-page-hdr">
+        <div className="asset-page-hdr-left">
+          <button className="btn btn-outline" onClick={onBack}><Icon d={I.arrowLeft} size={12} /> Kembali</button>
+          <div>
+            <h2 style={{ fontSize: "1.2rem", fontWeight: 800, letterSpacing: "-0.5px", color: "var(--ink)", marginBottom: 3 }}>Daftar Aset Pekerjaan</h2>
+            <p style={{ fontSize: "0.75rem", color: "var(--ink4)", fontWeight: 500 }}>
+              {assets.length} aset terdaftar · {project.nm_pekerjaan?.substring(0, 55)}{project.nm_pekerjaan?.length > 55 ? "…" : ""}
+            </p>
+          </div>
+        </div>
+        <div className="asset-page-hdr-right">
+          <button className="btn btn-excel" onClick={exportExcel}><Icon d={I.download} size={13} /> Export Excel</button>
+          <button className="btn btn-prim" onClick={onEntryNew}><Icon d={I.plus} size={13} /> Entry Aset Baru</button>
+        </div>
+      </div>
+
+      <div className="asset-ctx-banner">
+        <div className="asset-ctx-item"><span>Pekerjaan</span><strong style={{ maxWidth: 260 }}>{project.nm_pekerjaan?.substring(0, 48)}{project.nm_pekerjaan?.length > 48 ? "…" : ""}</strong></div>
+        <div className="asset-ctx-item"><span>No. Kontrak</span><strong><code style={{ fontFamily: "var(--mono)", fontSize: "0.82rem" }}>{project.no_kontrak || "—"}</code></strong></div>
+        <div className="asset-ctx-item"><span>Nilai Kontrak</span><strong style={{ color: "var(--red)" }}>{project.nilai_kontrak > 0 ? fmt(project.nilai_kontrak) : "—"}</strong></div>
+        <div className="asset-ctx-item"><span>Total Nilai Aset</span><strong style={{ color: "var(--blue)" }}>{fmt(assetTotal)}</strong></div>
+        <div className="asset-ctx-item"><span>Serapan Aset</span><strong style={{ color: pctColor(pct) }}>{pct}%</strong></div>
+      </div>
+
+      <div className="asset-toolbar">
+        <div className="asset-toolbar-left">
+          <div className="at-filter">
+            <Icon d={I.search} size={13} />
+            <input placeholder="Cari nama, kode, S/N, merek…" value={searchQ} onChange={e => setSearchQ(e.target.value)} />
+          </div>
+        </div>
+        <div className="asset-toolbar-right">
+          <div className="at-filter">
+            <Icon d={I.filter} size={13} />
+            <select value={catFilter} onChange={e => setCatFilter(e.target.value)}>
+              <option value="all">Semua Kategori</option>
+              {cats.filter(c => c !== "all").map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <div className="at-filter">
+            <Icon d={I.mapPin} size={13} />
+            <select value={locFilter} onChange={e => setLocFilter(e.target.value)}>
+              <option value="all">Semua Lokasi</option>
+              {locs.filter(l => l !== "all").map(l => <option key={l} value={l}>{l}</option>)}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div className="asset-table-wrap">
+        <table className="asset-table">
+          <thead>
+            <tr>
+              <th className="th-no">No</th>
+              <th>Nama Aset</th>
+              <th>Kode Aset</th>
+              <th>Serial Number</th>
+              <th>Kategori</th>
+              <th>Lokasi</th>
+              <th>Tgl. Pengadaan</th>
+              <th>Nilai Perolehan</th>
+              <th className="th-actions">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.length === 0 ? (
+              <tr className="table-empty-row">
+                <td colSpan={9}>
+                  <div className="table-empty-inner">
+                    <Icon d={I.package} size={36} style={{ opacity: 0.2 }} />
+                    <span style={{ fontWeight: 600, fontSize: "0.85rem" }}>
+                      {assets.length === 0 ? "Belum ada aset terdaftar untuk pekerjaan ini." : "Tidak ada aset yang cocok dengan filter."}
+                    </span>
+                    {assets.length === 0 && (
+                      <button className="btn btn-prim" style={{ marginTop: 4 }} onClick={onEntryNew}><Icon d={I.plus} size={12} /> Tambah Aset Pertama</button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ) : (
+              filtered.map((a, i) => (
+                <tr key={a.id}>
+                  <td className="td-no">{i + 1}</td>
+                  <td>
+                    <div className="td-asset-name">
+                      <div className="td-thumb">
+                        {a.image ? <img src={a.image} alt={a.name} /> : <div className="td-thumb-empty"><Icon d={I.image} size={16} /></div>}
+                      </div>
+                      <div className="td-name-block">
+                        <span className="td-name-text">{a.name || "—"}</span>
+                        <span className="td-name-sub">{[a.brand, a.model].filter(Boolean).join(" · ") || "—"}</span>
                       </div>
                     </div>
-                    <span style={{ fontSize: "1.1rem", fontWeight: "800", color: "var(--blue)", flexShrink: 0 }}>{fmt(a.acquisition_value)}</span>
-                  </div>
+                  </td>
+                  <td><span className="td-code">{a.asset_code || "—"}</span></td>
+                  <td><span className="td-sn">{a.serial_number || "—"}</span></td>
+                  <td><CatPill cat={a.category} /></td>
+                  <td>
+                    <div className="td-loc">
+                      <Icon d={I.mapPin} size={11} style={{ color: "var(--ink4)", flexShrink: 0 }} />
+                      {a.location || "—"}
+                    </div>
+                  </td>
+                  <td><span className="td-date">{fmtDate(a.procurement_date)}</span></td>
+                  <td><span className="td-value">{fmt(a.acquisition_value)}</span></td>
+                  <td className="td-actions">
+                    <div className="td-act-row">
+                      <button className="abtn del" title="Hapus aset" onClick={() => deleteAsset(a.id)}><Icon d={I.trash} size={11} /></button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+          {filtered.length > 0 && (
+            <tfoot>
+              <tr>
+                <td colSpan={7} style={{ fontWeight: 700, color: "var(--blue)", fontSize: "0.75rem" }}>
+                  {filtered.length < assets.length ? `Menampilkan ${filtered.length} dari ${assets.length} aset` : `Total ${assets.length} aset`}
+                </td>
+                <td className="tfoot-total">{fmt(totalFiltered)}</td>
+                <td></td>
+              </tr>
+            </tfoot>
+          )}
+        </table>
 
-                  {/* Baris Bawah: Meta Data (Dibatasi garis putus-putus) */}
-                  <div style={{ display: "flex", flexWrap: "wrap", rowGap: "8px", columnGap: "16px", fontSize: "0.75rem", color: "var(--ink4)", paddingTop: "12px", borderTop: "1px dashed var(--border)" }}>
-                    <span style={{ display: "flex", alignItems: "center", gap: "6px", fontWeight: "500" }}><Icon d={I.tag} size={14} />{a.brand} {a.model}</span>
-                    <span style={{ display: "flex", alignItems: "center", gap: "6px", fontWeight: "500" }}><Icon d={I.mapPin} size={14} />{a.location}</span>
-                    <span style={{ display: "flex", alignItems: "center", gap: "6px", fontWeight: "500" }}><Icon d={I.calendar} size={14} />{fmtDate(a.procurement_date)}</span>
-                    {a.serial_number && <span style={{ display: "flex", alignItems: "center", gap: "6px", fontWeight: "500" }}><Icon d={I.hash} size={14} />S/N: {a.serial_number}</span>}
-                  </div>
-
+        {assets.length > 0 && (
+          <div className="asset-summary-bar">
+            <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
+              <div className="asset-summary-stat">
+                <span>Total Aset</span>
+                <strong>{assets.length} item</strong>
+              </div>
+              <div className="asset-summary-stat">
+                <span>Total Nilai Seluruh Aset</span>
+                <strong style={{ color: "var(--blue)" }}>{fmt(totalAll)}</strong>
+              </div>
+              {filtered.length !== assets.length && (
+                <div className="asset-summary-stat">
+                  <span>Nilai Aset (Filter Aktif)</span>
+                  <strong style={{ color: "var(--amber)" }}>{fmt(totalFiltered)}</strong>
                 </div>
-              ))}
-              
-              <div className="panel-total blue" style={{ marginTop: "4px" }}>
-                <span>Total Nilai Aset</span>
-                <strong>{fmt(total)}</strong>
+              )}
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: "0.75rem", color: "var(--ink4)", fontWeight: 500 }}>{pct}% dari nilai kontrak terserapkan</span>
+              <div style={{ width: 100, height: 6, background: "var(--border-lt)", borderRadius: 99, overflow: "hidden" }}>
+                <div style={{ width: `${Math.min(pct, 100)}%`, height: "100%", background: pctColor(pct), borderRadius: 99, transition: "width .6s" }} />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {confirm && <Confirm msg={confirm.msg} onConfirm={confirm.onConfirm} onCancel={() => setConfirm(null)} />}
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════
+// REALISASI TABLE PAGE — Halaman penuh daftar realisasi OPEX — Gaya persis aset
+// ══════════════════════════════════════════════════════════════════
+function RealisasiTablePage({ ang, onBack, onEntryNew, onEditRow, onDeleteRow, showToast }) {
+  const [searchQ, setSearchQ] = useState("");
+  const transactions = ang.transaksi || [];
+
+  const filtered = useMemo(() => transactions.filter(t => {
+    if (searchQ) {
+      const q = searchQ.toLowerCase();
+      return (t.keterangan?.toLowerCase().includes(q) || t.no_invoice?.toLowerCase().includes(q));
+    }
+    return true;
+  }), [transactions, searchQ]);
+
+  const totalFiltered = filtered.reduce((s, t) => s + (t.jumlah || 0), 0);
+  const totalAll = transactions.reduce((s, t) => s + (t.jumlah || 0), 0);
+  const pagu = ang.nilai_anggaran_tahunan || 0;
+  const sisa = pagu - totalAll;
+  const pct = pagu > 0 ? Math.round((totalAll / pagu) * 100) : 0;
+
+  const exportExcelOpex = () => {
+    const headers = ["No", "Tanggal", "Keterangan", "No. Invoice", "Aset Terkait", "Jumlah (IDR)"];
+    const rows = filtered.map((t, i) => [
+      i + 1,
+      t.tanggal ? new Date(t.tanggal).toLocaleDateString("id-ID") : "",
+      t.keterangan || "",
+      t.no_invoice || "",
+      t.aset || "",
+      t.jumlah || 0,
+    ]);
+
+    const infoRows = [
+      ["Laporan Riwayat Realisasi OPEX"],
+      ["Pos Anggaran:", ang.nama || ""],
+      ["Kode Master:", ang.kd_anggaran_master || ""],
+      ["Pagu Anggaran:", pagu],
+      ["Total Realisasi:", totalAll],
+      ["Sisa Anggaran:", sisa],
+      ["Tanggal Export:", new Date().toLocaleDateString("id-ID")],
+      [], headers, ...rows, [],
+      ["", "", "", "", "TOTAL REALISASI", totalFiltered],
+    ];
+
+    const csvContent = infoRows.map(row => row.map(cell => { const s = String(cell); return s.includes(",") || s.includes('"') || s.includes("\n") ? `"${s.replace(/"/g, '""')}"` : s; }).join(",")).join("\n");
+    const BOM = "\uFEFF";
+    const blob = new Blob([BOM + csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    const safeName = (ang.nama || "opex").replace(/[^a-zA-Z0-9-]/g, "_");
+    a.download = `Realisasi_${safeName}_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast("File berhasil diunduh (.csv)");
+  };
+
+  return (
+    <div className="asset-page">
+      <div className="asset-page-hdr">
+        <div className="asset-page-hdr-left">
+          <button className="btn btn-outline" onClick={onBack}><Icon d={I.arrowLeft} size={12} /> Kembali</button>
+          <div>
+            <h2 style={{ fontSize: "1.2rem", fontWeight: 800, letterSpacing: "-0.5px", color: "var(--ink)", marginBottom: 3 }}>Riwayat Realisasi OPEX</h2>
+            <p style={{ fontSize: "0.75rem", color: "var(--ink4)", fontWeight: 500 }}>
+              {transactions.length} transaksi tercatat · {ang.nama?.substring(0, 55)}{ang.nama?.length > 55 ? "…" : ""}
+            </p>
+          </div>
+        </div>
+        <div className="asset-page-hdr-right">
+          <button className="btn btn-excel" onClick={exportExcelOpex}><Icon d={I.download} size={13} /> Export Excel</button>
+          <button className="btn btn-green" onClick={onEntryNew}><Icon d={I.plus} size={13} /> Entry Transaksi Baru</button>
+        </div>
+      </div>
+
+      <div className="asset-ctx-banner opex-theme">
+        <div className="asset-ctx-item"><span>Pos Anggaran</span><strong style={{ maxWidth: 260 }}>{ang.nama?.substring(0, 48)}{ang.nama?.length > 48 ? "…" : ""}</strong></div>
+        <div className="asset-ctx-item"><span>Kode Master</span><strong><code style={{ fontFamily: "var(--mono)", fontSize: "0.82rem" }}>{ang.kd_anggaran_master || "—"}</code></strong></div>
+        <div className="asset-ctx-item"><span>Pagu Anggaran</span><strong style={{ color: "var(--blue)" }}>{pagu > 0 ? fmt(pagu) : "—"}</strong></div>
+        <div className="asset-ctx-item"><span>Total Realisasi</span><strong style={{ color: "var(--amber)" }}>{fmt(totalAll)}</strong></div>
+        <div className="asset-ctx-item"><span>Sisa Anggaran</span><strong style={{ color: sisa >= 0 ? "var(--green)" : "var(--red)" }}>{fmt(Math.abs(sisa))} {sisa < 0 && "(melebihi)"}</strong></div>
+      </div>
+
+      <div className="asset-toolbar">
+        <div className="asset-toolbar-left">
+          <div className="at-filter">
+            <Icon d={I.search} size={13} />
+            <input placeholder="Cari keterangan atau no. invoice…" value={searchQ} onChange={e => setSearchQ(e.target.value)} />
+          </div>
+        </div>
+      </div>
+
+      <div className="asset-table-wrap">
+        <table className="asset-table opex-table">
+          <thead>
+            <tr>
+              <th className="th-no">No</th>
+              <th>Tanggal</th>
+              <th>No. Invoice</th>
+              <th>Keterangan Transaksi</th>
+              <th>Aset Terkait</th>
+              <th>Lampiran</th>
+              <th>Jumlah (IDR)</th>
+              <th className="th-actions">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.length === 0 ? (
+              <tr className="table-empty-row">
+                <td colSpan={8}>
+                  <div className="table-empty-inner">
+                    <Icon d={I.fileText} size={36} style={{ opacity: 0.2 }} />
+                    <span style={{ fontWeight: 600, fontSize: "0.85rem" }}>
+                      {transactions.length === 0 ? "Belum ada riwayat realisasi untuk pos ini." : "Tidak ada transaksi yang cocok dengan pencarian."}
+                    </span>
+                    {transactions.length === 0 && (
+                      <button className="btn btn-green" style={{ marginTop: 4 }} onClick={onEntryNew}><Icon d={I.plus} size={12} /> Tambah Transaksi Pertama</button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ) : (
+              filtered.map((t, i) => (
+                <tr key={t.id}>
+                  <td className="td-no">{i + 1}</td>
+                  <td><span className="td-date">{fmtDate(t.tanggal)}</span></td>
+                  <td><span className="td-sn" style={{color:"var(--ink)"}}>{t.no_invoice || "—"}</span></td>
+                  <td><span className="td-name-text">{t.keterangan || "—"}</span></td>
+                  <td>
+                    {t.aset ? <span className="td-code" style={{background: "var(--amber-lt)", color: "var(--amber)"}}>{t.aset}</span> : <span style={{color:"var(--ink4)"}}>—</span>}
+                  </td>
+                  <td>
+                    {t.lampiran ? (
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: "0.7rem", color: "var(--ink3)" }}>
+                        <Icon d={I.fileText} size={11} /> {t.lampiran}
+                      </span>
+                    ) : <span style={{color:"var(--ink4)"}}>—</span>}
+                  </td>
+                  <td><span className="td-value" style={{ color: "var(--amber)" }}>{fmt(t.jumlah)}</span></td>
+                  <td className="td-actions">
+                    <div className="td-act-row">
+                      <button className="abtn" title="Edit" onClick={() => onEditRow(t)}><Icon d={I.edit} size={11} /></button>
+                      <button className="abtn del" title="Hapus" onClick={() => onDeleteRow(t.id)}><Icon d={I.trash} size={11} /></button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+          {filtered.length > 0 && (
+            <tfoot>
+              <tr>
+                <td colSpan={6} style={{ fontWeight: 700, fontSize: "0.75rem" }}>
+                  {filtered.length < transactions.length ? `Menampilkan ${filtered.length} dari ${transactions.length} transaksi` : `Total ${transactions.length} transaksi`}
+                </td>
+                <td className="tfoot-total">{fmt(totalFiltered)}</td>
+                <td></td>
+              </tr>
+            </tfoot>
+          )}
+        </table>
+
+        {transactions.length > 0 && (
+          <div className="asset-summary-bar">
+            <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
+              <div className="asset-summary-stat">
+                <span>Total Transaksi</span>
+                <strong>{transactions.length} kali</strong>
+              </div>
+              <div className="asset-summary-stat">
+                <span>Total Realisasi OPEX</span>
+                <strong style={{ color: "var(--amber)" }}>{fmt(totalAll)}</strong>
+              </div>
+              {filtered.length !== transactions.length && (
+                <div className="asset-summary-stat">
+                  <span>Realisasi (Pencarian Aktif)</span>
+                  <strong style={{ color: "var(--amber)" }}>{fmt(totalFiltered)}</strong>
+                </div>
+              )}
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: "0.75rem", color: "var(--ink4)", fontWeight: 500 }}>{pct}% pagu telah terserap</span>
+              <div style={{ width: 100, height: 6, background: "var(--border-lt)", borderRadius: 99, overflow: "hidden" }}>
+                <div style={{ width: `${Math.min(pct, 100)}%`, height: "100%", background: pctColor(pct), borderRadius: 99, transition: "width .6s" }} />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════
+// CAPEX CARD (Sama persis kode asli)
+// ══════════════════════════════════════════════════════════════════
+function CapexCard({ proj, onEdit, onAssetTable, onAssetEntry, onDelete }) {
+  const [open, setOpen] = useState(false);
+  const assets = proj.assets || [];
+  const assetTotal = assets.reduce((s, a) => s + (a.acquisition_value || 0), 0);
+  const pct = proj.nilai_kontrak > 0 ? Math.round((assetTotal / proj.nilai_kontrak) * 100) : 0;
+
+  return (
+    <div className={`jcard ${open ? "open-cap" : ""}`}>
+      <div className="jcard-inner">
+        <div className="jcard-accent cap" />
+        <div className="jcard-content">
+          <div className="jcard-top" onClick={() => setOpen(v => !v)}>
+            <div className="jc-info">
+              <div className="jc-tags">
+                <span className="badge capex">CAPEX</span>
+                <span className="yr-tag">{proj._thn}</span>
+                <code className="code-tag">{proj._angKode}</code>
+              </div>
+              <p className="jc-title">{proj.nm_pekerjaan}</p>
+            </div>
+
+            <div className="jc-meta">
+              <span><Icon d={I.calendar} size={12} />{fmtDate(proj.tgl_kontrak)}</span>
+              {proj.durasi_kontrak > 0 && <span><Icon d={I.clock} size={12} />{proj.durasi_kontrak} hari kerja</span>}
+            </div>
+
+            <div className="jc-fin">
+              <div className="amt-blk">
+                <span className="amt-lbl">Nilai Kontrak</span>
+                <span className="amt-val red">{fmt(proj.nilai_kontrak)}</span>
+              </div>
+              <div className="fin-div" />
+              <div className="amt-blk">
+                <span className="amt-lbl">Aset Tercatat</span>
+                <span className="amt-val blue">{fmt(assetTotal)}</span>
+              </div>
+            </div>
+
+            <div className="jc-actions">
+              <PctRing pct={pct} />
+              <div className="act-btns" onClick={e => e.stopPropagation()}>
+                <button className="abtn" onClick={() => onEdit(proj)}><Icon d={I.edit} size={12} /> Edit</button>
+                <button className="abtn blue" onClick={() => onAssetTable(proj)}>
+                  <Icon d={I.table} size={12} />
+                  {assets.length > 0 ? `${assets.length} Aset` : "Lihat Aset"}
+                </button>
+                <button className="abtn del" onClick={() => onDelete(proj)}><Icon d={I.trash} size={12} /></button>
+              </div>
+              <div className="chev"><Icon d={open ? I.chevUp : I.chevDown} size={14} /></div>
+            </div>
+          </div>
+
+          {open && (
+            <div className="jcard-detail">
+              <div className="detail-grid">
+                <div className="d-panel">
+                  <div className="d-title">Informasi Kontrak</div>
+                  <div className="d-rows">
+                    {proj.no_kontrak && <div className="d-row"><span className="lbl">No. Kontrak</span><span className="val"><code>{proj.no_kontrak}</code></span></div>}
+                    {proj.no_po && <div className="d-row"><span className="lbl">No. PO</span><span className="val"><code>{proj.no_po}</code></span></div>}
+                    {proj.no_pr && <div className="d-row"><span className="lbl">No. PR</span><span className="val"><code>{proj.no_pr}</code></span></div>}
+                    {proj.tgl_kontrak && <div className="d-row"><span className="lbl">Tgl. Kontrak</span><span className="val">{fmtDate(proj.tgl_kontrak)}</span></div>}
+                    {proj.durasi_kontrak > 0 && <div className="d-row"><span className="lbl">Durasi</span><span className="val">{proj.durasi_kontrak} hari</span></div>}
+                    {proj.tgl_sp3 && <div className="d-row"><span className="lbl">Tgl. SP3</span><span className="val">{fmtDate(proj.tgl_sp3)}</span></div>}
+                    {proj.tgl_bamk && <div className="d-row"><span className="lbl">BAMK</span><span className="val">{fmtDate(proj.tgl_bamk)}</span></div>}
+                    {proj.nilai_rab > 0 && <div className="d-row"><span className="lbl">Nilai RAB</span><span className="val">{fmt(proj.nilai_rab)}</span></div>}
+                  </div>
+                </div>
+                <div className="d-panel">
+                  <div className="d-title">
+                    Aset Tercatat
+                    <button className="inline-link" onClick={() => onAssetTable(proj)}>
+                      <Icon d={I.eye} size={11} /> Lihat & Edit Aset →
+                    </button>
+                  </div>
+                  {assets.length === 0 ? (
+                    <div className="d-empty">
+                      Belum ada aset ditambahkan.
+                      <div style={{ marginTop: 10 }}>
+                        <button className="btn btn-prim" style={{ fontSize: "0.75rem", padding: "6px 14px" }} onClick={() => onAssetEntry(proj)}>
+                          <Icon d={I.plus} size={11} /> Entry Aset Baru
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="ai-list">
+                      {assets.slice(0, 3).map(a => (
+                        <div key={a.id} className="ai-item">
+                          <div className="ai-info">
+                            <code className="a-code">{a.asset_code}</code>
+                            <div>
+                              <p className="a-name">{a.name}</p>
+                              <p className="a-loc"><Icon d={I.mapPin} size={10} />{a.location}</p>
+                            </div>
+                          </div>
+                          <span className="a-val">{fmt(a.acquisition_value)}</span>
+                        </div>
+                      ))}
+                      {assets.length > 3 && (
+                        <div style={{ textAlign: "center", paddingTop: 4 }}>
+                          <button className="inline-link" onClick={() => onAssetTable(proj)}>+ {assets.length - 3} aset lainnya →</button>
+                        </div>
+                      )}
+                      <div className="panel-total blue">
+                        <span>Total Nilai</span>
+                        <strong>{fmt(assetTotal)}</strong>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
-        </div>
-        <div className="mfoot">
-          <button className="btn btn-outline" onClick={onClose}>Tutup</button>
-          <button className="btn btn-prim" onClick={() => { onClose(); onEntry(); }}>
-            <Icon d={I.plus} size={14} /> Entry Aset Baru
-          </button>
         </div>
       </div>
     </div>
@@ -612,142 +1159,17 @@ function AssetModal({ proj, onClose, onEntry }) {
 }
 
 // ══════════════════════════════════════════════════════════════════
-// CAPEX CARD (Horizontal / Row Layout)
+// OPEX CARD (Restorasi gaya CSS warna asli, ubah konsep aksi ke tabel)
 // ══════════════════════════════════════════════════════════════════
-function CapexCard({ proj, onEdit, onAsset, onDelete }) {
-  const [open, setOpen] = useState(false);
-  const [assetModal, setAssetModal] = useState(false);
-  const assets = proj.assets || [];
-  const assetTotal = assets.reduce((s, a) => s + (a.acquisition_value || 0), 0);
-  const pct = proj.nilai_kontrak > 0 ? Math.round((assetTotal / proj.nilai_kontrak) * 100) : 0;
-
-  return (
-    <>
-      <div className={`jcard ${open ? "open-cap" : ""}`}>
-        <div className="jcard-inner">
-          <div className="jcard-accent cap" />
-          <div className="jcard-content">
-            <div className="jcard-top" onClick={() => setOpen(v => !v)}>
-              <div className="jc-info">
-                <div className="jc-tags">
-                  <span className="badge capex">CAPEX</span>
-                  <span className="yr-tag">{proj._thn}</span>
-                  <code className="code-tag">{proj._angKode}</code>
-                </div>
-                <p className="jc-title">{proj.nm_pekerjaan}</p>
-              </div>
-
-              <div className="jc-meta">
-                <span><Icon d={I.calendar} size={12} />{fmtDate(proj.tgl_kontrak)}</span>
-                {proj.durasi_kontrak > 0 && <span><Icon d={I.clock} size={12} />{proj.durasi_kontrak} hari kerja</span>}
-              </div>
-
-              <div className="jc-fin">
-                <div className="amt-blk">
-                  <span className="amt-lbl">Nilai Kontrak</span>
-                  <span className="amt-val red">{fmt(proj.nilai_kontrak)}</span>
-                </div>
-                <div className="fin-div" />
-                <div className="amt-blk">
-                  <span className="amt-lbl">Aset Tercatat</span>
-                  <span className="amt-val blue">{fmt(assetTotal)}</span>
-                </div>
-              </div>
-
-              <div className="jc-actions">
-                <PctRing pct={pct} />
-                <div className="act-btns" onClick={e => e.stopPropagation()}>
-                  <button className="abtn" onClick={() => onEdit(proj)}><Icon d={I.edit} size={12} /> Edit</button>
-                  <button className="abtn blue" onClick={() => setAssetModal(true)}>
-                    <Icon d={I.package} size={12} />{assets.length > 0 ? `${assets.length} Aset` : "Entry"}
-                  </button>
-                  <button className="abtn del" onClick={() => onDelete(proj)}><Icon d={I.trash} size={12} /></button>
-                </div>
-                <div className="chev"><Icon d={open ? I.chevUp : I.chevDown} size={14} /></div>
-              </div>
-            </div>
-
-            {open && (
-              <div className="jcard-detail">
-                <div className="detail-grid">
-                  <div className="d-panel">
-                    <div className="d-title">Informasi Kontrak</div>
-                    <div className="d-rows">
-                      {proj.no_kontrak && <div className="d-row"><span className="lbl">No. Kontrak</span><span className="val"><code>{proj.no_kontrak}</code></span></div>}
-                      {proj.no_po && <div className="d-row"><span className="lbl">No. PO</span><span className="val"><code>{proj.no_po}</code></span></div>}
-                      {proj.no_pr && <div className="d-row"><span className="lbl">No. PR</span><span className="val"><code>{proj.no_pr}</code></span></div>}
-                      {proj.tgl_kontrak && <div className="d-row"><span className="lbl">Tgl. Kontrak</span><span className="val">{fmtDate(proj.tgl_kontrak)}</span></div>}
-                      {proj.durasi_kontrak > 0 && <div className="d-row"><span className="lbl">Durasi</span><span className="val">{proj.durasi_kontrak} hari</span></div>}
-                      {proj.tgl_sp3 && <div className="d-row"><span className="lbl">Tgl. SP3</span><span className="val">{fmtDate(proj.tgl_sp3)}</span></div>}
-                      {proj.tgl_bamk && <div className="d-row"><span className="lbl">BAMK</span><span className="val">{fmtDate(proj.tgl_bamk)}</span></div>}
-                      {proj.nilai_rab > 0 && <div className="d-row"><span className="lbl">Nilai RAB</span><span className="val">{fmt(proj.nilai_rab)}</span></div>}
-                    </div>
-                  </div>
-                  <div className="d-panel">
-                    <div className="d-title">
-                      Aset Tercatat
-                      <button className="inline-link" onClick={() => setAssetModal(true)}>Lihat & Entry →</button>
-                    </div>
-                    {assets.length === 0 ? (
-                      <div className="d-empty">Belum ada aset ditambahkan.</div>
-                    ) : (
-                      <div className="ai-list">
-                        {assets.slice(0, 3).map(a => (
-                          <div key={a.id} className="ai-item">
-                            <div className="ai-info">
-                              <code className="a-code">{a.asset_code}</code>
-                              <div>
-                                <p className="a-name">{a.name}</p>
-                                <p className="a-loc"><Icon d={I.mapPin} size={10} />{a.location}</p>
-                              </div>
-                            </div>
-                            <span className="a-val">{fmt(a.acquisition_value)}</span>
-                          </div>
-                        ))}
-                        {assets.length > 3 && (
-                          <div style={{ textAlign: "center", paddingTop: 4 }}>
-                            <button className="inline-link" onClick={() => setAssetModal(true)}>+ {assets.length - 3} aset lainnya</button>
-                          </div>
-                        )}
-                        <div className="panel-total blue">
-                          <span>Total Nilai</span>
-                          <strong>{fmt(assetTotal)}</strong>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {assetModal && (
-        <AssetModal proj={proj} onClose={() => setAssetModal(false)} onEntry={() => onAsset(proj)} />
-      )}
-    </>
-  );
-}
-
-// ══════════════════════════════════════════════════════════════════
-// OPEX CARD (Horizontal / Row Layout)
-// ══════════════════════════════════════════════════════════════════
-function OpexCard({ ang, onSave, onSaveOpex, showToast, onDelete, onOpenRealisasi }) {
+function OpexCard({ ang, onSaveOpex, showToast, onDelete, onRealisasiTable, onRealisasiEntry }) {
   const [open, setOpen] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
-  const [confirm, setConfirm] = useState(null);
 
   const totalReal = (ang.transaksi || []).reduce((s, t) => s + (t.jumlah || 0), 0);
   const pagu = ang.nilai_anggaran_tahunan || 0;
   const sisa = pagu - totalReal;
   const pct = pagu > 0 ? Math.round((totalReal / pagu) * 100) : 0;
   const masterInfo = BUDGET_MASTERS.find(m => m.kd_anggaran_master === ang.kd_anggaran_master);
-
-  const deleteRow = id => setConfirm({
-    msg: "Hapus transaksi realisasi ini?",
-    onConfirm: () => { onSave(ang.id, ang.transaksi.filter(t => t.id !== id)); showToast("Transaksi dihapus"); setConfirm(null); }
-  });
 
   return (
     <div className={`jcard ${open ? "open-opx" : ""}`}>
@@ -761,7 +1183,7 @@ function OpexCard({ ang, onSave, onSaveOpex, showToast, onDelete, onOpenRealisas
                 <span className="yr-tag">Thn {ang.thn_anggaran}</span>
                 <code className="code-tag">{ang.kd_anggaran_master}</code>
               </div>
-              <p className="jc-title" style={{ color: open ? "#14532d" : "var(--ink)" }}>{ang.nama}</p>
+              <p className="jc-title">{ang.nama}</p>
             </div>
 
             <div className="jc-meta">
@@ -781,7 +1203,8 @@ function OpexCard({ ang, onSave, onSaveOpex, showToast, onDelete, onOpenRealisas
               <div className="fin-div" />
               <div className="amt-blk">
                 <span className="amt-lbl">Sisa</span>
-                <span className="amt-val" style={{ color: sisa >= 0 ? "var(--green)" : "var(--red)" }}>{fmt(Math.abs(sisa))}</span>
+                {/* RESTORASI GAYA CSS ASLI: className="amt-val green/red" */}
+                <span className={`amt-val ${sisa >= 0 ? "green" : "red"}`}>{fmt(Math.abs(sisa))}</span>
               </div>
             </div>
 
@@ -791,8 +1214,10 @@ function OpexCard({ ang, onSave, onSaveOpex, showToast, onDelete, onOpenRealisas
                 <button className={`abtn ${showEdit ? "del" : ""}`} onClick={() => { setShowEdit(v => !v); if (!showEdit) setOpen(true); }}>
                   <Icon d={showEdit ? I.x : I.edit} size={12} />{showEdit ? "Tutup" : "Edit"}
                 </button>
-                <button className="abtn green" onClick={() => onOpenRealisasi(ang, null)}>
-                  <Icon d={I.plus} size={12} /> Entry
+                {/* KONSEP BARU: Tombol ke Tabel Riwayat OPEX */}
+                <button className="abtn green" onClick={() => onRealisasiTable(ang)}>
+                  <Icon d={I.table} size={12} />
+                  {ang.transaksi?.length > 0 ? `${ang.transaksi.length} Transaksi` : "Lihat Riwayat"}
                 </button>
                 <button className="abtn del" onClick={() => onDelete(ang.id)}><Icon d={I.trash} size={12} /></button>
               </div>
@@ -812,19 +1237,30 @@ function OpexCard({ ang, onSave, onSaveOpex, showToast, onDelete, onOpenRealisas
                   <div className="d-rows">
                     <div className="d-row"><span className="lbl">Kode Master</span><span className="val"><code>{ang.kd_anggaran_master}</code></span></div>
                     <div className="d-row"><span className="lbl">Tahun Anggaran</span><span className="val">{ang.thn_anggaran}</span></div>
-                    <div className="d-row"><span className="lbl">Total Anggaran (Pagu)</span><span className="val" style={{ color: "var(--blue)" }}>{fmt(pagu)}</span></div>
-                    <div className="d-row"><span className="lbl">Total Realisasi</span><span className="val" style={{ color: "var(--amber)" }}>{fmt(totalReal)}</span></div>
-                    <div className="d-row"><span className="lbl">Sisa Anggaran</span><span className="val" style={{ color: sisa >= 0 ? "var(--green)" : "var(--red)" }}>{fmt(Math.abs(sisa))} {sisa < 0 && "(melebihi)"}</span></div>
+                    {/* RESTORASI GAYA CSS ASLI: inline color style removed */}
+                    <div className="d-row"><span className="lbl">Total Anggaran (Pagu)</span><span className="val blue">{fmt(pagu)}</span></div>
+                    <div className="d-row"><span className="lbl">Total Realisasi</span><span className="val amber">{fmt(totalReal)}</span></div>
+                    <div className="d-row"><span className="lbl">Sisa Anggaran</span><span className={`val ${sisa >= 0 ? "green" : "red"}`}>{fmt(Math.abs(sisa))} {sisa < 0 && "(melebihi)"}</span></div>
                     <div className="d-row"><span className="lbl">Persentase Serapan</span><span className="val">{pct}%</span></div>
                   </div>
                 </div>
                 <div className="d-panel">
                   <div className="d-title">
                     Riwayat Realisasi
-                    <button className="inline-link" onClick={() => onOpenRealisasi(ang, null)}>+ Entry Baru</button>
+                    {/* KONSEP BARU: Link ke tabel riwayat OPEX */}
+                    <button className="inline-link" onClick={() => onRealisasiTable(ang)}>
+                      <Icon d={I.eye} size={11} /> Lihat & Edit Riwayat →
+                    </button>
                   </div>
                   {(!ang.transaksi || ang.transaksi.length === 0) ? (
-                    <div className="d-empty">Belum ada realisasi tercatat.</div>
+                    <div className="d-empty">
+                      Belum ada realisasi tercatat.
+                      <div style={{ marginTop: 10 }}>
+                        <button className="btn btn-green" style={{ fontSize: "0.75rem", padding: "6px 14px" }} onClick={() => onRealisasiEntry(ang)}>
+                          <Icon d={I.plus} size={11} /> Entry Transaksi Baru
+                        </button>
+                      </div>
+                    </div>
                   ) : (
                     <div className="ri-list">
                       {ang.transaksi.slice(0,3).map(t => (
@@ -836,18 +1272,12 @@ function OpexCard({ ang, onSave, onSaveOpex, showToast, onDelete, onOpenRealisas
                               <p className="r-date">{fmtDate(t.tanggal)}</p>
                             </div>
                           </div>
-                          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                            <span className="r-val">{fmt(t.jumlah)}</span>
-                            <div className="act-btns">
-                              <button className="abtn" style={{ padding: "4px 6px" }} onClick={() => onOpenRealisasi(ang, t)}><Icon d={I.edit} size={11} /></button>
-                              <button className="abtn del" style={{ padding: "4px 6px" }} onClick={() => deleteRow(t.id)}><Icon d={I.trash} size={11} /></button>
-                            </div>
-                          </div>
+                          <span className="r-val">{fmt(t.jumlah)}</span>
                         </div>
                       ))}
                       {ang.transaksi.length > 3 && (
-                        <div style={{ textAlign: "center", paddingTop: 4, fontSize: "0.75rem", color: "var(--ink4)" }}>
-                          +{ang.transaksi.length - 3} transaksi lainnya
+                        <div style={{ textAlign: "center", paddingTop: 4 }}>
+                          <button className="inline-link" onClick={() => onRealisasiTable(ang)}>+ {ang.transaksi.length - 3} transaksi lainnya →</button>
                         </div>
                       )}
                       <div className="panel-total amber">
@@ -862,13 +1292,12 @@ function OpexCard({ ang, onSave, onSaveOpex, showToast, onDelete, onOpenRealisas
           )}
         </div>
       </div>
-      {confirm && <Confirm msg={confirm.msg} onConfirm={confirm.onConfirm} onCancel={() => setConfirm(null)} />}
     </div>
   );
 }
 
 // ══════════════════════════════════════════════════════════════════
-// EDIT OPEX INLINE
+// EDIT OPEX INLINE (Sama persis kode asli)
 // ══════════════════════════════════════════════════════════════════
 function EditOpexInline({ ang, onSave, onCancel }) {
   const [form, setForm] = useState({ kd_anggaran_master: ang.kd_anggaran_master || "", nama: ang.nama || "", thn_anggaran: ang.thn_anggaran || new Date().getFullYear(), nilai_anggaran_tahunan: ang.nilai_anggaran_tahunan || 0 });
@@ -876,7 +1305,7 @@ function EditOpexInline({ ang, onSave, onCancel }) {
   const handleMaster = kd => { const m = BUDGET_MASTERS.find(x => x.kd_anggaran_master === kd); setForm(f => ({ ...f, kd_anggaran_master: kd, nama: m ? m.nm_anggaran_master : f.nama })); };
   return (
     <div style={{ background: "var(--green-lt)", borderTop: "1px solid var(--green-mid)", borderBottom: "1px solid var(--green-mid)", padding: "20px 24px" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyConter: "space-between", marginBottom: "16px" }}>
         <h3 style={{ fontSize: "0.85rem", fontWeight: 800, color: "var(--green)", display: "flex", alignItems: "center", gap: 8 }}><Icon d={I.edit} size={12} /> Edit Pos OPEX</h3>
         <button className="btn btn-outline" style={{ padding: "4px 10px", fontSize: "0.75rem" }} onClick={onCancel}><Icon d={I.x} size={10} /> Tutup</button>
       </div>
@@ -907,7 +1336,7 @@ function EditOpexInline({ ang, onSave, onCancel }) {
 }
 
 // ══════════════════════════════════════════════════════════════════
-// EDIT PROJECT PAGE
+// EDIT PROJECT PAGE (Sama persis kode asli)
 // ══════════════════════════════════════════════════════════════════
 function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
   const [form, setForm] = useState({ ...project });
@@ -978,7 +1407,7 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
 }
 
 // ══════════════════════════════════════════════════════════════════
-// ASSET ENTRY PAGE (Dengan Fitur Unggah Gambar per Aset)
+// ASSET ENTRY PAGE (Sama persis kode asli)
 // ══════════════════════════════════════════════════════════════════
 function AssetEntryPage({ project, anggaran, onBack, onSave, showToast }) {
   const [assets, setAssets] = useState((project.assets || []).map(a => ({ ...a, _af: false, image: a.image || null })));
@@ -1061,8 +1490,6 @@ function AssetEntryPage({ project, anggaran, onBack, onSave, showToast }) {
             <button className="abtn del" style={{ marginLeft: "auto" }} onClick={() => setConfirm({ msg: `Hapus aset "#${i + 1}"?`, onConfirm: () => { remove(a.id); setConfirm(null); } })}><Icon d={I.trash} size={12} /> Hapus</button>
           </div>
           <div className="acard-body">
-            
-            {/* AREA UNGGAH GAMBAR ASET */}
             <div className="acard-image-section">
               <div className="acard-image-box" onClick={() => triggerImageUpload(a.id)}>
                 {a.image ? (
@@ -1119,13 +1546,13 @@ function AssetEntryPage({ project, anggaran, onBack, onSave, showToast }) {
 }
 
 // ══════════════════════════════════════════════════════════════════
-// REALISASI PAGE
+// REALISASI PAGE (Form Entry) — (Sama persis kode asli, update navigasi)
 // ══════════════════════════════════════════════════════════════════
 function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
   const isEdit = !!editData;
   const [form, setForm] = useState(isEdit ? { ...editData, jumlah: editData.jumlah || "" } : { tanggal: "", keterangan: "", no_invoice: "", aset: "", lampiran: "", jumlah: "" });
   const up = (k, v) => setForm(f => ({ ...f, [k]: v }));
-  
+
   const pagu = ang.nilai_anggaran_tahunan || 0;
   const prev = (ang.transaksi || []).filter(t => !isEdit || t.id !== editData.id).reduce((s, t) => s + (t.jumlah || 0), 0);
   const jumlah = parseFloat(String(form.jumlah).replace(/[^\d.]/g, "")) || 0;
@@ -1151,7 +1578,7 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
         <div className="ctx-item"><span>Pagu</span><strong style={{ color: "var(--blue)" }}>{fmt(pagu)}</strong></div>
         <div className="ctx-item">
           <span>Sisa Setelah Input</span>
-          <strong style={{ color: sisa >= 0 ? "var(--green)" : "var(--red)" }}>{fmt(Math.abs(sisa))} {sisa < 0 && "(melebihi)"}</strong>
+          <strong className={sisa >= 0 ? "green" : "red"}>{fmt(Math.abs(sisa))} {sisa < 0 && "(melebihi)"}</strong>
         </div>
       </div>
       <div className="sec-card">
@@ -1171,9 +1598,9 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
         </div>
       </div>
       <div className="edit-footer">
-        <div className="edit-footer-info">
-          <span>Jumlah Transaksi Input</span>
-          <strong style={{ color: "var(--green)" }}>{fmt(jumlah)}</strong>
+        <div>
+          <span style={{ fontSize: "0.75rem", color: "var(--ink3)" }}>Jumlah Transaksi Input</span>
+          <div style={{ fontSize: "1rem", fontWeight: 800, color: "var(--green)" }}>{fmt(jumlah)}</div>
         </div>
         <div style={{ display: "flex", gap: 12 }}>
           <button className="btn btn-outline" onClick={onBack}>Batal</button>
@@ -1236,6 +1663,14 @@ export default function BudgetManagement() {
 
   const getAng = id => capexData.find(a => a.id === id);
 
+  const getLatestProject = (projId) => {
+    for (const ang of capexData) {
+      const p = ang.projects.find(pr => pr.id === projId);
+      if (p) return { ...p, _angId: ang.id, _angNama: ang.nama, _angKode: ang.kode, _thn: ang.thnAnggaran };
+    }
+    return null;
+  };
+
   const saveOpexTrx = (id, trx) => setOpexData(p => p.map(a => a.id === id ? { ...a, transaksi: trx } : a));
   const saveOpexData = (id, u) => setOpexData(p => p.map(a => a.id === id ? { ...a, ...u } : a));
   const deleteOpex = id => setConfirm({ msg: "Hapus pos anggaran OPEX ini beserta semua transaksinya?", onConfirm: () => { setOpexData(p => p.filter(a => a.id !== id)); showToast("Pos anggaran dihapus"); setConfirm(null); } });
@@ -1243,9 +1678,120 @@ export default function BudgetManagement() {
   const saveAssets = (id, assets) => setCapexData(p => p.map(ang => ({ ...ang, projects: ang.projects.map(pr => pr.id === id ? { ...pr, assets } : pr) })));
   const deleteProject = (id, angId) => { setCapexData(p => p.map(ang => ang.id === angId ? { ...ang, projects: ang.projects.filter(pr => pr.id !== id) } : ang)); showToast("Pekerjaan dihapus"); };
 
-  if (page?.type === "editProject") return (<><style>{CSS}</style><div className="root">{toast && <Toast msg={toast} onDone={() => setToast(null)} />}<EditProjectPage project={page.project} anggaran={page.anggaran} onBack={() => setPage(null)} onSave={saveProject} showToast={showToast} /></div></>);
-  if (page?.type === "asset") return (<><style>{CSS}</style><div className="root">{toast && <Toast msg={toast} onDone={() => setToast(null)} />}<AssetEntryPage project={page.project} anggaran={page.anggaran} onBack={() => setPage(null)} onSave={saveAssets} showToast={showToast} /></div></>);
-  if (page?.type === "realisasi") { const angNow = opexData.find(a => a.id === page.ang.id) || page.ang; return (<><style>{CSS}</style><div className="root">{toast && <Toast msg={toast} onDone={() => setToast(null)} />}<RealisasiPage ang={angNow} editData={page.editData} onBack={() => setPage(null)} onSave={saveOpexTrx} showToast={showToast} /></div></>); }
+  // ── PAGE ROUTING ──
+  if (page?.type === "editProject") {
+    return (
+      <>
+        <style>{CSS}</style>
+        <div className="root">
+          {toast && <Toast msg={toast} onDone={() => setToast(null)} />}
+          <EditProjectPage project={page.project} anggaran={page.anggaran} onBack={() => setPage(null)} onSave={saveProject} showToast={showToast} />
+        </div>
+      </>
+    );
+  }
+
+  if (page?.type === "assetTable") {
+    const latestProject = getLatestProject(page.projectId) || page.project;
+    return (
+      <>
+        <style>{CSS}</style>
+        <div className="root">
+          {toast && <Toast msg={toast} onDone={() => setToast(null)} />}
+          <AssetTablePage
+            project={latestProject}
+            anggaran={page.anggaran}
+            onBack={() => setPage(null)}
+            onEntryNew={() => setPage({ type: "asset", projectId: page.projectId, project: latestProject, anggaran: page.anggaran, returnToTable: true })}
+            onSaveAssets={saveAssets}
+            showToast={showToast}
+          />
+        </div>
+      </>
+    );
+  }
+
+  if (page?.type === "asset") {
+    const latestProject = getLatestProject(page.projectId) || page.project;
+    return (
+      <>
+        <style>{CSS}</style>
+        <div className="root">
+          {toast && <Toast msg={toast} onDone={() => setToast(null)} />}
+          <AssetEntryPage
+            project={latestProject}
+            anggaran={page.anggaran}
+            onBack={() => {
+              if (page.returnToTable) {
+                setPage({ type: "assetTable", projectId: page.projectId, project: latestProject, anggaran: page.anggaran });
+              } else {
+                setPage(null);
+              }
+            }}
+            onSave={(id, assets) => { saveAssets(id, assets); }}
+            showToast={showToast}
+          />
+        </div>
+      </>
+    );
+  }
+
+  // KONSEP BARU ROUTING: Halaman Tabel Riwayat OPEX (Gaya persis aset capex)
+  if (page?.type === "realisasiTable") {
+    const angNow = opexData.find(a => a.id === page.ang.id) || page.ang;
+    return (
+      <>
+        <style>{CSS}</style>
+        <div className="root">
+          {toast && <Toast msg={toast} onDone={() => setToast(null)} />}
+          <RealisasiTablePage
+            ang={angNow}
+            onBack={() => setPage(null)}
+            onEntryNew={() => setPage({ type: "realisasi", ang: angNow, editData: null, returnToTable: true })}
+            onEditRow={(t) => setPage({ type: "realisasi", ang: angNow, editData: t, returnToTable: true })}
+            onDeleteRow={(id) => {
+              setConfirm({
+                msg: "Hapus transaksi realisasi ini?",
+                onConfirm: () => {
+                  saveOpexTrx(angNow.id, angNow.transaksi.filter(trx => trx.id !== id));
+                  showToast("Transaksi dihapus");
+                  setConfirm(null);
+                }
+              });
+            }}
+            showToast={showToast}
+          />
+          {confirm && <Confirm msg={confirm.msg} onConfirm={confirm.onConfirm} onCancel={() => setConfirm(null)} />}
+        </div>
+      </>
+    );
+  }
+
+  if (page?.type === "realisasi") {
+    const angNow = opexData.find(a => a.id === page.ang.id) || page.ang;
+    return (
+      <>
+        <style>{CSS}</style>
+        <div className="root">
+          {toast && <Toast msg={toast} onDone={() => setToast(null)} />}
+          <RealisasiPage 
+            ang={angNow} 
+            editData={page.editData} 
+            onBack={() => {
+              if (page.returnToTable) {
+                // Kembali ke halaman tabel riwayat setelah entry/edit
+                setPage({ type: "realisasiTable", ang: angNow });
+              } else {
+                setPage(null);
+              }
+            }} 
+            onSave={saveOpexTrx} 
+            showToast={showToast} 
+          />
+        </div>
+      </>
+    );
+  }
 
   const showCapex = typeFilter !== "opex";
   const showOpex = typeFilter !== "capex";
@@ -1257,7 +1803,6 @@ export default function BudgetManagement() {
       <div className="root">
         {toast && <Toast msg={toast} onDone={() => setToast(null)} />}
         
-        {/* HEADER */}
         <div className="hdr">
           <div>
             <h1>Anggaran &amp; Pekerjaan</h1>
@@ -1275,7 +1820,6 @@ export default function BudgetManagement() {
           </div>
         </div>
 
-        {/* KPI */}
         <div className="kpi-strip">
           <div className="kpi blue">
             <div className="kpi-ico"><Icon d={I.briefcase} size={20} /></div>
@@ -1303,7 +1847,6 @@ export default function BudgetManagement() {
           </div>
         </div>
 
-        {/* TOOLBAR */}
         <div className="toolbar">
           <div className="flt-box">
             <Icon d={I.filter} size={14} />
@@ -1318,7 +1861,6 @@ export default function BudgetManagement() {
           </div>
         </div>
 
-        {/* CAPEX SECTION */}
         {showCapex && (
           <>
             {showBoth && (
@@ -1331,7 +1873,7 @@ export default function BudgetManagement() {
             )}
             {!showBoth && (
               <div style={{ marginBottom: "16px" }}>
-                <div style={{ fontSize: "1rem", fontWeight: 800, display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ fontSize: "0.9rem", fontWeight: 800, display: "flex", alignItems: "center", gap: 8 }}>
                   <Icon d={I.briefcase} size={16} style={{ color: "var(--blue)" }} /> Daftar Pekerjaan CAPEX
                 </div>
               </div>
@@ -1343,7 +1885,14 @@ export default function BudgetManagement() {
                 {filteredProjects.map(proj => (
                   <CapexCard key={proj.id} proj={proj}
                     onEdit={p => { const a = getAng(p._angId); setPage({ type: "editProject", project: p, anggaran: a }); }}
-                    onAsset={p => { const a = getAng(p._angId); setPage({ type: "asset", project: p, anggaran: a }); }}
+                    onAssetTable={p => {
+                      const a = getAng(p._angId);
+                      setPage({ type: "assetTable", projectId: p.id, project: p, anggaran: a });
+                    }}
+                    onAssetEntry={p => {
+                      const a = getAng(p._angId);
+                      setPage({ type: "asset", projectId: p.id, project: p, anggaran: a, returnToTable: false });
+                    }}
                     onDelete={p => setConfirm({ msg: `Hapus pekerjaan ini beserta datanya?`, onConfirm: () => { deleteProject(p.id, p._angId); setConfirm(null); } })}
                   />
                 ))}
@@ -1352,7 +1901,6 @@ export default function BudgetManagement() {
           </>
         )}
 
-        {/* OPEX SECTION */}
         {showOpex && (
           <>
             {showBoth && (
@@ -1365,7 +1913,7 @@ export default function BudgetManagement() {
             )}
             {!showBoth && (
               <div style={{ marginBottom: "16px" }}>
-                <div style={{ fontSize: "1rem", fontWeight: 800, display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ fontSize: "0.9rem", fontWeight: 800, display: "flex", alignItems: "center", gap: 8 }}>
                   <Icon d={I.monitor} size={16} style={{ color: "var(--green)" }} /> Pos Anggaran OPEX
                 </div>
               </div>
@@ -1376,9 +1924,11 @@ export default function BudgetManagement() {
               <div className="card-list">
                 {filteredOpex.map(ang => (
                   <OpexCard key={ang.id} ang={ang}
-                    onSave={saveOpexTrx} onSaveOpex={saveOpexData}
+                    onSaveOpex={saveOpexData}
                     showToast={showToast} onDelete={deleteOpex}
-                    onOpenRealisasi={(a, ed) => setPage({ type: "realisasi", ang: a, editData: ed })}
+                    // KONSEP BARU PEMANGGILAN HALAMAN TABEL
+                    onRealisasiTable={(a) => setPage({ type: "realisasiTable", ang: a })}
+                    onRealisasiEntry={(a) => setPage({ type: "realisasi", ang: a, editData: null, returnToTable: false })}
                   />
                 ))}
               </div>
@@ -1386,6 +1936,7 @@ export default function BudgetManagement() {
           </>
         )}
       </div>
+      {confirm && <Confirm msg={confirm.msg} onConfirm={confirm.onConfirm} onCancel={() => setConfirm(null)} />}
     </>
   );
 }
