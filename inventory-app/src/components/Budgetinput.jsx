@@ -1702,117 +1702,173 @@ const BudgetInput = () => {
                 <Edit size={18} style={{ color: "#d97706" }} />
                 <h2 style={cardTitleStyle}>Edit / Revisi Anggaran</h2>
               </div>
+
+              {/* === TAMBAHAN WRAPPER DI SINI AGAR KONTEN TERPUSAT & TIDAK TERLALU LEBAR === */}
               <div
                 style={{
                   display: "flex",
-                  flexDirection: "column",
-                  gap: 14,
-                  marginBottom: 24,
-                  padding: "16px",
-                  background: "#f8fafc",
-                  borderRadius: "10px",
-                  border: "1px solid #e2e8f0",
+                  justifyContent: "center",
+                  padding: "10px 0",
                 }}
               >
                 <div
                   style={{
+                    width: "100%",
+                    maxWidth: 600,
                     display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
+                    flexDirection: "column",
                   }}
                 >
-                  <span style={labelStyle}>Nama Anggaran</span>
-                  <strong style={{ color: "#0f172a", fontSize: "0.85rem" }}>
-                    {editingRow.nama_anggaran}
-                  </strong>
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <span style={labelStyle}>Tahun</span>
-                  <strong style={{ color: "#0f172a", fontSize: "0.85rem" }}>
-                    {editingRow.tahun}
-                  </strong>
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <span style={labelStyle}>Total Anggaran Berjalan</span>
-                  <strong style={{ color: "#1d4ed8", fontSize: "1rem" }}>
-                    Rp {fmt(editingRow.total)}
-                  </strong>
-                </div>
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 16,
-                  maxWidth: 500,
-                }}
-              >
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 6 }}
-                >
-                  <label style={labelStyle}>
-                    Jenis Perubahan <span style={{ color: "#dc2626" }}>*</span>
-                  </label>
-                  <select
-                    style={inputStyle}
-                    value={editForm.perubahan}
-                    onChange={(e) =>
-                      setEditForm({ ...editForm, perubahan: e.target.value })
-                    }
+                  {/* Info Anggaran */}
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 14,
+                      marginBottom: 24,
+                      padding: "16px 20px",
+                      background: "#f8fafc",
+                      borderRadius: "10px",
+                      border: "1px solid #e2e8f0",
+                    }}
                   >
-                    <option value="">-- Pilih Jenis Perubahan --</option>
-                    <option value="penambahan">Penambahan Anggaran</option>
-                    <option value="pengurangan">Pengurangan Anggaran</option>
-                    <option value="bymhd">
-                      BYMHD (Biaya Yang Masih Harus Dibayar)
-                    </option>
-                    <option value="transfer">Transfer Anggaran</option>
-                  </select>
-                </div>
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 6 }}
-                >
-                  <label style={labelStyle}>
-                    Nilai Perubahan (IDR){" "}
-                    <span style={{ color: "#dc2626" }}>*</span>
-                  </label>
-                  <input
-                    type="number"
-                    style={inputStyle}
-                    placeholder="Contoh: 50000000"
-                    value={editForm.nilai_perubahan}
-                    onChange={(e) =>
-                      setEditForm({
-                        ...editForm,
-                        nilai_perubahan: e.target.value,
-                      })
-                    }
-                  />
-                  {editForm.nilai_perubahan && (
-                    <span
+                    <div
                       style={{
-                        ...helperStyle,
-                        color: "#d97706",
-                        fontWeight: 600,
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
                       }}
                     >
-                      ≈ Rp {fmt(editForm.nilai_perubahan)}
-                    </span>
-                  )}
+                      <span style={labelStyle}>Nama Anggaran</span>
+                      <strong
+                        style={{
+                          color: "#0f172a",
+                          fontSize: "0.85rem",
+                          textAlign: "right",
+                        }}
+                      >
+                        {editingRow.nama_anggaran}
+                      </strong>
+                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <span style={labelStyle}>Tahun</span>
+                      <strong
+                        style={{
+                          color: "#0f172a",
+                          fontSize: "0.85rem",
+                          textAlign: "right",
+                        }}
+                      >
+                        {editingRow.tahun}
+                      </strong>
+                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <span style={labelStyle}>Total Anggaran Berjalan</span>
+                      <strong
+                        style={{
+                          color: "#1d4ed8",
+                          fontSize: "1rem",
+                          textAlign: "right",
+                        }}
+                      >
+                        Rp {fmt(editingRow.total)}
+                      </strong>
+                    </div>
+                  </div>
+
+                  {/* Form Input */}
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 16,
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 6,
+                      }}
+                    >
+                      <label style={labelStyle}>
+                        Jenis Perubahan{" "}
+                        <span style={{ color: "#dc2626" }}>*</span>
+                      </label>
+                      <select
+                        style={inputStyle}
+                        value={editForm.perubahan}
+                        onChange={(e) =>
+                          setEditForm({
+                            ...editForm,
+                            perubahan: e.target.value,
+                          })
+                        }
+                      >
+                        <option value="">-- Pilih Jenis Perubahan --</option>
+                        <option value="penambahan">Penambahan Anggaran</option>
+                        <option value="pengurangan">
+                          Pengurangan Anggaran
+                        </option>
+                        <option value="bymhd">
+                          BYMHD (Biaya Yang Masih Harus Dibayar)
+                        </option>
+                        <option value="transfer">Transfer Anggaran</option>
+                      </select>
+                    </div>
+
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 6,
+                      }}
+                    >
+                      <label style={labelStyle}>
+                        Nilai Perubahan (IDR){" "}
+                        <span style={{ color: "#dc2626" }}>*</span>
+                      </label>
+                      <input
+                        type="number"
+                        style={inputStyle}
+                        placeholder="Contoh: 50000000"
+                        value={editForm.nilai_perubahan}
+                        onChange={(e) =>
+                          setEditForm({
+                            ...editForm,
+                            nilai_perubahan: e.target.value,
+                          })
+                        }
+                      />
+                      {editForm.nilai_perubahan && (
+                        <span
+                          style={{
+                            ...helperStyle,
+                            color: "#d97706",
+                            fontWeight: 600,
+                          }}
+                        >
+                          ≈ Rp {fmt(editForm.nilai_perubahan)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
+              {/* === AKHIR WRAPPER === */}
+
               <div
                 style={{
                   display: "flex",
@@ -2339,29 +2395,32 @@ export function ManajemenPekerjaan() {
         <div className="overlay" onClick={() => setShowModal(false)}>
           <div
             className="mbox"
-            style={{ 
-              maxWidth: 500, 
+            style={{
+              maxWidth: 500,
               borderRadius: 20,
               display: "flex",
               flexDirection: "column",
               maxHeight: "90vh",
-              overflow: "hidden"
+              overflow: "hidden",
             }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header Modal Tergabung dengan Tombol Close */}
             <div
               className="mhd"
-              style={{ 
-                background: "white", 
+              style={{
+                background: "white",
                 padding: "20px 24px",
                 borderBottom: "1px solid var(--border)",
                 display: "flex",
                 justifyContent: "space-between",
-                alignItems: "center"
+                alignItems: "center",
               }}
             >
-              <div className="mhd-left" style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div
+                className="mhd-left"
+                style={{ display: "flex", alignItems: "center", gap: 12 }}
+              >
                 <div
                   style={{
                     width: 36,
@@ -2379,7 +2438,7 @@ export function ManajemenPekerjaan() {
                   {editId ? "Edit Pekerjaan" : "Input Pekerjaan Baru"}
                 </h3>
               </div>
-              <button 
+              <button
                 onClick={() => setShowModal(false)}
                 style={{
                   background: "transparent",
@@ -2389,7 +2448,7 @@ export function ManajemenPekerjaan() {
                   padding: 4,
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "center"
+                  justifyContent: "center",
                 }}
               >
                 <X size={20} />
@@ -2565,15 +2624,17 @@ export function ManajemenPekerjaan() {
                 <input
                   style={inputStyle}
                   value={form.no_po}
-                  onChange={(e) =>
-                    setForm({ ...form, no_po: e.target.value })
-                  }
+                  onChange={(e) => setForm({ ...form, no_po: e.target.value })}
                 />
               </div>
             </div>
             <div
               className="mfoot"
-              style={{ background: "white", borderTop: "1px solid #f1f5f9", padding: "16px 24px" }}
+              style={{
+                background: "white",
+                borderTop: "1px solid #f1f5f9",
+                padding: "16px 24px",
+              }}
             >
               <button
                 className="btn btn-outline"
