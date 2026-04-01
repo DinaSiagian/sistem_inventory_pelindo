@@ -51,25 +51,64 @@ const existingBudgetMasters = [
     nm_anggaran_master: "Beban Sumber Daya Pihak Ketiga Peralatan",
     tipe_anggaran_master: "OPEX",
   },
+  // CAPEX — sesuai tabel anggaran_master di Excel: hanya satu entry
   {
-    kd_anggaran_master: "2540011",
-    nm_anggaran_master: "Transformasi dan Digitalisasi Operasional",
+    kd_anggaran_master: "5900100000",
+    nm_anggaran_master: "Beban Investasi",
     tipe_anggaran_master: "CAPEX",
   },
+];
+
+// ═══════════════════════════════════════════════════════════════
+// DATA ANGGARAN CAPEX (child dari master 5900100000)
+// Sesuai sheet anggaran_tahunan_capex di Excel
+// ═══════════════════════════════════════════════════════════════
+const capexAnggaranList = [
   {
-    kd_anggaran_master: "2540012",
-    nm_anggaran_master: "Pengembangan Infrastruktur Jaringan",
-    tipe_anggaran_master: "CAPEX",
+    kd_anggaran_capex: "2440015",
+    nm_anggaran_capex: "Implementasi dan Standarisasi IT Infrastruktur",
+    thn_rkap_awal: 2024,
+    thn_rkap_akhir: 2024,
   },
   {
-    kd_anggaran_master: "2540015",
-    nm_anggaran_master: "Pengadaan Peralatan Bongkar Muat",
-    tipe_anggaran_master: "CAPEX",
+    kd_anggaran_capex: "2440014",
+    nm_anggaran_capex: "Penyediaan Network di Branch SPMT",
+    thn_rkap_awal: 2024,
+    thn_rkap_akhir: 2024,
   },
   {
-    kd_anggaran_master: "2540020",
-    nm_anggaran_master: "Standarisasi Perangkat IT Kantor",
-    tipe_anggaran_master: "CAPEX",
+    kd_anggaran_capex: "2440013",
+    nm_anggaran_capex:
+      "Penyiapan Infrastruktur IT (Kantor Pusat, Pelindo Place, Pelindo Tower, Malahayati, Lhokseumawe, Bima, Badas, Parepare, Gresik, Tanjung Emas, Mekar Putih, Meulaboh, Kuala Langsa dan Bumiharjo) PT Pelindo Multi Terminal",
+    thn_rkap_awal: 2024,
+    thn_rkap_akhir: 2024,
+  },
+  {
+    kd_anggaran_capex: "2440020",
+    nm_anggaran_capex:
+      "Revisi Capex (Pemenuhan Kebutuhan Gate dan PNC Transformasi pada Branch SPMT)",
+    thn_rkap_awal: 2024,
+    thn_rkap_akhir: 2025,
+  },
+  {
+    kd_anggaran_capex: "2540011",
+    nm_anggaran_capex:
+      "Transformasi dan Digitalisasi PT Pelindo Multi Terminal",
+    thn_rkap_awal: 2025,
+    thn_rkap_akhir: 2026,
+  },
+  {
+    kd_anggaran_capex: "2540012",
+    nm_anggaran_capex:
+      "Standarisasi Perangkat Jaringan di Lingkungan PT Pelindo Multi Terminal",
+    thn_rkap_awal: 2025,
+    thn_rkap_akhir: 2026,
+  },
+  {
+    kd_anggaran_capex: "2540010",
+    nm_anggaran_capex: "Penyiapan Infrastruktur IT pada Kegiatan Roro",
+    thn_rkap_awal: 2025,
+    thn_rkap_akhir: 2026,
   },
 ];
 
@@ -363,7 +402,9 @@ const BudgetInput = () => {
 
   const [masterMode, setMasterMode] = useState("existing");
   const [selectedMasterId, setSelectedMasterId] = useState(null);
-  // FIX 1: kode anggaran master jadi manual input
+  // Untuk CAPEX: dropdown kedua — pilih kd_anggaran_capex
+  const [selectedCapexId, setSelectedCapexId] = useState(null);
+
   const [newMaster, setNewMaster] = useState({
     kd_anggaran_master: "",
     nm_anggaran_master: "",
@@ -437,6 +478,7 @@ const BudgetInput = () => {
     nilai_perubahan: "",
   });
 
+  // ── Master options — filter berdasarkan tipe ──
   const masterOptions = existingBudgetMasters
     .filter((m) => !tipeAnggaran || m.tipe_anggaran_master === tipeAnggaran)
     .map((m) => ({
@@ -444,6 +486,7 @@ const BudgetInput = () => {
       label: m.nm_anggaran_master,
       ...m,
     }));
+
   const selectedMaster =
     masterOptions.find((m) => m.value === selectedMasterId) ||
     (masterMode === "new" && newMaster.kd_anggaran_master
@@ -454,12 +497,21 @@ const BudgetInput = () => {
         }
       : { label: "Nama Anggaran Master" });
 
+  // ── Capex sub-dropdown: tampil hanya jika master 5900100000 dipilih ──
+  const selectedCapexItem = capexAnggaranList.find(
+    (c) => c.kd_anggaran_capex === selectedCapexId
+  );
+
   const canProceedStep1 = !!tipeAnggaran;
-  // FIX 1: validasi juga kode anggaran master wajib diisi manual
+
+  // Untuk CAPEX (existing mode), perlu master DAN kd_anggaran_capex dipilih
   const canProceedStep2 =
     masterMode === "existing"
-      ? !!selectedMasterId
+      ? tipeAnggaran === "CAPEX"
+        ? !!(selectedMasterId && selectedCapexId)
+        : !!selectedMasterId
       : !!(newMaster.nm_anggaran_master && newMaster.kd_anggaran_master);
+
   const canSaveModal =
     tipeAnggaran === "OPEX"
       ? !!(
@@ -479,6 +531,7 @@ const BudgetInput = () => {
     setStep(1);
     setTipeAnggaran(null);
     setSelectedMasterId(null);
+    setSelectedCapexId(null);
     setMasterMode("existing");
     setNewMaster({
       kd_anggaran_master: "",
@@ -506,7 +559,14 @@ const BudgetInput = () => {
     if (tipeAnggaran === "OPEX")
       setOpexForm((f) => ({ ...f, nama_anggaran: selectedMaster.label }));
     else
-      setCapexForm((f) => ({ ...f, nm_anggaran_capex: selectedMaster.label }));
+      setCapexForm((f) => ({
+        ...f,
+        nm_anggaran_capex: selectedCapexItem
+          ? selectedCapexItem.nm_anggaran_capex
+          : selectedMaster.label,
+        thn_rkap_awal: selectedCapexItem ? selectedCapexItem.thn_rkap_awal : new Date().getFullYear(),
+        thn_rkap_akhir: selectedCapexItem ? selectedCapexItem.thn_rkap_akhir : new Date().getFullYear() + 1,
+      }));
     setShowAddModal(true);
   };
 
@@ -1446,192 +1506,153 @@ const BudgetInput = () => {
                 <Plus size={13} /> Tambah Baru
               </button>
             </div>
+
+            {/* ── MODE EXISTING ── */}
             {masterMode === "existing" && (
-              <div style={{ marginTop: 16 }}>
-                <label style={labelStyle}>
-                  Anggaran Master <span style={{ color: "#dc2626" }}>*</span>
-                </label>
-                <SearchableSelect
-                  options={masterOptions}
-                  value={selectedMasterId}
-                  onChange={setSelectedMasterId}
-                  placeholder="-- Cari & pilih anggaran master --"
-                  filterFn={(o, q) =>
-                    !q ||
-                    o.label.toLowerCase().includes(q.toLowerCase()) ||
-                    o.kd_anggaran_master.toLowerCase().includes(q.toLowerCase())
-                  }
-                  renderOption={(o) => (
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 3,
+              <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 16 }}>
+                {/* Dropdown 1: Anggaran Master */}
+                <div>
+                  <label style={labelStyle}>
+                    Anggaran Master <span style={{ color: "#dc2626" }}>*</span>
+                  </label>
+                  <div style={{ marginTop: 6 }}>
+                    <SearchableSelect
+                      options={masterOptions}
+                      value={selectedMasterId}
+                      onChange={(val) => {
+                        setSelectedMasterId(val);
+                        setSelectedCapexId(null); // reset sub-dropdown
                       }}
-                    >
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 7,
-                        }}
-                      >
-                        <code style={codeStyle}>{o.kd_anggaran_master}</code>
-                        <span
-                          style={{
-                            fontWeight: 600,
-                            fontSize: "0.84rem",
-                            color: "#0f172a",
-                          }}
-                        >
-                          {o.nm_anggaran_master}
-                        </span>
-                        <span
-                          style={{
-                            ...typeBadgeSmall,
-                            ...(o.tipe_anggaran_master === "CAPEX"
-                              ? capexBadgeSmall
-                              : opexBadgeSmall),
-                          }}
-                        >
-                          {o.tipe_anggaran_master}
-                        </span>
-                      </div>
+                      placeholder="-- Cari & pilih anggaran master --"
+                      filterFn={(o, q) =>
+                        !q ||
+                        o.label.toLowerCase().includes(q.toLowerCase()) ||
+                        o.kd_anggaran_master.toLowerCase().includes(q.toLowerCase())
+                      }
+                      renderOption={(o) => (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                            <code style={codeStyle}>{o.kd_anggaran_master}</code>
+                            <span style={{ fontWeight: 600, fontSize: "0.84rem", color: "#0f172a" }}>
+                              {o.nm_anggaran_master}
+                            </span>
+                            <span style={{ ...typeBadgeSmall, ...(o.tipe_anggaran_master === "CAPEX" ? capexBadgeSmall : opexBadgeSmall) }}>
+                              {o.tipe_anggaran_master}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                      renderSelected={(o) => (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
+                            <code style={codeStyle}>{o.kd_anggaran_master}</code>
+                            <span style={{ fontWeight: 700, fontSize: "0.85rem", color: "#0f172a" }}>
+                              {o.nm_anggaran_master}
+                            </span>
+                            <span style={{ ...typeBadgeSmall, ...(o.tipe_anggaran_master === "CAPEX" ? capexBadgeSmall : opexBadgeSmall) }}>
+                              {o.tipe_anggaran_master}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    />
+                  </div>
+                  {selectedMasterId && (
+                    <div style={autofillBannerStyle}>
+                      <CheckCircle size={14} /> Data anggaran master dimuat dari sistem.
                     </div>
                   )}
-                  renderSelected={(o) => (
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 4,
-                      }}
+                </div>
+
+                {/* Dropdown 2: kd_anggaran_capex — hanya tampil jika CAPEX & master sudah dipilih */}
+                {tipeAnggaran === "CAPEX" && selectedMasterId && (
+                  <div>
+                    <label style={labelStyle}>
+                      Pos Anggaran CAPEX <span style={{ color: "#dc2626" }}>*</span>
+                    </label>
+                    <p style={{ fontSize: "0.75rem", color: "#64748b", margin: "4px 0 8px" }}>
+                      Pilih kode anggaran capex yang berada di bawah master{" "}
+                      <code style={codeStyle}>{selectedMasterId}</code>.
+                    </p>
+                    <select
+                      style={inputStyle}
+                      value={selectedCapexId || ""}
+                      onChange={(e) => setSelectedCapexId(e.target.value || null)}
                     >
+                      <option value="">-- Pilih Pos Anggaran CAPEX --</option>
+                      {capexAnggaranList.map((c) => (
+                        <option key={c.kd_anggaran_capex} value={c.kd_anggaran_capex}>
+                          [{c.kd_anggaran_capex}] {c.nm_anggaran_capex}
+                        </option>
+                      ))}
+                    </select>
+                    {selectedCapexItem && (
                       <div
                         style={{
+                          marginTop: 8,
+                          padding: "10px 14px",
+                          background: "#eff6ff",
+                          border: "1px solid #bfdbfe",
+                          borderRadius: 8,
                           display: "flex",
-                          alignItems: "center",
-                          gap: 7,
+                          gap: 16,
                           flexWrap: "wrap",
                         }}
                       >
-                        <code style={codeStyle}>{o.kd_anggaran_master}</code>
-                        <span
-                          style={{
-                            fontWeight: 700,
-                            fontSize: "0.85rem",
-                            color: "#0f172a",
-                          }}
-                        >
-                          {o.nm_anggaran_master}
+                        <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "#1d4ed8" }}>
+                          Kode: <code style={{ ...codeStyle, background: "#dbeafe", borderColor: "#bfdbfe" }}>{selectedCapexItem.kd_anggaran_capex}</code>
                         </span>
-                        <span
-                          style={{
-                            ...typeBadgeSmall,
-                            ...(o.tipe_anggaran_master === "CAPEX"
-                              ? capexBadgeSmall
-                              : opexBadgeSmall),
-                          }}
-                        >
-                          {o.tipe_anggaran_master}
+                        <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "#1e40af" }}>
+                          RKAP: {selectedCapexItem.thn_rkap_awal}–{selectedCapexItem.thn_rkap_akhir}
                         </span>
                       </div>
-                    </div>
-                  )}
-                />
-                {selectedMasterId && (
-                  <div style={autofillBannerStyle}>
-                    <CheckCircle size={14} /> Data anggaran master dimuat dari
-                    sistem.
+                    )}
                   </div>
                 )}
               </div>
             )}
-            {/* FIX 1: Kode anggaran master jadi manual input, bukan auto-generate */}
+
+            {/* ── MODE NEW (manual input) ── */}
             {masterMode === "new" && (
-              <div
-                style={{
-                  marginTop: 16,
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 14,
-                }}
-              >
+              <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 14 }}>
                 <div style={infoBoxStyle}>
                   <AlertTriangle size={14} />
                   <span>Isi kode dan nama anggaran master secara manual.</span>
                 </div>
                 <div style={formGridStyle}>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 5,
-                      gridColumn: "1/-1",
-                    }}
-                  >
+                  <div style={{ display: "flex", flexDirection: "column", gap: 5, gridColumn: "1/-1" }}>
                     <label style={labelStyle}>
-                      Nama Anggaran Master{" "}
-                      <span style={{ color: "#dc2626" }}>*</span>
+                      Nama Anggaran Master <span style={{ color: "#dc2626" }}>*</span>
                     </label>
                     <input
                       style={inputStyle}
                       value={newMaster.nm_anggaran_master}
                       placeholder="Contoh: Beban Pemeliharaan Software"
                       onChange={(e) =>
-                        setNewMaster((f) => ({
-                          ...f,
-                          nm_anggaran_master: e.target.value,
-                        }))
+                        setNewMaster((f) => ({ ...f, nm_anggaran_master: e.target.value }))
                       }
                     />
                   </div>
-                  <div
-                    style={{ display: "flex", flexDirection: "column", gap: 5 }}
-                  >
+                  <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                     <label style={labelStyle}>
-                      Kode Anggaran Master{" "}
-                      <span style={{ color: "#dc2626" }}>*</span>
+                      Kode Anggaran Master <span style={{ color: "#dc2626" }}>*</span>
                     </label>
                     <input
                       style={inputStyle}
                       value={newMaster.kd_anggaran_master}
                       placeholder="Contoh: 5030905000"
                       onChange={(e) =>
-                        setNewMaster((f) => ({
-                          ...f,
-                          kd_anggaran_master: e.target.value,
-                        }))
+                        setNewMaster((f) => ({ ...f, kd_anggaran_master: e.target.value }))
                       }
                     />
                     {!newMaster.kd_anggaran_master && (
-                      <span style={{ ...helperStyle, color: "#dc2626" }}>
-                        Kode wajib diisi
-                      </span>
+                      <span style={{ ...helperStyle, color: "#dc2626" }}>Kode wajib diisi</span>
                     )}
                   </div>
-                  <div
-                    style={{ display: "flex", flexDirection: "column", gap: 5 }}
-                  >
+                  <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                     <label style={labelStyle}>Tipe Anggaran</label>
-                    <div
-                      style={{
-                        ...inputStyle,
-                        background: "#f8fafc",
-                        color: "#475569",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 8,
-                      }}
-                    >
-                      <span
-                        style={{
-                          ...typeBadgeSmall,
-                          ...(tipeAnggaran === "CAPEX"
-                            ? capexBadgeSmall
-                            : opexBadgeSmall),
-                        }}
-                      >
+                    <div style={{ ...inputStyle, background: "#f8fafc", color: "#475569", display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ ...typeBadgeSmall, ...(tipeAnggaran === "CAPEX" ? capexBadgeSmall : opexBadgeSmall) }}>
                         {tipeAnggaran}
                       </span>
                     </div>
@@ -1668,9 +1689,7 @@ const BudgetInput = () => {
               <strong
                 style={{
                   ...typeBadgeSmall,
-                  ...(tipeAnggaran === "CAPEX"
-                    ? capexBadgeSmall
-                    : opexBadgeSmall),
+                  ...(tipeAnggaran === "CAPEX" ? capexBadgeSmall : opexBadgeSmall),
                   fontSize: "0.78rem",
                   padding: "3px 10px",
                 }}
@@ -1682,18 +1701,34 @@ const BudgetInput = () => {
               <span style={contextLabelStyle}>Kode Master</span>
               <strong>
                 <code style={codeStyle}>
-                  {masterMode === "existing"
-                    ? selectedMasterId
-                    : newMaster.kd_anggaran_master}
+                  {masterMode === "existing" ? selectedMasterId : newMaster.kd_anggaran_master}
                 </code>
               </strong>
             </div>
+            {tipeAnggaran === "CAPEX" && selectedCapexId && (
+              <div style={contextItemStyle}>
+                <span style={contextLabelStyle}>Kode Anggaran CAPEX</span>
+                <strong>
+                  <code style={{ ...codeStyle, background: "#dbeafe", borderColor: "#bfdbfe", color: "#1e40af" }}>
+                    {selectedCapexId}
+                  </code>
+                </strong>
+              </div>
+            )}
             <div style={contextItemStyle}>
               <span style={contextLabelStyle}>Nama Anggaran Master</span>
               <strong style={{ fontSize: "0.82rem", color: "#0f172a" }}>
                 {selectedMaster.label}
               </strong>
             </div>
+            {tipeAnggaran === "CAPEX" && selectedCapexItem && (
+              <div style={contextItemStyle}>
+                <span style={contextLabelStyle}>Pos Anggaran CAPEX</span>
+                <strong style={{ fontSize: "0.78rem", color: "#1e40af", lineHeight: 1.4 }}>
+                  {selectedCapexItem.nm_anggaran_capex}
+                </strong>
+              </div>
+            )}
           </div>
 
           {editingRow ? (
@@ -1714,130 +1749,63 @@ const BudgetInput = () => {
                   border: "1px solid #e2e8f0",
                 }}
               >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <span style={labelStyle}>Nama Anggaran</span>
-                  <strong style={{ color: "#0f172a", fontSize: "0.85rem" }}>
-                    {editingRow.nama_anggaran}
-                  </strong>
+                  <strong style={{ color: "#0f172a", fontSize: "0.85rem" }}>{editingRow.nama_anggaran}</strong>
                 </div>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <span style={labelStyle}>Tahun</span>
-                  <strong style={{ color: "#0f172a", fontSize: "0.85rem" }}>
-                    {editingRow.tahun}
-                  </strong>
+                  <strong style={{ color: "#0f172a", fontSize: "0.85rem" }}>{editingRow.tahun}</strong>
                 </div>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <span style={labelStyle}>Total Anggaran Berjalan</span>
-                  <strong style={{ color: "#1d4ed8", fontSize: "1rem" }}>
-                    Rp {fmt(editingRow.total)}
-                  </strong>
+                  <strong style={{ color: "#1d4ed8", fontSize: "1rem" }}>Rp {fmt(editingRow.total)}</strong>
                 </div>
               </div>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 16,
-                  maxWidth: 500,
-                }}
-              >
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 6 }}
-                >
+              <div style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 500 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                   <label style={labelStyle}>
                     Jenis Perubahan <span style={{ color: "#dc2626" }}>*</span>
                   </label>
                   <select
                     style={inputStyle}
                     value={editForm.perubahan}
-                    onChange={(e) =>
-                      setEditForm({ ...editForm, perubahan: e.target.value })
-                    }
+                    onChange={(e) => setEditForm({ ...editForm, perubahan: e.target.value })}
                   >
                     <option value="">-- Pilih Jenis Perubahan --</option>
                     <option value="penambahan">Penambahan Anggaran</option>
                     <option value="pengurangan">Pengurangan Anggaran</option>
-                    <option value="bymhd">
-                      BYMHD (Biaya Yang Masih Harus Dibayar)
-                    </option>
+                    <option value="bymhd">BYMHD (Biaya Yang Masih Harus Dibayar)</option>
                     <option value="transfer">Transfer Anggaran</option>
                   </select>
                 </div>
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 6 }}
-                >
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                   <label style={labelStyle}>
-                    Nilai Perubahan (IDR){" "}
-                    <span style={{ color: "#dc2626" }}>*</span>
+                    Nilai Perubahan (IDR) <span style={{ color: "#dc2626" }}>*</span>
                   </label>
                   <input
                     type="number"
                     style={inputStyle}
                     placeholder="Contoh: 50000000"
                     value={editForm.nilai_perubahan}
-                    onChange={(e) =>
-                      setEditForm({
-                        ...editForm,
-                        nilai_perubahan: e.target.value,
-                      })
-                    }
+                    onChange={(e) => setEditForm({ ...editForm, nilai_perubahan: e.target.value })}
                   />
                   {editForm.nilai_perubahan && (
-                    <span
-                      style={{
-                        ...helperStyle,
-                        color: "#d97706",
-                        fontWeight: 600,
-                      }}
-                    >
+                    <span style={{ ...helperStyle, color: "#d97706", fontWeight: 600 }}>
                       ≈ Rp {fmt(editForm.nilai_perubahan)}
                     </span>
                   )}
                 </div>
               </div>
-              <div
-                style={{
-                  display: "flex",
-                  gap: 12,
-                  marginTop: 32,
-                  justifyContent: "flex-end",
-                  borderTop: "1px solid #f1f5f9",
-                  paddingTop: 16,
-                }}
-              >
+              <div style={{ display: "flex", gap: 12, marginTop: 32, justifyContent: "flex-end", borderTop: "1px solid #f1f5f9", paddingTop: 16 }}>
                 <button
                   style={btnCancelStyle}
-                  onClick={() => {
-                    setEditingRow(null);
-                    setEditForm({ perubahan: "", nilai_perubahan: "" });
-                  }}
+                  onClick={() => { setEditingRow(null); setEditForm({ perubahan: "", nilai_perubahan: "" }); }}
                 >
                   Batal
                 </button>
                 <button
-                  style={{
-                    ...btnPrimaryStyle,
-                    background: "linear-gradient(135deg,#d97706,#f59e0b)",
-                    boxShadow: "0 2px 8px rgba(217,119,6,.25)",
-                  }}
+                  style={{ ...btnPrimaryStyle, background: "linear-gradient(135deg,#d97706,#f59e0b)", boxShadow: "0 2px 8px rgba(217,119,6,.25)" }}
                   onClick={handleSaveEdit}
                   disabled={!editForm.perubahan || !editForm.nilai_perubahan}
                 >
@@ -1847,28 +1815,12 @@ const BudgetInput = () => {
             </div>
           ) : (
             <>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: 12,
-                }}
-              >
-                <h2
-                  style={{
-                    fontSize: "1.05rem",
-                    fontWeight: 800,
-                    color: "#0f172a",
-                  }}
-                >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                <h2 style={{ fontSize: "1.05rem", fontWeight: 800, color: "#0f172a" }}>
                   Daftar Anggaran Tahunan
                 </h2>
                 <button
-                  style={{
-                    ...btnPrimaryStyle,
-                    ...(tipeAnggaran === "OPEX" ? btnGreenStyle : {}),
-                  }}
+                  style={{ ...btnPrimaryStyle, ...(tipeAnggaran === "OPEX" ? btnGreenStyle : {}) }}
                   onClick={handleOpenAddModal}
                 >
                   <Plus size={14} /> Input Data Baru
@@ -1879,124 +1831,36 @@ const BudgetInput = () => {
                   <table style={tableStyle}>
                     <thead>
                       <tr>
-                        <th
-                          style={{ ...thStyle, width: 50, textAlign: "center" }}
-                        >
-                          No
-                        </th>
+                        <th style={{ ...thStyle, width: 50, textAlign: "center" }}>No</th>
                         <th style={thStyle}>Tahun</th>
-                        <th style={{ ...thStyle, textAlign: "right" }}>
-                          Anggaran Murni
-                        </th>
-                        <th style={{ ...thStyle, textAlign: "right" }}>
-                          Anggaran BYMHD
-                        </th>
-                        <th style={{ ...thStyle, textAlign: "right" }}>
-                          Total Anggaran
-                        </th>
-                        <th
-                          style={{
-                            ...thStyle,
-                            textAlign: "center",
-                            width: 100,
-                          }}
-                        >
-                          Aksi
-                        </th>
+                        <th style={{ ...thStyle, textAlign: "right" }}>Anggaran Murni</th>
+                        <th style={{ ...thStyle, textAlign: "right" }}>Anggaran BYMHD</th>
+                        <th style={{ ...thStyle, textAlign: "right" }}>Total Anggaran</th>
+                        <th style={{ ...thStyle, textAlign: "center", width: 100 }}>Aksi</th>
                       </tr>
                     </thead>
                     <tbody>
                       {yearlyBudgets.length === 0 ? (
                         <tr>
-                          <td
-                            colSpan={6}
-                            style={{
-                              textAlign: "center",
-                              padding: "32px 16px",
-                              color: "#94a3b8",
-                              fontSize: "0.8rem",
-                            }}
-                          >
+                          <td colSpan={6} style={{ textAlign: "center", padding: "32px 16px", color: "#94a3b8", fontSize: "0.8rem" }}>
                             Belum ada anggaran tahunan yang ditambahkan.
                           </td>
                         </tr>
                       ) : (
                         yearlyBudgets.map((item, index) => (
                           <tr key={item.id} style={trStyle}>
-                            <td
-                              style={{
-                                ...tdStyle,
-                                textAlign: "center",
-                                fontWeight: 700,
-                                color: "#64748b",
-                              }}
-                            >
-                              {index + 1}
-                            </td>
-                            <td style={{ ...tdStyle, fontWeight: 700 }}>
-                              {item.tahun}
-                            </td>
-                            <td
-                              style={{
-                                ...tdStyle,
-                                textAlign: "right",
-                                fontFamily: "'JetBrains Mono', monospace",
-                                color: "#334155",
-                              }}
-                            >
-                              {fmt(item.anggaran)}
-                            </td>
-                            <td
-                              style={{
-                                ...tdStyle,
-                                textAlign: "right",
-                                fontFamily: "'JetBrains Mono', monospace",
-                                color: "#d97706",
-                              }}
-                            >
-                              {fmt(item.bymhd)}
-                            </td>
-                            <td
-                              style={{
-                                ...tdStyle,
-                                textAlign: "right",
-                                fontFamily: "'JetBrains Mono', monospace",
-                                fontWeight: 800,
-                                color:
-                                  tipeAnggaran === "CAPEX"
-                                    ? "#1d4ed8"
-                                    : "#15803d",
-                              }}
-                            >
-                              {fmt(item.total)}
-                            </td>
+                            <td style={{ ...tdStyle, textAlign: "center", fontWeight: 700, color: "#64748b" }}>{index + 1}</td>
+                            <td style={{ ...tdStyle, fontWeight: 700 }}>{item.tahun}</td>
+                            <td style={{ ...tdStyle, textAlign: "right", fontFamily: "'JetBrains Mono', monospace", color: "#334155" }}>{fmt(item.anggaran)}</td>
+                            <td style={{ ...tdStyle, textAlign: "right", fontFamily: "'JetBrains Mono', monospace", color: "#d97706" }}>{fmt(item.bymhd)}</td>
+                            <td style={{ ...tdStyle, textAlign: "right", fontFamily: "'JetBrains Mono', monospace", fontWeight: 800, color: tipeAnggaran === "CAPEX" ? "#1d4ed8" : "#15803d" }}>{fmt(item.total)}</td>
                             <td style={{ ...tdStyle, textAlign: "center" }}>
-                              <div
-                                style={{
-                                  display: "flex",
-                                  gap: 6,
-                                  justifyContent: "center",
-                                }}
-                              >
-                                <button
-                                  title="Revisi / Edit"
-                                  style={actionBtnStyle}
-                                  onClick={() => setEditingRow(item)}
-                                >
-                                  <Edit
-                                    size={13}
-                                    style={{ color: "#d97706" }}
-                                  />
+                              <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>
+                                <button title="Revisi / Edit" style={actionBtnStyle} onClick={() => setEditingRow(item)}>
+                                  <Edit size={13} style={{ color: "#d97706" }} />
                                 </button>
-                                <button
-                                  title="Lihat History Perubahan"
-                                  style={actionBtnStyle}
-                                  onClick={() => setHistoryModal(item)}
-                                >
-                                  <Clock
-                                    size={13}
-                                    style={{ color: "#3b82f6" }}
-                                  />
+                                <button title="Lihat History Perubahan" style={actionBtnStyle} onClick={() => setHistoryModal(item)}>
+                                  <Clock size={13} style={{ color: "#3b82f6" }} />
                                 </button>
                               </div>
                             </td>
@@ -2006,45 +1870,12 @@ const BudgetInput = () => {
                     </tbody>
                     {yearlyBudgets.length > 0 && (
                       <tfoot>
-                        <tr
-                          style={{
-                            background:
-                              tipeAnggaran === "CAPEX" ? "#eff6ff" : "#f0fdf4",
-                          }}
-                        >
-                          <td
-                            colSpan={4}
-                            style={{
-                              ...tdStyle,
-                              textAlign: "right",
-                              fontWeight: 800,
-                              fontSize: "0.75rem",
-                              color:
-                                tipeAnggaran === "CAPEX"
-                                  ? "#1e40af"
-                                  : "#14532d",
-                            }}
-                          >
+                        <tr style={{ background: tipeAnggaran === "CAPEX" ? "#eff6ff" : "#f0fdf4" }}>
+                          <td colSpan={4} style={{ ...tdStyle, textAlign: "right", fontWeight: 800, fontSize: "0.75rem", color: tipeAnggaran === "CAPEX" ? "#1e40af" : "#14532d" }}>
                             GRAND TOTAL SELURUH TAHUN
                           </td>
-                          <td
-                            style={{
-                              ...tdStyle,
-                              textAlign: "right",
-                              fontWeight: 800,
-                              fontSize: "0.95rem",
-                              color:
-                                tipeAnggaran === "CAPEX"
-                                  ? "#1d4ed8"
-                                  : "#15803d",
-                            }}
-                          >
-                            {fmt(
-                              yearlyBudgets.reduce(
-                                (acc, curr) => acc + curr.total,
-                                0,
-                              ),
-                            )}
+                          <td style={{ ...tdStyle, textAlign: "right", fontWeight: 800, fontSize: "0.95rem", color: tipeAnggaran === "CAPEX" ? "#1d4ed8" : "#15803d" }}>
+                            {fmt(yearlyBudgets.reduce((acc, curr) => acc + curr.total, 0))}
                           </td>
                           <td style={tdStyle}></td>
                         </tr>
@@ -2062,8 +1893,7 @@ const BudgetInput = () => {
                     ...btnPrimaryStyle,
                     ...(tipeAnggaran === "OPEX" ? btnGreenStyle : {}),
                     opacity: yearlyBudgets.length > 0 ? 1 : 0.4,
-                    cursor:
-                      yearlyBudgets.length > 0 ? "pointer" : "not-allowed",
+                    cursor: yearlyBudgets.length > 0 ? "pointer" : "not-allowed",
                   }}
                   disabled={yearlyBudgets.length === 0}
                   onClick={handleSubmitAll}
@@ -2080,7 +1910,7 @@ const BudgetInput = () => {
 };
 
 // ══════════════════════════════════════════════════════════════════
-// KOMPONEN 2 — ManajemenPekerjaan (FIX: Modal Close Button Layout)
+// KOMPONEN 2 — ManajemenPekerjaan
 // ══════════════════════════════════════════════════════════════════
 export function ManajemenPekerjaan() {
   const [pekerjaanList, setPekerjaanList] = useState(INIT_PEKERJAAN);
@@ -2193,108 +2023,46 @@ export function ManajemenPekerjaan() {
   );
   const angTerpilih = mockAnggaranList.find((a) => a.id === form.id_anggaran);
 
-  // Helper render rows per group
   const renderRows = (list, startIdx) =>
     list.map((p, idx) => {
       const ang = mockAnggaranList.find((a) => a.id === p.id_anggaran);
       const isCapex = ang?.tipe === "CAPEX";
       return (
         <tr key={p.id}>
-          <td
-            style={{
-              textAlign: "center",
-              fontWeight: 700,
-              color: "var(--ink4)",
-            }}
-          >
+          <td style={{ textAlign: "center", fontWeight: 700, color: "var(--ink4)" }}>
             {startIdx + idx + 1}
           </td>
           <td>
             <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-              <strong
-                style={{
-                  fontSize: "0.85rem",
-                  color: "var(--ink)",
-                  lineHeight: 1.3,
-                }}
-              >
+              <strong style={{ fontSize: "0.85rem", color: "var(--ink)", lineHeight: 1.3 }}>
                 {p.nm_pekerjaan}
               </strong>
-              <code
-                style={{
-                  fontFamily: "var(--mono)",
-                  fontSize: "0.75rem",
-                  color: "var(--ink3)",
-                }}
-              >
+              <code style={{ fontFamily: "var(--mono)", fontSize: "0.75rem", color: "var(--ink3)" }}>
                 {p.no_kontrak || "Tanpa No. Kontrak"}
               </code>
             </div>
           </td>
           <td>
             {ang ? (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 4,
-                  alignItems: "flex-start",
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: "0.65rem",
-                    fontWeight: 800,
-                    padding: "2px 6px",
-                    borderRadius: 4,
-                    background: isCapex ? "var(--blue-lt)" : "var(--green-lt)",
-                    color: isCapex ? "var(--blue)" : "var(--green)",
-                  }}
-                >
+              <div style={{ display: "flex", flexDirection: "column", gap: 4, alignItems: "flex-start" }}>
+                <span style={{ fontSize: "0.65rem", fontWeight: 800, padding: "2px 6px", borderRadius: 4, background: isCapex ? "var(--blue-lt)" : "var(--green-lt)", color: isCapex ? "var(--blue)" : "var(--green)" }}>
                   {ang.tipe}
                 </span>
-                <span
-                  style={{
-                    fontSize: "0.8rem",
-                    fontWeight: 600,
-                    color: "var(--ink2)",
-                  }}
-                >
+                <span style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--ink2)" }}>
                   {ang.nama}
                 </span>
               </div>
             ) : (
-              <span
-                style={{
-                  color: "var(--red)",
-                  fontSize: "0.8rem",
-                  fontWeight: 600,
-                }}
-              >
+              <span style={{ color: "var(--red)", fontSize: "0.8rem", fontWeight: 600 }}>
                 Anggaran Dihapus
               </span>
             )}
           </td>
-          <td
-            style={{
-              textAlign: "right",
-              fontWeight: 800,
-              color: isCapex ? "var(--blue)" : "var(--green)",
-              fontSize: "0.95rem",
-            }}
-          >
+          <td style={{ textAlign: "right", fontWeight: 800, color: isCapex ? "var(--blue)" : "var(--green)", fontSize: "0.95rem" }}>
             {fmt(p.nilai_kontrak)}
           </td>
           <td>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 4,
-                fontSize: "0.75rem",
-                color: "var(--ink3)",
-              }}
-            >
+            <div style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: "0.75rem", color: "var(--ink3)" }}>
               <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <Calendar size={12} /> {fmtDate(p.tgl_kontrak)}
               </span>
@@ -2334,13 +2102,12 @@ export function ManajemenPekerjaan() {
         />
       )}
 
-      {/* MODAL PEKERJAAN (Diperbaiki agar X button rapi dan tidak terpotong) */}
       {showModal && (
         <div className="overlay" onClick={() => setShowModal(false)}>
           <div
             className="mbox"
-            style={{ 
-              maxWidth: 500, 
+            style={{
+              maxWidth: 500,
               borderRadius: 20,
               display: "flex",
               flexDirection: "column",
@@ -2349,11 +2116,10 @@ export function ManajemenPekerjaan() {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header Modal Tergabung dengan Tombol Close */}
             <div
               className="mhd"
-              style={{ 
-                background: "white", 
+              style={{
+                background: "white",
                 padding: "20px 24px",
                 borderBottom: "1px solid var(--border)",
                 display: "flex",
@@ -2362,233 +2128,86 @@ export function ManajemenPekerjaan() {
               }}
             >
               <div className="mhd-left" style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <div
-                  style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: 8,
-                    background: "var(--blue-lt)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
+                <div style={{ width: 36, height: 36, borderRadius: 8, background: "var(--blue-lt)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <Briefcase size={18} style={{ color: "var(--blue)" }} />
                 </div>
                 <h3 style={{ fontSize: "1.05rem", margin: 0 }}>
                   {editId ? "Edit Pekerjaan" : "Input Pekerjaan Baru"}
                 </h3>
               </div>
-              <button 
+              <button
                 onClick={() => setShowModal(false)}
-                style={{
-                  background: "transparent",
-                  border: "none",
-                  cursor: "pointer",
-                  color: "var(--ink4)",
-                  padding: 4,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center"
-                }}
+                style={{ background: "transparent", border: "none", cursor: "pointer", color: "var(--ink4)", padding: 4, display: "flex", alignItems: "center", justifyContent: "center" }}
               >
                 <X size={20} />
               </button>
             </div>
 
-            <div
-              className="mbody thin-scroll"
-              style={{ padding: "24px", gap: 20, overflowY: "auto", flex: 1 }}
-            >
+            <div className="mbody thin-scroll" style={{ padding: "24px", gap: 20, overflowY: "auto", flex: 1 }}>
               <div className="edit-fld">
                 <label>
-                  Pilih Pos Anggaran Terkait{" "}
-                  <span style={{ color: "var(--red)" }}>*</span>
+                  Pilih Pos Anggaran Terkait <span style={{ color: "var(--red)" }}>*</span>
                 </label>
                 <select
-                  style={{
-                    ...inputStyle,
-                    borderColor: form.id_anggaran
-                      ? "var(--border)"
-                      : "var(--red)",
-                  }}
+                  style={{ ...inputStyle, borderColor: form.id_anggaran ? "var(--border)" : "var(--red)" }}
                   value={form.id_anggaran}
-                  onChange={(e) =>
-                    setForm({ ...form, id_anggaran: e.target.value })
-                  }
+                  onChange={(e) => setForm({ ...form, id_anggaran: e.target.value })}
                 >
                   <option value="">-- Dropdown Anggaran Tersedia --</option>
                   <optgroup label="Anggaran CAPEX">
-                    {mockAnggaranList
-                      .filter((a) => a.tipe === "CAPEX")
-                      .map((a) => (
-                        <option key={a.id} value={a.id}>
-                          [CAPEX] {a.kode} - {a.nama}
-                        </option>
-                      ))}
+                    {mockAnggaranList.filter((a) => a.tipe === "CAPEX").map((a) => (
+                      <option key={a.id} value={a.id}>[CAPEX] {a.kode} - {a.nama}</option>
+                    ))}
                   </optgroup>
                   <optgroup label="Anggaran OPEX">
-                    {mockAnggaranList
-                      .filter((a) => a.tipe === "OPEX")
-                      .map((a) => (
-                        <option key={a.id} value={a.id}>
-                          [OPEX] {a.kode} - {a.nama}
-                        </option>
-                      ))}
+                    {mockAnggaranList.filter((a) => a.tipe === "OPEX").map((a) => (
+                      <option key={a.id} value={a.id}>[OPEX] {a.kode} - {a.nama}</option>
+                    ))}
                   </optgroup>
                 </select>
                 {angTerpilih && (
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: 10,
-                      background: "var(--blue-lt)",
-                      padding: "8px 12px",
-                      borderRadius: 8,
-                      marginTop: 4,
-                      border: "1px solid var(--blue-mid)",
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontSize: "0.7rem",
-                        fontWeight: 700,
-                        color: "var(--blue)",
-                      }}
-                    >
-                      Pagu: Rp {fmt(angTerpilih.pagu)}
-                    </span>
-                    <span
-                      style={{
-                        fontSize: "0.7rem",
-                        fontWeight: 700,
-                        color: "var(--blue)",
-                      }}
-                    >
-                      Tahun: {angTerpilih.tahun}
-                    </span>
+                  <div style={{ display: "flex", gap: 10, background: "var(--blue-lt)", padding: "8px 12px", borderRadius: 8, marginTop: 4, border: "1px solid var(--blue-mid)" }}>
+                    <span style={{ fontSize: "0.7rem", fontWeight: 700, color: "var(--blue)" }}>Pagu: Rp {fmt(angTerpilih.pagu)}</span>
+                    <span style={{ fontSize: "0.7rem", fontWeight: 700, color: "var(--blue)" }}>Tahun: {angTerpilih.tahun}</span>
                   </div>
                 )}
               </div>
               <div className="edit-fld">
-                <label>
-                  Nama Pekerjaan / Kontrak{" "}
-                  <span style={{ color: "var(--red)" }}>*</span>
-                </label>
-                <textarea
-                  rows="2"
-                  style={{ ...inputStyle, minHeight: 60 }}
-                  placeholder="Ketik nama pekerjaan..."
-                  value={form.nm_pekerjaan}
-                  onChange={(e) =>
-                    setForm({ ...form, nm_pekerjaan: e.target.value })
-                  }
-                />
+                <label>Nama Pekerjaan / Kontrak <span style={{ color: "var(--red)" }}>*</span></label>
+                <textarea rows="2" style={{ ...inputStyle, minHeight: 60 }} placeholder="Ketik nama pekerjaan..." value={form.nm_pekerjaan} onChange={(e) => setForm({ ...form, nm_pekerjaan: e.target.value })} />
               </div>
               <div className="edit-fld">
                 <label>Nilai Kontrak (IDR)</label>
-                <input
-                  type="number"
-                  style={inputStyle}
-                  placeholder="0"
-                  value={form.nilai_kontrak}
-                  onChange={(e) =>
-                    setForm({ ...form, nilai_kontrak: e.target.value })
-                  }
-                />
+                <input type="number" style={inputStyle} placeholder="0" value={form.nilai_kontrak} onChange={(e) => setForm({ ...form, nilai_kontrak: e.target.value })} />
               </div>
               <div className="edit-fld">
                 <label>Nilai RAB (IDR)</label>
-                <input
-                  type="number"
-                  style={inputStyle}
-                  placeholder="0"
-                  value={form.nilai_rab}
-                  onChange={(e) =>
-                    setForm({ ...form, nilai_rab: e.target.value })
-                  }
-                />
+                <input type="number" style={inputStyle} placeholder="0" value={form.nilai_rab} onChange={(e) => setForm({ ...form, nilai_rab: e.target.value })} />
               </div>
-              <div
-                style={{
-                  height: 1,
-                  background: "var(--border)",
-                  margin: "8px 0",
-                }}
-              />
-              <span
-                style={{
-                  fontSize: "0.75rem",
-                  fontWeight: 800,
-                  color: "var(--ink2)",
-                  textTransform: "uppercase",
-                }}
-              >
+              <div style={{ height: 1, background: "var(--border)", margin: "8px 0" }} />
+              <span style={{ fontSize: "0.75rem", fontWeight: 800, color: "var(--ink2)", textTransform: "uppercase" }}>
                 Referensi Dokumen & Waktu
               </span>
               <div className="edit-fld">
                 <label>Durasi Pengerjaan (Hari)</label>
-                <input
-                  type="number"
-                  style={inputStyle}
-                  placeholder="Contoh: 90"
-                  value={form.durasi_kontrak}
-                  onChange={(e) =>
-                    setForm({ ...form, durasi_kontrak: e.target.value })
-                  }
-                />
+                <input type="number" style={inputStyle} placeholder="Contoh: 90" value={form.durasi_kontrak} onChange={(e) => setForm({ ...form, durasi_kontrak: e.target.value })} />
               </div>
               <div className="edit-fld">
                 <label>Nomor Kontrak</label>
-                <input
-                  style={inputStyle}
-                  placeholder="SI.01/..."
-                  value={form.no_kontrak}
-                  onChange={(e) =>
-                    setForm({ ...form, no_kontrak: e.target.value })
-                  }
-                />
+                <input style={inputStyle} placeholder="SI.01/..." value={form.no_kontrak} onChange={(e) => setForm({ ...form, no_kontrak: e.target.value })} />
               </div>
               <div className="edit-fld">
                 <label>Tanggal Kontrak</label>
-                <input
-                  type="date"
-                  style={inputStyle}
-                  value={form.tgl_kontrak}
-                  onChange={(e) =>
-                    setForm({ ...form, tgl_kontrak: e.target.value })
-                  }
-                />
+                <input type="date" style={inputStyle} value={form.tgl_kontrak} onChange={(e) => setForm({ ...form, tgl_kontrak: e.target.value })} />
               </div>
               <div className="edit-fld">
                 <label>Nomor PO</label>
-                <input
-                  style={inputStyle}
-                  value={form.no_po}
-                  onChange={(e) =>
-                    setForm({ ...form, no_po: e.target.value })
-                  }
-                />
+                <input style={inputStyle} value={form.no_po} onChange={(e) => setForm({ ...form, no_po: e.target.value })} />
               </div>
             </div>
-            <div
-              className="mfoot"
-              style={{ background: "white", borderTop: "1px solid #f1f5f9", padding: "16px 24px" }}
-            >
-              <button
-                className="btn btn-outline"
-                onClick={() => setShowModal(false)}
-              >
-                Batal
-              </button>
-              <button
-                className="btn btn-prim"
-                onClick={handleSave}
-                disabled={!form.nm_pekerjaan || !form.id_anggaran}
-                style={{
-                  opacity: !form.nm_pekerjaan || !form.id_anggaran ? 0.5 : 1,
-                }}
-              >
+            <div className="mfoot" style={{ background: "white", borderTop: "1px solid #f1f5f9", padding: "16px 24px" }}>
+              <button className="btn btn-outline" onClick={() => setShowModal(false)}>Batal</button>
+              <button className="btn btn-prim" onClick={handleSave} disabled={!form.nm_pekerjaan || !form.id_anggaran} style={{ opacity: !form.nm_pekerjaan || !form.id_anggaran ? 0.5 : 1 }}>
                 <Save size={14} /> Simpan Pekerjaan
               </button>
             </div>
@@ -2599,9 +2218,7 @@ export function ManajemenPekerjaan() {
       <div className="hdr">
         <div>
           <h1>Manajemen Pekerjaan</h1>
-          <p>
-            Daftar seluruh pekerjaan yang menggunakan dana CAPEX maupun OPEX
-          </p>
+          <p>Daftar seluruh pekerjaan yang menggunakan dana CAPEX maupun OPEX</p>
         </div>
         <div className="hdr-right">
           <button className="btn btn-prim" onClick={handleOpenAdd}>
@@ -2610,109 +2227,41 @@ export function ManajemenPekerjaan() {
         </div>
       </div>
 
-      {/* Toolbar */}
       <div className="toolbar" style={{ justifyContent: "space-between" }}>
-        <div
-          style={{
-            display: "flex",
-            gap: 12,
-            flexWrap: "wrap",
-            alignItems: "center",
-          }}
-        >
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
           <div className="flt-box" style={{ minWidth: 320 }}>
             <Search size={14} style={{ color: "var(--ink4)", flexShrink: 0 }} />
             <input
               placeholder="Cari nama pekerjaan atau kontrak..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              style={{
-                border: "none",
-                outline: "none",
-                background: "transparent",
-                fontSize: "0.85rem",
-                flex: 1,
-                minWidth: 0,
-              }}
+              style={{ border: "none", outline: "none", background: "transparent", fontSize: "0.85rem", flex: 1, minWidth: 0 }}
             />
             {search && (
               <button
                 onClick={() => setSearch("")}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  width: 20,
-                  height: 20,
-                  borderRadius: "50%",
-                  background: "#94a3b8",
-                  border: "none",
-                  cursor: "pointer",
-                  color: "white",
-                  flexShrink: 0,
-                  padding: 0,
-                  transition: "background 0.15s",
-                }}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.background = "#64748b")
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.background = "#94a3b8")
-                }
+                style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, borderRadius: "50%", background: "#94a3b8", border: "none", cursor: "pointer", color: "white", flexShrink: 0, padding: 0, transition: "background 0.15s" }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "#64748b")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "#94a3b8")}
               >
                 <X size={11} />
               </button>
             )}
           </div>
-          <div
-            className="flt-box"
-            style={{ gap: 0, padding: 0, overflow: "hidden" }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                padding: "10px 12px",
-                borderRight: "1px solid var(--border)",
-                background: "#f8fafc",
-                flexShrink: 0,
-              }}
-            >
+          <div className="flt-box" style={{ gap: 0, padding: 0, overflow: "hidden" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", borderRight: "1px solid var(--border)", background: "#f8fafc", flexShrink: 0 }}>
               <Layers size={14} style={{ color: "var(--ink4)" }} />
             </div>
             <select
               value={filterTipe}
               onChange={(e) => setFilterTipe(e.target.value)}
-              style={{
-                border: "none",
-                outline: "none",
-                background: "transparent",
-                fontSize: "0.85rem",
-                cursor: "pointer",
-                padding: "10px 32px 10px 12px",
-                color: "var(--ink)",
-                fontFamily: "inherit",
-                fontWeight: 600,
-                appearance: "none",
-                WebkitAppearance: "none",
-                minWidth: 160,
-              }}
+              style={{ border: "none", outline: "none", background: "transparent", fontSize: "0.85rem", cursor: "pointer", padding: "10px 32px 10px 12px", color: "var(--ink)", fontFamily: "inherit", fontWeight: 600, appearance: "none", WebkitAppearance: "none", minWidth: 160 }}
             >
               <option value="all">Semua Tipe Anggaran</option>
               <option value="CAPEX">CAPEX Saja</option>
               <option value="OPEX">OPEX Saja</option>
             </select>
-            <div
-              style={{
-                pointerEvents: "none",
-                display: "flex",
-                alignItems: "center",
-                marginLeft: -28,
-                marginRight: 10,
-                flexShrink: 0,
-              }}
-            >
+            <div style={{ pointerEvents: "none", display: "flex", alignItems: "center", marginLeft: -28, marginRight: 10, flexShrink: 0 }}>
               <ChevronDown size={13} style={{ color: "var(--ink4)" }} />
             </div>
           </div>
@@ -2735,257 +2284,65 @@ export function ManajemenPekerjaan() {
             <tbody>
               {filteredList.length === 0 ? (
                 <tr>
-                  <td
-                    colSpan={6}
-                    style={{
-                      textAlign: "center",
-                      padding: "40px 20px",
-                      color: "var(--ink4)",
-                    }}
-                  >
-                    <Briefcase
-                      size={36}
-                      style={{
-                        display: "block",
-                        margin: "0 auto 10px",
-                        opacity: 0.3,
-                      }}
-                    />
+                  <td colSpan={6} style={{ textAlign: "center", padding: "40px 20px", color: "var(--ink4)" }}>
+                    <Briefcase size={36} style={{ display: "block", margin: "0 auto 10px", opacity: 0.3 }} />
                     Belum ada data pekerjaan yang sesuai filter.
                   </td>
                 </tr>
               ) : (
                 <>
-                  {/* ── CAPEX GROUP ── */}
-                  {(filterTipe === "all" || filterTipe === "CAPEX") &&
-                    capexList.length > 0 && (
-                      <>
-                        <tr>
-                          <td
-                            colSpan={6}
-                            style={{
-                              padding: "10px 20px",
-                              background:
-                                "linear-gradient(90deg, #eff6ff 0%, #f8fafc 100%)",
-                              borderTop: "2px solid #bfdbfe",
-                              borderBottom: "1px solid #dbeafe",
-                            }}
-                          >
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "space-between",
-                              }}
-                            >
-                              <div
-                                style={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 10,
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    width: 28,
-                                    height: 28,
-                                    borderRadius: 7,
-                                    background: "#dbeafe",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                  }}
-                                >
-                                  <FileText
-                                    size={14}
-                                    style={{ color: "#1d4ed8" }}
-                                  />
-                                </div>
-                                <div>
-                                  <span
-                                    style={{
-                                      fontSize: "0.8rem",
-                                      fontWeight: 800,
-                                      color: "#1e40af",
-                                      letterSpacing: "0.3px",
-                                    }}
-                                  >
-                                    CAPEX — Anggaran Investasi
-                                  </span>
-                                  <span
-                                    style={{
-                                      marginLeft: 10,
-                                      fontSize: "0.7rem",
-                                      fontWeight: 700,
-                                      background: "#1d4ed8",
-                                      color: "white",
-                                      padding: "1px 8px",
-                                      borderRadius: 10,
-                                    }}
-                                  >
-                                    {capexList.length} Pekerjaan
-                                  </span>
-                                </div>
+                  {(filterTipe === "all" || filterTipe === "CAPEX") && capexList.length > 0 && (
+                    <>
+                      <tr>
+                        <td colSpan={6} style={{ padding: "10px 20px", background: "linear-gradient(90deg, #eff6ff 0%, #f8fafc 100%)", borderTop: "2px solid #bfdbfe", borderBottom: "1px solid #dbeafe" }}>
+                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                              <div style={{ width: 28, height: 28, borderRadius: 7, background: "#dbeafe", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                <FileText size={14} style={{ color: "#1d4ed8" }} />
                               </div>
-                              <span
-                                style={{
-                                  fontSize: "0.8rem",
-                                  fontWeight: 800,
-                                  color: "#1d4ed8",
-                                  fontFamily: "var(--mono)",
-                                }}
-                              >
-                                Total: Rp {fmt(totalKontrakCapex)}
-                              </span>
-                            </div>
-                          </td>
-                        </tr>
-                        {renderRows(capexList, 0)}
-                        <tr style={{ background: "#eff6ff" }}>
-                          <td
-                            colSpan={3}
-                            style={{
-                              padding: "10px 20px",
-                              textAlign: "right",
-                              fontWeight: 800,
-                              fontSize: "0.72rem",
-                              color: "#1e40af",
-                            }}
-                          >
-                            SUBTOTAL CAPEX ({capexList.length} PEKERJAAN)
-                          </td>
-                          <td
-                            style={{
-                              padding: "10px 20px",
-                              textAlign: "right",
-                              fontWeight: 800,
-                              color: "#1d4ed8",
-                              fontFamily: "var(--mono)",
-                            }}
-                          >
-                            Rp {fmt(totalKontrakCapex)}
-                          </td>
-                          <td colSpan={2} />
-                        </tr>
-                      </>
-                    )}
-
-                  {/* ── OPEX GROUP ── */}
-                  {(filterTipe === "all" || filterTipe === "OPEX") &&
-                    opexList.length > 0 && (
-                      <>
-                        <tr>
-                          <td
-                            colSpan={6}
-                            style={{
-                              padding: "10px 20px",
-                              background:
-                                "linear-gradient(90deg, #f0fdf4 0%, #f8fafc 100%)",
-                              borderTop: "2px solid #86efac",
-                              borderBottom: "1px solid #dcfce7",
-                            }}
-                          >
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "space-between",
-                              }}
-                            >
-                              <div
-                                style={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 10,
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    width: 28,
-                                    height: 28,
-                                    borderRadius: 7,
-                                    background: "#dcfce7",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                  }}
-                                >
-                                  <Package
-                                    size={14}
-                                    style={{ color: "#15803d" }}
-                                  />
-                                </div>
-                                <div>
-                                  <span
-                                    style={{
-                                      fontSize: "0.8rem",
-                                      fontWeight: 800,
-                                      color: "#14532d",
-                                      letterSpacing: "0.3px",
-                                    }}
-                                  >
-                                    OPEX — Anggaran Operasional
-                                  </span>
-                                  <span
-                                    style={{
-                                      marginLeft: 10,
-                                      fontSize: "0.7rem",
-                                      fontWeight: 700,
-                                      background: "#16a34a",
-                                      color: "white",
-                                      padding: "1px 8px",
-                                      borderRadius: 10,
-                                    }}
-                                  >
-                                    {opexList.length} Pekerjaan
-                                  </span>
-                                </div>
+                              <div>
+                                <span style={{ fontSize: "0.8rem", fontWeight: 800, color: "#1e40af", letterSpacing: "0.3px" }}>CAPEX — Anggaran Investasi</span>
+                                <span style={{ marginLeft: 10, fontSize: "0.7rem", fontWeight: 700, background: "#1d4ed8", color: "white", padding: "1px 8px", borderRadius: 10 }}>{capexList.length} Pekerjaan</span>
                               </div>
-                              <span
-                                style={{
-                                  fontSize: "0.8rem",
-                                  fontWeight: 800,
-                                  color: "#15803d",
-                                  fontFamily: "var(--mono)",
-                                }}
-                              >
-                                Total: Rp {fmt(totalKontrakOpex)}
-                              </span>
                             </div>
-                          </td>
-                        </tr>
-                        {renderRows(
-                          opexList,
-                          filterTipe === "all" ? capexList.length : 0,
-                        )}
-                        <tr style={{ background: "#f0fdf4" }}>
-                          <td
-                            colSpan={3}
-                            style={{
-                              padding: "10px 20px",
-                              textAlign: "right",
-                              fontWeight: 800,
-                              fontSize: "0.72rem",
-                              color: "#14532d",
-                            }}
-                          >
-                            SUBTOTAL OPEX ({opexList.length} PEKERJAAN)
-                          </td>
-                          <td
-                            style={{
-                              padding: "10px 20px",
-                              textAlign: "right",
-                              fontWeight: 800,
-                              color: "#15803d",
-                              fontFamily: "var(--mono)",
-                            }}
-                          >
-                            Rp {fmt(totalKontrakOpex)}
-                          </td>
-                          <td colSpan={2} />
-                        </tr>
-                      </>
-                    )}
+                            <span style={{ fontSize: "0.8rem", fontWeight: 800, color: "#1d4ed8", fontFamily: "var(--mono)" }}>Total: Rp {fmt(totalKontrakCapex)}</span>
+                          </div>
+                        </td>
+                      </tr>
+                      {renderRows(capexList, 0)}
+                      <tr style={{ background: "#eff6ff" }}>
+                        <td colSpan={3} style={{ padding: "10px 20px", textAlign: "right", fontWeight: 800, fontSize: "0.72rem", color: "#1e40af" }}>SUBTOTAL CAPEX ({capexList.length} PEKERJAAN)</td>
+                        <td style={{ padding: "10px 20px", textAlign: "right", fontWeight: 800, color: "#1d4ed8", fontFamily: "var(--mono)" }}>Rp {fmt(totalKontrakCapex)}</td>
+                        <td colSpan={2} />
+                      </tr>
+                    </>
+                  )}
+                  {(filterTipe === "all" || filterTipe === "OPEX") && opexList.length > 0 && (
+                    <>
+                      <tr>
+                        <td colSpan={6} style={{ padding: "10px 20px", background: "linear-gradient(90deg, #f0fdf4 0%, #f8fafc 100%)", borderTop: "2px solid #86efac", borderBottom: "1px solid #dcfce7" }}>
+                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                              <div style={{ width: 28, height: 28, borderRadius: 7, background: "#dcfce7", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                <Package size={14} style={{ color: "#15803d" }} />
+                              </div>
+                              <div>
+                                <span style={{ fontSize: "0.8rem", fontWeight: 800, color: "#14532d", letterSpacing: "0.3px" }}>OPEX — Anggaran Operasional</span>
+                                <span style={{ marginLeft: 10, fontSize: "0.7rem", fontWeight: 700, background: "#16a34a", color: "white", padding: "1px 8px", borderRadius: 10 }}>{opexList.length} Pekerjaan</span>
+                              </div>
+                            </div>
+                            <span style={{ fontSize: "0.8rem", fontWeight: 800, color: "#15803d", fontFamily: "var(--mono)" }}>Total: Rp {fmt(totalKontrakOpex)}</span>
+                          </div>
+                        </td>
+                      </tr>
+                      {renderRows(opexList, filterTipe === "all" ? capexList.length : 0)}
+                      <tr style={{ background: "#f0fdf4" }}>
+                        <td colSpan={3} style={{ padding: "10px 20px", textAlign: "right", fontWeight: 800, fontSize: "0.72rem", color: "#14532d" }}>SUBTOTAL OPEX ({opexList.length} PEKERJAAN)</td>
+                        <td style={{ padding: "10px 20px", textAlign: "right", fontWeight: 800, color: "#15803d", fontFamily: "var(--mono)" }}>Rp {fmt(totalKontrakOpex)}</td>
+                        <td colSpan={2} />
+                      </tr>
+                    </>
+                  )}
                 </>
               )}
             </tbody>
@@ -3017,23 +2374,15 @@ export default function MenuAnggaranTerpadu() {
           boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
         }}
       >
-        <div
-          style={{ maxWidth: 1400, margin: "0 auto", display: "flex", gap: 32 }}
-        >
+        <div style={{ maxWidth: 1400, margin: "0 auto", display: "flex", gap: 32 }}>
           <button
-            style={{
-              ...topTabStyle,
-              ...(activeMenu === "anggaran" ? topTabActiveStyle : {}),
-            }}
+            style={{ ...topTabStyle, ...(activeMenu === "anggaran" ? topTabActiveStyle : {}) }}
             onClick={() => setActiveMenu("anggaran")}
           >
             <Database size={16} /> 1. Input Anggaran
           </button>
           <button
-            style={{
-              ...topTabStyle,
-              ...(activeMenu === "pekerjaan" ? topTabActiveStyle : {}),
-            }}
+            style={{ ...topTabStyle, ...(activeMenu === "pekerjaan" ? topTabActiveStyle : {}) }}
             onClick={() => setActiveMenu("pekerjaan")}
           >
             <Briefcase size={16} /> 2. Manajemen Pekerjaan
@@ -3047,23 +2396,12 @@ export default function MenuAnggaranTerpadu() {
 }
 
 const topTabStyle = {
-  display: "flex",
-  alignItems: "center",
-  gap: 8,
-  padding: "18px 4px",
-  fontSize: "0.9rem",
-  fontWeight: 700,
-  color: "#64748b",
-  background: "transparent",
-  border: "none",
-  cursor: "pointer",
-  borderBottom: "3px solid transparent",
-  transition: "all 0.2s",
+  display: "flex", alignItems: "center", gap: 8, padding: "18px 4px",
+  fontSize: "0.9rem", fontWeight: 700, color: "#64748b",
+  background: "transparent", border: "none", cursor: "pointer",
+  borderBottom: "3px solid transparent", transition: "all 0.2s",
 };
-const topTabActiveStyle = {
-  color: "#1d4ed8",
-  borderBottomColor: "#1d4ed8",
-};
+const topTabActiveStyle = { color: "#1d4ed8", borderBottomColor: "#1d4ed8" };
 
 // ═══════════════════════════════════════════════════════════════
 // STYLES
@@ -3150,425 +2488,54 @@ body { font-family: "Plus Jakarta Sans", system-ui, sans-serif; background: var(
 }
 `;
 
-const rootStyle = {
-  fontFamily: "'Plus Jakarta Sans', 'Segoe UI', sans-serif",
-  maxWidth: 860,
-  margin: "0 auto",
-  padding: "2rem 1.5rem",
-  minHeight: "100vh",
-  background: "transparent",
-  color: "#0f172a",
-  position: "relative",
-};
-const headerStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  marginBottom: "1.5rem",
-  background: "white",
-  padding: "1.1rem 1.4rem",
-  borderRadius: 14,
-  border: "1px solid #e2e8f0",
-  boxShadow: "0 1px 3px rgba(0,0,0,.05)",
-};
-const stepperStyle = {
-  display: "flex",
-  alignItems: "center",
-  gap: 8,
-  marginBottom: "1.5rem",
-  background: "white",
-  padding: "1rem 1.4rem",
-  borderRadius: 12,
-  border: "1px solid #e2e8f0",
-};
+const headerStyle = { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.5rem", background: "white", padding: "1.1rem 1.4rem", borderRadius: 14, border: "1px solid #e2e8f0", boxShadow: "0 1px 3px rgba(0,0,0,.05)" };
+const stepperStyle = { display: "flex", alignItems: "center", gap: 8, marginBottom: "1.5rem", background: "white", padding: "1rem 1.4rem", borderRadius: 12, border: "1px solid #e2e8f0" };
 const contentStyle = { display: "flex", flexDirection: "column", gap: 16 };
-const formCardStyle = {
-  background: "white",
-  borderRadius: 14,
-  border: "1px solid #e2e8f0",
-  padding: "1.4rem 1.5rem",
-  boxShadow: "0 1px 3px rgba(0,0,0,.04)",
-};
-const formCardHeaderStyle = {
-  display: "flex",
-  alignItems: "center",
-  gap: 10,
-  marginBottom: 14,
-  paddingBottom: 12,
-  borderBottom: "1px solid #f1f5f9",
-};
-const cardTitleStyle = {
-  fontSize: "0.95rem",
-  fontWeight: 800,
-  color: "#0f172a",
-  flex: 1,
-};
-const actionsStyle = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "flex-end",
-  gap: 10,
-  background: "white",
-  padding: "1rem 1.4rem",
-  borderRadius: 12,
-  border: "1px solid #e2e8f0",
-};
-const btnPrimaryStyle = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 7,
-  padding: "9px 20px",
-  borderRadius: 9,
-  border: "none",
-  background: "linear-gradient(135deg,#1d4ed8,#3b82f6)",
-  color: "white",
-  fontFamily: "inherit",
-  fontSize: "0.82rem",
-  fontWeight: 700,
-  cursor: "pointer",
-  boxShadow: "0 2px 8px rgba(29,78,216,.25)",
-};
-const btnGreenStyle = {
-  background: "linear-gradient(135deg,#15803d,#16a34a)",
-  boxShadow: "0 2px 8px rgba(21,128,61,.25)",
-};
-const btnCancelStyle = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 7,
-  padding: "9px 16px",
-  borderRadius: 9,
-  border: "1px solid #e2e8f0",
-  background: "white",
-  color: "#64748b",
-  fontFamily: "inherit",
-  fontSize: "0.82rem",
-  fontWeight: 600,
-  cursor: "pointer",
-};
-const btnSecondaryStyle = {
-  ...btnCancelStyle,
-  flex: 1,
-  justifyContent: "center",
-};
-const btnDangerStyle = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 6,
-  padding: "8px 16px",
-  borderRadius: 9,
-  border: "none",
-  background: "#dc2626",
-  color: "white",
-  fontFamily: "inherit",
-  fontSize: "0.82rem",
-  fontWeight: 700,
-  cursor: "pointer",
-  flex: 1,
-  justifyContent: "center",
-};
-const btnSmallStyle = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 5,
-  padding: "5px 12px",
-  borderRadius: 7,
-  border: "none",
-  fontSize: "0.72rem",
-  fontWeight: 700,
-  cursor: "pointer",
-  fontFamily: "inherit",
-};
-const typeCardStyle = {
-  position: "relative",
-  background: "#f8fafc",
-  border: "2px solid #e2e8f0",
-  borderRadius: 14,
-  padding: "1.2rem 1.1rem",
-  cursor: "pointer",
-  transition: "all 0.2s",
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "flex-start",
-};
-const typeCardActiveOpex = {
-  background: "#f0fdf4",
-  borderColor: "#86efac",
-  boxShadow: "0 0 0 4px rgba(21,128,61,.08)",
-};
-const typeCardActiveCapex = {
-  background: "#eff6ff",
-  borderColor: "#93c5fd",
-  boxShadow: "0 0 0 4px rgba(29,78,216,.08)",
-};
-const typeIconStyle = {
-  width: 52,
-  height: 52,
-  borderRadius: 13,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  marginBottom: 12,
-  transition: "all 0.2s",
-};
-const typeBadgeStyle = {
-  display: "inline-flex",
-  alignItems: "center",
-  padding: "3px 10px",
-  borderRadius: 6,
-  fontSize: "0.72rem",
-  fontWeight: 800,
-  letterSpacing: "0.4px",
-};
-const typeBadgeSmall = {
-  display: "inline-flex",
-  alignItems: "center",
-  padding: "2px 7px",
-  borderRadius: 4,
-  fontSize: "0.65rem",
-  fontWeight: 700,
-  letterSpacing: "0.3px",
-};
+const formCardStyle = { background: "white", borderRadius: 14, border: "1px solid #e2e8f0", padding: "1.4rem 1.5rem", boxShadow: "0 1px 3px rgba(0,0,0,.04)" };
+const formCardHeaderStyle = { display: "flex", alignItems: "center", gap: 10, marginBottom: 14, paddingBottom: 12, borderBottom: "1px solid #f1f5f9" };
+const cardTitleStyle = { fontSize: "0.95rem", fontWeight: 800, color: "#0f172a", flex: 1 };
+const actionsStyle = { display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 10, background: "white", padding: "1rem 1.4rem", borderRadius: 12, border: "1px solid #e2e8f0" };
+const btnPrimaryStyle = { display: "inline-flex", alignItems: "center", gap: 7, padding: "9px 20px", borderRadius: 9, border: "none", background: "linear-gradient(135deg,#1d4ed8,#3b82f6)", color: "white", fontFamily: "inherit", fontSize: "0.82rem", fontWeight: 700, cursor: "pointer", boxShadow: "0 2px 8px rgba(29,78,216,.25)" };
+const btnGreenStyle = { background: "linear-gradient(135deg,#15803d,#16a34a)", boxShadow: "0 2px 8px rgba(21,128,61,.25)" };
+const btnCancelStyle = { display: "inline-flex", alignItems: "center", gap: 7, padding: "9px 16px", borderRadius: 9, border: "1px solid #e2e8f0", background: "white", color: "#64748b", fontFamily: "inherit", fontSize: "0.82rem", fontWeight: 600, cursor: "pointer" };
+const btnSecondaryStyle = { ...btnCancelStyle, flex: 1, justifyContent: "center" };
+const btnDangerStyle = { display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 9, border: "none", background: "#dc2626", color: "white", fontFamily: "inherit", fontSize: "0.82rem", fontWeight: 700, cursor: "pointer", flex: 1, justifyContent: "center" };
+const btnSmallStyle = { display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 7, border: "none", fontSize: "0.72rem", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" };
+const typeCardStyle = { position: "relative", background: "#f8fafc", border: "2px solid #e2e8f0", borderRadius: 14, padding: "1.2rem 1.1rem", cursor: "pointer", transition: "all 0.2s", display: "flex", flexDirection: "column", alignItems: "flex-start" };
+const typeCardActiveOpex = { background: "#f0fdf4", borderColor: "#86efac", boxShadow: "0 0 0 4px rgba(21,128,61,.08)" };
+const typeCardActiveCapex = { background: "#eff6ff", borderColor: "#93c5fd", boxShadow: "0 0 0 4px rgba(29,78,216,.08)" };
+const typeIconStyle = { width: 52, height: 52, borderRadius: 13, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12, transition: "all 0.2s" };
+const typeBadgeStyle = { display: "inline-flex", alignItems: "center", padding: "3px 10px", borderRadius: 6, fontSize: "0.72rem", fontWeight: 800, letterSpacing: "0.4px" };
+const typeBadgeSmall = { display: "inline-flex", alignItems: "center", padding: "2px 7px", borderRadius: 4, fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.3px" };
 const opexBadgeStyle = { background: "#dcfce7", color: "#15803d" };
 const capexBadgeStyle = { background: "#dbeafe", color: "#1e40af" };
 const opexBadgeSmall = { background: "#dcfce7", color: "#15803d" };
 const capexBadgeSmall = { background: "#dbeafe", color: "#1e40af" };
-const toggleWrapStyle = {
-  display: "flex",
-  background: "#f1f5f9",
-  borderRadius: 10,
-  padding: 3,
-  gap: 3,
-  marginBottom: 4,
-};
-const toggleBtnStyle = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 6,
-  padding: "7px 16px",
-  borderRadius: 8,
-  border: "none",
-  background: "transparent",
-  fontFamily: "inherit",
-  fontSize: "0.8rem",
-  fontWeight: 600,
-  color: "#64748b",
-  cursor: "pointer",
-  transition: "all 0.2s",
-};
-const toggleActiveOpex = {
-  background: "white",
-  color: "#15803d",
-  boxShadow: "0 1px 4px rgba(0,0,0,.08)",
-};
-const toggleActiveCapex = {
-  background: "white",
-  color: "#1d4ed8",
-  boxShadow: "0 1px 4px rgba(0,0,0,.08)",
-};
-const labelStyle = {
-  fontSize: "0.72rem",
-  fontWeight: 700,
-  textTransform: "uppercase",
-  letterSpacing: "0.5px",
-  color: "#475569",
-};
-const inputStyle = {
-  padding: "10px 14px",
-  border: "1px solid #cbd5e1",
-  borderRadius: "10px",
-  fontFamily: "inherit",
-  fontSize: "0.85rem",
-  color: "#0f172a",
-  outline: "none",
-  width: "100%",
-  boxSizing: "border-box",
-  background: "white",
-  fontWeight: "500",
-  transition: "border-color 0.2s",
-};
+const toggleWrapStyle = { display: "flex", background: "#f1f5f9", borderRadius: 10, padding: 3, gap: 3, marginBottom: 4 };
+const toggleBtnStyle = { display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 16px", borderRadius: 8, border: "none", background: "transparent", fontFamily: "inherit", fontSize: "0.8rem", fontWeight: 600, color: "#64748b", cursor: "pointer", transition: "all 0.2s" };
+const toggleActiveOpex = { background: "white", color: "#15803d", boxShadow: "0 1px 4px rgba(0,0,0,.08)" };
+const toggleActiveCapex = { background: "white", color: "#1d4ed8", boxShadow: "0 1px 4px rgba(0,0,0,.08)" };
+const labelStyle = { fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", color: "#475569" };
+const inputStyle = { padding: "10px 14px", border: "1px solid #cbd5e1", borderRadius: "10px", fontFamily: "inherit", fontSize: "0.85rem", color: "#0f172a", outline: "none", width: "100%", boxSizing: "border-box", background: "white", fontWeight: "500", transition: "border-color 0.2s" };
 const helperStyle = { fontSize: "0.7rem", color: "#94a3b8", marginTop: 2 };
-const formGridStyle = {
-  display: "grid",
-  gridTemplateColumns: "1fr 1fr",
-  gap: "12px 16px",
-};
-const codeStyle = {
-  fontFamily: "'JetBrains Mono', 'Courier New', monospace",
-  fontSize: "0.73rem",
-  background: "#f1f5f9",
-  color: "#475569",
-  padding: "2px 7px",
-  borderRadius: 4,
-  border: "1px solid #e2e8f0",
-};
-const triggerStyle = {
-  display: "flex",
-  alignItems: "center",
-  gap: 8,
-  padding: "9px 12px",
-  border: "1px solid #e2e8f0",
-  borderRadius: 9,
-  cursor: "pointer",
-  background: "white",
-  transition: "all 0.2s",
-};
-const selectedBoxStyle = {
-  display: "flex",
-  alignItems: "center",
-  gap: 10,
-  padding: "10px 14px",
-  border: "1px solid #e2e8f0",
-  borderRadius: 9,
-  background: "#f8fafc",
-};
-const dropdownStyle = {
-  position: "absolute",
-  top: "calc(100% + 5px)",
-  left: 0,
-  right: 0,
-  background: "white",
-  border: "1px solid #e2e8f0",
-  borderRadius: 10,
-  boxShadow: "0 8px 30px rgba(0,0,0,.12)",
-  zIndex: 50,
-  overflow: "hidden",
-};
-const searchInputWrapStyle = {
-  display: "flex",
-  alignItems: "center",
-  gap: 8,
-  padding: "9px 12px",
-  borderBottom: "1px solid #f1f5f9",
-};
-const searchInputStyle = {
-  flex: 1,
-  border: "none",
-  outline: "none",
-  fontFamily: "inherit",
-  fontSize: "0.82rem",
-  color: "#0f172a",
-  background: "transparent",
-};
-const optionStyle = {
-  padding: "10px 14px",
-  cursor: "pointer",
-  transition: "background 0.15s",
-  borderBottom: "1px solid #f8fafc",
-};
-const autofillBannerStyle = {
-  display: "flex",
-  alignItems: "center",
-  gap: 7,
-  background: "#f0fdf4",
-  border: "1px solid #86efac",
-  borderRadius: 8,
-  padding: "8px 12px",
-  fontSize: "0.75rem",
-  color: "#15803d",
-  fontWeight: 600,
-  marginTop: 10,
-};
-const infoBoxStyle = {
-  display: "flex",
-  alignItems: "flex-start",
-  gap: 8,
-  background: "#fef9c3",
-  border: "1px solid #fde047",
-  borderRadius: 8,
-  padding: "9px 12px",
-  fontSize: "0.75rem",
-  color: "#92400e",
-  fontWeight: 500,
-};
-const contextBarStyle = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-  gap: 12,
-  background: "white",
-  padding: "1rem 1.4rem",
-  borderRadius: 12,
-  border: "1px solid #e2e8f0",
-  marginBottom: 20,
-};
+const formGridStyle = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px 16px" };
+const codeStyle = { fontFamily: "'JetBrains Mono', 'Courier New', monospace", fontSize: "0.73rem", background: "#f1f5f9", color: "#475569", padding: "2px 7px", borderRadius: 4, border: "1px solid #e2e8f0" };
+const triggerStyle = { display: "flex", alignItems: "center", gap: 8, padding: "9px 12px", border: "1px solid #e2e8f0", borderRadius: 9, cursor: "pointer", background: "white", transition: "all 0.2s" };
+const selectedBoxStyle = { display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", border: "1px solid #e2e8f0", borderRadius: 9, background: "#f8fafc" };
+const dropdownStyle = { position: "absolute", top: "calc(100% + 5px)", left: 0, right: 0, background: "white", border: "1px solid #e2e8f0", borderRadius: 10, boxShadow: "0 8px 30px rgba(0,0,0,.12)", zIndex: 50, overflow: "hidden" };
+const searchInputWrapStyle = { display: "flex", alignItems: "center", gap: 8, padding: "9px 12px", borderBottom: "1px solid #f1f5f9" };
+const searchInputStyle = { flex: 1, border: "none", outline: "none", fontFamily: "inherit", fontSize: "0.82rem", color: "#0f172a", background: "transparent" };
+const optionStyle = { padding: "10px 14px", cursor: "pointer", transition: "background 0.15s", borderBottom: "1px solid #f8fafc" };
+const autofillBannerStyle = { display: "flex", alignItems: "center", gap: 7, background: "#f0fdf4", border: "1px solid #86efac", borderRadius: 8, padding: "8px 12px", fontSize: "0.75rem", color: "#15803d", fontWeight: 600, marginTop: 10 };
+const infoBoxStyle = { display: "flex", alignItems: "flex-start", gap: 8, background: "#fef9c3", border: "1px solid #fde047", borderRadius: 8, padding: "9px 12px", fontSize: "0.75rem", color: "#92400e", fontWeight: 500 };
+const contextBarStyle = { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12, background: "white", padding: "1rem 1.4rem", borderRadius: 12, border: "1px solid #e2e8f0", marginBottom: 20 };
 const contextItemStyle = { display: "flex", flexDirection: "column", gap: 5 };
-const contextLabelStyle = {
-  fontSize: "0.65rem",
-  fontWeight: 700,
-  textTransform: "uppercase",
-  letterSpacing: "0.5px",
-  color: "#94a3b8",
-};
-const overlayStyle = {
-  position: "fixed",
-  inset: 0,
-  background: "rgba(15,23,42,.5)",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  zIndex: 9000,
-  padding: 20,
-};
-const confirmBoxStyle = {
-  background: "white",
-  borderRadius: 16,
-  padding: "28px 24px",
-  maxWidth: 360,
-  width: "100%",
-  boxShadow: "0 12px 40px rgba(0,0,0,.14)",
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  gap: 14,
-  textAlign: "center",
-};
-const toastStyle = {
-  position: "fixed",
-  bottom: 24,
-  right: 24,
-  background: "#15803d",
-  color: "white",
-  padding: "12px 20px",
-  borderRadius: 12,
-  fontSize: "0.82rem",
-  fontWeight: 600,
-  boxShadow: "0 4px 20px rgba(0,0,0,.15)",
-  display: "flex",
-  alignItems: "center",
-  gap: 8,
-  zIndex: 9999,
-};
-const tableStyle = {
-  width: "100%",
-  borderCollapse: "collapse",
-  fontSize: "0.8rem",
-  color: "#0f172a",
-};
-const thStyle = {
-  padding: "10px 16px",
-  borderBottom: "1px solid #e2e8f0",
-  background: "#f8fafc",
-  fontSize: "0.7rem",
-  fontWeight: 800,
-  textTransform: "uppercase",
-  letterSpacing: "0.5px",
-  color: "#64748b",
-  textAlign: "left",
-};
-const tdStyle = {
-  padding: "12px 16px",
-  borderBottom: "1px solid #f1f5f9",
-  verticalAlign: "middle",
-};
+const contextLabelStyle = { fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", color: "#94a3b8" };
+const overlayStyle = { position: "fixed", inset: 0, background: "rgba(15,23,42,.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9000, padding: 20 };
+const confirmBoxStyle = { background: "white", borderRadius: 16, padding: "28px 24px", maxWidth: 360, width: "100%", boxShadow: "0 12px 40px rgba(0,0,0,.14)", display: "flex", flexDirection: "column", alignItems: "center", gap: 14, textAlign: "center" };
+const toastStyle = { position: "fixed", bottom: 24, right: 24, background: "#15803d", color: "white", padding: "12px 20px", borderRadius: 12, fontSize: "0.82rem", fontWeight: 600, boxShadow: "0 4px 20px rgba(0,0,0,.15)", display: "flex", alignItems: "center", gap: 8, zIndex: 9999 };
+const tableStyle = { width: "100%", borderCollapse: "collapse", fontSize: "0.8rem", color: "#0f172a" };
+const thStyle = { padding: "10px 16px", borderBottom: "1px solid #e2e8f0", background: "#f8fafc", fontSize: "0.7rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px", color: "#64748b", textAlign: "left" };
+const tdStyle = { padding: "12px 16px", borderBottom: "1px solid #f1f5f9", verticalAlign: "middle" };
 const trStyle = { transition: "background 0.15s" };
-const actionBtnStyle = {
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  padding: "6px",
-  borderRadius: "6px",
-  border: "1px solid #e2e8f0",
-  background: "white",
-  cursor: "pointer",
-  transition: "all 0.15s",
-};
+const actionBtnStyle = { display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "6px", borderRadius: "6px", border: "1px solid #e2e8f0", background: "white", cursor: "pointer", transition: "all 0.15s" };
