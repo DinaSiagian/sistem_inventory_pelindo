@@ -9,7 +9,7 @@ import {
   FaPlusCircle,
   FaChevronLeft,
   FaChevronRight,
-  FaHandHolding, // ← Peminjaman & Pengembalian
+  FaHandHolding,
 } from "react-icons/fa";
 import "./Layout.css";
 
@@ -48,6 +48,21 @@ const Layout = () => {
     );
     if (currentMenu) setPageTitle(currentMenu.label);
   }, [location]);
+
+  // ── TAMBAHAN: tangkap event navigasi dari halaman Input Data ──
+  // Ketika user klik "lihat detail" di OpexModule (budget/input),
+  // komponen itu akan dispatch event ini agar Layout pindah ke /budget
+  useEffect(() => {
+    const handleNavigateToBudget = (e) => {
+      navigate("/budget");
+    };
+
+    window.addEventListener("navigate-to-budget", handleNavigateToBudget);
+    return () => {
+      window.removeEventListener("navigate-to-budget", handleNavigateToBudget);
+    };
+  }, [navigate]);
+  // ── END TAMBAHAN ──
 
   const handleLogout = () => {
     if (window.confirm("Apakah Anda yakin ingin keluar?")) navigate("/");
