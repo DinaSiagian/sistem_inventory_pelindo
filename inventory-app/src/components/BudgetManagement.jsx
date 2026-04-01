@@ -1709,15 +1709,13 @@ function RealisasiTablePage({
       "Tanggal",
       "Keterangan",
       "No. Invoice",
-      "Aset Terkait",
-      "Jumlah (IDR)",
+      "Jumlah (IDR)", // Kolom Aset Terkait dihapus dari Excel
     ];
     const rows = filtered.map((t, i) => [
       i + 1,
       t.tanggal ? new Date(t.tanggal).toLocaleDateString("id-ID") : "",
       t.keterangan || "",
       t.no_invoice || "",
-      t.aset || "",
       t.jumlah || 0,
     ]);
     const infoRows = [
@@ -1732,7 +1730,7 @@ function RealisasiTablePage({
       headers,
       ...rows,
       [],
-      ["", "", "", "", "TOTAL REALISASI", totalFiltered],
+      ["", "", "", "TOTAL REALISASI", totalFiltered],
     ];
     const csvContent = infoRows
       .map((row) =>
@@ -1856,8 +1854,7 @@ function RealisasiTablePage({
               <th className="th-no">No</th>
               <th>Tanggal</th>
               <th>No. Invoice</th>
-              <th>Keterangan Transaksi</th>
-              <th>Aset Terkait</th>
+              <th>Keterangan Realisasi</th>
               <th>Lampiran</th>
               <th>Jumlah (IDR)</th>
               <th className="th-actions">Aksi</th>
@@ -1866,7 +1863,7 @@ function RealisasiTablePage({
           <tbody>
             {filtered.length === 0 ? (
               <tr className="table-empty-row">
-                <td colSpan={8}>
+                <td colSpan={7}>
                   <div className="table-empty-inner">
                     <Icon d={I.fileText} size={36} style={{ opacity: 0.2 }} />
                     <span style={{ fontWeight: 600, fontSize: "0.85rem" }}>
@@ -1900,21 +1897,6 @@ function RealisasiTablePage({
                   </td>
                   <td>
                     <span className="td-name-text">{t.keterangan || "—"}</span>
-                  </td>
-                  <td>
-                    {t.aset ? (
-                      <span
-                        className="td-code"
-                        style={{
-                          background: "var(--amber-lt)",
-                          color: "var(--amber)",
-                        }}
-                      >
-                        {t.aset}
-                      </span>
-                    ) : (
-                      <span style={{ color: "var(--ink4)" }}>—</span>
-                    )}
                   </td>
                   <td>
                     {t.lampiran ? (
@@ -1967,7 +1949,7 @@ function RealisasiTablePage({
             <tfoot>
               <tr>
                 <td
-                  colSpan={6}
+                  colSpan={5}
                   style={{ fontWeight: 700, fontSize: "0.75rem" }}
                 >
                   {filtered.length < transactions.length
@@ -2039,7 +2021,6 @@ function RealisasiTablePage({
     </div>
   );
 }
-
 // ══════════════════════════════════════════════════════════════════
 // CAPEX CARD
 // ══════════════════════════════════════════════════════════════════
