@@ -19,6 +19,10 @@ import batikImg from "../pictures/batik.png";
 const Layout = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [pageTitle, setPageTitle] = useState("Dashboard");
+
+  // 1. TAMBAHKAN STATE INI UNTUK TRIGGER RESET
+  const [resetKey, setResetKey] = useState(0);
+
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -49,9 +53,6 @@ const Layout = () => {
     if (currentMenu) setPageTitle(currentMenu.label);
   }, [location]);
 
-  // ── TAMBAHAN: tangkap event navigasi dari halaman Input Data ──
-  // Ketika user klik "lihat detail" di OpexModule (budget/input),
-  // komponen itu akan dispatch event ini agar Layout pindah ke /budget
   useEffect(() => {
     const handleNavigateToBudget = (e) => {
       navigate("/budget");
@@ -62,10 +63,17 @@ const Layout = () => {
       window.removeEventListener("navigate-to-budget", handleNavigateToBudget);
     };
   }, [navigate]);
-  // ── END TAMBAHAN ──
 
   const handleLogout = () => {
     if (window.confirm("Apakah Anda yakin ingin keluar?")) navigate("/");
+  };
+
+  // 2. FUNGSI UNTUK MERESET HALAMAN JIKA MENU YANG SAMA DIKLIK
+  const handleMenuClick = (path) => {
+    if (location.pathname === path) {
+      // Jika URL saat ini sama dengan URL menu yang diklik, tambah nilai resetKey
+      setResetKey((prevKey) => prevKey + 1);
+    }
   };
 
   return (
@@ -91,6 +99,8 @@ const Layout = () => {
                 key={index}
                 to={item.path}
                 className={`menu-item ${location.pathname === item.path ? "active" : ""}`}
+                // 3. TAMBAHKAN ONCLICK DI SINI
+                onClick={() => handleMenuClick(item.path)}
               >
                 <div className="menu-icon">{item.icon}</div>
                 {!collapsed && <span className="menu-text">{item.label}</span>}
@@ -133,7 +143,8 @@ const Layout = () => {
         </header>
 
         <main className="page-content">
-          <Outlet />
+          {/* 4. TAMBAHKAN KEY PADA OUTLET */}
+          <Outlet key={`${location.pathname}-${resetKey}`} />
         </main>
       </div>
     </div>

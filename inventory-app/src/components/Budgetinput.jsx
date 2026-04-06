@@ -403,15 +403,63 @@ const ABTN = {
   cursor: "pointer",
 };
 
-// Warna aksen per indeks untuk membedakan anggaran master secara visual
 const MASTER_ACCENT_COLORS = [
-  { border: "#2563eb", headerBg: "#eff6ff", headerBorder: "#bfdbfe", badge: "#dbeafe", badgeText: "#1d4ed8", dot: "#2563eb" },
-  { border: "#16a34a", headerBg: "#f0fdf4", headerBorder: "#bbf7d0", badge: "#dcfce7", badgeText: "#15803d", dot: "#16a34a" },
-  { border: "#d97706", headerBg: "#fffbeb", headerBorder: "#fde68a", badge: "#fef3c7", badgeText: "#b45309", dot: "#d97706" },
-  { border: "#7c3aed", headerBg: "#f5f3ff", headerBorder: "#ddd6fe", badge: "#ede9fe", badgeText: "#6d28d9", dot: "#7c3aed" },
-  { border: "#0891b2", headerBg: "#ecfeff", headerBorder: "#a5f3fc", badge: "#cffafe", badgeText: "#0e7490", dot: "#0891b2" },
-  { border: "#db2777", headerBg: "#fdf2f8", headerBorder: "#fbcfe8", badge: "#fce7f3", badgeText: "#be185d", dot: "#db2777" },
-  { border: "#65a30d", headerBg: "#f7fee7", headerBorder: "#d9f99d", badge: "#ecfccb", badgeText: "#4d7c0f", dot: "#65a30d" },
+  {
+    border: "#2563eb",
+    headerBg: "#eff6ff",
+    headerBorder: "#bfdbfe",
+    badge: "#dbeafe",
+    badgeText: "#1d4ed8",
+    dot: "#2563eb",
+  },
+  {
+    border: "#16a34a",
+    headerBg: "#f0fdf4",
+    headerBorder: "#bbf7d0",
+    badge: "#dcfce7",
+    badgeText: "#15803d",
+    dot: "#16a34a",
+  },
+  {
+    border: "#d97706",
+    headerBg: "#fffbeb",
+    headerBorder: "#fde68a",
+    badge: "#fef3c7",
+    badgeText: "#b45309",
+    dot: "#d97706",
+  },
+  {
+    border: "#7c3aed",
+    headerBg: "#f5f3ff",
+    headerBorder: "#ddd6fe",
+    badge: "#ede9fe",
+    badgeText: "#6d28d9",
+    dot: "#7c3aed",
+  },
+  {
+    border: "#0891b2",
+    headerBg: "#ecfeff",
+    headerBorder: "#a5f3fc",
+    badge: "#cffafe",
+    badgeText: "#0e7490",
+    dot: "#0891b2",
+  },
+  {
+    border: "#db2777",
+    headerBg: "#fdf2f8",
+    headerBorder: "#fbcfe8",
+    badge: "#fce7f3",
+    badgeText: "#be185d",
+    dot: "#db2777",
+  },
+  {
+    border: "#65a30d",
+    headerBg: "#f7fee7",
+    headerBorder: "#d9f99d",
+    badge: "#ecfccb",
+    badgeText: "#4d7c0f",
+    dot: "#65a30d",
+  },
 ];
 
 function getMasterAccent(globalIdx) {
@@ -1057,35 +1105,20 @@ function EditRealisasiSection({
   const [ket, setKet] = useState("");
 
   const TIPE_OPTIONS = [
-    {
-      value: "penambahan",
-      label: "Penambahan Realisasi",
-      color: "#16a34a",
-      bg: "#f0fdf4",
-      border: "#bbf7d0",
-    },
-    {
-      value: "pengurangan",
-      label: "Pengurangan Realisasi",
-      color: "#dc2626",
-      bg: "#fef2f2",
-      border: "#fecaca",
-    },
-    {
-      value: "bymhd",
-      label: "BYMHD",
-      color: "#d97706",
-      bg: "#fffbeb",
-      border: "#fde68a",
-    },
-    {
-      value: "transfer",
-      label: "Transfer Realisasi",
-      color: "#7c3aed",
-      bg: "#f5f3ff",
-      border: "#ddd6fe",
-    },
+    { value: "penambahan", label: "Penambahan Realisasi" },
+    { value: "pengurangan", label: "Pengurangan Realisasi" },
+    { value: "bymhd", label: "BYMHD" },
+    { value: "transfer", label: "Transfer Realisasi" },
   ];
+
+  const TIPE_COLOR = {
+    penambahan: { color: "#16a34a", bg: "#f0fdf4", border: "#bbf7d0" },
+    pengurangan: { color: "#dc2626", bg: "#fef2f2", border: "#fecaca" },
+    bymhd: { color: "#d97706", bg: "#fffbeb", border: "#fde68a" },
+    transfer: { color: "#7c3aed", bg: "#f5f3ff", border: "#ddd6fe" },
+  };
+
+  const activeColor = tipe ? TIPE_COLOR[tipe] : null;
 
   const currentTotal = (row.history || []).reduce((acc, h) => {
     if (h.is_initial || h.tipe === "initial") return acc + h.nilai;
@@ -1112,18 +1145,46 @@ function EditRealisasiSection({
   return (
     <div
       style={{
-        border: "1px solid #e2e8f0",
+        border: "1px solid #fde68a",
         borderRadius: 8,
         overflow: "hidden",
         marginTop: 12,
+        boxShadow: "0 2px 8px rgba(217,119,6,.08)",
       }}
     >
       <table style={{ ...TABLE, border: "none" }}>
         <thead>
           <tr>
-            <th style={{ ...TH, width: 220 }}>FIELD</th>
-            <th style={TH}>NILAI</th>
-            <th style={{ ...TH, width: 100, textAlign: "right" }}>AKSI</th>
+            <th
+              style={{
+                ...TH,
+                width: 220,
+                background: "#fffbeb",
+                borderBottomColor: "#fde68a",
+              }}
+            >
+              FIELD
+            </th>
+            <th
+              style={{
+                ...TH,
+                background: "#fffbeb",
+                borderBottomColor: "#fde68a",
+              }}
+            >
+              NILAI
+            </th>
+            <th
+              style={{
+                ...TH,
+                width: 100,
+                textAlign: "right",
+                background: "#fffbeb",
+                borderBottomColor: "#fde68a",
+              }}
+            >
+              AKSI
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -1147,51 +1208,81 @@ function EditRealisasiSection({
 
       <div
         style={{
-          padding: "16px 18px",
-          borderTop: "1px solid #e2e8f0",
-          background: "#fafafa",
+          display: "flex",
+          alignItems: "center",
+          gap: 16,
+          padding: "14px 18px",
+          borderTop: "1px solid #fde68a",
+          background: "#fffef7",
+          flexWrap: "wrap",
         }}
       >
-        <div
+        <span
           style={{
             fontSize: "0.72rem",
-            fontWeight: 700,
-            color: "#475569",
+            fontWeight: 800,
+            color: "#92400e",
             textTransform: "uppercase",
-            letterSpacing: "0.5px",
-            marginBottom: 10,
+            letterSpacing: "0.6px",
+            whiteSpace: "nowrap",
+            minWidth: 130,
           }}
         >
           Jenis Perubahan <span style={{ color: "#ef4444" }}>*</span>
-        </div>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        </span>
+
+        <select
+          value={tipe}
+          onChange={(e) => setTipe(e.target.value)}
+          style={{
+            padding: "9px 14px",
+            border: activeColor
+              ? `2px solid ${activeColor.border}`
+              : "1.5px solid #cbd5e1",
+            borderRadius: 8,
+            fontSize: "0.84rem",
+            fontWeight: 600,
+            color: activeColor ? activeColor.color : "#64748b",
+            background: activeColor ? activeColor.bg : "white",
+            cursor: "pointer",
+            outline: "none",
+            minWidth: 220,
+            transition: "all .15s",
+            fontFamily: "inherit",
+          }}
+        >
+          <option value="">— Pilih Jenis Perubahan —</option>
           {TIPE_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => setTipe(opt.value)}
-              style={{
-                padding: "8px 16px",
-                borderRadius: 6,
-                border: `2px solid ${tipe === opt.value ? opt.color : "#e2e8f0"}`,
-                background: tipe === opt.value ? opt.bg : "white",
-                color: tipe === opt.value ? opt.color : "#64748b",
-                fontWeight: tipe === opt.value ? 700 : 500,
-                fontSize: "0.82rem",
-                cursor: "pointer",
-                transition: "all .15s",
-              }}
-            >
+            <option key={opt.value} value={opt.value}>
               {opt.label}
-            </button>
+            </option>
           ))}
-        </div>
+        </select>
+
+        {tipe && activeColor && (
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              padding: "5px 12px",
+              borderRadius: 6,
+              fontSize: "0.75rem",
+              fontWeight: 700,
+              background: activeColor.bg,
+              color: activeColor.color,
+              border: `1px solid ${activeColor.border}`,
+            }}
+          >
+            {TIPE_OPTIONS.find((o) => o.value === tipe)?.label}
+          </span>
+        )}
       </div>
 
       {tipe && (
         <div
           style={{
-            padding: "16px 18px",
-            borderTop: "1px solid #e2e8f0",
+            padding: "14px 18px",
+            borderTop: "1px solid #fde68a",
             background: "white",
           }}
         >
@@ -1256,8 +1347,8 @@ function EditRealisasiSection({
       <div
         style={{
           padding: "12px 18px",
-          borderTop: "1px solid #e2e8f0",
-          background: "#f8fafc",
+          borderTop: "1px solid #fde68a",
+          background: "#fffbeb",
           display: "flex",
           justifyContent: "flex-end",
           gap: 10,
@@ -1285,7 +1376,7 @@ function EditRealisasiSection({
 }
 
 // ════════════════════════════════════════════════════════════════
-// REALISASI TAHUNAN PER MASTER
+// REALISASI TAHUNAN
 // ════════════════════════════════════════════════════════════════
 function RealisasiSection({ master, setMasters, toast_ }) {
   const [showForm, setShowForm] = useState(false);
@@ -1593,32 +1684,33 @@ function RealisasiSection({ master, setMasters, toast_ }) {
         </div>
       )}
 
-      {/* Sub-header realisasi */}
       <div
         style={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          padding: "10px 16px",
+          padding: "11px 18px",
           background: "#f8fafc",
           borderTop: "1px solid #e2e8f0",
+          borderBottom: "1px solid #e2e8f0",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <Calendar size={14} style={{ color: "#16a34a" }} />
           <span
-            style={{ fontSize: "0.8rem", fontWeight: 700, color: "#374151" }}
+            style={{ fontSize: "0.82rem", fontWeight: 700, color: "#374151" }}
           >
             Daftar Realisasi Tahunan
           </span>
           <span
             style={{
-              fontSize: "0.72rem",
-              color: "#64748b",
-              background: "#e2e8f0",
-              padding: "1px 7px",
+              fontSize: "0.7rem",
+              color: "#16a34a",
+              background: "#dcfce7",
+              padding: "1px 8px",
               borderRadius: 99,
-              fontWeight: 600,
+              fontWeight: 700,
+              border: "1px solid #bbf7d0",
             }}
           >
             {list.length} tahun
@@ -1628,25 +1720,78 @@ function RealisasiSection({ master, setMasters, toast_ }) {
           style={{
             ...BTN,
             background: "#16a34a",
-            padding: "6px 12px",
-            fontSize: "0.75rem",
+            padding: "6px 13px",
+            fontSize: "0.76rem",
+            borderRadius: 7,
           }}
           onClick={() => setShowForm(true)}
         >
-          <Plus size={12} /> Input Realisasi Baru
+          <Plus size={13} /> Input Realisasi Baru
         </button>
       </div>
 
-      {/* Tabel realisasi */}
       <table style={{ ...TABLE, border: "none" }}>
         <thead>
-          <tr>
-            <th style={{ ...TH, width: 40, textAlign: "center" }}>NO</th>
-            <th style={{ ...TH, width: 80, textAlign: "center" }}>TAHUN</th>
-            <th style={{ ...TH, textAlign: "right" }}>REALISASI MURNI</th>
-            <th style={{ ...TH, textAlign: "right" }}>REALISASI BYMHD</th>
-            <th style={{ ...TH, textAlign: "right" }}>TOTAL REALISASI</th>
-            <th style={{ ...TH, textAlign: "center", width: 120 }}>AKSI</th>
+          <tr
+            style={{ background: "#f8fafc", borderBottom: "2px solid #e2e8f0" }}
+          >
+            <th
+              style={{
+                ...TH,
+                width: 46,
+                textAlign: "center",
+                borderBottom: "2px solid #e2e8f0",
+              }}
+            >
+              No
+            </th>
+            <th
+              style={{
+                ...TH,
+                width: 90,
+                textAlign: "center",
+                borderBottom: "2px solid #e2e8f0",
+              }}
+            >
+              Tahun
+            </th>
+            <th
+              style={{
+                ...TH,
+                textAlign: "right",
+                borderBottom: "2px solid #e2e8f0",
+              }}
+            >
+              Realisasi Murni
+            </th>
+            <th
+              style={{
+                ...TH,
+                textAlign: "right",
+                borderBottom: "2px solid #e2e8f0",
+              }}
+            >
+              Realisasi BYMHD
+            </th>
+            <th
+              style={{
+                ...TH,
+                textAlign: "right",
+                borderBottom: "2px solid #e2e8f0",
+              }}
+            >
+              Total Realisasi
+            </th>
+            <th
+              style={{
+                ...TH,
+                textAlign: "center",
+                width: 120,
+                borderBottom: "2px solid #e2e8f0",
+              }}
+            >
+              Aksi
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -1658,10 +1803,11 @@ function RealisasiSection({ master, setMasters, toast_ }) {
                   ...TD,
                   textAlign: "center",
                   color: "#94a3b8",
-                  padding: 24,
+                  padding: "28px 24px",
                   fontSize: "0.82rem",
                   background: "#fafafa",
                   fontStyle: "italic",
+                  borderBottom: "none",
                 }}
               >
                 Belum ada data realisasi tahunan.
@@ -1671,11 +1817,20 @@ function RealisasiSection({ master, setMasters, toast_ }) {
             list.map((row, idx) => {
               const total =
                 (row.realisasi_murni || 0) + (row.realisasi_bymhd || 0);
+              const isEditing = editRowId === row.id;
               return (
                 <React.Fragment key={row.id}>
                   <tr
                     style={{
-                      background: editRowId === row.id ? "#fffbeb" : "white",
+                      background: isEditing
+                        ? "#fffbeb"
+                        : idx % 2 === 0
+                          ? "white"
+                          : "#fafcff",
+                      transition: "background .12s",
+                      borderLeft: isEditing
+                        ? "3px solid #f59e0b"
+                        : "3px solid transparent",
                     }}
                   >
                     <td
@@ -1683,8 +1838,10 @@ function RealisasiSection({ master, setMasters, toast_ }) {
                         ...TD,
                         textAlign: "center",
                         fontSize: "0.72rem",
-                        color: "#94a3b8",
                         fontWeight: 700,
+                        color: "#94a3b8",
+                        borderBottom: isEditing ? "none" : "1px solid #f1f5f9",
+                        paddingLeft: 6,
                       }}
                     >
                       {idx + 1}
@@ -1693,84 +1850,149 @@ function RealisasiSection({ master, setMasters, toast_ }) {
                       style={{
                         ...TD,
                         textAlign: "center",
-                        fontWeight: 700,
-                        color: "#0f172a",
+                        borderBottom: isEditing ? "none" : "1px solid #f1f5f9",
                       }}
                     >
-                      {row.thn}
+                      <span
+                        style={{
+                          display: "inline-block",
+                          padding: "3px 10px",
+                          borderRadius: 6,
+                          background: "#eff6ff",
+                          color: "#1d4ed8",
+                          fontWeight: 800,
+                          fontSize: "0.82rem",
+                          border: "1px solid #bfdbfe",
+                        }}
+                      >
+                        {row.thn}
+                      </span>
                     </td>
                     <td
                       style={{
                         ...TD,
                         textAlign: "right",
-                        fontWeight: 600,
-                        color: "#475569",
+                        borderBottom: isEditing ? "none" : "1px solid #f1f5f9",
                       }}
                     >
-                      {fmt(row.realisasi_murni)}
+                      <span
+                        style={{
+                          fontWeight: 600,
+                          color: "#475569",
+                          fontSize: "0.85rem",
+                        }}
+                      >
+                        {fmt(row.realisasi_murni)}
+                      </span>
                     </td>
                     <td
                       style={{
                         ...TD,
                         textAlign: "right",
-                        fontWeight: 600,
-                        color: "#d97706",
+                        borderBottom: isEditing ? "none" : "1px solid #f1f5f9",
                       }}
                     >
-                      {fmt(row.realisasi_bymhd)}
+                      {(row.realisasi_bymhd || 0) > 0 ? (
+                        <span
+                          style={{
+                            fontWeight: 600,
+                            color: "#d97706",
+                            fontSize: "0.85rem",
+                          }}
+                        >
+                          {fmt(row.realisasi_bymhd)}
+                        </span>
+                      ) : (
+                        <span style={{ color: "#cbd5e1", fontSize: "0.82rem" }}>
+                          —
+                        </span>
+                      )}
                     </td>
                     <td
                       style={{
                         ...TD,
                         textAlign: "right",
-                        fontWeight: 700,
-                        color: "#16a34a",
+                        borderBottom: isEditing ? "none" : "1px solid #f1f5f9",
                       }}
                     >
-                      {fmt(total)}
+                      <span
+                        style={{
+                          fontWeight: 800,
+                          color: "#16a34a",
+                          fontSize: "0.88rem",
+                        }}
+                      >
+                        {fmt(total)}
+                      </span>
                     </td>
-                    <td style={{ ...TD, textAlign: "center" }}>
+                    <td
+                      style={{
+                        ...TD,
+                        textAlign: "center",
+                        borderBottom: isEditing ? "none" : "1px solid #f1f5f9",
+                      }}
+                    >
                       <div
                         style={{
                           display: "flex",
-                          gap: 4,
+                          gap: 5,
                           justifyContent: "center",
                         }}
                       >
                         <button
-                          style={ABTN}
+                          style={{
+                            ...ABTN,
+                            width: 30,
+                            height: 30,
+                            borderColor: "#fde68a",
+                            background: isEditing ? "#fef3c7" : "#fffbeb",
+                          }}
                           title="Edit / Revisi"
                           onClick={() =>
-                            setEditRowId(editRowId === row.id ? null : row.id)
+                            setEditRowId(isEditing ? null : row.id)
                           }
                         >
-                          <Edit size={12} style={{ color: "#d97706" }} />
+                          <Edit size={13} style={{ color: "#d97706" }} />
                         </button>
                         <button
-                          style={ABTN}
+                          style={{
+                            ...ABTN,
+                            width: 30,
+                            height: 30,
+                            borderColor: "#bfdbfe",
+                            background: "#eff6ff",
+                          }}
                           title="Riwayat"
                           onClick={() => setHistoryRow({ ...row })}
                         >
-                          <History size={12} style={{ color: "#2563eb" }} />
+                          <History size={13} style={{ color: "#2563eb" }} />
                         </button>
                         <button
-                          style={ABTN}
+                          style={{
+                            ...ABTN,
+                            width: 30,
+                            height: 30,
+                            borderColor: "#fecaca",
+                            background: "#fef2f2",
+                          }}
                           title="Hapus"
                           onClick={() => handleDelete(row.id)}
                         >
-                          <Trash2 size={12} style={{ color: "#ef4444" }} />
+                          <Trash2 size={13} style={{ color: "#ef4444" }} />
                         </button>
                       </div>
                     </td>
                   </tr>
-                  {editRowId === row.id && (
+
+                  {isEditing && (
                     <tr>
                       <td
                         colSpan={6}
                         style={{
                           padding: "0 16px 16px",
                           background: "#fffbeb",
-                          borderBottom: "1px solid #e2e8f0",
+                          borderBottom: "2px solid #fde68a",
+                          borderLeft: "3px solid #f59e0b",
                         }}
                       >
                         <EditRealisasiSection
@@ -1790,9 +2012,12 @@ function RealisasiSection({ master, setMasters, toast_ }) {
             })
           )}
         </tbody>
+
         {list.length > 0 && (
           <tfoot>
-            <tr style={{ background: "#f0fdf4" }}>
+            <tr
+              style={{ background: "#f0fdf4", borderTop: "2px solid #bbf7d0" }}
+            >
               <td
                 colSpan={4}
                 style={{
@@ -1800,10 +2025,14 @@ function RealisasiSection({ master, setMasters, toast_ }) {
                   textAlign: "right",
                   fontWeight: 700,
                   color: "#15803d",
-                  fontSize: "0.75rem",
+                  fontSize: "0.72rem",
+                  letterSpacing: "0.4px",
+                  textTransform: "uppercase",
+                  borderBottom: "none",
+                  paddingLeft: 6,
                 }}
               >
-                GRAND TOTAL
+                Grand Total
               </td>
               <td
                 style={{
@@ -1811,12 +2040,13 @@ function RealisasiSection({ master, setMasters, toast_ }) {
                   textAlign: "right",
                   fontWeight: 800,
                   color: "#15803d",
-                  fontSize: "0.88rem",
+                  fontSize: "0.92rem",
+                  borderBottom: "none",
                 }}
               >
                 {fmt(grandTotal)}
               </td>
-              <td style={TD} />
+              <td style={{ ...TD, borderBottom: "none" }} />
             </tr>
           </tfoot>
         )}
@@ -1826,7 +2056,7 @@ function RealisasiSection({ master, setMasters, toast_ }) {
 }
 
 // ════════════════════════════════════════════════════════════════
-// OPEX MODULE
+// OPEX MODULE — DIREVISI: pilih pos anggaran dulu, baru tampil detail
 // ════════════════════════════════════════════════════════════════
 function OpexModule({ masterList, setMasterList }) {
   const [masters, setMasters] = useState(INIT_OPEX_MASTERS);
@@ -1835,13 +2065,8 @@ function OpexModule({ masterList, setMasterList }) {
   const [showAddMaster, setShowAddMaster] = useState(false);
   const [editMaster, setEditMaster] = useState(null);
 
-  const [filterThnFrom, setFilterThnFrom] = useState("");
-  const [filterThnTo, setFilterThnTo] = useState("");
-  // ── Filter by nama (dropdown) ──
-  const [filterNama, setFilterNama] = useState("");
-
-  const PAGE_SIZE = 5;
-  const [currentPage, setCurrentPage] = useState(1);
+  // ── State utama: pos anggaran yang dipilih
+  const [selMasterId, setSelMasterId] = useState("");
 
   const toast_ = (msg) => {
     setToast(msg);
@@ -1870,6 +2095,8 @@ function OpexModule({ masterList, setMasterList }) {
     toast_("Anggaran master baru ditambahkan.");
     setShowAddMaster(false);
     setAddForm(emptyMasterForm);
+    // langsung pilih master baru
+    setSelMasterId(newM.id);
   };
 
   const handleSaveEditMaster = () => {
@@ -1897,46 +2124,21 @@ function OpexModule({ masterList, setMasterList }) {
         setMasters((p) => p.filter((m) => m.id !== id));
         setConfirm(null);
         toast_("Anggaran master dihapus.");
+        setSelMasterId("");
       },
     });
   };
 
-  // Daftar opsi nama unik dari masters untuk dropdown filter
-  const namaOptions = useMemo(() => {
-    const seen = new Set();
-    return masters
-      .map((m) => ({ id: m.id, nama: m.nama, kd: m.kd }))
-      .filter((item) => {
-        if (seen.has(item.nama)) return false;
-        seen.add(item.nama);
-        return true;
-      })
-      .sort((a, b) => a.nama.localeCompare(b.nama));
-  }, [masters]);
+  // Master yang sedang aktif ditampilkan
+  const activeMaster = masters.find((m) => m.id === selMasterId) || null;
+  const globalIdx = masters.findIndex((m) => m.id === selMasterId);
 
-  const filteredMasters = useMemo(() => {
-    setCurrentPage(1);
-    return masters.filter((m) => {
-      if (filterThnFrom && m.thn_anggaran < parseInt(filterThnFrom))
-        return false;
-      if (filterThnTo && m.thn_anggaran > parseInt(filterThnTo)) return false;
-      // ── Filter by nama dropdown ──
-      if (filterNama && m.nama !== filterNama) return false;
-      return true;
-    });
-  }, [masters, filterThnFrom, filterThnTo, filterNama]);
-
-  const totalPages = Math.ceil(filteredMasters.length / PAGE_SIZE);
-  const paginatedMasters = filteredMasters.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE,
-  );
-
-  const totalAnggaran = filteredMasters.reduce(
+  // KPI dari seluruh masters (untuk ringkasan atas)
+  const totalAnggaran = masters.reduce(
     (s, m) => s + (m.nilai_anggaran || 0),
     0,
   );
-  const totalRealisasi = filteredMasters.reduce(
+  const totalRealisasi = masters.reduce(
     (s, m) =>
       s +
       (m.realisasi_tahunan || []).reduce(
@@ -1946,13 +2148,34 @@ function OpexModule({ masterList, setMasterList }) {
     0,
   );
 
-  // Hitung globalIdx berdasarkan filteredMasters (bukan paginatedMasters)
-  const paginatedWithGlobalIdx = paginatedMasters.map((m) => ({
-    m,
-    globalIdx: filteredMasters.findIndex((x) => x.id === m.id),
-  }));
+  // KPI active master
+  const activeR = activeMaster
+    ? (activeMaster.realisasi_tahunan || []).reduce(
+        (s, r) => s + (r.realisasi_murni || 0) + (r.realisasi_bymhd || 0),
+        0,
+      )
+    : 0;
+  const activePct =
+    activeMaster && activeMaster.nilai_anggaran > 0
+      ? Math.round((activeR / activeMaster.nilai_anggaran) * 100)
+      : 0;
+  const activePc = pctColor(activePct);
+  const activePmeta = pctMeta(activePct);
+  const accent = activeMaster ? getMasterAccent(globalIdx) : null;
 
-  const hasActiveFilter = filterThnFrom || filterThnTo || filterNama;
+  const TOGGLE = {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 6,
+    padding: "8px 16px",
+    borderRadius: 6,
+    border: "none",
+    background: "transparent",
+    fontSize: "0.85rem",
+    fontWeight: 500,
+    color: "#64748b",
+    cursor: "pointer",
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -1965,6 +2188,7 @@ function OpexModule({ masterList, setMasterList }) {
         />
       )}
 
+      {/* ── Modal Tambah Master ── */}
       {showAddMaster && (
         <div style={OVS} onClick={() => setShowAddMaster(false)}>
           <div
@@ -2095,6 +2319,7 @@ function OpexModule({ masterList, setMasterList }) {
         </div>
       )}
 
+      {/* ── Modal Edit Master ── */}
       {editMaster && (
         <div style={OVS} onClick={() => setEditMaster(null)}>
           <div
@@ -2208,7 +2433,7 @@ function OpexModule({ masterList, setMasterList }) {
         </div>
       )}
 
-      {/* KPI STRIP */}
+      {/* ── KPI STRIP RINGKASAN KESELURUHAN ── */}
       <div
         style={{
           display: "grid",
@@ -2221,25 +2446,21 @@ function OpexModule({ masterList, setMasterList }) {
             label: "Total Anggaran",
             val: fmt(totalAnggaran),
             color: "#2563eb",
-            bg: "#eff6ff",
           },
           {
             label: "Total Realisasi",
             val: fmt(totalRealisasi),
             color: "#d97706",
-            bg: "#fffbeb",
           },
           {
             label: "Sisa Anggaran",
             val: fmt(totalAnggaran - totalRealisasi),
             color: totalRealisasi > totalAnggaran ? "#dc2626" : "#16a34a",
-            bg: totalRealisasi > totalAnggaran ? "#fef2f2" : "#f0fdf4",
           },
           {
             label: "Pos Anggaran",
-            val: `${filteredMasters.length} item`,
+            val: `${masters.length} item`,
             color: "#475569",
-            bg: "#f8fafc",
           },
         ].map((item) => (
           <div
@@ -2273,549 +2494,409 @@ function OpexModule({ masterList, setMasterList }) {
         ))}
       </div>
 
-      {/* ── HEADER + FILTER ── */}
+      {/* ── PANEL PILIH POS ANGGARAN (selalu tampil, mirip CAPEX step-0) ── */}
       <div
         style={{
           background: "white",
           border: "1px solid #e2e8f0",
           borderRadius: 10,
-          padding: "14px 18px",
-          display: "flex",
-          flexDirection: "column",
-          gap: 12,
+          padding: "20px 24px",
+          boxShadow: "0 1px 2px rgba(0,0,0,.02)",
         }}
       >
-        {/* Baris atas: judul + tombol tambah */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <Database size={17} style={{ color: "#16a34a" }} />
-            <span
-              style={{ fontSize: "0.95rem", fontWeight: 800, color: "#0f172a" }}
-            >
-              Daftar Anggaran Master OPEX
-            </span>
-            <span
-              style={{
-                fontSize: "0.72rem",
-                background: "#dcfce7",
-                color: "#16a34a",
-                fontWeight: 700,
-                padding: "2px 8px",
-                borderRadius: 99,
-                border: "1px solid #bbf7d0",
-              }}
-            >
-              {filteredMasters.length} pos
-            </span>
-          </div>
-          <button
-            style={{
-              ...BTN,
-              background: "#16a34a",
-              padding: "8px 14px",
-              fontSize: "0.78rem",
-            }}
-            onClick={() => setShowAddMaster(true)}
-          >
-            <Plus size={13} /> Tambah Anggaran Master
-          </button>
-        </div>
-
-        {/* Baris bawah: filter nama (dropdown) + filter tahun */}
         <div
           style={{
             display: "flex",
             alignItems: "center",
             gap: 10,
+            marginBottom: 18,
+            paddingBottom: 14,
+            borderBottom: "1px solid #f1f5f9",
+          }}
+        >
+          <Database size={18} style={{ color: "#16a34a" }} />
+          <h2
+            style={{ fontSize: "0.95rem", fontWeight: 700, color: "#1e293b" }}
+          >
+            Pilih Pos Anggaran OPEX
+          </h2>
+          <span
+            style={{
+              fontSize: "0.72rem",
+              background: "#dcfce7",
+              color: "#16a34a",
+              fontWeight: 700,
+              padding: "2px 8px",
+              borderRadius: 99,
+              border: "1px solid #bbf7d0",
+            }}
+          >
+            {masters.length} pos
+          </span>
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            gap: 12,
+            alignItems: "flex-end",
             flexWrap: "wrap",
           }}
         >
-          {/* Filter nama anggaran — dropdown */}
-          <div style={{ position: "relative", flex: "1 1 260px", minWidth: 200 }}>
-            <Search
-              size={15}
-              style={{
-                position: "absolute",
-                left: 10,
-                top: "50%",
-                transform: "translateY(-50%)",
-                color: "#94a3b8",
-                pointerEvents: "none",
-                zIndex: 1,
-              }}
-            />
-            <select
-              style={{
-                ...INP,
-                paddingLeft: 34,
-                background: "#f8fafc",
-                border: "1px solid #e2e8f0",
-                cursor: "pointer",
-                appearance: "auto",
-              }}
-              value={filterNama}
-              onChange={(e) => setFilterNama(e.target.value)}
-            >
-              <option value="">— Semua Nama Anggaran —</option>
-              {namaOptions.map((item) => (
-                <option key={item.id} value={item.nama}>
-                  {item.nama}
-                </option>
-              ))}
-            </select>
+          <div style={{ flex: 1, minWidth: 260 }}>
+            <div style={{ ...LBL, marginBottom: 6 }}>
+              Nama Pos Anggaran <span style={{ color: "#ef4444" }}>*</span>
+            </div>
+            <div style={{ position: "relative" }}>
+              <Search
+                size={15}
+                style={{
+                  position: "absolute",
+                  left: 12,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  color: "#94a3b8",
+                  pointerEvents: "none",
+                  zIndex: 1,
+                }}
+              />
+              <select
+                style={{
+                  ...INP,
+                  paddingLeft: 36,
+                  cursor: "pointer",
+                  border: selMasterId
+                    ? "2px solid #16a34a"
+                    : "1.5px solid #cbd5e1",
+                  background: selMasterId ? "#f0fdf4" : "white",
+                  fontWeight: selMasterId ? 700 : 400,
+                  color: selMasterId ? "#15803d" : "#64748b",
+                  transition: "all .15s",
+                }}
+                value={selMasterId}
+                onChange={(e) => setSelMasterId(e.target.value)}
+              >
+                <option value="">— Pilih Pos Anggaran —</option>
+                {masters.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.nama} ({m.kd}) — TA {m.thn_anggaran}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
-          {/* Filter tahun */}
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <span
-              style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b", whiteSpace: "nowrap" }}
-            >
-              Filter Tahun:
-            </span>
-            <select
-              style={{
-                ...INP,
-                width: 90,
-                padding: "8px 10px",
-                fontSize: "0.8rem",
-                background: "#f8fafc",
-                border: "1px solid #e2e8f0",
-              }}
-              value={filterThnFrom}
-              onChange={(e) => setFilterThnFrom(e.target.value)}
-            >
-              <option value="">Dari</option>
-              {yearOpts.map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </select>
-            <span style={{ fontSize: "0.75rem", color: "#94a3b8" }}>—</span>
-            <select
-              style={{
-                ...INP,
-                width: 90,
-                padding: "8px 10px",
-                fontSize: "0.8rem",
-                background: "#f8fafc",
-                border: "1px solid #e2e8f0",
-              }}
-              value={filterThnTo}
-              onChange={(e) => setFilterThnTo(e.target.value)}
-            >
-              <option value="">Sampai</option>
-              {yearOpts.map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Reset filter */}
-          {hasActiveFilter && (
-            <button
-              style={{
-                ...BTNOUT,
-                padding: "7px 12px",
-                fontSize: "0.75rem",
-                color: "#ef4444",
-                borderColor: "#fecaca",
-              }}
-              onClick={() => {
-                setFilterThnFrom("");
-                setFilterThnTo("");
-                setFilterNama("");
-              }}
-            >
-              <X size={12} /> Reset Filter
-            </button>
-          )}
+          <button
+            style={{
+              ...BTN,
+              background: "#16a34a",
+              padding: "10px 18px",
+              fontSize: "0.82rem",
+              flexShrink: 0,
+            }}
+            onClick={() => setShowAddMaster(true)}
+          >
+            <Plus size={14} /> Tambah Pos Baru
+          </button>
         </div>
 
-        {/* Info hasil filter jika ada filter aktif */}
-        {hasActiveFilter && (
+        {/* Hint jika belum pilih */}
+        {!selMasterId && (
           <div
             style={{
-              fontSize: "0.78rem",
-              color: "#64748b",
-              padding: "6px 10px",
+              marginTop: 16,
+              padding: "14px 16px",
               background: "#f8fafc",
-              borderRadius: 6,
-              border: "1px solid #e2e8f0",
+              borderRadius: 8,
+              border: "1px dashed #cbd5e1",
+              fontSize: "0.82rem",
+              color: "#94a3b8",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
             }}
           >
-            Menampilkan <b style={{ color: "#0f172a" }}>{filteredMasters.length}</b> dari{" "}
-            <b style={{ color: "#0f172a" }}>{masters.length}</b> anggaran master
-            {filterNama && (
-              <> — nama: <b style={{ color: "#2563eb" }}>"{filterNama}"</b></>
-            )}
+            <Search size={15} style={{ color: "#cbd5e1", flexShrink: 0 }} />
+            Pilih salah satu pos anggaran di atas untuk melihat detail dan data
+            realisasi tahunannya.
           </div>
         )}
       </div>
 
-      {filteredMasters.length === 0 ? (
+      {/* ── DETAIL KARTU + TABEL REALISASI (tampil setelah pilih) ── */}
+      {activeMaster && accent && (
         <div
           style={{
             background: "white",
-            border: "1px solid #e2e8f0",
-            borderRadius: 10,
-            padding: "48px 24px",
-            textAlign: "center",
-            color: "#94a3b8",
-            fontSize: "0.88rem",
+            borderLeft: `5px solid ${accent.border}`,
+            border: `1px solid ${accent.headerBorder}`,
+            borderRadius: 12,
+            overflow: "hidden",
+            boxShadow: "0 2px 8px rgba(0,0,0,.04)",
           }}
         >
-          {filterNama
-            ? `Tidak ada anggaran master dengan nama "${filterNama}".`
-            : "Tidak ada anggaran master yang sesuai filter."}
-        </div>
-      ) : (
-        <>
-          {paginatedWithGlobalIdx.map(({ m, globalIdx }) => {
-            const totalR = (m.realisasi_tahunan || []).reduce(
-              (s, r) => s + (r.realisasi_murni || 0) + (r.realisasi_bymhd || 0),
-              0,
-            );
-            const pct =
-              m.nilai_anggaran > 0
-                ? Math.round((totalR / m.nilai_anggaran) * 100)
-                : 0;
-            const pc = pctColor(pct);
-            const pmeta = pctMeta(pct);
-            // Aksen warna unik per anggaran master
-            const accent = getMasterAccent(globalIdx);
-
-            return (
+          {/* HEADER KARTU */}
+          <div
+            style={{
+              background: accent.headerBg,
+              borderBottom: `1px solid ${accent.headerBorder}`,
+              padding: "16px 20px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                gap: 12,
+              }}
+            >
               <div
-                key={m.id}
                 style={{
-                  background: "white",
-                  borderLeft: `5px solid ${accent.border}`,
-                  border: `1px solid ${accent.headerBorder}`,
-                  borderLeft: `5px solid ${accent.border}`,
-                  borderRadius: 12,
-                  overflow: "hidden",
-                  boxShadow: `0 2px 8px rgba(0,0,0,.04)`,
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: 12,
+                  flex: 1,
                 }}
               >
-                {/* ── HEADER KARTU ── */}
                 <div
                   style={{
-                    background: accent.headerBg,
-                    borderBottom: `1px solid ${accent.headerBorder}`,
-                    padding: "14px 18px",
+                    minWidth: 36,
+                    height: 36,
+                    borderRadius: 8,
+                    background: accent.badge,
+                    border: `1px solid ${accent.headerBorder}`,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontWeight: 800,
+                    fontSize: "0.85rem",
+                    color: accent.badgeText,
+                    flexShrink: 0,
+                    marginTop: 2,
                   }}
                 >
-                  {/* Baris 1: nomor urut + nama + aksi */}
+                  {globalIdx + 1}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div
+                    style={{
+                      fontWeight: 800,
+                      color: "#0f172a",
+                      fontSize: "1rem",
+                      lineHeight: 1.3,
+                      marginBottom: 6,
+                    }}
+                  >
+                    {activeMaster.nama}
+                  </div>
                   <div
                     style={{
                       display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "flex-start",
-                      gap: 12,
+                      alignItems: "center",
+                      gap: 8,
+                      flexWrap: "wrap",
                     }}
                   >
-                    <div style={{ display: "flex", alignItems: "flex-start", gap: 12, flex: 1 }}>
-                      {/* Badge nomor urut */}
-                      <div
-                        style={{
-                          minWidth: 32,
-                          height: 32,
-                          borderRadius: 8,
-                          background: accent.badge,
-                          border: `1px solid ${accent.headerBorder}`,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontWeight: 800,
-                          fontSize: "0.8rem",
-                          color: accent.badgeText,
-                          flexShrink: 0,
-                          marginTop: 2,
-                        }}
-                      >
-                        {globalIdx + 1}
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        {/* Nama anggaran master */}
-                        <div
-                          style={{
-                            fontWeight: 800,
-                            color: "#0f172a",
-                            fontSize: "0.95rem",
-                            lineHeight: 1.3,
-                            marginBottom: 6,
-                          }}
-                        >
-                          {m.nama}
-                        </div>
-                        {/* Meta row: kode + tahun + status pct */}
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                          <span
-                            style={{
-                              fontSize: "0.72rem",
-                              fontFamily: "monospace",
-                              color: accent.badgeText,
-                              background: accent.badge,
-                              padding: "2px 8px",
-                              borderRadius: 4,
-                              border: `1px solid ${accent.headerBorder}`,
-                              fontWeight: 700,
-                            }}
-                          >
-                            {m.kd}
-                          </span>
-                          <span
-                            style={{
-                              fontSize: "0.72rem",
-                              color: "#64748b",
-                              background: "#f1f5f9",
-                              padding: "2px 8px",
-                              borderRadius: 4,
-                              fontWeight: 600,
-                            }}
-                          >
-                            TA {m.thn_anggaran}
-                          </span>
-                          {/* Status badge pct */}
-                          <span
-                            style={{
-                              fontSize: "0.72rem",
-                              fontWeight: 700,
-                              padding: "2px 8px",
-                              borderRadius: 4,
-                              background: pmeta.bg,
-                              color: pmeta.fg,
-                              border: `1px solid ${pmeta.border}`,
-                            }}
-                          >
-                            {pmeta.label}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Kanan: progress + aksi */}
-                    <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
-                      {/* Progress pct */}
-                      <div style={{ textAlign: "center", minWidth: 68 }}>
-                        <div
-                          style={{
-                            fontSize: "1.1rem",
-                            fontWeight: 800,
-                            color: pc,
-                            lineHeight: 1,
-                            marginBottom: 5,
-                          }}
-                        >
-                          {pct}%
-                        </div>
-                        <div
-                          style={{
-                            width: 68,
-                            height: 6,
-                            background: "#e2e8f0",
-                            borderRadius: 99,
-                            overflow: "hidden",
-                          }}
-                        >
-                          <div
-                            style={{
-                              width: `${Math.min(pct, 100)}%`,
-                              height: "100%",
-                              background: pc,
-                              borderRadius: 99,
-                              transition: "width .5s",
-                            }}
-                          />
-                        </div>
-                        <div style={{ fontSize: "0.62rem", color: "#94a3b8", marginTop: 3, fontWeight: 600 }}>
-                          TERPAKAI
-                        </div>
-                      </div>
-
-                      {/* Tombol aksi */}
-                      <div style={{ display: "flex", gap: 6 }}>
-                        <button
-                          style={{
-                            ...ABTN,
-                            padding: "6px 10px",
-                            background: "#fffbeb",
-                            borderColor: "#fde68a",
-                          }}
-                          title="Edit Master"
-                          onClick={() => setEditMaster({ ...m })}
-                        >
-                          <Edit size={13} style={{ color: "#d97706" }} />
-                        </button>
-                        <button
-                          style={{
-                            ...ABTN,
-                            padding: "6px 10px",
-                            background: "#fef2f2",
-                            borderColor: "#fecaca",
-                          }}
-                          title="Hapus"
-                          onClick={() => handleDeleteMaster(m.id)}
-                        >
-                          <Trash2 size={13} style={{ color: "#ef4444" }} />
-                        </button>
-                      </div>
-                    </div>
+                    <span
+                      style={{
+                        fontSize: "0.72rem",
+                        fontFamily: "monospace",
+                        color: accent.badgeText,
+                        background: accent.badge,
+                        padding: "2px 8px",
+                        borderRadius: 4,
+                        border: `1px solid ${accent.headerBorder}`,
+                        fontWeight: 700,
+                      }}
+                    >
+                      {activeMaster.kd}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "0.72rem",
+                        color: "#64748b",
+                        background: "#f1f5f9",
+                        padding: "2px 8px",
+                        borderRadius: 4,
+                        fontWeight: 600,
+                      }}
+                    >
+                      TA {activeMaster.thn_anggaran}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "0.72rem",
+                        fontWeight: 700,
+                        padding: "2px 8px",
+                        borderRadius: 4,
+                        background: activePmeta.bg,
+                        color: activePmeta.fg,
+                        border: `1px solid ${activePmeta.border}`,
+                      }}
+                    >
+                      {activePmeta.label}
+                    </span>
                   </div>
+                </div>
+              </div>
 
-                  {/* Baris 2: ringkasan nilai anggaran vs realisasi */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  flexShrink: 0,
+                }}
+              >
+                {/* Progress bar */}
+                <div style={{ textAlign: "center", minWidth: 68 }}>
                   <div
                     style={{
-                      display: "grid",
-                      gridTemplateColumns: "1fr 1fr 1fr",
-                      gap: 12,
-                      marginTop: 14,
-                      padding: "12px 0 0",
-                      borderTop: `1px dashed ${accent.headerBorder}`,
+                      fontSize: "1.1rem",
+                      fontWeight: 800,
+                      color: activePc,
+                      lineHeight: 1,
+                      marginBottom: 5,
                     }}
                   >
-                    {[
-                      { label: "Nilai Anggaran", val: fmt(m.nilai_anggaran), color: accent.badgeText },
-                      { label: "Total Realisasi", val: fmt(totalR), color: "#d97706" },
-                      {
-                        label: "Sisa Anggaran",
-                        val: fmt(m.nilai_anggaran - totalR),
-                        color: totalR > m.nilai_anggaran ? "#dc2626" : "#16a34a",
-                      },
-                    ].map((item) => (
-                      <div key={item.label}>
-                        <div
-                          style={{
-                            fontSize: "0.65rem",
-                            fontWeight: 700,
-                            color: "#94a3b8",
-                            textTransform: "uppercase",
-                            letterSpacing: "0.5px",
-                            marginBottom: 3,
-                          }}
-                        >
-                          {item.label}
-                        </div>
-                        <div
-                          style={{
-                            fontSize: "0.9rem",
-                            fontWeight: 800,
-                            color: item.color,
-                          }}
-                        >
-                          {item.val}
-                        </div>
-                      </div>
-                    ))}
+                    {activePct}%
+                  </div>
+                  <div
+                    style={{
+                      width: 68,
+                      height: 6,
+                      background: "#e2e8f0",
+                      borderRadius: 99,
+                      overflow: "hidden",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: `${Math.min(activePct, 100)}%`,
+                        height: "100%",
+                        background: activePc,
+                        borderRadius: 99,
+                        transition: "width .5s",
+                      }}
+                    />
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "0.62rem",
+                      color: "#94a3b8",
+                      marginTop: 3,
+                      fontWeight: 600,
+                    }}
+                  >
+                    TERPAKAI
                   </div>
                 </div>
 
-                {/* ── BODY: realisasi tahunan ── */}
-                <RealisasiSection
-                  master={masters.find((x) => x.id === m.id) || m}
-                  setMasters={setMasters}
-                  toast_={toast_}
-                />
-              </div>
-            );
-          })}
-
-          {totalPages > 1 && (
-            <div
-              style={{
-                background: "white",
-                border: "1px solid #e2e8f0",
-                borderRadius: 10,
-                padding: "12px 18px",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <div style={{ fontSize: "0.8rem", color: "#64748b" }}>
-                Menampilkan{" "}
-                <b>
-                  {(currentPage - 1) * PAGE_SIZE + 1}–
-                  {Math.min(currentPage * PAGE_SIZE, filteredMasters.length)}
-                </b>{" "}
-                dari <b>{filteredMasters.length}</b> pos anggaran
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <button
-                  style={{
-                    ...ABTN,
-                    padding: "6px 12px",
-                    opacity: currentPage === 1 ? 0.4 : 1,
-                    cursor: currentPage === 1 ? "not-allowed" : "pointer",
-                  }}
-                  disabled={currentPage === 1}
-                  onClick={() => setCurrentPage((p) => p - 1)}
-                >
-                  <ChevronRight
-                    size={14}
-                    style={{ transform: "rotate(180deg)", color: "#475569" }}
-                  />
-                </button>
-                {Array.from({ length: totalPages }, (_, idx) => idx + 1).map(
-                  (pg) => (
-                    <button
-                      key={pg}
-                      onClick={() => setCurrentPage(pg)}
-                      style={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: 6,
-                        border:
-                          pg === currentPage
-                            ? "2px solid #16a34a"
-                            : "1px solid #e2e8f0",
-                        background: pg === currentPage ? "#16a34a" : "white",
-                        color: pg === currentPage ? "white" : "#475569",
-                        fontWeight: pg === currentPage ? 700 : 500,
-                        fontSize: "0.82rem",
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      {pg}
-                    </button>
-                  ),
-                )}
-                <button
-                  style={{
-                    ...ABTN,
-                    padding: "6px 12px",
-                    opacity: currentPage === totalPages ? 0.4 : 1,
-                    cursor:
-                      currentPage === totalPages ? "not-allowed" : "pointer",
-                  }}
-                  disabled={currentPage === totalPages}
-                  onClick={() => setCurrentPage((p) => p + 1)}
-                >
-                  <ChevronRight size={14} style={{ color: "#475569" }} />
-                </button>
+                {/* Tombol aksi */}
+                <div style={{ display: "flex", gap: 6 }}>
+                  <button
+                    style={{
+                      ...ABTN,
+                      padding: "6px 10px",
+                      background: "#fffbeb",
+                      borderColor: "#fde68a",
+                    }}
+                    title="Edit Master"
+                    onClick={() => setEditMaster({ ...activeMaster })}
+                  >
+                    <Edit size={13} style={{ color: "#d97706" }} />
+                  </button>
+                  <button
+                    style={{
+                      ...ABTN,
+                      padding: "6px 10px",
+                      background: "#fef2f2",
+                      borderColor: "#fecaca",
+                    }}
+                    title="Hapus"
+                    onClick={() => handleDeleteMaster(activeMaster.id)}
+                  >
+                    <Trash2 size={13} style={{ color: "#ef4444" }} />
+                  </button>
+                </div>
               </div>
             </div>
-          )}
-        </>
+
+            {/* Ringkasan 3 kolom */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr 1fr",
+                gap: 12,
+                marginTop: 14,
+                padding: "12px 0 0",
+                borderTop: `1px dashed ${accent.headerBorder}`,
+              }}
+            >
+              {[
+                {
+                  label: "Nilai Anggaran",
+                  val: fmt(activeMaster.nilai_anggaran),
+                  color: accent.badgeText,
+                },
+                {
+                  label: "Total Realisasi",
+                  val: fmt(activeR),
+                  color: "#d97706",
+                },
+                {
+                  label: "Sisa Anggaran",
+                  val: fmt(activeMaster.nilai_anggaran - activeR),
+                  color:
+                    activeR > activeMaster.nilai_anggaran
+                      ? "#dc2626"
+                      : "#16a34a",
+                },
+              ].map((item) => (
+                <div key={item.label}>
+                  <div
+                    style={{
+                      fontSize: "0.65rem",
+                      fontWeight: 700,
+                      color: "#94a3b8",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.5px",
+                      marginBottom: 3,
+                    }}
+                  >
+                    {item.label}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "0.9rem",
+                      fontWeight: 800,
+                      color: item.color,
+                    }}
+                  >
+                    {item.val}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* BODY: tabel realisasi tahunan */}
+          <RealisasiSection
+            master={
+              masters.find((x) => x.id === activeMaster.id) || activeMaster
+            }
+            setMasters={setMasters}
+            toast_={toast_}
+          />
+        </div>
       )}
     </div>
   );
 }
 
 // ════════════════════════════════════════════════════════════════
-// CAPEX MODULE (UNCHANGED)
+// CAPEX MODULE (TIDAK DIUBAH)
 // ════════════════════════════════════════════════════════════════
 function CapexModule({ capexList, setCapexList, masterList, setMasterList }) {
   const [step, setStep] = useState(0);

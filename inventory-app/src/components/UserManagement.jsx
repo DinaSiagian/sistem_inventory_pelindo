@@ -358,6 +358,33 @@ const SVG = {
       <line x1="9" y1="15" x2="15" y2="15" />
     </svg>
   ),
+  arrowLeft: (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <line x1="19" y1="12" x2="5" y2="12" />
+      <polyline points="12 19 5 12 12 5" />
+    </svg>
+  ),
+  moreVertical: (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="12" cy="5" r="1" fill="currentColor" />
+      <circle cx="12" cy="12" r="1" fill="currentColor" />
+      <circle cx="12" cy="19" r="1" fill="currentColor" />
+    </svg>
+  ),
 };
 
 function Ico({ n, size = 14, style = {} }) {
@@ -478,7 +505,6 @@ const roleConfig = {
   },
   user: { label: "User", color: "#0891b2", bg: "#ecfeff", iconName: "user" },
 };
-
 const ACTION_CONFIG = {
   LOGIN: { label: "Login", color: "#16a34a", bg: "#dcfce7" },
   LOGOUT: { label: "Logout", color: "#64748b", bg: "#f1f5f9" },
@@ -861,7 +887,7 @@ const getBranchName = (code) =>
 const getDivisionName = (code) =>
   divisionList.find((d) => d.division_code === code)?.name || code;
 
-// ─── CSS — compacted for single-screen fit ───────────────────
+// ─── CSS ──────────────────────────────────────────────────────
 const css = `
 @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
 *{box-sizing:border-box;}
@@ -876,12 +902,19 @@ const css = `
   --border:#e2e8f0;--bg:#f8fafc;
   --r:10px;--sh:0 1px 3px rgba(0,0,0,.05);--sh-md:0 3px 12px rgba(0,0,0,.09);
 }
+
+/* ── ROOT ── */
 .um-root{padding:1rem 1.25rem;max-width:1400px;margin:0 auto;font-family:"Plus Jakarta Sans","Inter",sans-serif;background:var(--bg);min-height:100vh;}
+
+/* ── PAGE HEADER ── */
+.um-page-header{display:flex;align-items:center;gap:.65rem;margin-bottom:0.9rem;flex-wrap:wrap;}
+.um-back-btn{display:inline-flex;align-items:center;gap:.35rem;padding:.38rem .75rem;border-radius:8px;border:1.5px solid var(--border);background:#fff;color:var(--slate-6);cursor:pointer;font-size:.78rem;font-weight:600;font-family:inherit;transition:all .15s;}
+.um-back-btn:hover{background:var(--bg);color:var(--slate);}
 .um-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.9rem;flex-wrap:wrap;gap:.6rem;}
 .um-title{font-size:1.25rem;font-weight:800;color:var(--slate);margin:0 0 2px;letter-spacing:-.02em;}
 .um-subtitle{font-size:.775rem;color:var(--slate-6);margin:0;}
 
-/* STATS */
+/* ── STATS ── */
 .um-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:.65rem;margin-bottom:.9rem;}
 @media(max-width:900px){.um-stats{grid-template-columns:repeat(2,1fr);}}
 .um-stat-card{background:#fff;border-radius:var(--r);border:1px solid var(--border);padding:.7rem .9rem;display:flex;align-items:center;gap:.65rem;box-shadow:var(--sh);transition:box-shadow .2s,transform .2s;}
@@ -892,7 +925,7 @@ const css = `
 .um-stat-num{font-size:1.3rem;font-weight:800;color:var(--slate);line-height:1;}
 .um-stat-label{font-size:.7rem;color:var(--slate-6);margin-top:2px;}
 
-/* TOOLBAR */
+/* ── TOOLBAR ── */
 .um-toolbar{display:flex;align-items:center;gap:.5rem;margin-bottom:.7rem;flex-wrap:wrap;}
 .um-search-wrap{flex:1;min-width:200px;display:flex;align-items:center;gap:.45rem;background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:.4rem .75rem;transition:border-color .15s;}
 .um-search-wrap:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.08);}
@@ -906,7 +939,7 @@ const css = `
 .um-chip button{background:none;border:none;cursor:pointer;color:#1d4ed8;font-size:.85rem;padding:0;line-height:1;margin-left:2px;opacity:.7;}
 .um-chip button:hover{opacity:1;}
 
-/* TABLE */
+/* ── TABLE ── */
 .um-table-wrap{background:#fff;border-radius:12px;border:1px solid var(--border);overflow-x:auto;box-shadow:var(--sh);}
 .um-table{width:100%;border-collapse:collapse;font-size:.775rem;}
 .um-table thead tr{background:linear-gradient(135deg,#1e3a8a,var(--blue));}
@@ -917,7 +950,7 @@ const css = `
 .um-table tbody td{padding:.55rem .8rem;vertical-align:middle;}
 .um-empty{text-align:center;color:var(--slate-4);padding:2rem!important;}
 
-/* USER CELL */
+/* ── USER CELL ── */
 .um-user-cell{display:flex;align-items:center;gap:.5rem;}
 .um-avatar{width:28px;height:28px;border-radius:50%;font-weight:700;font-size:.7rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .um-avatar--blue{background:#dbeafe;color:#1d4ed8;}.um-avatar--purple{background:#ede9fe;color:#7c3aed;}
@@ -929,23 +962,24 @@ const css = `
 .um-entity-code{font-size:.67rem;font-weight:700;color:#7c3aed;background:#ede9fe;padding:1px 5px;border-radius:3px;width:fit-content;}
 .um-entity-name{font-size:.7rem;color:var(--slate-6);}
 .um-role-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:99px;font-size:.69rem;font-weight:600;white-space:nowrap;}
-.um-status-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:99px;font-size:.69rem;font-weight:600;}
-.um-status-badge--aktif{background:var(--green-lt);color:var(--green);}.um-status-badge--nonaktif{background:#f1f5f9;color:var(--slate-6);}
 .um-status-toggle-btn{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:99px;font-size:.69rem;font-weight:600;border:none;cursor:pointer;font-family:inherit;transition:all .15s;}
 .um-status-toggle-btn--aktif{background:var(--green-lt);color:var(--green);}
 .um-status-toggle-btn--nonaktif{background:#f1f5f9;color:var(--slate-6);}
 .um-status-toggle-btn:hover{filter:brightness(.9);}
 .um-last-login{font-size:.72rem;color:var(--slate-6);white-space:nowrap;}
 
-/* ACTION BUTTONS */
-.um-actions{display:flex;gap:.25rem;}
-.um-action-btn{width:26px;height:26px;border-radius:6px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;transition:all .15s;flex-shrink:0;}
-.um-action-btn svg{width:12px;height:12px;display:block;flex-shrink:0;}
-.um-action-btn--view{background:#dbeafe;color:#1d4ed8;}.um-action-btn--edit{background:#dcfce7;color:#15803d;}
-.um-action-btn--key{background:#fef3c7;color:#d97706;}.um-action-btn--del{background:#fee2e2;color:#b91c1c;}
-.um-action-btn:hover{filter:brightness(.88);transform:scale(1.1);}
+/* ── DROPDOWN ACTIONS ── */
+.um-dd-wrap{position:relative;}
+.um-dd-btn{width:28px;height:28px;border-radius:7px;border:1.5px solid var(--border);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--slate-6);transition:all .15s;}
+.um-dd-btn:hover{background:var(--bg);border-color:var(--slate-4);}
+.um-dd-menu{position:absolute;right:0;top:calc(100% + 4px);background:#fff;border:1.5px solid var(--border);border-radius:10px;box-shadow:var(--sh-md);min-width:155px;z-index:200;overflow:hidden;}
+.um-dd-item{display:flex;align-items:center;gap:.5rem;padding:.48rem .75rem;font-size:.775rem;font-weight:500;cursor:pointer;color:var(--slate);transition:background .1s;}
+.um-dd-item:hover{background:#f8fafc;}
+.um-dd-item--danger{color:var(--red);}
+.um-dd-item--danger:hover{background:var(--red-lt);}
+.um-dd-sep{height:1px;background:var(--border);margin:.2rem 0;}
 
-/* BUTTONS */
+/* ── BUTTONS ── */
 .um-btn{display:inline-flex;align-items:center;gap:.35rem;padding:.42rem .9rem;border-radius:8px;font-size:.8rem;font-weight:600;border:none;cursor:pointer;transition:all .18s;font-family:inherit;}
 .um-btn-lg{padding:.5rem 1.1rem;font-size:.84rem;}
 .um-btn-primary{background:linear-gradient(135deg,#1d4ed8,#2563eb);color:#fff;box-shadow:0 2px 6px rgba(37,99,235,.22);}
@@ -955,18 +989,24 @@ const css = `
 .um-btn-danger{background:linear-gradient(135deg,#b91c1c,#dc2626);color:#fff;}
 .um-btn-warning{background:linear-gradient(135deg,#b45309,#d97706);color:#fff;}
 
-/* MODAL */
-.um-overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:1000;padding:1rem;}
-.um-modal{background:#fff;border-radius:16px;width:100%;max-width:500px;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.2);overflow:hidden;}
-.um-modal--form{max-width:560px;}.um-modal--sm{max-width:380px;}
-.um-modal-header{padding:.9rem 1.25rem;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);border-top:3px solid var(--blue);background:#fff;}
-.um-modal-header h2{font-size:.92rem;font-weight:700;color:var(--slate);display:flex;align-items:center;gap:.5rem;margin:0;}
-.um-modal-close{background:none;border:none;cursor:pointer;color:var(--slate-4);padding:.15rem;border-radius:6px;display:flex;align-items:center;}
-.um-modal-close:hover{background:var(--bg);}
-.um-modal-body{padding:1rem 1.25rem;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:.8rem;background:#fff;}
-.um-modal-footer{padding:.8rem 1.25rem;border-top:1px solid var(--border);display:flex;gap:.5rem;justify-content:flex-end;background:#fff;}
+/* ── DETAIL PAGE ── */
+.um-detail-root{padding:1rem 1.25rem;max-width:1400px;margin:0 auto;font-family:"Plus Jakarta Sans","Inter",sans-serif;background:var(--bg);min-height:100vh;}
+.um-detail-card{background:#fff;border-radius:12px;border:1px solid var(--border);box-shadow:var(--sh);margin-bottom:.9rem;}
+.um-detail-card-header{padding:.8rem 1.1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.5rem;font-size:.82rem;font-weight:700;color:var(--slate);}
+.um-detail-card-body{padding:1rem 1.1rem;}
+.um-detail-profile{display:flex;align-items:center;gap:.85rem;padding:.85rem;background:var(--bg);border:1px solid var(--border);border-radius:10px;margin-bottom:1rem;}
+.um-detail-name{font-size:.92rem;font-weight:700;color:var(--slate);}
+.um-detail-badges{display:flex;gap:7px;flex-wrap:wrap;margin-top:5px;}
+.um-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:.65rem 1.25rem;}
+@media(max-width:600px){.um-detail-grid{grid-template-columns:1fr;}}
+.um-detail-item{display:flex;flex-direction:column;gap:2px;}
+.um-detail-label{font-size:.67rem;font-weight:700;color:var(--slate-4);text-transform:uppercase;letter-spacing:.04em;}
+.um-detail-val{font-size:.78rem;color:var(--slate);}
+.um-detail-actions{display:flex;gap:.5rem;flex-wrap:wrap;padding:.8rem 1.1rem;border-top:1px solid var(--border);}
 
-/* FORM */
+/* ── FORM PAGE ── */
+.um-form-root{padding:1rem 1.25rem;max-width:660px;margin:0 auto;font-family:"Plus Jakarta Sans","Inter",sans-serif;background:var(--bg);min-height:100vh;}
+.um-form-card{background:#fff;border-radius:12px;border:1px solid var(--border);box-shadow:var(--sh);padding:1.25rem;display:flex;flex-direction:column;gap:.8rem;}
 .um-form-row{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;}
 @media(max-width:520px){.um-form-row{grid-template-columns:1fr;}}
 .um-form-group{display:flex;flex-direction:column;gap:.28rem;}
@@ -992,28 +1032,20 @@ const css = `
 .um-status-btn.active-green{background:var(--green-lt);color:var(--green);border-color:var(--green);}
 .um-status-btn.active-red{background:var(--red-lt);color:var(--red);border-color:var(--red);}
 .um-status-btn svg{width:12px;height:12px;display:block;}
+.um-form-footer{display:flex;gap:.5rem;justify-content:flex-end;padding-top:.5rem;border-top:1px solid var(--border);}
 
-/* DETAIL */
-.um-detail-profile{display:flex;align-items:center;gap:.85rem;padding:.85rem;background:var(--bg);border:1px solid var(--border);border-radius:10px;}
-.um-detail-name{font-size:.92rem;font-weight:700;color:var(--slate);}
-.um-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:.65rem 1.25rem;}
-.um-detail-item{display:flex;flex-direction:column;gap:2px;}
-.um-detail-label{font-size:.67rem;font-weight:700;color:var(--slate-4);text-transform:uppercase;letter-spacing:.04em;}
-.um-detail-val{font-size:.78rem;color:var(--slate);}
+/* ── CONFIRM PAGE (reset / delete) ── */
+.um-confirm-root{padding:1rem 1.25rem;max-width:440px;margin:0 auto;font-family:"Plus Jakarta Sans","Inter",sans-serif;background:var(--bg);min-height:100vh;}
+.um-confirm-card{background:#fff;border-radius:12px;border:1px solid var(--border);box-shadow:var(--sh);padding:2rem 1.5rem;text-align:center;}
+.um-confirm-icon{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;}
+.um-confirm-icon--warn{background:var(--warn-lt);color:var(--warn);}
+.um-confirm-icon--danger{background:var(--red-lt);color:var(--red);}
+.um-confirm-icon--success{background:var(--green-lt);color:var(--green);}
+.um-confirm-title{font-size:1rem;font-weight:700;color:var(--slate);margin-bottom:.4rem;}
+.um-confirm-desc{font-size:.8rem;color:var(--slate-6);line-height:1.6;}
+.um-confirm-footer{display:flex;gap:.5rem;justify-content:center;margin-top:1.25rem;}
 
-/* DELETE / RESET */
-.um-delete-icon{width:44px;height:44px;border-radius:50%;background:var(--red-lt);color:var(--red);display:flex;align-items:center;justify-content:center;margin:0 auto .75rem;}
-.um-delete-icon svg{width:19px;height:19px;}
-.um-delete-title{font-size:.95rem;font-weight:700;color:var(--slate);margin:0 0 .4rem;}
-.um-delete-desc{font-size:.8rem;color:var(--slate-6);margin:0;}
-.um-reset-icon{width:44px;height:44px;border-radius:50%;background:var(--warn-lt);color:var(--warn);display:flex;align-items:center;justify-content:center;margin:0 auto .75rem;}
-.um-reset-icon svg{width:19px;height:19px;}
-.um-reset-success{width:44px;height:44px;border-radius:50%;background:var(--green-lt);color:var(--green);display:flex;align-items:center;justify-content:center;margin:0 auto .75rem;}
-.um-reset-success svg{width:19px;height:19px;}
-
-/* ═══════════════════════════════════════
-   ACTIVITY LOG SECTION
-   ═══════════════════════════════════════ */
+/* ── ACTIVITY LOG ── */
 .al-section{margin-top:1rem;border-radius:12px;border:1px solid var(--teal-ring);overflow:hidden;box-shadow:var(--sh);}
 .al-header{background:linear-gradient(135deg,var(--teal-lt),#ecfeff);padding:.65rem 1rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;border-bottom:1px solid var(--teal-ring);transition:background .15s;}
 .al-header:hover{background:linear-gradient(135deg,#d1fae5,#cffafe);}
@@ -1065,611 +1097,7 @@ const css = `
 .al-diff-null{font-style:italic;color:var(--slate-4);}
 `;
 
-// ─── MODAL: Form ──────────────────────────────────────────────
-function UserFormModal({ user, onClose, onSave }) {
-  const isEdit = !!user;
-  const [form, setForm] = useState(
-    user
-      ? {
-          name: user.name,
-          nip: user.nip || "",
-          username: user.username,
-          email: user.email,
-          phone: user.phone || "",
-          role_code: user.role_code,
-          entity_code: user.entity_code,
-          branch_code: user.branch_code || "",
-          division_code: user.division_code || "",
-          is_active: user.is_active,
-          password: "",
-          confirm_password: "",
-        }
-      : {
-          name: "",
-          nip: "",
-          username: "",
-          email: "",
-          phone: "",
-          role_code: "user",
-          entity_code: "",
-          branch_code: "",
-          division_code: "",
-          is_active: true,
-          password: "",
-          confirm_password: "",
-        },
-  );
-  const [showPass, setShowPass] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [errors, setErrors] = useState({});
-  const filteredBranches = branchList.filter(
-    (b) => b.entity_code === form.entity_code,
-  );
-
-  const validate = () => {
-    const e = {};
-    if (!form.name.trim()) e.name = "Wajib diisi";
-    if (!form.nip.trim()) e.nip = "Wajib diisi";
-    if (!form.username.trim()) e.username = "Wajib diisi";
-    if (!form.email.trim()) e.email = "Wajib diisi";
-    else if (!/\S+@\S+\.\S+/.test(form.email))
-      e.email = "Format email tidak valid";
-    if (!form.phone.trim()) e.phone = "Wajib diisi";
-    if (!form.entity_code) e.entity_code = "Wajib dipilih";
-    if (!form.branch_code) e.branch_code = "Wajib dipilih";
-    if (!form.division_code) e.division_code = "Wajib dipilih";
-    if (!isEdit && !form.password) e.password = "Wajib diisi";
-    if (form.password && form.password.length < 8)
-      e.password = "Minimal 8 karakter";
-    if (form.password && form.password !== form.confirm_password)
-      e.confirm_password = "Password tidak cocok";
-    setErrors(e);
-    return Object.keys(e).length === 0;
-  };
-
-  const handleSave = () => {
-    if (!validate()) return;
-    onSave({
-      ...user,
-      ...form,
-      id: user?.id || Date.now(),
-      created_at: user?.created_at || new Date().toISOString().split("T")[0],
-      last_login: user?.last_login || "—",
-    });
-    onClose();
-  };
-
-  return (
-    <div className="um-overlay" onClick={onClose}>
-      <div
-        className="um-modal um-modal--form"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="um-modal-header">
-          <h2>
-            <Ico n={isEdit ? "edit" : "plus"} size={14} />{" "}
-            {isEdit ? "Edit User" : "Tambah User Baru"}
-          </h2>
-          <button className="um-modal-close" onClick={onClose}>
-            <Ico n="times" size={13} />
-          </button>
-        </div>
-        <div className="um-modal-body">
-          <div className="um-form-group">
-            <label>
-              <Ico n="user" size={11} /> Nama Lengkap{" "}
-              <span className="um-req">*</span>
-            </label>
-            <input
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="Joy Valeda Silalahi"
-              className={errors.name ? "um-input-error" : ""}
-            />
-            {errors.name && <span className="um-error">{errors.name}</span>}
-          </div>
-          <div className="um-form-row">
-            <div className="um-form-group">
-              <label>
-                <Ico n="idCard" size={11} /> NIP{" "}
-                <span className="um-req">*</span>
-              </label>
-              <input
-                value={form.nip}
-                onChange={(e) => setForm({ ...form, nip: e.target.value })}
-                placeholder="NIP"
-                className={errors.nip ? "um-input-error" : ""}
-              />
-              {errors.nip && <span className="um-error">{errors.nip}</span>}
-            </div>
-            <div className="um-form-group">
-              <label>
-                <Ico n="user" size={11} /> Username{" "}
-                <span className="um-req">*</span>
-              </label>
-              <input
-                value={form.username}
-                onChange={(e) => setForm({ ...form, username: e.target.value })}
-                placeholder="joy.silalahi"
-                className={errors.username ? "um-input-error" : ""}
-              />
-              {errors.username && (
-                <span className="um-error">{errors.username}</span>
-              )}
-            </div>
-          </div>
-          <div className="um-form-group">
-            <label>
-              <Ico n="phone" size={11} /> No. Telepon{" "}
-              <span className="um-req">*</span>
-            </label>
-            <input
-              value={form.phone}
-              onChange={(e) => setForm({ ...form, phone: e.target.value })}
-              placeholder="08xxxxxxxxxx"
-              className={errors.phone ? "um-input-error" : ""}
-            />
-            {errors.phone && <span className="um-error">{errors.phone}</span>}
-          </div>
-          <div className="um-form-group">
-            <label>
-              <Ico n="shield" size={11} /> Role / Peran{" "}
-              <span className="um-req">*</span>
-            </label>
-            <div className="um-role-options">
-              {Object.entries(roleConfig).map(([val, cfg]) => (
-                <label
-                  key={val}
-                  className={`um-role-opt ${form.role_code === val ? "active" : ""}`}
-                  style={
-                    form.role_code === val
-                      ? {
-                          borderColor: cfg.color,
-                          background: cfg.bg,
-                          color: cfg.color,
-                        }
-                      : {}
-                  }
-                >
-                  <input
-                    type="radio"
-                    name="role"
-                    value={val}
-                    checked={form.role_code === val}
-                    onChange={() => setForm({ ...form, role_code: val })}
-                  />
-                  <Ico n={cfg.iconName} size={12} /> {cfg.label}
-                </label>
-              ))}
-            </div>
-          </div>
-          <div className="um-form-group">
-            <label>
-              <Ico n="building" size={11} /> Entitas{" "}
-              <span className="um-req">*</span>
-            </label>
-            <select
-              value={form.entity_code}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  entity_code: e.target.value,
-                  branch_code: "",
-                  division_code: "",
-                })
-              }
-              className={errors.entity_code ? "um-input-error" : ""}
-            >
-              <option value="">-- Pilih Entitas --</option>
-              {entityList.map((e) => (
-                <option key={e.entity_code} value={e.entity_code}>
-                  {e.entity_code} — {e.name}
-                </option>
-              ))}
-            </select>
-            {errors.entity_code && (
-              <span className="um-error">{errors.entity_code}</span>
-            )}
-          </div>
-          <div className="um-form-group">
-            <label>
-              <Ico n="mapPin" size={11} /> Cabang / Branch{" "}
-              <span className="um-req">*</span>
-            </label>
-            <select
-              value={form.branch_code}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  branch_code: e.target.value,
-                  division_code: "",
-                })
-              }
-              className={errors.branch_code ? "um-input-error" : ""}
-              disabled={!form.entity_code}
-            >
-              <option value="">-- Pilih Cabang --</option>
-              {filteredBranches.map((b) => (
-                <option key={b.branch_code} value={b.branch_code}>
-                  {b.name}
-                </option>
-              ))}
-            </select>
-            {!form.entity_code && (
-              <span className="um-hint">Pilih entitas terlebih dahulu</span>
-            )}
-            {errors.branch_code && (
-              <span className="um-error">{errors.branch_code}</span>
-            )}
-          </div>
-          <div className="um-form-group">
-            <label>
-              <Ico n="idCard" size={11} /> Divisi{" "}
-              <span className="um-req">*</span>
-            </label>
-            <select
-              value={form.division_code}
-              onChange={(e) =>
-                setForm({ ...form, division_code: e.target.value })
-              }
-              className={errors.division_code ? "um-input-error" : ""}
-              disabled={!form.branch_code}
-            >
-              <option value="">-- Pilih Divisi --</option>
-              {divisionList
-                .filter((d) => d.branch_code === form.branch_code)
-                .map((d) => (
-                  <option key={d.division_code} value={d.division_code}>
-                    {d.name}
-                  </option>
-                ))}
-            </select>
-            {!form.branch_code && (
-              <span className="um-hint">Pilih branch terlebih dahulu</span>
-            )}
-            {errors.division_code && (
-              <span className="um-error">{errors.division_code}</span>
-            )}
-          </div>
-          <div className="um-form-group">
-            <label>
-              <Ico n="envelope" size={11} /> Email{" "}
-              <span className="um-req">*</span>
-            </label>
-            <input
-              type="email"
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              placeholder="nama@pelindo.co.id"
-              className={errors.email ? "um-input-error" : ""}
-            />
-            {errors.email && <span className="um-error">{errors.email}</span>}
-          </div>
-          <div className="um-form-row">
-            <div className="um-form-group">
-              <label>
-                <Ico n="lock" size={11} />{" "}
-                {isEdit ? (
-                  "Password Baru (kosongkan jika tidak diubah)"
-                ) : (
-                  <>
-                    <span>Password</span> <span className="um-req">*</span>
-                  </>
-                )}
-              </label>
-              <div className="um-pass-wrap">
-                <input
-                  type={showPass ? "text" : "password"}
-                  value={form.password}
-                  onChange={(e) =>
-                    setForm({ ...form, password: e.target.value })
-                  }
-                  placeholder="Min. 8 karakter"
-                  className={errors.password ? "um-input-error" : ""}
-                />
-                <button
-                  type="button"
-                  className="um-pass-toggle"
-                  onClick={() => setShowPass(!showPass)}
-                >
-                  <Ico n={showPass ? "eyeSlash" : "eye"} size={13} />
-                </button>
-              </div>
-              {errors.password && (
-                <span className="um-error">{errors.password}</span>
-              )}
-            </div>
-            <div className="um-form-group">
-              <label>
-                <Ico n="lock" size={11} /> Konfirmasi Password{" "}
-                {!isEdit && <span className="um-req">*</span>}
-              </label>
-              <div className="um-pass-wrap">
-                <input
-                  type={showConfirm ? "text" : "password"}
-                  value={form.confirm_password}
-                  onChange={(e) =>
-                    setForm({ ...form, confirm_password: e.target.value })
-                  }
-                  placeholder="Ulangi password"
-                  className={errors.confirm_password ? "um-input-error" : ""}
-                />
-                <button
-                  type="button"
-                  className="um-pass-toggle"
-                  onClick={() => setShowConfirm(!showConfirm)}
-                >
-                  <Ico n={showConfirm ? "eyeSlash" : "eye"} size={13} />
-                </button>
-              </div>
-              {errors.confirm_password && (
-                <span className="um-error">{errors.confirm_password}</span>
-              )}
-            </div>
-          </div>
-          <div className="um-form-group">
-            <label>Status Akun</label>
-            <div className="um-status-toggle">
-              <button
-                type="button"
-                className={`um-status-btn ${form.is_active ? "active-green" : ""}`}
-                onClick={() => setForm({ ...form, is_active: true })}
-              >
-                <Ico n="userCheck" size={12} /> Aktif
-              </button>
-              <button
-                type="button"
-                className={`um-status-btn ${!form.is_active ? "active-red" : ""}`}
-                onClick={() => setForm({ ...form, is_active: false })}
-              >
-                <Ico n="userSlash" size={12} /> Nonaktif
-              </button>
-            </div>
-          </div>
-        </div>
-        <div className="um-modal-footer">
-          <button className="um-btn um-btn-secondary" onClick={onClose}>
-            Batal
-          </button>
-          <button className="um-btn um-btn-primary" onClick={handleSave}>
-            <Ico n="check" size={12} />{" "}
-            {isEdit ? "Simpan Perubahan" : "Buat User"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── MODAL: Detail ────────────────────────────────────────────
-function DetailUserModal({ user, onClose, onEdit }) {
-  if (!user) return null;
-  const rc = roleConfig[user.role_code];
-  return (
-    <div className="um-overlay" onClick={onClose}>
-      <div className="um-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="um-modal-header">
-          <h2>
-            <Ico n="eye" size={14} /> Detail User
-          </h2>
-          <button className="um-modal-close" onClick={onClose}>
-            <Ico n="times" size={13} />
-          </button>
-        </div>
-        <div className="um-modal-body">
-          <div className="um-detail-profile">
-            <div
-              className={`um-avatar um-avatar--lg um-avatar--${user.role_code === "superadmin" ? "purple" : "blue"}`}
-            >
-              {getInitials(user.name)}
-            </div>
-            <div>
-              <div className="um-detail-name">{user.name}</div>
-              <div
-                style={{
-                  display: "flex",
-                  gap: 7,
-                  flexWrap: "wrap",
-                  marginTop: 5,
-                }}
-              >
-                <span
-                  className="um-role-badge"
-                  style={{ color: rc.color, background: rc.bg }}
-                >
-                  <Ico n={rc.iconName} size={11} /> {rc.label}
-                </span>
-                <span
-                  className={`um-status-badge um-status-badge--${user.is_active ? "aktif" : "nonaktif"}`}
-                >
-                  <Ico
-                    n={user.is_active ? "userCheck" : "userSlash"}
-                    size={11}
-                  />{" "}
-                  {user.is_active ? "Aktif" : "Nonaktif"}
-                </span>
-              </div>
-            </div>
-          </div>
-          <div className="um-detail-grid">
-            <div className="um-detail-item">
-              <span className="um-detail-label">NIP</span>
-              <span className="um-detail-val">
-                <code>{user.nip || "—"}</code>
-              </span>
-            </div>
-            <div className="um-detail-item">
-              <span className="um-detail-label">Username</span>
-              <span className="um-detail-val">
-                <code>@{user.username}</code>
-              </span>
-            </div>
-            <div className="um-detail-item">
-              <span className="um-detail-label">Email</span>
-              <span className="um-detail-val">{user.email}</span>
-            </div>
-            <div className="um-detail-item">
-              <span className="um-detail-label">No. Telepon</span>
-              <span className="um-detail-val">{user.phone || "—"}</span>
-            </div>
-            <div className="um-detail-item">
-              <span className="um-detail-label">Entitas</span>
-              <span className="um-detail-val">
-                {getEntityName(user.entity_code)}
-              </span>
-            </div>
-            <div className="um-detail-item">
-              <span className="um-detail-label">Branch</span>
-              <span className="um-detail-val">
-                {getBranchName(user.branch_code)}
-              </span>
-            </div>
-            <div className="um-detail-item">
-              <span className="um-detail-label">Divisi</span>
-              <span className="um-detail-val">
-                {getDivisionName(user.division_code) || "—"}
-              </span>
-            </div>
-            <div className="um-detail-item">
-              <span className="um-detail-label">Tgl Dibuat</span>
-              <span className="um-detail-val">{fmt(user.created_at)}</span>
-            </div>
-            <div className="um-detail-item">
-              <span className="um-detail-label">Login Terakhir</span>
-              <span className="um-detail-val">{user.last_login}</span>
-            </div>
-          </div>
-        </div>
-        <div className="um-modal-footer">
-          <button className="um-btn um-btn-secondary" onClick={onClose}>
-            Tutup
-          </button>
-          <button
-            className="um-btn um-btn-primary"
-            onClick={() => {
-              onEdit(user);
-              onClose();
-            }}
-          >
-            <Ico n="edit" size={12} /> Edit User
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── MODAL: Hapus ─────────────────────────────────────────────
-function DeleteModal({ user, onClose, onConfirm }) {
-  if (!user) return null;
-  return (
-    <div className="um-overlay" onClick={onClose}>
-      <div
-        className="um-modal um-modal--sm"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div
-          className="um-modal-body"
-          style={{ alignItems: "center", textAlign: "center", paddingTop: 28 }}
-        >
-          <div className="um-delete-icon">
-            <Ico n="trash" size={19} />
-          </div>
-          <h3 className="um-delete-title">Hapus User?</h3>
-          <p className="um-delete-desc">
-            User <strong>{user.name}</strong> akan dihapus permanen. Tindakan
-            ini tidak dapat dibatalkan.
-          </p>
-        </div>
-        <div className="um-modal-footer" style={{ justifyContent: "center" }}>
-          <button className="um-btn um-btn-secondary" onClick={onClose}>
-            Batal
-          </button>
-          <button
-            className="um-btn um-btn-danger"
-            onClick={() => {
-              onConfirm(user.id);
-              onClose();
-            }}
-          >
-            <Ico n="trash" size={12} /> Ya, Hapus
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── MODAL: Reset Password ────────────────────────────────────
-function ResetPassModal({ user, onClose, onDone }) {
-  const [done, setDone] = useState(false);
-  if (!user) return null;
-  const handleSend = () => {
-    setDone(true);
-    onDone && onDone(user);
-  };
-  return (
-    <div className="um-overlay" onClick={onClose}>
-      <div
-        className="um-modal um-modal--sm"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="um-modal-header">
-          <h2>
-            <Ico n="key" size={14} /> Reset Password
-          </h2>
-          <button className="um-modal-close" onClick={onClose}>
-            <Ico n="times" size={13} />
-          </button>
-        </div>
-        <div
-          className="um-modal-body"
-          style={{ alignItems: "center", textAlign: "center" }}
-        >
-          {done ? (
-            <>
-              <div className="um-reset-success">
-                <Ico n="check" size={19} />
-              </div>
-              <p>
-                Password untuk <strong>{user.name}</strong> berhasil direset.
-                Link dikirim ke <strong>{user.email}</strong>.
-              </p>
-            </>
-          ) : (
-            <>
-              <div className="um-reset-icon">
-                <Ico n="key" size={19} />
-              </div>
-              <p>
-                Reset password untuk <strong>{user.name}</strong>? Link reset
-                dikirim ke <strong>{user.email}</strong>.
-              </p>
-            </>
-          )}
-        </div>
-        <div className="um-modal-footer" style={{ justifyContent: "center" }}>
-          {done ? (
-            <button className="um-btn um-btn-primary" onClick={onClose}>
-              Selesai
-            </button>
-          ) : (
-            <>
-              <button className="um-btn um-btn-secondary" onClick={onClose}>
-                Batal
-              </button>
-              <button className="um-btn um-btn-warning" onClick={handleSend}>
-                <Ico n="key" size={12} /> Kirim Link Reset
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── DIFF POPOVER ─────────────────────────────────────────────
+// ─── HELPERS ──────────────────────────────────────────────────
 function DiffPopover({ log, rect, onClose }) {
   const ref = useRef(null);
   React.useEffect(() => {
@@ -1679,8 +1107,7 @@ function DiffPopover({ log, rect, onClose }) {
     document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
   }, [onClose]);
-
-  const fmt = (v) => {
+  const fmtVal = (v) => {
     if (v === null || v === undefined) return null;
     try {
       return JSON.stringify(JSON.parse(v), null, 2);
@@ -1688,13 +1115,10 @@ function DiffPopover({ log, rect, onClose }) {
       return String(v);
     }
   };
-
-  const oldStr = fmt(log.old_value);
-  const newStr = fmt(log.new_value);
-
+  const oldStr = fmtVal(log.old_value);
+  const newStr = fmtVal(log.new_value);
   const top = Math.min((rect?.bottom || 100) + 6, window.innerHeight - 280);
   const left = Math.min(rect?.left || 100, window.innerWidth - 500);
-
   return (
     <>
       <div className="al-diff-overlay" onClick={onClose} />
@@ -1725,18 +1149,15 @@ function DiffPopover({ log, rect, onClose }) {
   );
 }
 
-// ─── ACTIVITY LOG SECTION ─────────────────────────────────────
+// ─── ACTIVITY LOG ─────────────────────────────────────────────
 const LOGS_PER_PAGE = 8;
-
 function ActivityLogSection({ logs, users }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [filterAction, setFilterAction] = useState("semua");
   const [page, setPage] = useState(1);
   const [diff, setDiff] = useState(null);
-
   const getUserById = (id) => users.find((u) => u.id === id);
-
   const filtered = [...logs]
     .filter((log) => {
       const user = getUserById(log.user_id);
@@ -1751,17 +1172,14 @@ function ActivityLogSection({ logs, users }) {
       return matchQ && matchA;
     })
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
   const totalPages = Math.max(1, Math.ceil(filtered.length / LOGS_PER_PAGE));
   const paginated = filtered.slice(
     (page - 1) * LOGS_PER_PAGE,
     page * LOGS_PER_PAGE,
   );
-
   React.useEffect(() => {
     setPage(1);
   }, [search, filterAction]);
-
   return (
     <div className="al-section">
       <div className="al-header" onClick={() => setOpen((o) => !o)}>
@@ -1776,7 +1194,6 @@ function ActivityLogSection({ logs, users }) {
           style={{ color: "#0f766e" }}
         />
       </div>
-
       {open && (
         <div className="al-body">
           <div className="al-toolbar">
@@ -1812,7 +1229,6 @@ function ActivityLogSection({ logs, users }) {
               {filtered.length} log ditemukan
             </span>
           </div>
-
           <div className="al-table-wrap">
             <table className="al-table">
               <thead>
@@ -1983,7 +1399,6 @@ function ActivityLogSection({ logs, users }) {
               </tbody>
             </table>
           </div>
-
           {totalPages > 1 && (
             <div className="al-pagination">
               <span className="al-page-info">
@@ -2022,7 +1437,6 @@ function ActivityLogSection({ logs, users }) {
           )}
         </div>
       )}
-
       {diff && (
         <DiffPopover
           log={diff.log}
@@ -2034,11 +1448,696 @@ function ActivityLogSection({ logs, users }) {
   );
 }
 
-// ─── KOMPONEN UTAMA ───────────────────────────────────────────
+// ─── FORM VIEW ────────────────────────────────────────────────
+function UserFormView({ user, onBack, onSave }) {
+  const isEdit = !!user;
+  const [form, setForm] = useState(
+    user
+      ? {
+          name: user.name,
+          nip: user.nip || "",
+          username: user.username,
+          email: user.email,
+          phone: user.phone || "",
+          role_code: user.role_code,
+          entity_code: user.entity_code,
+          branch_code: user.branch_code || "",
+          division_code: user.division_code || "",
+          is_active: user.is_active,
+          password: "",
+          confirm_password: "",
+        }
+      : {
+          name: "",
+          nip: "",
+          username: "",
+          email: "",
+          phone: "",
+          role_code: "user",
+          entity_code: "",
+          branch_code: "",
+          division_code: "",
+          is_active: true,
+          password: "",
+          confirm_password: "",
+        },
+  );
+  const [showPass, setShowPass] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [errors, setErrors] = useState({});
+  const filteredBranches = branchList.filter(
+    (b) => b.entity_code === form.entity_code,
+  );
+  const validate = () => {
+    const e = {};
+    if (!form.name.trim()) e.name = "Wajib diisi";
+    if (!form.nip.trim()) e.nip = "Wajib diisi";
+    if (!form.username.trim()) e.username = "Wajib diisi";
+    if (!form.email.trim()) e.email = "Wajib diisi";
+    else if (!/\S+@\S+\.\S+/.test(form.email))
+      e.email = "Format email tidak valid";
+    if (!form.phone.trim()) e.phone = "Wajib diisi";
+    if (!form.entity_code) e.entity_code = "Wajib dipilih";
+    if (!form.branch_code) e.branch_code = "Wajib dipilih";
+    if (!form.division_code) e.division_code = "Wajib dipilih";
+    if (!isEdit && !form.password) e.password = "Wajib diisi";
+    if (form.password && form.password.length < 8)
+      e.password = "Minimal 8 karakter";
+    if (form.password && form.password !== form.confirm_password)
+      e.confirm_password = "Password tidak cocok";
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
+  const handleSave = () => {
+    if (!validate()) return;
+    onSave({
+      ...user,
+      ...form,
+      id: user?.id || Date.now(),
+      created_at: user?.created_at || new Date().toISOString().split("T")[0],
+      last_login: user?.last_login || "—",
+    });
+    onBack();
+  };
+  return (
+    <div className="um-form-root">
+      <style>{css}</style>
+      <div
+        style={{
+          marginBottom: ".9rem",
+          display: "flex",
+          alignItems: "center",
+          gap: ".65rem",
+        }}
+      >
+        <button className="um-back-btn" onClick={onBack}>
+          <Ico n="arrowLeft" size={12} /> Kembali
+        </button>
+        <div>
+          <h1 className="um-title">
+            {isEdit ? "Edit User" : "Tambah User Baru"}
+          </h1>
+        </div>
+      </div>
+      <div className="um-form-card">
+        <div className="um-form-group">
+          <label>
+            <Ico n="user" size={11} /> Nama Lengkap{" "}
+            <span className="um-req">*</span>
+          </label>
+          <input
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            placeholder="Joy Valeda Silalahi"
+            className={errors.name ? "um-input-error" : ""}
+          />
+          {errors.name && <span className="um-error">{errors.name}</span>}
+        </div>
+        <div className="um-form-row">
+          <div className="um-form-group">
+            <label>
+              <Ico n="idCard" size={11} /> NIP <span className="um-req">*</span>
+            </label>
+            <input
+              value={form.nip}
+              onChange={(e) => setForm({ ...form, nip: e.target.value })}
+              placeholder="NIP"
+              className={errors.nip ? "um-input-error" : ""}
+            />
+            {errors.nip && <span className="um-error">{errors.nip}</span>}
+          </div>
+          <div className="um-form-group">
+            <label>
+              <Ico n="user" size={11} /> Username{" "}
+              <span className="um-req">*</span>
+            </label>
+            <input
+              value={form.username}
+              onChange={(e) => setForm({ ...form, username: e.target.value })}
+              placeholder="joy.silalahi"
+              className={errors.username ? "um-input-error" : ""}
+            />
+            {errors.username && (
+              <span className="um-error">{errors.username}</span>
+            )}
+          </div>
+        </div>
+        <div className="um-form-group">
+          <label>
+            <Ico n="phone" size={11} /> No. Telepon{" "}
+            <span className="um-req">*</span>
+          </label>
+          <input
+            value={form.phone}
+            onChange={(e) => setForm({ ...form, phone: e.target.value })}
+            placeholder="08xxxxxxxxxx"
+            className={errors.phone ? "um-input-error" : ""}
+          />
+          {errors.phone && <span className="um-error">{errors.phone}</span>}
+        </div>
+        <div className="um-form-group">
+          <label>
+            <Ico n="shield" size={11} /> Role / Peran{" "}
+            <span className="um-req">*</span>
+          </label>
+          <div className="um-role-options">
+            {Object.entries(roleConfig).map(([val, cfg]) => (
+              <label
+                key={val}
+                className={`um-role-opt ${form.role_code === val ? "active" : ""}`}
+                style={
+                  form.role_code === val
+                    ? {
+                        borderColor: cfg.color,
+                        background: cfg.bg,
+                        color: cfg.color,
+                      }
+                    : {}
+                }
+              >
+                <input
+                  type="radio"
+                  name="role"
+                  value={val}
+                  checked={form.role_code === val}
+                  onChange={() => setForm({ ...form, role_code: val })}
+                />
+                <Ico n={cfg.iconName} size={12} /> {cfg.label}
+              </label>
+            ))}
+          </div>
+        </div>
+        <div className="um-form-group">
+          <label>
+            <Ico n="building" size={11} /> Entitas{" "}
+            <span className="um-req">*</span>
+          </label>
+          <select
+            value={form.entity_code}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                entity_code: e.target.value,
+                branch_code: "",
+                division_code: "",
+              })
+            }
+            className={errors.entity_code ? "um-input-error" : ""}
+          >
+            <option value="">-- Pilih Entitas --</option>
+            {entityList.map((e) => (
+              <option key={e.entity_code} value={e.entity_code}>
+                {e.entity_code} — {e.name}
+              </option>
+            ))}
+          </select>
+          {errors.entity_code && (
+            <span className="um-error">{errors.entity_code}</span>
+          )}
+        </div>
+        <div className="um-form-group">
+          <label>
+            <Ico n="mapPin" size={11} /> Cabang / Branch{" "}
+            <span className="um-req">*</span>
+          </label>
+          <select
+            value={form.branch_code}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                branch_code: e.target.value,
+                division_code: "",
+              })
+            }
+            className={errors.branch_code ? "um-input-error" : ""}
+            disabled={!form.entity_code}
+          >
+            <option value="">-- Pilih Cabang --</option>
+            {filteredBranches.map((b) => (
+              <option key={b.branch_code} value={b.branch_code}>
+                {b.name}
+              </option>
+            ))}
+          </select>
+          {!form.entity_code && (
+            <span className="um-hint">Pilih entitas terlebih dahulu</span>
+          )}
+          {errors.branch_code && (
+            <span className="um-error">{errors.branch_code}</span>
+          )}
+        </div>
+        <div className="um-form-group">
+          <label>
+            <Ico n="idCard" size={11} /> Divisi{" "}
+            <span className="um-req">*</span>
+          </label>
+          <select
+            value={form.division_code}
+            onChange={(e) =>
+              setForm({ ...form, division_code: e.target.value })
+            }
+            className={errors.division_code ? "um-input-error" : ""}
+            disabled={!form.branch_code}
+          >
+            <option value="">-- Pilih Divisi --</option>
+            {divisionList
+              .filter((d) => d.branch_code === form.branch_code)
+              .map((d) => (
+                <option key={d.division_code} value={d.division_code}>
+                  {d.name}
+                </option>
+              ))}
+          </select>
+          {!form.branch_code && (
+            <span className="um-hint">Pilih branch terlebih dahulu</span>
+          )}
+          {errors.division_code && (
+            <span className="um-error">{errors.division_code}</span>
+          )}
+        </div>
+        <div className="um-form-group">
+          <label>
+            <Ico n="envelope" size={11} /> Email{" "}
+            <span className="um-req">*</span>
+          </label>
+          <input
+            type="email"
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            placeholder="nama@pelindo.co.id"
+            className={errors.email ? "um-input-error" : ""}
+          />
+          {errors.email && <span className="um-error">{errors.email}</span>}
+        </div>
+        <div className="um-form-row">
+          <div className="um-form-group">
+            <label>
+              <Ico n="lock" size={11} />{" "}
+              {isEdit ? (
+                "Password Baru (kosongkan jika tidak diubah)"
+              ) : (
+                <>
+                  <span>Password</span> <span className="um-req">*</span>
+                </>
+              )}
+            </label>
+            <div className="um-pass-wrap">
+              <input
+                type={showPass ? "text" : "password"}
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                placeholder="Min. 8 karakter"
+                className={errors.password ? "um-input-error" : ""}
+              />
+              <button
+                type="button"
+                className="um-pass-toggle"
+                onClick={() => setShowPass(!showPass)}
+              >
+                <Ico n={showPass ? "eyeSlash" : "eye"} size={13} />
+              </button>
+            </div>
+            {errors.password && (
+              <span className="um-error">{errors.password}</span>
+            )}
+          </div>
+          <div className="um-form-group">
+            <label>
+              <Ico n="lock" size={11} /> Konfirmasi Password{" "}
+              {!isEdit && <span className="um-req">*</span>}
+            </label>
+            <div className="um-pass-wrap">
+              <input
+                type={showConfirm ? "text" : "password"}
+                value={form.confirm_password}
+                onChange={(e) =>
+                  setForm({ ...form, confirm_password: e.target.value })
+                }
+                placeholder="Ulangi password"
+                className={errors.confirm_password ? "um-input-error" : ""}
+              />
+              <button
+                type="button"
+                className="um-pass-toggle"
+                onClick={() => setShowConfirm(!showConfirm)}
+              >
+                <Ico n={showConfirm ? "eyeSlash" : "eye"} size={13} />
+              </button>
+            </div>
+            {errors.confirm_password && (
+              <span className="um-error">{errors.confirm_password}</span>
+            )}
+          </div>
+        </div>
+        <div className="um-form-group">
+          <label>Status Akun</label>
+          <div className="um-status-toggle">
+            <button
+              type="button"
+              className={`um-status-btn ${form.is_active ? "active-green" : ""}`}
+              onClick={() => setForm({ ...form, is_active: true })}
+            >
+              <Ico n="userCheck" size={12} /> Aktif
+            </button>
+            <button
+              type="button"
+              className={`um-status-btn ${!form.is_active ? "active-red" : ""}`}
+              onClick={() => setForm({ ...form, is_active: false })}
+            >
+              <Ico n="userSlash" size={12} /> Nonaktif
+            </button>
+          </div>
+        </div>
+        <div className="um-form-footer">
+          <button className="um-btn um-btn-secondary" onClick={onBack}>
+            Batal
+          </button>
+          <button className="um-btn um-btn-primary" onClick={handleSave}>
+            <Ico n="check" size={12} />{" "}
+            {isEdit ? "Simpan Perubahan" : "Buat User"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── DETAIL VIEW ──────────────────────────────────────────────
+function DetailUserView({ user, onBack, onEdit, onDelete, onReset }) {
+  if (!user) return null;
+  const rc = roleConfig[user.role_code];
+  return (
+    <div className="um-detail-root">
+      <style>{css}</style>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: ".9rem",
+          flexWrap: "wrap",
+          gap: ".5rem",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: ".65rem" }}>
+          <button className="um-back-btn" onClick={onBack}>
+            <Ico n="arrowLeft" size={12} /> Kembali
+          </button>
+          <h1 className="um-title">Detail User</h1>
+        </div>
+        <div style={{ display: "flex", gap: ".5rem" }}>
+          <button className="um-btn um-btn-warning" onClick={onReset}>
+            <Ico n="key" size={12} /> Reset Password
+          </button>
+          <button className="um-btn um-btn-primary" onClick={onEdit}>
+            <Ico n="edit" size={12} /> Edit User
+          </button>
+        </div>
+      </div>
+      <div className="um-detail-card">
+        <div className="um-detail-card-header">
+          <Ico n="user" size={13} /> Informasi Pengguna
+        </div>
+        <div className="um-detail-card-body">
+          <div className="um-detail-profile">
+            <div
+              className={`um-avatar um-avatar--lg um-avatar--${user.role_code === "superadmin" ? "purple" : "blue"}`}
+            >
+              {getInitials(user.name)}
+            </div>
+            <div>
+              <div className="um-detail-name">{user.name}</div>
+              <div className="um-detail-badges">
+                <span
+                  className="um-role-badge"
+                  style={{ color: rc.color, background: rc.bg }}
+                >
+                  <Ico n={rc.iconName} size={11} /> {rc.label}
+                </span>
+                <span
+                  className={`um-role-badge`}
+                  style={
+                    user.is_active
+                      ? { color: "#16a34a", background: "#dcfce7" }
+                      : { color: "#64748b", background: "#f1f5f9" }
+                  }
+                >
+                  <Ico
+                    n={user.is_active ? "userCheck" : "userSlash"}
+                    size={11}
+                  />{" "}
+                  {user.is_active ? "Aktif" : "Nonaktif"}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="um-detail-grid">
+            <div className="um-detail-item">
+              <span className="um-detail-label">NIP</span>
+              <span className="um-detail-val">
+                <code>{user.nip || "—"}</code>
+              </span>
+            </div>
+            <div className="um-detail-item">
+              <span className="um-detail-label">Username</span>
+              <span className="um-detail-val">
+                <code>@{user.username}</code>
+              </span>
+            </div>
+            <div className="um-detail-item">
+              <span className="um-detail-label">Email</span>
+              <span className="um-detail-val">{user.email}</span>
+            </div>
+            <div className="um-detail-item">
+              <span className="um-detail-label">No. Telepon</span>
+              <span className="um-detail-val">{user.phone || "—"}</span>
+            </div>
+            <div className="um-detail-item">
+              <span className="um-detail-label">Entitas</span>
+              <span className="um-detail-val">
+                {getEntityName(user.entity_code)}
+              </span>
+            </div>
+            <div className="um-detail-item">
+              <span className="um-detail-label">Branch</span>
+              <span className="um-detail-val">
+                {getBranchName(user.branch_code)}
+              </span>
+            </div>
+            <div className="um-detail-item">
+              <span className="um-detail-label">Divisi</span>
+              <span className="um-detail-val">
+                {getDivisionName(user.division_code) || "—"}
+              </span>
+            </div>
+            <div className="um-detail-item">
+              <span className="um-detail-label">Tgl Dibuat</span>
+              <span className="um-detail-val">{fmt(user.created_at)}</span>
+            </div>
+            <div className="um-detail-item">
+              <span className="um-detail-label">Login Terakhir</span>
+              <span className="um-detail-val">{user.last_login}</span>
+            </div>
+          </div>
+        </div>
+        <div className="um-detail-actions">
+          <button className="um-btn um-btn-danger" onClick={onDelete}>
+            <Ico n="trash" size={12} /> Hapus User
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── RESET VIEW ───────────────────────────────────────────────
+function ResetPassView({ user, onBack }) {
+  const [done, setDone] = useState(false);
+  if (!user) return null;
+  return (
+    <div className="um-confirm-root">
+      <style>{css}</style>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: ".65rem",
+          marginBottom: ".9rem",
+        }}
+      >
+        <button className="um-back-btn" onClick={onBack}>
+          <Ico n="arrowLeft" size={12} /> Kembali
+        </button>
+        <h1 className="um-title">Reset Password</h1>
+      </div>
+      <div className="um-confirm-card">
+        <div
+          className={`um-confirm-icon ${done ? "um-confirm-icon--success" : "um-confirm-icon--warn"}`}
+        >
+          <Ico n={done ? "check" : "key"} size={22} />
+        </div>
+        <div className="um-confirm-title">
+          {done ? "Password Berhasil Direset" : "Konfirmasi Reset Password"}
+        </div>
+        <div className="um-confirm-desc">
+          {done ? (
+            <>
+              Link reset telah dikirim ke <strong>{user.email}</strong>.
+            </>
+          ) : (
+            <>
+              Reset password untuk <strong>{user.name}</strong>? Link reset akan
+              dikirim ke <strong>{user.email}</strong>.
+            </>
+          )}
+        </div>
+        <div className="um-confirm-footer">
+          {done ? (
+            <button className="um-btn um-btn-primary" onClick={onBack}>
+              <Ico n="check" size={12} /> Selesai
+            </button>
+          ) : (
+            <>
+              <button className="um-btn um-btn-secondary" onClick={onBack}>
+                Batal
+              </button>
+              <button
+                className="um-btn um-btn-warning"
+                onClick={() => setDone(true)}
+              >
+                <Ico n="key" size={12} /> Kirim Link Reset
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── DELETE VIEW ──────────────────────────────────────────────
+function DeleteUserView({ user, onBack, onConfirm }) {
+  if (!user) return null;
+  return (
+    <div className="um-confirm-root">
+      <style>{css}</style>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: ".65rem",
+          marginBottom: ".9rem",
+        }}
+      >
+        <button className="um-back-btn" onClick={onBack}>
+          <Ico n="arrowLeft" size={12} /> Kembali
+        </button>
+        <h1 className="um-title">Hapus User</h1>
+      </div>
+      <div className="um-confirm-card">
+        <div className="um-confirm-icon um-confirm-icon--danger">
+          <Ico n="trash" size={22} />
+        </div>
+        <div className="um-confirm-title">Hapus User?</div>
+        <div className="um-confirm-desc">
+          User <strong>{user.name}</strong> akan dihapus secara permanen.
+          Tindakan ini tidak dapat dibatalkan.
+        </div>
+        <div className="um-confirm-footer">
+          <button className="um-btn um-btn-secondary" onClick={onBack}>
+            Batal
+          </button>
+          <button
+            className="um-btn um-btn-danger"
+            onClick={() => {
+              onConfirm(user.id);
+              onBack();
+            }}
+          >
+            <Ico n="trash" size={12} /> Ya, Hapus
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── DROPDOWN COMPONENT ───────────────────────────────────────
+function ActionDropdown({ user, onDetail, onEdit, onReset, onDelete }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  React.useEffect(() => {
+    if (!open) return;
+    const h = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, [open]);
+  return (
+    <div className="um-dd-wrap" ref={ref}>
+      <button
+        className="um-dd-btn"
+        onClick={() => setOpen((o) => !o)}
+        title="Aksi"
+      >
+        <Ico n="moreVertical" size={14} />
+      </button>
+      {open && (
+        <div className="um-dd-menu">
+          <div
+            className="um-dd-item"
+            onClick={() => {
+              setOpen(false);
+              onDetail(user);
+            }}
+          >
+            <Ico n="eye" size={12} /> Detail
+          </div>
+          <div
+            className="um-dd-item"
+            onClick={() => {
+              setOpen(false);
+              onEdit(user);
+            }}
+          >
+            <Ico n="edit" size={12} /> Edit
+          </div>
+          <div
+            className="um-dd-item"
+            onClick={() => {
+              setOpen(false);
+              onReset(user);
+            }}
+          >
+            <Ico n="key" size={12} /> Reset Password
+          </div>
+          <div className="um-dd-sep" />
+          <div
+            className="um-dd-item um-dd-item--danger"
+            onClick={() => {
+              setOpen(false);
+              onDelete(user);
+            }}
+          >
+            <Ico n="trash" size={12} /> Hapus
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── MAIN COMPONENT ───────────────────────────────────────────
 const UserManagement = () => {
   const [users, setUsers] = useState(mockUsers);
   const [logs, setLogs] = useState(mockLogs);
   const logIdRef = useRef(mockLogs.length + 1);
+
+  // view: "list" | "detail" | "form" | "reset" | "delete"
+  const [view, setView] = useState("list");
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [formUser, setFormUser] = useState(null); // null = tambah baru
 
   const [search, setSearch] = useState("");
   const [filterRole, setFilterRole] = useState("semua");
@@ -2046,13 +2145,11 @@ const UserManagement = () => {
   const [filterBranch, setFilterBranch] = useState("semua");
   const [filterDivision, setFilterDivision] = useState("semua");
   const [filterStatus, setFilterStatus] = useState("semua");
-  const [modal, setModal] = useState(null);
 
   const availableBranches =
     filterEntity === "semua"
       ? branchList
       : branchList.filter((b) => b.entity_code === filterEntity);
-
   const availableDivisions =
     filterBranch === "semua"
       ? filterEntity === "semua"
@@ -2102,14 +2199,6 @@ const UserManagement = () => {
     [],
   );
 
-  React.useEffect(() => {
-    recordActivity({
-      action_type: "VIEW_USER_MANAGEMENT",
-      table_name: "users",
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const filtered = users.filter((u) => {
     const q = search.toLowerCase();
     return (
@@ -2137,23 +2226,115 @@ const UserManagement = () => {
     const existing = users.find((u) => u.id === saved.id);
     if (existing) {
       setUsers(users.map((u) => (u.id === saved.id ? saved : u)));
+      recordActivity({
+        action_type: "UPDATE_PROFILE",
+        table_name: "users",
+        record_id: saved.id,
+        old_value: { name: existing.name },
+        new_value: { name: saved.name },
+      });
     } else {
       setUsers([saved, ...users]);
+      recordActivity({
+        action_type: "REGISTER",
+        table_name: "users",
+        record_id: saved.id,
+        new_value: { username: saved.username, email: saved.email },
+      });
     }
   };
-
   const handleDelete = (id) => {
+    const u = users.find((x) => x.id === id);
+    recordActivity({
+      action_type: "DELETE_ACCOUNT",
+      table_name: "users",
+      record_id: id,
+      old_value: { name: u?.name },
+    });
     setUsers(users.filter((u) => u.id !== id));
   };
-
   const handleToggle = (id) => {
     setUsers(
       users.map((u) => (u.id === id ? { ...u, is_active: !u.is_active } : u)),
     );
   };
 
-  const handleResetDone = (_user) => {};
+  // Navigation helpers
+  const goDetail = (u) => {
+    setSelectedUser(u);
+    setView("detail");
+  };
+  const goEdit = (u) => {
+    setFormUser(u);
+    setView("form");
+  };
+  const goAdd = () => {
+    setFormUser(null);
+    setView("form");
+  };
+  const goReset = (u) => {
+    setSelectedUser(u);
+    setView("reset");
+  };
+  const goDelete = (u) => {
+    setSelectedUser(u);
+    setView("delete");
+  };
+  const goList = () => setView("list");
+  const goDetailFromEdit = () => {
+    setView("detail");
+  };
 
+  // ── SUB-VIEWS ──
+  if (view === "form") {
+    return (
+      <UserFormView
+        user={formUser}
+        onBack={() => {
+          formUser ? goDetailFromEdit() : goList();
+        }}
+        onSave={(saved) => {
+          handleSave(saved);
+          if (formUser) {
+            setSelectedUser(saved);
+          }
+        }}
+      />
+    );
+  }
+  if (view === "detail" && selectedUser) {
+    const liveUser =
+      users.find((u) => u.id === selectedUser.id) || selectedUser;
+    return (
+      <DetailUserView
+        user={liveUser}
+        onBack={goList}
+        onEdit={() => goEdit(liveUser)}
+        onReset={() => goReset(liveUser)}
+        onDelete={() => goDelete(liveUser)}
+      />
+    );
+  }
+  if (view === "reset" && selectedUser) {
+    return (
+      <ResetPassView user={selectedUser} onBack={() => setView("detail")} />
+    );
+  }
+  if (view === "delete" && selectedUser) {
+    return (
+      <DeleteUserView
+        user={selectedUser}
+        onBack={() => setView("detail")}
+        onConfirm={(id) => {
+          handleDelete(id);
+          setSelectedUser(null);
+          setView("list");
+        }}
+      />
+    );
+  }
+
+  // ── LIST VIEW ──
   return (
     <div className="um-root">
       <style>{css}</style>
@@ -2164,10 +2345,7 @@ const UserManagement = () => {
             Kelola akun dan hak akses pengguna sistem PT Pelindo Multi Terminal
           </p>
         </div>
-        <button
-          className="um-btn um-btn-primary um-btn-lg"
-          onClick={() => setModal({ type: "form", user: null })}
-        >
+        <button className="um-btn um-btn-primary um-btn-lg" onClick={goAdd}>
           <Ico n="plus" size={13} /> Tambah User
         </button>
       </div>
@@ -2333,7 +2511,7 @@ const UserManagement = () => {
               <th>Role</th>
               <th>Status</th>
               <th>Login Terakhir</th>
-              <th>Aksi</th>
+              <th style={{ width: 38, textAlign: "center" }}>Aksi</th>
             </tr>
           </thead>
           <tbody>
@@ -2416,89 +2594,14 @@ const UserManagement = () => {
                       </button>
                     </td>
                     <td className="um-last-login">{u.last_login}</td>
-                    <td>
-                      <div className="um-actions">
-                        <button
-                          className="um-action-btn um-action-btn--view"
-                          title="Detail"
-                          onClick={() => {
-                            setModal({ type: "detail", user: u });
-                            recordActivity({
-                              action_type: "VIEW_USER_DETAIL",
-                              table_name: "users",
-                              record_id: u.id,
-                              old_value: null,
-                              new_value: JSON.stringify({
-                                viewed_user: u.username,
-                              }),
-                            });
-                          }}
-                        >
-                          <svg
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                            <circle cx="12" cy="12" r="3" />
-                          </svg>
-                        </button>
-                        <button
-                          className="um-action-btn um-action-btn--edit"
-                          title="Edit"
-                          onClick={() => setModal({ type: "form", user: u })}
-                        >
-                          <svg
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                          </svg>
-                        </button>
-                        <button
-                          className="um-action-btn um-action-btn--key"
-                          title="Reset Password"
-                          onClick={() => setModal({ type: "reset", user: u })}
-                        >
-                          <svg
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
-                          </svg>
-                        </button>
-                        <button
-                          className="um-action-btn um-action-btn--del"
-                          title="Hapus"
-                          onClick={() => setModal({ type: "delete", user: u })}
-                        >
-                          <svg
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <polyline points="3 6 5 6 21 6" />
-                            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                            <path d="M10 11v6M14 11v6" />
-                            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-                          </svg>
-                        </button>
-                      </div>
+                    <td style={{ textAlign: "center" }}>
+                      <ActionDropdown
+                        user={u}
+                        onDetail={goDetail}
+                        onEdit={goEdit}
+                        onReset={goReset}
+                        onDelete={goDelete}
+                      />
                     </td>
                   </tr>
                 );
@@ -2508,37 +2611,7 @@ const UserManagement = () => {
         </table>
       </div>
 
-      {/* ══ ACTIVITY LOG ══ */}
       <ActivityLogSection logs={logs} users={users} />
-
-      {modal?.type === "form" && (
-        <UserFormModal
-          user={modal.user}
-          onClose={() => setModal(null)}
-          onSave={handleSave}
-        />
-      )}
-      {modal?.type === "detail" && (
-        <DetailUserModal
-          user={modal.user}
-          onClose={() => setModal(null)}
-          onEdit={(u) => setModal({ type: "form", user: u })}
-        />
-      )}
-      {modal?.type === "delete" && (
-        <DeleteModal
-          user={modal.user}
-          onClose={() => setModal(null)}
-          onConfirm={handleDelete}
-        />
-      )}
-      {modal?.type === "reset" && (
-        <ResetPassModal
-          user={modal.user}
-          onClose={() => setModal(null)}
-          onDone={handleResetDone}
-        />
-      )}
     </div>
   );
 };
