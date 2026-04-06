@@ -989,9 +989,6 @@ function RealisasiSection({ master, setMasters, toast_ }) {
 
 // ════════════════════════════════════════════════════════════════
 // OPEX MODULE — REVISED FILTER FLOW
-// Flow: (opsional) pilih range tahun → dropdown pos anggaran ter-filter
-//       → pilih pos anggaran → detail kartu muncul
-//       Kalau langsung pilih pos anggaran tanpa filter tahun: boleh
 // ════════════════════════════════════════════════════════════════
 function OpexModule({ masterList, setMasterList }) {
   const [masters, setMasters] = useState(INIT_OPEX_MASTERS);
@@ -1004,7 +1001,6 @@ function OpexModule({ masterList, setMasterList }) {
   const [filterThnFrom, setFilterThnFrom] = useState("");
   const [filterThnTo, setFilterThnTo] = useState("");
   // filterNama = nama pos anggaran yang dipilih dari dropdown (string)
-  // Kosong berarti belum pilih → detail tidak tampil
   const [filterNama, setFilterNama] = useState("");
 
   const PAGE_SIZE = 5;
@@ -1060,26 +1056,24 @@ function OpexModule({ masterList, setMasterList }) {
 
   // ── When year range changes, reset filterNama if no longer in options ──
   useEffect(() => {
-    if (filterNama && !namaOptions.find((o) => o.nama === filterNama)) {
+    if (filterNama && filterNama !== "SEMUA" && !namaOptions.find((o) => o.nama === filterNama)) {
       setFilterNama("");
     }
   }, [namaOptions]);
 
-  // ── filteredMasters: hanya tampil jika filterNama dipilih ──
-  // Jika filterNama kosong → array kosong → detail tidak tampil
+  // ── filteredMasters: logic Tampilkan Semua / Filter Pos ──
   const filteredMasters = useMemo(() => {
     setCurrentPage(1);
     if (!filterNama) return []; // belum pilih pos → jangan tampilkan apa-apa
     return masters.filter((m) => {
       if (filterThnFrom && m.thn_anggaran < parseInt(filterThnFrom)) return false;
       if (filterThnTo && m.thn_anggaran > parseInt(filterThnTo)) return false;
-      if (m.nama !== filterNama) return false;
+      if (filterNama !== "SEMUA" && m.nama !== filterNama) return false;
       return true;
     });
   }, [masters, filterThnFrom, filterThnTo, filterNama]);
 
   // ── Summary stats (atas): hitung dari semua master sesuai filter tahun + nama ──
-  // Untuk KPI, kita tampilkan dari filteredMasters jika ada, atau dari semua master jika belum filter nama
   const kpiBase = useMemo(() => {
     if (filterNama) return filteredMasters;
     // Jika belum pilih nama, KPI berdasarkan filter tahun saja
@@ -1177,8 +1171,8 @@ function OpexModule({ masterList, setMasterList }) {
       {/* KPI STRIP */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14 }}>
         {[
-          { label: filterNama ? "Total Anggaran (dipilih)" : "Total Anggaran", val: fmt(totalAnggaran), color: "#2563eb", bg: "#eff6ff" },
-          { label: filterNama ? "Total Realisasi (dipilih)" : "Total Realisasi", val: fmt(totalRealisasi), color: "#d97706", bg: "#fffbeb" },
+          { label: filterNama && filterNama !== "SEMUA" ? "Total Anggaran (dipilih)" : "Total Anggaran", val: fmt(totalAnggaran), color: "#2563eb", bg: "#eff6ff" },
+          { label: filterNama && filterNama !== "SEMUA" ? "Total Realisasi (dipilih)" : "Total Realisasi", val: fmt(totalRealisasi), color: "#d97706", bg: "#fffbeb" },
           { label: "Sisa Anggaran", val: fmt(totalAnggaran - totalRealisasi), color: totalRealisasi > totalAnggaran ? "#dc2626" : "#16a34a", bg: totalRealisasi > totalAnggaran ? "#fef2f2" : "#f0fdf4" },
           { label: "Total Pos Master", val: `${masters.length} item`, color: "#475569", bg: "#f8fafc" },
         ].map((item) => (
@@ -1189,7 +1183,7 @@ function OpexModule({ masterList, setMasterList }) {
         ))}
       </div>
 
-      {/* ── PANEL FILTER + HEADER ── */}
+      {/* ── PANEL DAFTAR + FILTER (SUDAH DIPERBAIKI UI-NYA) ── */}
       <div style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 10, overflow: "hidden" }}>
 
         {/* Baris atas: judul + tombol tambah */}
@@ -1207,92 +1201,104 @@ function OpexModule({ masterList, setMasterList }) {
         </div>
 
         {/* ── FILTER PANEL ── */}
-        <div style={{ padding: "16px 18px", background: "#fafbfc", borderBottom: "1px solid #f1f5f9" }}>
-          {/* Label filter */}
-          <div style={{ fontSize: "0.7rem", fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}>
-            <Search size={12} style={{ color: "#94a3b8" }} />
+        <div style={{ padding: "20px 24px", background: "#f8fafc", borderBottom: "1px solid #f1f5f9" }}>
+          
+          {/* Label Header Filter */}
+          <div style={{ fontSize: "0.75rem", fontWeight: 800, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 16, display: "flex", alignItems: "center", gap: 6 }}>
+            <Search size={14} style={{ color: "#64748b" }} />
             Filter & Pencarian
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
             {/* ── BARIS 1: Filter range tahun (opsional) ── */}
-            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 110 }}>
-                <Calendar size={13} style={{ color: "#64748b" }} />
-                <span style={{ fontSize: "0.78rem", fontWeight: 600, color: "#475569", whiteSpace: "nowrap" }}>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
+              
+              {/* Kolom Label */}
+              <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 160, paddingTop: 8 }}>
+                <Calendar size={15} style={{ color: "#64748b" }} />
+                <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "#334155", whiteSpace: "nowrap" }}>
                   Tahun Anggaran
                 </span>
-                <span style={{ fontSize: "0.68rem", color: "#94a3b8", fontStyle: "italic" }}>(opsional)</span>
+                <span style={{ fontSize: "0.7rem", color: "#94a3b8", fontStyle: "italic", fontWeight: 500 }}>(opsional)</span>
               </div>
 
-              {/* Dari tahun */}
-              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ fontSize: "0.75rem", color: "#94a3b8", whiteSpace: "nowrap" }}>Dari</span>
-                <select
-                  style={{
-                    ...INP, width: 110, padding: "7px 10px", fontSize: "0.82rem",
-                    background: filterThnFrom ? "#eff6ff" : "#f8fafc",
-                    border: filterThnFrom ? "1px solid #bfdbfe" : "1px solid #e2e8f0",
-                    color: filterThnFrom ? "#1d4ed8" : "#64748b",
-                    fontWeight: filterThnFrom ? 700 : 400, cursor: "pointer",
-                  }}
-                  value={filterThnFrom}
-                  onChange={(e) => setFilterThnFrom(e.target.value)}
-                >
-                  <option value="">— Semua —</option>
-                  {yearOpts.map((y) => <option key={y} value={y}>{y}</option>)}
-                </select>
-              </div>
-
-              {/* Garis pemisah */}
-              <div style={{ width: 16, height: 2, background: hasYearFilter ? "#bfdbfe" : "#e2e8f0", borderRadius: 99, flexShrink: 0 }} />
-
-              {/* Sampai tahun */}
-              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ fontSize: "0.75rem", color: "#94a3b8", whiteSpace: "nowrap" }}>Sampai</span>
-                <select
-                  style={{
-                    ...INP, width: 110, padding: "7px 10px", fontSize: "0.82rem",
-                    background: filterThnTo ? "#eff6ff" : "#f8fafc",
-                    border: filterThnTo ? "1px solid #bfdbfe" : "1px solid #e2e8f0",
-                    color: filterThnTo ? "#1d4ed8" : "#64748b",
-                    fontWeight: filterThnTo ? 700 : 400, cursor: "pointer",
-                  }}
-                  value={filterThnTo}
-                  onChange={(e) => setFilterThnTo(e.target.value)}
-                >
-                  <option value="">— Semua —</option>
-                  {yearOpts.map((y) => <option key={y} value={y}>{y}</option>)}
-                </select>
-              </div>
-
-              {/* Badge range aktif */}
-              {hasYearFilter && (
-                <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "4px 10px", background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 6, fontSize: "0.75rem", color: "#2563eb", fontWeight: 600 }}>
-                  <Calendar size={11} />
-                  {filterThnFrom && filterThnTo ? `${filterThnFrom} – ${filterThnTo}` : filterThnFrom ? `≥ ${filterThnFrom}` : `≤ ${filterThnTo}`}
-                  <span style={{ fontSize: "0.68rem", color: "#64748b" }}>({namaOptions.length} pos tersedia)</span>
+              {/* Kolom Input */}
+              <div style={{ display: "flex", alignItems: "center", gap: 12, flex: 1, flexWrap: "wrap" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: "0.85rem", color: "#64748b", fontWeight: 500, whiteSpace: "nowrap" }}>Dari</span>
+                  <select
+                    style={{
+                      ...INP, width: 130, padding: "8px 12px", fontSize: "0.85rem",
+                      background: filterThnFrom ? "#eff6ff" : "#ffffff",
+                      border: filterThnFrom ? "1px solid #bfdbfe" : "1px solid #cbd5e1",
+                      color: filterThnFrom ? "#1d4ed8" : "#334155",
+                      fontWeight: filterThnFrom ? 600 : 400, cursor: "pointer",
+                      boxShadow: "0 1px 2px rgba(0,0,0,0.02)"
+                    }}
+                    value={filterThnFrom}
+                    onChange={(e) => setFilterThnFrom(e.target.value)}
+                  >
+                    <option value="">— Semua —</option>
+                    {yearOpts.map((y) => <option key={y} value={y}>{y}</option>)}
+                  </select>
                 </div>
-              )}
+
+                <div style={{ width: 16, height: 2, background: hasYearFilter ? "#bfdbfe" : "#cbd5e1", borderRadius: 99, flexShrink: 0 }} />
+
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: "0.85rem", color: "#64748b", fontWeight: 500, whiteSpace: "nowrap" }}>Sampai</span>
+                  <select
+                    style={{
+                      ...INP, width: 130, padding: "8px 12px", fontSize: "0.85rem",
+                      background: filterThnTo ? "#eff6ff" : "#ffffff",
+                      border: filterThnTo ? "1px solid #bfdbfe" : "1px solid #cbd5e1",
+                      color: filterThnTo ? "#1d4ed8" : "#334155",
+                      fontWeight: filterThnTo ? 600 : 400, cursor: "pointer",
+                      boxShadow: "0 1px 2px rgba(0,0,0,0.02)"
+                    }}
+                    value={filterThnTo}
+                    onChange={(e) => setFilterThnTo(e.target.value)}
+                  >
+                    <option value="">— Semua —</option>
+                    {yearOpts.map((y) => <option key={y} value={y}>{y}</option>)}
+                  </select>
+                </div>
+
+                {/* Badge range aktif */}
+                {hasYearFilter && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 12px", background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 8, fontSize: "0.8rem", color: "#2563eb", fontWeight: 600, marginLeft: 8 }}>
+                    <Calendar size={13} />
+                    {filterThnFrom && filterThnTo ? `${filterThnFrom} – ${filterThnTo}` : filterThnFrom ? `≥ ${filterThnFrom}` : `≤ ${filterThnTo}`}
+                    <span style={{ fontSize: "0.75rem", color: "#64748b", fontWeight: 500 }}>({namaOptions.length} pos)</span>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* ── BARIS 2: Dropdown pos anggaran (auto-filtered by tahun) ── */}
-            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 110 }}>
-                <Search size={13} style={{ color: "#64748b" }} />
-                <span style={{ fontSize: "0.78rem", fontWeight: 600, color: "#475569", whiteSpace: "nowrap" }}>Pos Anggaran</span>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
+              
+              {/* Kolom Label */}
+              <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 160, paddingTop: 8 }}>
+                <Search size={15} style={{ color: "#64748b" }} />
+                <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "#334155", whiteSpace: "nowrap" }}>Pos Anggaran</span>
               </div>
 
-              <div style={{ flex: "1 1 280px", minWidth: 220, maxWidth: 440 }}>
+              {/* Kolom Input */}
+              <div style={{ display: "flex", alignItems: "center", gap: 12, flex: 1, flexWrap: "wrap" }}>
                 <select
                   style={{
                     ...INP,
-                    background: filterNama ? "#f0fdf4" : "#f8fafc",
-                    border: filterNama ? "1px solid #bbf7d0" : "1px solid #e2e8f0",
-                    color: filterNama ? "#15803d" : "#64748b",
-                    fontWeight: filterNama ? 700 : 400,
+                    maxWidth: 480,
+                    padding: "9px 12px",
+                    fontSize: "0.85rem",
+                    background: filterNama ? "#f0fdf4" : "#ffffff",
+                    border: filterNama ? "1px solid #bbf7d0" : "1px solid #cbd5e1",
+                    color: filterNama ? "#15803d" : "#334155",
+                    fontWeight: filterNama ? 600 : 400,
                     cursor: "pointer",
+                    boxShadow: "0 1px 2px rgba(0,0,0,0.02)"
                   }}
                   value={filterNama}
                   onChange={(e) => { setFilterNama(e.target.value); setCurrentPage(1); }}
@@ -1302,36 +1308,40 @@ function OpexModule({ masterList, setMasterList }) {
                       ? "— Tidak ada pos pada rentang tahun ini —"
                       : `— Pilih Pos Anggaran (${namaOptions.length} tersedia) —`}
                   </option>
+                  {/* OPSI TAMPILKAN SEMUA DITAMBAHKAN DI SINI */}
+                  {namaOptions.length > 0 && (
+                    <option value="SEMUA">— Tampilkan Semua Pos Anggaran —</option>
+                  )}
                   {namaOptions.map((item) => (
                     <option key={item.id} value={item.nama}>{item.nama}</option>
                   ))}
                 </select>
-              </div>
 
-              {/* Hint pilih pos */}
-              {!filterNama && (
-                <div style={{ fontSize: "0.72rem", color: "#94a3b8", fontStyle: "italic", display: "flex", alignItems: "center", gap: 4 }}>
-                  <ChevronDown size={12} />
-                  Pilih pos anggaran untuk melihat detail
-                </div>
-              )}
+                {/* Hint pilih pos */}
+                {!filterNama && (
+                  <div style={{ fontSize: "0.8rem", color: "#94a3b8", fontStyle: "italic", display: "flex", alignItems: "center", gap: 4 }}>
+                    <ChevronDown size={14} />
+                    Pilih pos anggaran untuk melihat detail
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* ── BARIS 3: Info & reset filter ── */}
             {hasActiveFilter && (
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8, paddingTop: 8, borderTop: "1px dashed #e2e8f0" }}>
-                <div style={{ fontSize: "0.78rem", color: "#64748b" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8, marginTop: 8, paddingTop: 16, borderTop: "1px dashed #cbd5e1" }}>
+                <div style={{ fontSize: "0.85rem", color: "#64748b" }}>
                   {filterNama ? (
-                    <>Menampilkan detail <b style={{ color: "#15803d" }}>"{filterNama}"</b>{hasYearFilter && <> pada tahun <b style={{ color: "#1d4ed8" }}>{filterThnFrom && filterThnTo ? `${filterThnFrom}–${filterThnTo}` : filterThnFrom ? `≥${filterThnFrom}` : `≤${filterThnTo}`}</b></>}</>
+                    <>Menampilkan detail <b style={{ color: "#15803d" }}>{filterNama === "SEMUA" ? "Semua Pos Anggaran" : `"${filterNama}"`}</b>{hasYearFilter && <> pada tahun <b style={{ color: "#1d4ed8" }}>{filterThnFrom && filterThnTo ? `${filterThnFrom}–${filterThnTo}` : filterThnFrom ? `≥${filterThnFrom}` : `≤${filterThnTo}`}</b></>}</>
                   ) : (
                     <>Filter tahun aktif — silakan pilih pos anggaran untuk melihat detail</>
                   )}
                 </div>
                 <button
-                  style={{ ...BTNOUT, padding: "6px 12px", fontSize: "0.75rem", color: "#ef4444", borderColor: "#fecaca" }}
+                  style={{ ...BTNOUT, padding: "8px 14px", fontSize: "0.8rem", color: "#ef4444", borderColor: "#fecaca", background: "#fef2f2" }}
                   onClick={() => { setFilterThnFrom(""); setFilterThnTo(""); setFilterNama(""); }}
                 >
-                  <X size={12} /> Reset Semua Filter
+                  <X size={14} /> Reset Semua Filter
                 </button>
               </div>
             )}
@@ -1361,7 +1371,7 @@ function OpexModule({ masterList, setMasterList }) {
         <>
           {filteredMasters.length === 0 ? (
             <div style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 10, padding: "48px 24px", textAlign: "center", color: "#94a3b8", fontSize: "0.88rem" }}>
-              Tidak ada anggaran master dengan nama "{filterNama}" pada rentang tahun yang dipilih.
+              Tidak ada anggaran master {filterNama !== "SEMUA" ? `dengan nama "${filterNama}"` : ""} pada rentang tahun yang dipilih.
             </div>
           ) : (
             <>
