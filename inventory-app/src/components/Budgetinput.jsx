@@ -403,6 +403,21 @@ const ABTN = {
   cursor: "pointer",
 };
 
+// Warna aksen per indeks untuk membedakan anggaran master secara visual
+const MASTER_ACCENT_COLORS = [
+  { border: "#2563eb", headerBg: "#eff6ff", headerBorder: "#bfdbfe", badge: "#dbeafe", badgeText: "#1d4ed8", dot: "#2563eb" },
+  { border: "#16a34a", headerBg: "#f0fdf4", headerBorder: "#bbf7d0", badge: "#dcfce7", badgeText: "#15803d", dot: "#16a34a" },
+  { border: "#d97706", headerBg: "#fffbeb", headerBorder: "#fde68a", badge: "#fef3c7", badgeText: "#b45309", dot: "#d97706" },
+  { border: "#7c3aed", headerBg: "#f5f3ff", headerBorder: "#ddd6fe", badge: "#ede9fe", badgeText: "#6d28d9", dot: "#7c3aed" },
+  { border: "#0891b2", headerBg: "#ecfeff", headerBorder: "#a5f3fc", badge: "#cffafe", badgeText: "#0e7490", dot: "#0891b2" },
+  { border: "#db2777", headerBg: "#fdf2f8", headerBorder: "#fbcfe8", badge: "#fce7f3", badgeText: "#be185d", dot: "#db2777" },
+  { border: "#65a30d", headerBg: "#f7fee7", headerBorder: "#d9f99d", badge: "#ecfccb", badgeText: "#4d7c0f", dot: "#65a30d" },
+];
+
+function getMasterAccent(globalIdx) {
+  return MASTER_ACCENT_COLORS[globalIdx % MASTER_ACCENT_COLORS.length];
+}
+
 // ════════════════════════════════════════════════════════════════
 // SHARED COMPONENTS
 // ════════════════════════════════════════════════════════════════
@@ -1028,7 +1043,7 @@ function InlineEditCurrencyField({ label, value, onSave }) {
 }
 
 // ════════════════════════════════════════════════════════════════
-// EDIT REALISASI — dengan inline edit untuk semua 3 field info
+// EDIT REALISASI
 // ════════════════════════════════════════════════════════════════
 function EditRealisasiSection({
   row,
@@ -1103,7 +1118,6 @@ function EditRealisasiSection({
         marginTop: 12,
       }}
     >
-      {/* Header info tabel — semua 3 field bisa diedit */}
       <table style={{ ...TABLE, border: "none" }}>
         <thead>
           <tr>
@@ -1113,21 +1127,16 @@ function EditRealisasiSection({
           </tr>
         </thead>
         <tbody>
-          {/* Nama Anggaran Master — editable teks */}
           <InlineEditField
             label="Nama Anggaran Master"
             value={masterNama}
             onSave={(v) => onUpdateRow && onUpdateRow({ masterNama: v })}
           />
-
-          {/* Tahun Realisasi — editable select tahun */}
           <InlineEditYearField
             label="Tahun Realisasi"
             value={row.thn}
             onSave={(v) => onUpdateRow && onUpdateRow({ thn: v })}
           />
-
-          {/* Total Realisasi Berjalan — editable number */}
           <InlineEditCurrencyField
             label="Total Realisasi Berjalan"
             value={currentTotal}
@@ -1136,7 +1145,6 @@ function EditRealisasiSection({
         </tbody>
       </table>
 
-      {/* Jenis Perubahan — tombol klik */}
       <div
         style={{
           padding: "16px 18px",
@@ -1179,7 +1187,6 @@ function EditRealisasiSection({
         </div>
       </div>
 
-      {/* Nilai & Keterangan */}
       {tipe && (
         <div
           style={{
@@ -1246,7 +1253,6 @@ function EditRealisasiSection({
         </div>
       )}
 
-      {/* Footer aksi */}
       <div
         style={{
           padding: "12px 18px",
@@ -1370,33 +1376,22 @@ function RealisasiSection({ master, setMasters, toast_ }) {
     setEditRowId(null);
   };
 
-  // ── BARU: handler untuk update field info (nama, tahun, total) ──
   const handleUpdateRow = (rowId, changes) => {
     setMasters((prev) =>
       prev.map((m) => {
         if (m.id !== master.id) return m;
-
-        // Jika masterNama diubah, update nama di master
         let updatedMaster = { ...m };
         if (changes.masterNama !== undefined) {
           updatedMaster.nama = changes.masterNama;
         }
-
         return {
           ...updatedMaster,
           realisasi_tahunan: (m.realisasi_tahunan || []).map((r) => {
             if (r.id !== rowId) return r;
-
             let updated = { ...r };
-
-            // Update tahun realisasi
             if (changes.thn !== undefined) {
               updated.thn = changes.thn;
             }
-
-            // Override total realisasi berjalan:
-            // Kita set realisasi_murni = nilai baru, bymhd = 0,
-            // dan tambahkan history entry override
             if (changes.overrideTotal !== undefined) {
               const today = new Date().toISOString().split("T")[0];
               const selisih =
@@ -1418,7 +1413,6 @@ function RealisasiSection({ master, setMasters, toast_ }) {
                 },
               ];
             }
-
             return updated;
           }),
         };
@@ -1472,7 +1466,6 @@ function RealisasiSection({ master, setMasters, toast_ }) {
         />
       )}
 
-      {/* Add Form Modal */}
       {showForm && (
         <div style={OVS} onClick={() => setShowForm(false)}>
           <div
@@ -1606,20 +1599,29 @@ function RealisasiSection({ master, setMasters, toast_ }) {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          padding: "10px 14px",
-          background: "#f0fdf4",
-          borderTop: "1px solid #bbf7d0",
+          padding: "10px 16px",
+          background: "#f8fafc",
+          borderTop: "1px solid #e2e8f0",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <Calendar size={14} style={{ color: "#16a34a" }} />
           <span
-            style={{ fontSize: "0.8rem", fontWeight: 700, color: "#15803d" }}
+            style={{ fontSize: "0.8rem", fontWeight: 700, color: "#374151" }}
           >
             Daftar Realisasi Tahunan
           </span>
-          <span style={{ fontSize: "0.72rem", color: "#64748b" }}>
-            ({list.length} tahun)
+          <span
+            style={{
+              fontSize: "0.72rem",
+              color: "#64748b",
+              background: "#e2e8f0",
+              padding: "1px 7px",
+              borderRadius: 99,
+              fontWeight: 600,
+            }}
+          >
+            {list.length} tahun
           </span>
         </div>
         <button
@@ -1656,8 +1658,10 @@ function RealisasiSection({ master, setMasters, toast_ }) {
                   ...TD,
                   textAlign: "center",
                   color: "#94a3b8",
-                  padding: 20,
+                  padding: 24,
                   fontSize: "0.82rem",
+                  background: "#fafafa",
+                  fontStyle: "italic",
                 }}
               >
                 Belum ada data realisasi tahunan.
@@ -1833,6 +1837,8 @@ function OpexModule({ masterList, setMasterList }) {
 
   const [filterThnFrom, setFilterThnFrom] = useState("");
   const [filterThnTo, setFilterThnTo] = useState("");
+  // ── Filter by nama (dropdown) ──
+  const [filterNama, setFilterNama] = useState("");
 
   const PAGE_SIZE = 5;
   const [currentPage, setCurrentPage] = useState(1);
@@ -1895,15 +1901,30 @@ function OpexModule({ masterList, setMasterList }) {
     });
   };
 
+  // Daftar opsi nama unik dari masters untuk dropdown filter
+  const namaOptions = useMemo(() => {
+    const seen = new Set();
+    return masters
+      .map((m) => ({ id: m.id, nama: m.nama, kd: m.kd }))
+      .filter((item) => {
+        if (seen.has(item.nama)) return false;
+        seen.add(item.nama);
+        return true;
+      })
+      .sort((a, b) => a.nama.localeCompare(b.nama));
+  }, [masters]);
+
   const filteredMasters = useMemo(() => {
     setCurrentPage(1);
     return masters.filter((m) => {
       if (filterThnFrom && m.thn_anggaran < parseInt(filterThnFrom))
         return false;
       if (filterThnTo && m.thn_anggaran > parseInt(filterThnTo)) return false;
+      // ── Filter by nama dropdown ──
+      if (filterNama && m.nama !== filterNama) return false;
       return true;
     });
-  }, [masters, filterThnFrom, filterThnTo]);
+  }, [masters, filterThnFrom, filterThnTo, filterNama]);
 
   const totalPages = Math.ceil(filteredMasters.length / PAGE_SIZE);
   const paginatedMasters = filteredMasters.slice(
@@ -1924,6 +1945,14 @@ function OpexModule({ masterList, setMasterList }) {
       ),
     0,
   );
+
+  // Hitung globalIdx berdasarkan filteredMasters (bukan paginatedMasters)
+  const paginatedWithGlobalIdx = paginatedMasters.map((m) => ({
+    m,
+    globalIdx: filteredMasters.findIndex((x) => x.id === m.id),
+  }));
+
+  const hasActiveFilter = filterThnFrom || filterThnTo || filterNama;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -2244,7 +2273,7 @@ function OpexModule({ masterList, setMasterList }) {
         ))}
       </div>
 
-      {/* HEADER + FILTER */}
+      {/* ── HEADER + FILTER ── */}
       <div
         style={{
           background: "white",
@@ -2252,33 +2281,53 @@ function OpexModule({ masterList, setMasterList }) {
           borderRadius: 10,
           padding: "14px 18px",
           display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap",
+          flexDirection: "column",
           gap: 12,
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <Database size={17} style={{ color: "#16a34a" }} />
-          <span
-            style={{ fontSize: "0.95rem", fontWeight: 800, color: "#0f172a" }}
-          >
-            Daftar Anggaran Master OPEX
-          </span>
-          <span
+        {/* Baris atas: judul + tombol tambah */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <Database size={17} style={{ color: "#16a34a" }} />
+            <span
+              style={{ fontSize: "0.95rem", fontWeight: 800, color: "#0f172a" }}
+            >
+              Daftar Anggaran Master OPEX
+            </span>
+            <span
+              style={{
+                fontSize: "0.72rem",
+                background: "#dcfce7",
+                color: "#16a34a",
+                fontWeight: 700,
+                padding: "2px 8px",
+                borderRadius: 99,
+                border: "1px solid #bbf7d0",
+              }}
+            >
+              {filteredMasters.length} pos
+            </span>
+          </div>
+          <button
             style={{
-              fontSize: "0.72rem",
-              background: "#dcfce7",
-              color: "#16a34a",
-              fontWeight: 700,
-              padding: "2px 8px",
-              borderRadius: 99,
-              border: "1px solid #bbf7d0",
+              ...BTN,
+              background: "#16a34a",
+              padding: "8px 14px",
+              fontSize: "0.78rem",
             }}
+            onClick={() => setShowAddMaster(true)}
           >
-            {filteredMasters.length} pos
-          </span>
+            <Plus size={13} /> Tambah Anggaran Master
+          </button>
         </div>
+
+        {/* Baris bawah: filter nama (dropdown) + filter tahun */}
         <div
           style={{
             display: "flex",
@@ -2287,9 +2336,45 @@ function OpexModule({ masterList, setMasterList }) {
             flexWrap: "wrap",
           }}
         >
+          {/* Filter nama anggaran — dropdown */}
+          <div style={{ position: "relative", flex: "1 1 260px", minWidth: 200 }}>
+            <Search
+              size={15}
+              style={{
+                position: "absolute",
+                left: 10,
+                top: "50%",
+                transform: "translateY(-50%)",
+                color: "#94a3b8",
+                pointerEvents: "none",
+                zIndex: 1,
+              }}
+            />
+            <select
+              style={{
+                ...INP,
+                paddingLeft: 34,
+                background: "#f8fafc",
+                border: "1px solid #e2e8f0",
+                cursor: "pointer",
+                appearance: "auto",
+              }}
+              value={filterNama}
+              onChange={(e) => setFilterNama(e.target.value)}
+            >
+              <option value="">— Semua Nama Anggaran —</option>
+              {namaOptions.map((item) => (
+                <option key={item.id} value={item.nama}>
+                  {item.nama}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Filter tahun */}
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <span
-              style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b" }}
+              style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b", whiteSpace: "nowrap" }}
             >
               Filter Tahun:
             </span>
@@ -2297,8 +2382,10 @@ function OpexModule({ masterList, setMasterList }) {
               style={{
                 ...INP,
                 width: 90,
-                padding: "6px 10px",
+                padding: "8px 10px",
                 fontSize: "0.8rem",
+                background: "#f8fafc",
+                border: "1px solid #e2e8f0",
               }}
               value={filterThnFrom}
               onChange={(e) => setFilterThnFrom(e.target.value)}
@@ -2315,8 +2402,10 @@ function OpexModule({ masterList, setMasterList }) {
               style={{
                 ...INP,
                 width: 90,
-                padding: "6px 10px",
+                padding: "8px 10px",
                 fontSize: "0.8rem",
+                background: "#f8fafc",
+                border: "1px solid #e2e8f0",
               }}
               value={filterThnTo}
               onChange={(e) => setFilterThnTo(e.target.value)}
@@ -2328,36 +2417,48 @@ function OpexModule({ masterList, setMasterList }) {
                 </option>
               ))}
             </select>
-            {(filterThnFrom || filterThnTo) && (
-              <button
-                style={{
-                  ...BTNOUT,
-                  padding: "5px 10px",
-                  fontSize: "0.75rem",
-                  color: "#ef4444",
-                  borderColor: "#fecaca",
-                }}
-                onClick={() => {
-                  setFilterThnFrom("");
-                  setFilterThnTo("");
-                }}
-              >
-                <X size={12} /> Reset
-              </button>
+          </div>
+
+          {/* Reset filter */}
+          {hasActiveFilter && (
+            <button
+              style={{
+                ...BTNOUT,
+                padding: "7px 12px",
+                fontSize: "0.75rem",
+                color: "#ef4444",
+                borderColor: "#fecaca",
+              }}
+              onClick={() => {
+                setFilterThnFrom("");
+                setFilterThnTo("");
+                setFilterNama("");
+              }}
+            >
+              <X size={12} /> Reset Filter
+            </button>
+          )}
+        </div>
+
+        {/* Info hasil filter jika ada filter aktif */}
+        {hasActiveFilter && (
+          <div
+            style={{
+              fontSize: "0.78rem",
+              color: "#64748b",
+              padding: "6px 10px",
+              background: "#f8fafc",
+              borderRadius: 6,
+              border: "1px solid #e2e8f0",
+            }}
+          >
+            Menampilkan <b style={{ color: "#0f172a" }}>{filteredMasters.length}</b> dari{" "}
+            <b style={{ color: "#0f172a" }}>{masters.length}</b> anggaran master
+            {filterNama && (
+              <> — nama: <b style={{ color: "#2563eb" }}>"{filterNama}"</b></>
             )}
           </div>
-          <button
-            style={{
-              ...BTN,
-              background: "#16a34a",
-              padding: "8px 14px",
-              fontSize: "0.78rem",
-            }}
-            onClick={() => setShowAddMaster(true)}
-          >
-            <Plus size={13} /> Tambah Anggaran Master
-          </button>
-        </div>
+        )}
       </div>
 
       {filteredMasters.length === 0 ? (
@@ -2372,12 +2473,13 @@ function OpexModule({ masterList, setMasterList }) {
             fontSize: "0.88rem",
           }}
         >
-          Tidak ada anggaran master yang sesuai filter.
+          {filterNama
+            ? `Tidak ada anggaran master dengan nama "${filterNama}".`
+            : "Tidak ada anggaran master yang sesuai filter."}
         </div>
       ) : (
         <>
-          {paginatedMasters.map((m, i) => {
-            const globalIdx = (currentPage - 1) * PAGE_SIZE + i;
+          {paginatedWithGlobalIdx.map(({ m, globalIdx }) => {
             const totalR = (m.realisasi_tahunan || []).reduce(
               (s, r) => s + (r.realisasi_murni || 0) + (r.realisasi_bymhd || 0),
               0,
@@ -2387,166 +2489,237 @@ function OpexModule({ masterList, setMasterList }) {
                 ? Math.round((totalR / m.nilai_anggaran) * 100)
                 : 0;
             const pc = pctColor(pct);
+            const pmeta = pctMeta(pct);
+            // Aksen warna unik per anggaran master
+            const accent = getMasterAccent(globalIdx);
 
             return (
               <div
                 key={m.id}
                 style={{
                   background: "white",
-                  border: "1px solid #e2e8f0",
-                  borderRadius: 10,
+                  borderLeft: `5px solid ${accent.border}`,
+                  border: `1px solid ${accent.headerBorder}`,
+                  borderLeft: `5px solid ${accent.border}`,
+                  borderRadius: 12,
                   overflow: "hidden",
-                  boxShadow: "0 1px 3px rgba(0,0,0,.02)",
+                  boxShadow: `0 2px 8px rgba(0,0,0,.04)`,
                 }}
               >
+                {/* ── HEADER KARTU ── */}
                 <div
                   style={{
-                    background: "#f8fafc",
-                    borderBottom: "1px solid #e2e8f0",
-                    padding: "12px 16px",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
+                    background: accent.headerBg,
+                    borderBottom: `1px solid ${accent.headerBorder}`,
+                    padding: "14px 18px",
                   }}
                 >
+                  {/* Baris 1: nomor urut + nama + aksi */}
                   <div
-                    style={{ display: "flex", alignItems: "center", gap: 10 }}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                      gap: 12,
+                    }}
                   >
-                    <div
-                      style={{
-                        width: 26,
-                        height: 26,
-                        borderRadius: 6,
-                        background: "#dcfce7",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontWeight: 800,
-                        fontSize: "0.72rem",
-                        color: "#15803d",
-                      }}
-                    >
-                      {globalIdx + 1}
-                    </div>
-                    <div>
+                    <div style={{ display: "flex", alignItems: "flex-start", gap: 12, flex: 1 }}>
+                      {/* Badge nomor urut */}
                       <div
                         style={{
-                          fontWeight: 700,
-                          color: "#0f172a",
-                          fontSize: "0.9rem",
-                        }}
-                      >
-                        {m.nama}
-                      </div>
-                      <span
-                        style={{
-                          fontSize: "0.68rem",
-                          fontFamily: "monospace",
-                          color: "#64748b",
-                          background: "#f1f5f9",
-                          padding: "1px 6px",
-                          borderRadius: 3,
-                          border: "1px solid #e2e8f0",
-                        }}
-                      >
-                        {m.kd}
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    style={{ display: "flex", alignItems: "center", gap: 10 }}
-                  >
-                    <div style={{ textAlign: "center" }}>
-                      <span
-                        style={{
-                          fontSize: "0.85rem",
+                          minWidth: 32,
+                          height: 32,
+                          borderRadius: 8,
+                          background: accent.badge,
+                          border: `1px solid ${accent.headerBorder}`,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
                           fontWeight: 800,
-                          color: pc,
+                          fontSize: "0.8rem",
+                          color: accent.badgeText,
+                          flexShrink: 0,
+                          marginTop: 2,
                         }}
                       >
-                        {pct}%
-                      </span>
-                      <div
-                        style={{
-                          width: 60,
-                          height: 5,
-                          background: "#e2e8f0",
-                          borderRadius: 99,
-                          overflow: "hidden",
-                          marginTop: 3,
-                        }}
-                      >
+                        {globalIdx + 1}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        {/* Nama anggaran master */}
                         <div
                           style={{
-                            width: `${Math.min(pct, 100)}%`,
-                            height: "100%",
-                            background: pc,
-                            borderRadius: 99,
-                            transition: "width .5s",
+                            fontWeight: 800,
+                            color: "#0f172a",
+                            fontSize: "0.95rem",
+                            lineHeight: 1.3,
+                            marginBottom: 6,
                           }}
-                        />
+                        >
+                          {m.nama}
+                        </div>
+                        {/* Meta row: kode + tahun + status pct */}
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                          <span
+                            style={{
+                              fontSize: "0.72rem",
+                              fontFamily: "monospace",
+                              color: accent.badgeText,
+                              background: accent.badge,
+                              padding: "2px 8px",
+                              borderRadius: 4,
+                              border: `1px solid ${accent.headerBorder}`,
+                              fontWeight: 700,
+                            }}
+                          >
+                            {m.kd}
+                          </span>
+                          <span
+                            style={{
+                              fontSize: "0.72rem",
+                              color: "#64748b",
+                              background: "#f1f5f9",
+                              padding: "2px 8px",
+                              borderRadius: 4,
+                              fontWeight: 600,
+                            }}
+                          >
+                            TA {m.thn_anggaran}
+                          </span>
+                          {/* Status badge pct */}
+                          <span
+                            style={{
+                              fontSize: "0.72rem",
+                              fontWeight: 700,
+                              padding: "2px 8px",
+                              borderRadius: 4,
+                              background: pmeta.bg,
+                              color: pmeta.fg,
+                              border: `1px solid ${pmeta.border}`,
+                            }}
+                          >
+                            {pmeta.label}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                    <button
-                      style={ABTN}
-                      title="Edit Master"
-                      onClick={() => setEditMaster({ ...m })}
-                    >
-                      <Edit size={12} style={{ color: "#d97706" }} />
-                    </button>
-                    <button
-                      style={ABTN}
-                      title="Hapus"
-                      onClick={() => handleDeleteMaster(m.id)}
-                    >
-                      <Trash2 size={12} style={{ color: "#ef4444" }} />
-                    </button>
+
+                    {/* Kanan: progress + aksi */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
+                      {/* Progress pct */}
+                      <div style={{ textAlign: "center", minWidth: 68 }}>
+                        <div
+                          style={{
+                            fontSize: "1.1rem",
+                            fontWeight: 800,
+                            color: pc,
+                            lineHeight: 1,
+                            marginBottom: 5,
+                          }}
+                        >
+                          {pct}%
+                        </div>
+                        <div
+                          style={{
+                            width: 68,
+                            height: 6,
+                            background: "#e2e8f0",
+                            borderRadius: 99,
+                            overflow: "hidden",
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: `${Math.min(pct, 100)}%`,
+                              height: "100%",
+                              background: pc,
+                              borderRadius: 99,
+                              transition: "width .5s",
+                            }}
+                          />
+                        </div>
+                        <div style={{ fontSize: "0.62rem", color: "#94a3b8", marginTop: 3, fontWeight: 600 }}>
+                          TERPAKAI
+                        </div>
+                      </div>
+
+                      {/* Tombol aksi */}
+                      <div style={{ display: "flex", gap: 6 }}>
+                        <button
+                          style={{
+                            ...ABTN,
+                            padding: "6px 10px",
+                            background: "#fffbeb",
+                            borderColor: "#fde68a",
+                          }}
+                          title="Edit Master"
+                          onClick={() => setEditMaster({ ...m })}
+                        >
+                          <Edit size={13} style={{ color: "#d97706" }} />
+                        </button>
+                        <button
+                          style={{
+                            ...ABTN,
+                            padding: "6px 10px",
+                            background: "#fef2f2",
+                            borderColor: "#fecaca",
+                          }}
+                          title="Hapus"
+                          onClick={() => handleDeleteMaster(m.id)}
+                        >
+                          <Trash2 size={13} style={{ color: "#ef4444" }} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Baris 2: ringkasan nilai anggaran vs realisasi */}
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr 1fr",
+                      gap: 12,
+                      marginTop: 14,
+                      padding: "12px 0 0",
+                      borderTop: `1px dashed ${accent.headerBorder}`,
+                    }}
+                  >
+                    {[
+                      { label: "Nilai Anggaran", val: fmt(m.nilai_anggaran), color: accent.badgeText },
+                      { label: "Total Realisasi", val: fmt(totalR), color: "#d97706" },
+                      {
+                        label: "Sisa Anggaran",
+                        val: fmt(m.nilai_anggaran - totalR),
+                        color: totalR > m.nilai_anggaran ? "#dc2626" : "#16a34a",
+                      },
+                    ].map((item) => (
+                      <div key={item.label}>
+                        <div
+                          style={{
+                            fontSize: "0.65rem",
+                            fontWeight: 700,
+                            color: "#94a3b8",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.5px",
+                            marginBottom: 3,
+                          }}
+                        >
+                          {item.label}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: "0.9rem",
+                            fontWeight: 800,
+                            color: item.color,
+                          }}
+                        >
+                          {item.val}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
-                <table style={{ ...TABLE, border: "none" }}>
-                  <thead>
-                    <tr>
-                      <th style={{ ...TH, width: "25%" }}>TAHUN ANGGARAN</th>
-                      <th style={{ ...TH, textAlign: "right", width: "37.5%" }}>
-                        NILAI ANGGARAN
-                      </th>
-                      <th style={{ ...TH, textAlign: "right", width: "37.5%" }}>
-                        TOTAL REALISASI
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td style={{ ...TD, fontWeight: 700, color: "#1e293b" }}>
-                        {m.thn_anggaran}
-                      </td>
-                      <td
-                        style={{
-                          ...TD,
-                          textAlign: "right",
-                          fontWeight: 800,
-                          color: "#2563eb",
-                          fontSize: "0.9rem",
-                        }}
-                      >
-                        {fmt(m.nilai_anggaran)}
-                      </td>
-                      <td
-                        style={{
-                          ...TD,
-                          textAlign: "right",
-                          fontWeight: 700,
-                          color: "#d97706",
-                          fontSize: "0.88rem",
-                        }}
-                      >
-                        {fmt(totalR)}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-
+                {/* ── BODY: realisasi tahunan ── */}
                 <RealisasiSection
                   master={masters.find((x) => x.id === m.id) || m}
                   setMasters={setMasters}
