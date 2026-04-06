@@ -4,6 +4,7 @@ import {
   Routes,
   Route,
   Navigate,
+  useLocation,
 } from "react-router-dom";
 import Layout from "./components/Layout";
 import Dashboard from "./components/Dashboard";
@@ -24,6 +25,12 @@ const Profil = lazy(() => import("./components/User/Profil"));
 
 const Loader = () => <div style={{ padding: "2rem" }}>Loading...</div>;
 
+// ── Wrapper universal: reset state komponen setiap klik navigasi ──
+function PageWrapper({ Component }) {
+  const { key } = useLocation();
+  return <Component key={key} />;
+}
+
 function App() {
   return (
     <Router>
@@ -33,11 +40,26 @@ function App() {
 
         {/* Admin */}
         <Route element={<Layout />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/assets" element={<ViewAsset />} />
-          <Route path="/peminjaman" element={<Peminjaman />} />
-          <Route path="/budget/input" element={<Budgetinput />} />
-          <Route path="/budget" element={<BudgetManagement />} />
+          <Route
+            path="/dashboard"
+            element={<PageWrapper Component={Dashboard} />}
+          />
+          <Route
+            path="/assets"
+            element={<PageWrapper Component={ViewAsset} />}
+          />
+          <Route
+            path="/peminjaman"
+            element={<PageWrapper Component={Peminjaman} />}
+          />
+          <Route
+            path="/budget/input"
+            element={<PageWrapper Component={Budgetinput} />}
+          />
+          <Route
+            path="/budget"
+            element={<PageWrapper Component={BudgetManagement} />}
+          />
           <Route
             path="/projects"
             element={
@@ -46,7 +68,10 @@ function App() {
               </div>
             }
           />
-          <Route path="/users" element={<UserManagement />} />
+          <Route
+            path="/users"
+            element={<PageWrapper Component={UserManagement} />}
+          />
           <Route
             path="/reports"
             element={
@@ -69,7 +94,7 @@ function App() {
             path="/user/dashboard"
             element={
               <Suspense fallback={<Loader />}>
-                <UserDashboard />
+                <PageWrapper Component={UserDashboard} />
               </Suspense>
             }
           />
@@ -77,7 +102,7 @@ function App() {
             path="/user/inventaris"
             element={
               <Suspense fallback={<Loader />}>
-                <Inventaris />
+                <PageWrapper Component={Inventaris} />
               </Suspense>
             }
           />
@@ -85,7 +110,7 @@ function App() {
             path="/user/peminjaman"
             element={
               <Suspense fallback={<Loader />}>
-                <UserPeminjaman />
+                <PageWrapper Component={UserPeminjaman} />
               </Suspense>
             }
           />
@@ -93,7 +118,7 @@ function App() {
             path="/user/scan"
             element={
               <Suspense fallback={<Loader />}>
-                <ScanBarcode />
+                <PageWrapper Component={ScanBarcode} />
               </Suspense>
             }
           />
@@ -101,7 +126,7 @@ function App() {
             path="/user/profil"
             element={
               <Suspense fallback={<Loader />}>
-                <Profil />
+                <PageWrapper Component={Profil} />
               </Suspense>
             }
           />

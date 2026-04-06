@@ -34,10 +34,10 @@ const Layout = () => {
     { category: "Keuangan & Proyek" },
     {
       path: "/budget",
-      label: "Anggaran (CAPEX/OPEX)",
+      label: "Input Pekerjaan",
       icon: <FaMoneyBillWave />,
     },
-    { path: "/budget/input", label: "Input Data", icon: <FaPlusCircle /> },
+    { path: "/budget/input", label: "Input Anggaran", icon: <FaPlusCircle /> },
     { category: "Administrasi" },
     { path: "/users", label: "User Management", icon: <FaUsers /> },
   ];
