@@ -160,6 +160,8 @@ const SN_DB = {
   "CSC-TBK-CSW-001": "SPMT-TBK-DTC-PKR-01",
   "FGT-KPT-FWL-001": "SPMT-KPT-DTC-PKR-02",
 };
+
+// ── BUDGET MASTERS — diperbarui sesuai permintaan ──
 const BUDGET_MASTERS = [
   {
     kd_anggaran_master: "5030905000",
@@ -177,13 +179,18 @@ const BUDGET_MASTERS = [
     tipe_anggaran_master: "OPEX",
   },
   {
-    kd_anggaran_master: "5030100000",
-    nm_anggaran_master: "Beban Pemeliharaan Hardware",
+    kd_anggaran_master: "5081500000",
+    nm_anggaran_master: "Beban Jasa Konsultan",
     tipe_anggaran_master: "OPEX",
   },
   {
-    kd_anggaran_master: "5040200000",
-    nm_anggaran_master: "Beban Jasa Konsultan IT",
+    kd_anggaran_master: "5060700000",
+    nm_anggaran_master: "Beban Sumber Daya Pihak Ketiga Peralatan",
+    tipe_anggaran_master: "OPEX",
+  },
+  {
+    kd_anggaran_master: "5900100000",
+    nm_anggaran_master: "Beban Investasi",
     tipe_anggaran_master: "OPEX",
   },
 ];
@@ -512,7 +519,7 @@ const INIT_OPEX = [
   },
   {
     id: "OPX-6",
-    kd_anggaran_master: "5030906000",
+    kd_anggaran_master: "5030905000",
     nama: "Beban Pemeliharaan Hardware",
     thn_anggaran: 2026,
     nilai_anggaran_tahunan: 450000000,
@@ -531,8 +538,8 @@ const INIT_OPEX = [
   },
   {
     id: "OPX-7",
-    kd_anggaran_master: "5021400000",
-    nama: "Beban Lisensi dan Subskripsi",
+    kd_anggaran_master: "5900100000",
+    nama: "Beban Investasi",
     thn_anggaran: 2026,
     nilai_anggaran_tahunan: 300000000,
     type: "opex",
@@ -615,6 +622,20 @@ body {
 .flt-select { cursor: pointer; min-width: 180px; font-weight: 500; }
 .srch { flex: 1; max-width: 380px; }
 .srch input { flex: 1; }
+
+/* ── OPEX TOOLBAR ── */
+.opex-toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.opex-flt-box { display: flex; align-items: center; gap: 8px; background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); padding: 8px 12px; box-shadow: var(--sh); transition: border-color .2s; }
+.opex-flt-box:focus-within { border-color: var(--green); box-shadow: 0 0 0 3px rgba(22,163,74,.1); }
+.opex-flt-box svg { color: var(--ink4); flex-shrink: 0; }
+.opex-flt-select { border: none; background: transparent; font-family: inherit; font-size: .8rem; color: var(--ink); outline: none; cursor: pointer; font-weight: 500; min-width: 300px; }
+.opex-srch { display: flex; align-items: center; gap: 8px; background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); padding: 8px 12px; box-shadow: var(--sh); flex: 1; max-width: 340px; transition: border-color .2s; }
+.opex-srch:focus-within { border-color: var(--green); box-shadow: 0 0 0 3px rgba(22,163,74,.1); }
+.opex-srch svg { color: var(--ink4); flex-shrink: 0; }
+.opex-srch input { border: none; background: transparent; font-family: inherit; font-size: .8rem; color: var(--ink); outline: none; flex: 1; }
+.opex-filter-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: var(--green-lt); border: 1px solid var(--green-mid); border-radius: 99px; font-size: 0.7rem; font-weight: 700; color: var(--green); }
+.opex-filter-badge button { background: none; border: none; cursor: pointer; color: var(--green); display: flex; align-items: center; padding: 0; transition: color .15s; }
+.opex-filter-badge button:hover { color: var(--red); }
 
 /* ── SECTION LABELS ── */
 .section-label { display: flex; align-items: center; gap: 12px; margin: 1.5rem 0 1rem; }
@@ -729,7 +750,6 @@ body {
 .mhd h3 { font-size: 0.95rem; font-weight: 800; color: var(--ink); }
 .mhd p { font-size: 0.75rem; color: var(--ink4); font-weight: 500; }
 
-/* FIX: Close button — dark visible X icon, no white-on-white issue */
 .m-close {
   width: 28px;
   height: 28px;
@@ -1018,6 +1038,7 @@ body {
   .g3 { grid-template-columns: 1fr; }
   .g2 { grid-template-columns: 1fr; }
   .ctx-card { grid-template-columns: 1fr 1fr; }
+  .opex-flt-select { min-width: 200px; }
 }
 `;
 
@@ -1709,7 +1730,7 @@ function RealisasiTablePage({
       "Tanggal",
       "Keterangan",
       "No. Invoice",
-      "Jumlah (IDR)", // Kolom Aset Terkait dihapus dari Excel
+      "Jumlah (IDR)",
     ];
     const rows = filtered.map((t, i) => [
       i + 1,
@@ -2021,6 +2042,7 @@ function RealisasiTablePage({
     </div>
   );
 }
+
 // ══════════════════════════════════════════════════════════════════
 // CAPEX CARD
 // ══════════════════════════════════════════════════════════════════
@@ -2467,7 +2489,7 @@ function EditOpexInline({ ang, onSave, onCancel }) {
         style={{
           display: "flex",
           alignItems: "center",
-          justifyConter: "space-between",
+          justifyContent: "space-between",
           marginBottom: "16px",
         }}
       >
@@ -3287,6 +3309,11 @@ export default function BudgetManagement() {
   const [tahun, setTahun] = useState("all");
   const [angFilter, setAngFilter] = useState("all");
   const [search, setSearch] = useState("");
+
+  // ── State filter OPEX khusus kode anggaran master ──
+  const [opexKdFilter, setOpexKdFilter] = useState("all");
+  const [opexSearch, setOpexSearch] = useState("");
+
   const [page, setPage] = useState(null);
   const [toast, setToast] = useState(null);
   const [confirm, setConfirm] = useState(null);
@@ -3320,13 +3347,38 @@ export default function BudgetManagement() {
       ),
     [capexData],
   );
+
+  // ── Filtered OPEX berdasarkan tahun, kode master, dan search ──
   const filteredOpex = useMemo(
     () =>
-      opexData.filter(
-        (ang) => tahun === "all" || String(ang.thn_anggaran) === tahun,
-      ),
-    [opexData, tahun],
+      opexData.filter((ang) => {
+        // Filter tahun
+        if (tahun !== "all" && String(ang.thn_anggaran) !== tahun) return false;
+        // Filter kode anggaran master
+        if (opexKdFilter !== "all" && ang.kd_anggaran_master !== opexKdFilter)
+          return false;
+        // Filter search nama
+        if (
+          opexSearch &&
+          !ang.nama?.toLowerCase().includes(opexSearch.toLowerCase()) &&
+          !ang.kd_anggaran_master?.toLowerCase().includes(opexSearch.toLowerCase())
+        )
+          return false;
+        return true;
+      }),
+    [opexData, tahun, opexKdFilter, opexSearch],
   );
+
+  // Kode master yang aktif di data (untuk dropdown filter)
+  const activeKdList = useMemo(() => {
+    const allKd = opexData
+      .filter((a) => tahun === "all" || String(a.thn_anggaran) === tahun)
+      .map((a) => a.kd_anggaran_master);
+    const unique = Array.from(new Set(allKd));
+    return BUDGET_MASTERS.filter((m) =>
+      unique.includes(m.kd_anggaran_master),
+    );
+  }, [opexData, tahun]);
 
   const angList = useMemo(() => {
     const f = allProjects.filter(
@@ -3358,12 +3410,19 @@ export default function BudgetManagement() {
   // Reset pagination when filters change
   useEffect(() => {
     setAngFilter("all");
+    setOpexKdFilter("all");
+    setOpexSearch("");
     setCapexPage(1);
     setOpexPage(1);
   }, [typeFilter, tahun]);
+
   useEffect(() => {
     setCapexPage(1);
   }, [search, angFilter]);
+
+  useEffect(() => {
+    setOpexPage(1);
+  }, [opexKdFilter, opexSearch]);
 
   // Paginated slices
   const paginatedCapex = useMemo(() => {
@@ -3625,6 +3684,11 @@ export default function BudgetManagement() {
   const showOpex = typeFilter !== "capex";
   const showBoth = typeFilter === "all";
 
+  // Label filter OPEX aktif
+  const activeOpexFilter = BUDGET_MASTERS.find(
+    (m) => m.kd_anggaran_master === opexKdFilter,
+  );
+
   return (
     <>
       <style>{CSS}</style>
@@ -3720,34 +3784,38 @@ export default function BudgetManagement() {
           </div>
         </div>
 
-        <div className="toolbar">
-          <div className="flt-box">
-            <Icon d={I.filter} size={14} />
-            <select
-              className="flt-select"
-              value={angFilter}
-              onChange={(e) => setAngFilter(e.target.value)}
-            >
-              <option value="all">Semua Kategori Anggaran</option>
-              {angList.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.nama.length > 42
-                    ? a.nama.substring(0, 42) + "..."
-                    : a.nama}
-                </option>
-              ))}
-            </select>
+        {/* ── CAPEX TOOLBAR ── */}
+        {showCapex && (
+          <div className="toolbar">
+            <div className="flt-box">
+              <Icon d={I.filter} size={14} />
+              <select
+                className="flt-select"
+                value={angFilter}
+                onChange={(e) => setAngFilter(e.target.value)}
+              >
+                <option value="all">Semua Kategori Anggaran</option>
+                {angList.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.nama.length > 42
+                      ? a.nama.substring(0, 42) + "..."
+                      : a.nama}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="srch">
+              <Icon d={I.search} size={14} />
+              <input
+                placeholder="Cari berdasarkan nama pekerjaan atau nomor kontrak..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
           </div>
-          <div className="srch">
-            <Icon d={I.search} size={14} />
-            <input
-              placeholder="Cari berdasarkan nama pekerjaan atau nomor kontrak..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-        </div>
+        )}
 
+        {/* ── CAPEX SECTION ── */}
         {showCapex && (
           <>
             {showBoth && (
@@ -3843,6 +3911,7 @@ export default function BudgetManagement() {
           </>
         )}
 
+        {/* ── OPEX SECTION ── */}
         {showOpex && (
           <>
             {showBoth && (
@@ -3877,9 +3946,79 @@ export default function BudgetManagement() {
                 </div>
               </div>
             )}
+
+            {/* ── OPEX TOOLBAR — filter kode anggaran master + search ── */}
+            <div className="opex-toolbar">
+              {/* Dropdown filter berdasarkan kode anggaran master */}
+              <div className="opex-flt-box">
+                <Icon d={I.hash} size={14} />
+                <select
+                  className="opex-flt-select"
+                  value={opexKdFilter}
+                  onChange={(e) => {
+                    setOpexKdFilter(e.target.value);
+                    setOpexPage(1);
+                  }}
+                >
+                  <option value="all">Semua Pos Anggaran</option>
+                  {BUDGET_MASTERS.map((m) => (
+                    <option
+                      key={m.kd_anggaran_master}
+                      value={m.kd_anggaran_master}
+                      disabled={
+                        !activeKdList.some(
+                          (a) => a.kd_anggaran_master === m.kd_anggaran_master,
+                        )
+                      }
+                      style={{
+                        color: activeKdList.some(
+                          (a) => a.kd_anggaran_master === m.kd_anggaran_master,
+                        )
+                          ? "inherit"
+                          : "#9ca3af",
+                      }}
+                    >
+                      {m.kd_anggaran_master} — {m.nm_anggaran_master}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Search nama pos anggaran */}
+              <div className="opex-srch">
+                <Icon d={I.search} size={14} />
+                <input
+                  placeholder="Cari nama pos anggaran..."
+                  value={opexSearch}
+                  onChange={(e) => {
+                    setOpexSearch(e.target.value);
+                    setOpexPage(1);
+                  }}
+                />
+              </div>
+
+              {/* Badge filter aktif */}
+              {opexKdFilter !== "all" && activeOpexFilter && (
+                <div className="opex-filter-badge">
+                  <Icon d={I.filter} size={11} />
+                  {activeOpexFilter.kd_anggaran_master} —{" "}
+                  {activeOpexFilter.nm_anggaran_master}
+                  <button
+                    onClick={() => {
+                      setOpexKdFilter("all");
+                      setOpexPage(1);
+                    }}
+                    title="Hapus filter"
+                  >
+                    <Icon d={I.x} size={11} />
+                  </button>
+                </div>
+              )}
+            </div>
+
             {filteredOpex.length === 0 ? (
               <div className="empty">
-                Tidak ada pos anggaran OPEX yang cocok.
+                Tidak ada pos anggaran OPEX yang cocok dengan filter.
               </div>
             ) : (
               <>
