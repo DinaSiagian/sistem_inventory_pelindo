@@ -1087,28 +1087,19 @@ const styles = `
 .pjm-row--over { background: #fff8f8 !important; }
 .pjm-row--over:hover { background: #fff1f1 !important; }
 
-/* Column widths for borrow table */
-.pjm-table--borrow th:nth-child(1), .pjm-table--borrow td:nth-child(1) { width: 14%; }
-.pjm-table--borrow th:nth-child(2), .pjm-table--borrow td:nth-child(2) { width: 16%; }
-.pjm-table--borrow th:nth-child(3), .pjm-table--borrow td:nth-child(3) { width: 22%; }
-.pjm-table--borrow th:nth-child(4), .pjm-table--borrow td:nth-child(4) { width: 14%; }
-.pjm-table--borrow th:nth-child(5), .pjm-table--borrow td:nth-child(5) { width: 10%; }
-.pjm-table--borrow th:nth-child(6), .pjm-table--borrow td:nth-child(6) { width: 10%; }
-.pjm-table--borrow th:nth-child(7), .pjm-table--borrow td:nth-child(7) { width: 7%; }
-.pjm-table--borrow th:nth-child(8), .pjm-table--borrow td:nth-child(8) { width: 9%; }
-.pjm-table--borrow th:nth-child(9), .pjm-table--borrow td:nth-child(9) { width: 5%; }
+/* Column widths for borrow table (Simplified) */
+.pjm-table--borrow th:nth-child(1), .pjm-table--borrow td:nth-child(1) { width: 35%; }
+.pjm-table--borrow th:nth-child(2), .pjm-table--borrow td:nth-child(2) { width: 20%; }
+.pjm-table--borrow th:nth-child(3), .pjm-table--borrow td:nth-child(3) { width: 25%; }
+.pjm-table--borrow th:nth-child(4), .pjm-table--borrow td:nth-child(4) { width: 15%; }
+.pjm-table--borrow th:nth-child(5), .pjm-table--borrow td:nth-child(5) { width: 5%; text-align: center; }
 
-/* Column widths for return table */
-.pjm-table--ret th:nth-child(1), .pjm-table--ret td:nth-child(1) { width: 12%; }
-.pjm-table--ret th:nth-child(2), .pjm-table--ret td:nth-child(2) { width: 14%; }
+/* Column widths for return table (Simplified) */
+.pjm-table--ret th:nth-child(1), .pjm-table--ret td:nth-child(1) { width: 35%; }
+.pjm-table--ret th:nth-child(2), .pjm-table--ret td:nth-child(2) { width: 25%; }
 .pjm-table--ret th:nth-child(3), .pjm-table--ret td:nth-child(3) { width: 20%; }
-.pjm-table--ret th:nth-child(4), .pjm-table--ret td:nth-child(4) { width: 13%; }
-.pjm-table--ret th:nth-child(5), .pjm-table--ret td:nth-child(5) { width: 9%; }
-.pjm-table--ret th:nth-child(6), .pjm-table--ret td:nth-child(6) { width: 9%; }
-.pjm-table--ret th:nth-child(7), .pjm-table--ret td:nth-child(7) { width: 7%; }
-.pjm-table--ret th:nth-child(8), .pjm-table--ret td:nth-child(8) { width: 9%; }
-.pjm-table--ret th:nth-child(9), .pjm-table--ret td:nth-child(9) { width: 9%; }
-.pjm-table--ret th:nth-child(10), .pjm-table--ret td:nth-child(10) { width: 5%; }
+.pjm-table--ret th:nth-child(4), .pjm-table--ret td:nth-child(4) { width: 15%; }
+.pjm-table--ret th:nth-child(5), .pjm-table--ret td:nth-child(5) { width: 5%; text-align: center; }
 
 .pjm-ctag { font-family: "Courier New",monospace; font-size: .69rem; font-weight: 700; color: var(--blue); background: var(--blue-lt); padding: 1px 5px; border-radius: 4px; white-space: nowrap; }
 .pjm-asub { font-size: .69rem; color: var(--slate-6); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -2979,97 +2970,83 @@ function CategoryGroup({
             <thead>
               <tr>
                 <th>Aset</th>
-                <th>Pekerjaan</th>
-                <th>Pemberi → Penerima</th>
-                <th>Dari → Ke</th>
-                <th>Tgl ST</th>
+                <th>Lokasi / Tujuan</th>
+                <th>Penerima</th>
                 <th>Jatuh Tempo</th>
-                <th>Kondisi</th>
-                <th>BAST</th>
-                <th></th>
+                <th style={{ textAlign: "center" }}>Aksi</th>
               </tr>
             </thead>
             <tbody>
               {items.map((b) => {
-                const cond = conditionConfig[b.condition];
                 const over = isOverdue(b.due_date);
-                const pkj = getPekerjaan(b.pekerjaan_kode);
+                const receiver = getUser(b.receiver_id);
                 return (
-                  <tr key={b.id} className={over ? "pjm-row--over" : ""}>
+                  <tr
+                    key={b.id}
+                    className={over ? "pjm-row--over" : ""}
+                    onClick={() => onView(b)}
+                    style={{ cursor: "pointer" }}
+                  >
                     <td>
                       <code className="pjm-ctag">{b.code}</code>
-                      <div className="pjm-asub">{b.name}</div>
-                    </td>
-                    <td>
-                      {pkj ? (
-                        <>
-                          <div className="pjm-pkj-badge">
-                            <Icon.Tag />
-                            {pkj.no_anggaran}
-                          </div>
-                          <div className="pjm-pkj-name-sm">
-                            {pkj.nama.length > 45
-                              ? pkj.nama.slice(0, 45) + "…"
-                              : pkj.nama}
-                          </div>
-                        </>
-                      ) : (
-                        <span className="pjm-text-muted">—</span>
-                      )}
-                    </td>
-                    <td>
-                      <UserFlowCell
-                        giverId={b.giver_id}
-                        receiverId={b.receiver_id}
-                      />
-                    </td>
-                    <td>
-                      <div className="pjm-loc-flow">
-                        <span className="pjm-loc-f">{b.from_zone}</span>
-                        <span className="pjm-loc-arr">
-                          <Icon.ArrowRight />
-                        </span>
-                        <span className="pjm-loc-t">{b.to_zone}</span>
+                      <div
+                        className="pjm-asub"
+                        style={{
+                          fontSize: ".76rem",
+                          fontWeight: 600,
+                          color: "var(--slate)",
+                        }}
+                      >
+                        {b.name}
                       </div>
                     </td>
-                    <td className="pjm-td-date">
-                      {fmtDateShort(b.borrow_date)}
+                    <td>
+                      <span className="pjm-loc-t">{b.to_zone}</span>
+                    </td>
+                    <td>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                        }}
+                      >
+                        <div
+                          className="pjm-user-mini-av"
+                          style={{
+                            background: "#dbeafe",
+                            color: "#2563eb",
+                            width: 22,
+                            height: 22,
+                            fontSize: ".65rem",
+                          }}
+                        >
+                          {receiver.name.charAt(0)}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: ".74rem",
+                            fontWeight: 600,
+                            color: "var(--slate)",
+                          }}
+                        >
+                          {receiver.name}
+                        </div>
+                      </div>
                     </td>
                     <td>
                       <span
                         className={`pjm-due ${over ? "pjm-due--over" : ""}`}
+                        style={{ fontSize: ".74rem", fontWeight: 600 }}
                       >
                         {over && <Icon.Clock />}
                         {fmtDateShort(b.due_date)}
                       </span>
                     </td>
-                    <td>
-                      <span
-                        className="pjm-cond-sm"
-                        style={{ background: cond?.bg, color: cond?.color }}
-                      >
-                        {cond?.label}
-                      </span>
-                    </td>
-                    <td>
-                      {b.attachment ? (
-                        <span className="pjm-attach-sm">
-                          <Icon.Paperclip />
-                          {b.attachment}
-                        </span>
-                      ) : (
-                        <button
-                          className="pjm-bast-gen-btn"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            generateBAST(b, "borrow");
-                          }}
-                        >
-                          <Icon.Printer /> Gen
-                        </button>
-                      )}
-                    </td>
-                    <td onClick={(e) => e.stopPropagation()}>
+                    <td
+                      onClick={(e) => e.stopPropagation()}
+                      style={{ display: "flex", justifyContent: "center" }}
+                    >
                       <ActionDropdown
                         id={b.id}
                         activeId={activeDropdown}
@@ -3402,98 +3379,93 @@ export default function Peminjaman() {
                 <thead>
                   <tr>
                     <th>Aset</th>
-                    <th>Pekerjaan</th>
-                    <th>Pemberi → Penerima</th>
-                    <th>Dari → Ke</th>
-                    <th>Tgl Pinjam</th>
+                    <th>Dikembalikan Oleh</th>
                     <th>Tgl Kembali</th>
                     <th>Kondisi</th>
-                    <th>Catatan</th>
-                    <th>BAST</th>
-                    <th></th>
+                    <th style={{ textAlign: "center" }}>Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredReturns.map((r) => {
                     const cond = conditionConfig[r.return_condition];
-                    const pkj = getPekerjaan(r.pekerjaan_kode);
+                    const returner = getUser(r.giver_id);
                     return (
-                      <tr key={r.id}>
+                      <tr
+                        key={r.id}
+                        onClick={() =>
+                          setModal({
+                            type: "detail",
+                            data: r,
+                            itemType: "return",
+                          })
+                        }
+                        style={{ cursor: "pointer" }}
+                      >
                         <td>
                           <code className="pjm-ctag">{r.code}</code>
-                          <div className="pjm-asub">{r.name}</div>
-                        </td>
-                        <td>
-                          {pkj ? (
-                            <>
-                              <div className="pjm-pkj-badge">
-                                <Icon.Tag />
-                                {pkj.no_anggaran}
-                              </div>
-                              <div className="pjm-pkj-name-sm">
-                                {pkj.nama.length > 40
-                                  ? pkj.nama.slice(0, 40) + "…"
-                                  : pkj.nama}
-                              </div>
-                            </>
-                          ) : (
-                            <span className="pjm-text-muted">—</span>
-                          )}
-                        </td>
-                        <td>
-                          <UserFlowCell
-                            giverId={r.giver_id}
-                            receiverId={r.receiver_id}
-                            colorScheme="green"
-                          />
-                        </td>
-                        <td>
-                          <div className="pjm-loc-flow">
-                            <span className="pjm-loc-f">{r.from_zone}</span>
-                            <span className="pjm-loc-arr">
-                              <Icon.ArrowRight />
-                            </span>
-                            <span className="pjm-loc-t">{r.to_zone}</span>
+                          <div
+                            className="pjm-asub"
+                            style={{
+                              fontSize: ".76rem",
+                              fontWeight: 600,
+                              color: "var(--slate)",
+                            }}
+                          >
+                            {r.name}
                           </div>
                         </td>
-                        <td className="pjm-td-date">
-                          {fmtDateShort(r.borrow_date)}
+                        <td>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "6px",
+                            }}
+                          >
+                            <div
+                              className="pjm-user-mini-av"
+                              style={{
+                                background: "#dcfce7",
+                                color: "#16a34a",
+                                width: 22,
+                                height: 22,
+                                fontSize: ".65rem",
+                              }}
+                            >
+                              {returner.name.charAt(0)}
+                            </div>
+                            <div
+                              style={{
+                                fontSize: ".74rem",
+                                fontWeight: 600,
+                                color: "var(--slate)",
+                              }}
+                            >
+                              {returner.name}
+                            </div>
+                          </div>
                         </td>
-                        <td className="pjm-td-date pjm-td-date--green">
+                        <td
+                          className="pjm-td-date pjm-td-date--green"
+                          style={{ fontSize: ".74rem" }}
+                        >
                           {fmtDateShort(r.return_date)}
                         </td>
                         <td>
                           <span
                             className="pjm-cond-sm"
-                            style={{ background: cond?.bg, color: cond?.color }}
+                            style={{
+                              background: cond?.bg,
+                              color: cond?.color,
+                            }}
                           >
                             {cond?.label}
                           </span>
                         </td>
-                        <td className="pjm-td-notes">
-                          {r.return_notes || (
-                            <span className="pjm-text-muted">—</span>
-                          )}
-                        </td>
-                        <td>
-                          {r.attachment ? (
-                            <span className="pjm-attach-sm">
-                              <Icon.Paperclip />
-                              {r.attachment}
-                            </span>
-                          ) : (
-                            <button
-                              className="pjm-bast-gen-btn"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                generateBAST(r, "return");
-                              }}
-                            >
-                              <Icon.Printer /> Gen
-                            </button>
-                          )}
-                        </td>
-                        <td onClick={(e) => e.stopPropagation()}>
+                        <td
+                          onClick={(e) => e.stopPropagation()}
+                          style={{ display: "flex", justifyContent: "center" }}
+                        >
                           <ActionDropdown
                             id={r.id}
                             activeId={activeReturnDropdown}
