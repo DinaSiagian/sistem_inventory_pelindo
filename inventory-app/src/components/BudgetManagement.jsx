@@ -66,6 +66,8 @@ const I = {
   table:
     "M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18",
   eye: "M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z",
+  fileExcel:
+    "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM14 2v6h6M8 13l2.5 4M13.5 13 11 17M8 17l2.5-4M13.5 17 11 13",
 };
 
 const fmt = (n) =>
@@ -161,7 +163,6 @@ const SN_DB = {
   "FGT-KPT-FWL-001": "SPMT-KPT-DTC-PKR-02",
 };
 
-// ── BUDGET MASTERS — diperbarui sesuai permintaan ──
 const BUDGET_MASTERS = [
   {
     kd_anggaran_master: "5030905000",
@@ -192,6 +193,44 @@ const BUDGET_MASTERS = [
     kd_anggaran_master: "5900100000",
     nm_anggaran_master: "Beban Investasi",
     tipe_anggaran_master: "OPEX",
+  },
+];
+
+const CAPEX_BUDGETS = [
+  {
+    kode: "2440013",
+    nama: "Penyiapan Infrastruktur IT Kantor Pusat & Branch",
+    thnAnggaran: 2024,
+  },
+  {
+    kode: "2440014",
+    nama: "Penyediaan Network di Branch SPMT",
+    thnAnggaran: 2024,
+  },
+  {
+    kode: "2440015",
+    nama: "Implementasi dan Standarisasi IT Infrastruktur",
+    thnAnggaran: 2024,
+  },
+  {
+    kode: "2440020",
+    nama: "Revisi Capex (Pemeliharaan Infrastruktur)",
+    thnAnggaran: 2024,
+  },
+  {
+    kode: "2540011",
+    nama: "Penyediaan Kebutuhan Perangkat Jaringan, SIEM & Gate System",
+    thnAnggaran: 2025,
+  },
+  {
+    kode: "2540012",
+    nama: "Penyediaan Kebutuhan Transformasi dan Digitalisasi Terminal",
+    thnAnggaran: 2025,
+  },
+  {
+    kode: "2540013",
+    nama: "Pengadaan Perangkat End User Computing (EUC)",
+    thnAnggaran: 2025,
   },
 ];
 
@@ -548,8 +587,138 @@ const INIT_OPEX = [
 ];
 
 // ══════════════════════════════════════════════════════════════════
-// CSS
+// EXPORT EXCEL HELPER
 // ══════════════════════════════════════════════════════════════════
+function exportAssetsToExcel(assets, projectName, contractNo) {
+  const rows = [
+    [
+      "No",
+      "Nama Aset",
+      "Merek",
+      "Model",
+      "Kode Aset",
+      "Serial Number",
+      "Kategori",
+      "Lokasi",
+      "Tgl. Pengadaan",
+      "Nilai Perolehan (IDR)",
+    ],
+  ];
+  assets.forEach((a, i) => {
+    rows.push([
+      i + 1,
+      a.name || "",
+      a.brand || "",
+      a.model || "",
+      a.asset_code || "",
+      a.serial_number || "",
+      a.category || "",
+      a.location || "",
+      a.procurement_date
+        ? new Date(a.procurement_date).toLocaleDateString("id-ID")
+        : "",
+      a.acquisition_value || 0,
+    ]);
+  });
+  const totalRow = [
+    "",
+    "TOTAL",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    assets.reduce((s, a) => s + (a.acquisition_value || 0), 0),
+  ];
+  rows.push(totalRow);
+
+  let csv = "";
+  rows.forEach((row) => {
+    csv +=
+      row
+        .map((cell) => {
+          const s = String(cell).replace(/"/g, '""');
+          return s.includes(",") || s.includes("\n") || s.includes('"')
+            ? `"${s}"`
+            : s;
+        })
+        .join(",") + "\r\n";
+  });
+
+  // Build an actual Excel XML (SpreadsheetML) for better compatibility
+  const esc = (s) =>
+    String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  const colWidths = [6, 35, 18, 22, 24, 22, 14, 20, 16, 24];
+  let xml = `<?xml version="1.0" encoding="UTF-8"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:x="urn:schemas-microsoft-com:office:excel">
+<Styles>
+  <Style ss:ID="header"><Font ss:Bold="1"/><Interior ss:Color="#2563EB" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style>
+  <Style ss:ID="total"><Font ss:Bold="1"/><Interior ss:Color="#EFF6FF" ss:Pattern="Solid"/></Style>
+  <Style ss:ID="num"><NumberFormat ss:Format="#,##0"/></Style>
+  <Style ss:ID="numtotal"><NumberFormat ss:Format="#,##0"/><Font ss:Bold="1"/><Interior ss:Color="#EFF6FF" ss:Pattern="Solid"/></Style>
+  <Style ss:ID="info"><Interior ss:Color="#F0F9FF" ss:Pattern="Solid"/></Style>
+</Styles>
+<Worksheet ss:Name="Daftar Aset">
+<Table>
+${colWidths.map((w) => `<Column ss:Width="${w * 7}"/>`).join("\n")}
+<Row><Cell ss:MergeAcross="9" ss:StyleID="info"><Data ss:Type="String">Pekerjaan: ${esc(projectName)}</Data></Cell></Row>
+<Row><Cell ss:MergeAcross="9" ss:StyleID="info"><Data ss:Type="String">No. Kontrak: ${esc(contractNo || "—")}</Data></Cell></Row>
+<Row/>
+<Row>
+${rows[0].map((h) => `<Cell ss:StyleID="header"><Data ss:Type="String">${esc(h)}</Data></Cell>`).join("\n")}
+</Row>
+${rows
+  .slice(1, -1)
+  .map(
+    (row) => `<Row>
+${row
+  .map((cell, ci) => {
+    if (ci === 9)
+      return `<Cell ss:StyleID="num"><Data ss:Type="Number">${Number(cell) || 0}</Data></Cell>`;
+    if (ci === 0)
+      return `<Cell><Data ss:Type="Number">${Number(cell)}</Data></Cell>`;
+    return `<Cell><Data ss:Type="String">${esc(cell)}</Data></Cell>`;
+  })
+  .join("\n")}
+</Row>`,
+  )
+  .join("\n")}
+<Row>
+${totalRow
+  .map((cell, ci) => {
+    if (ci === 9)
+      return `<Cell ss:StyleID="numtotal"><Data ss:Type="Number">${Number(cell) || 0}</Data></Cell>`;
+    return `<Cell ss:StyleID="total"><Data ss:Type="String">${esc(cell)}</Data></Cell>`;
+  })
+  .join("\n")}
+</Row>
+</Table>
+</Worksheet>
+</Workbook>`;
+
+  const blob = new Blob([xml], {
+    type: "application/vnd.ms-excel;charset=utf-8;",
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  const safeName = (contractNo || "aset").replace(/[/\\:*?"<>|]/g, "-");
+  a.download = `Daftar_Aset_${safeName}.xls`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 const CSS = `
 @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap");
 
@@ -581,7 +750,6 @@ body {
 
 .root { padding: 2rem 2.5rem; min-height: 100vh; max-width: 1400px; margin: 0 auto; }
 
-/* ── HEADER ── */
 .hdr { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
 .hdr h1 { font-size: 1.4rem; font-weight: 800; letter-spacing: -.5px; color: var(--ink); }
 .hdr p { font-size: .8rem; color: var(--ink4); margin-top: 4px; font-weight: 500; }
@@ -598,7 +766,6 @@ body {
 .type-tab.on { background: var(--blue); color: #fff; box-shadow: 0 2px 6px rgba(37,99,235,0.2); }
 .type-tab.on.all { background: var(--ink); box-shadow: 0 2px 6px rgba(15,23,42,0.2); }
 
-/* ── KPI STRIP ── */
 .kpi-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 24px; }
 .kpi { background: var(--surf); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 1.25rem; display: flex; gap: 16px; align-items: center; box-shadow: var(--sh); transition: transform 0.2s; }
 .kpi:hover { transform: translateY(-2px); box-shadow: var(--sh-md); }
@@ -613,7 +780,6 @@ body {
 .kpi-bar { height: 4px; background: var(--border-lt); border-radius: 99px; overflow: hidden; margin-top: 8px; }
 .kpi-bar-fill { height: 100%; border-radius: 99px; transition: width .6s ease; }
 
-/* ── TOOLBAR ── */
 .toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
 .flt-box, .srch { display: flex; align-items: center; gap: 8px; background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); padding: 8px 12px; box-shadow: var(--sh); transition: border-color .2s; }
 .flt-box:focus-within, .srch:focus-within { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
@@ -623,7 +789,6 @@ body {
 .srch { flex: 1; max-width: 380px; }
 .srch input { flex: 1; }
 
-/* ── OPEX TOOLBAR ── */
 .opex-toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
 .opex-flt-box { display: flex; align-items: center; gap: 8px; background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); padding: 8px 12px; box-shadow: var(--sh); transition: border-color .2s; }
 .opex-flt-box:focus-within { border-color: var(--green); box-shadow: 0 0 0 3px rgba(22,163,74,.1); }
@@ -637,7 +802,6 @@ body {
 .opex-filter-badge button { background: none; border: none; cursor: pointer; color: var(--green); display: flex; align-items: center; padding: 0; transition: color .15s; }
 .opex-filter-badge button:hover { color: var(--red); }
 
-/* ── SECTION LABELS ── */
 .section-label { display: flex; align-items: center; gap: 12px; margin: 1.5rem 0 1rem; }
 .section-label-line { flex: 1; height: 1px; background: var(--border); }
 .section-label-pill { display: flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 99px; font-size: .75rem; font-weight: 700; border: 1px solid transparent; }
@@ -645,7 +809,6 @@ body {
 .section-label-pill.opex { background: var(--green-lt); color: var(--green); border-color: var(--green-mid); }
 .section-count { font-size: .75rem; color: var(--ink4); font-weight: 500; }
 
-/* ── CARD LIST ── */
 .card-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
 .empty { background: var(--surf); border: 1.5px dashed var(--border); border-radius: var(--r-lg); text-align: center; padding: 3rem; color: var(--ink4); font-size: .85rem; font-weight: 500; }
 
@@ -701,12 +864,13 @@ body {
 .abtn.blue:hover { background: var(--blue-mid); color: #1d4ed8; }
 .abtn.green { background: var(--green-lt); border-color: var(--green-mid); color: var(--green); }
 .abtn.green:hover { background: var(--green-mid); color: #15803d; }
+.abtn.excel { background: #f0fdf4; border-color: #bbf7d0; color: #166534; }
+.abtn.excel:hover { background: #dcfce7; color: #14532d; }
 .abtn.del { padding: 6px 8px; }
 .abtn.del:hover { background: var(--red-lt); border-color: #fca5a5; color: var(--red); }
 .chev { color: var(--ink4); padding: 4px; border-radius: 50%; display: flex; transition: background 0.15s; }
 .jcard-top:hover .chev { background: var(--border); color: var(--ink2); }
 
-/* ── PANEL DETAIL KARTU ── */
 .jcard-detail { padding: 20px; background: var(--bg); border-top: 1px dashed var(--border); animation: slideDown .15s ease-out; }
 .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 .d-panel { background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); padding: 16px; box-shadow: var(--sh); }
@@ -737,7 +901,6 @@ body {
 .panel-total span { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
 .panel-total strong { font-size: 0.95rem; font-weight: 800; }
 
-/* ── MODAL ── */
 .overlay { position: fixed; inset: 0; background: rgba(15,23,42,.5); display: flex; align-items: center; justify-content: center; z-index: 900; backdrop-filter: blur(2px); padding: 20px; animation: fadeOvl .15s ease; }
 .mbox { background: var(--surf); border-radius: var(--r-lg); width: 100%; max-width: 600px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: var(--sh-lg); animation: modalUp .2s cubic-bezier(.16,1,.3,1); }
 .mbox.wide { max-width: 720px; }
@@ -749,27 +912,11 @@ body {
 .m-ico.amber { background: var(--amber-lt); color: var(--amber); }
 .mhd h3 { font-size: 0.95rem; font-weight: 800; color: var(--ink); }
 .mhd p { font-size: 0.75rem; color: var(--ink4); font-weight: 500; }
-
-.m-close {
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  background: var(--border-lt);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: var(--ink2);
-  transition: all .15s;
-  flex-shrink: 0;
-}
+.m-close { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border); background: var(--border-lt); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--ink2); transition: all .15s; flex-shrink: 0; }
 .m-close:hover { background: var(--red-lt); border-color: #fca5a5; color: var(--red); }
-
 .mbody { padding: 20px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; flex: 1; }
 .mfoot { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 16px 20px; border-top: 1px solid var(--border); flex-shrink: 0; background: var(--bg); }
 
-/* ── BUTTONS ── */
 .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 8px; font-family: inherit; font-size: 0.8rem; font-weight: 700; cursor: pointer; border: none; transition: all .15s; white-space: nowrap; }
 .btn-outline { background: var(--surf); border: 1px solid var(--border); color: var(--ink2); }
 .btn-outline:hover { background: var(--bg); border-color: #cbd5e1; }
@@ -780,51 +927,15 @@ body {
 .btn-excel { background: #166534; color: #fff; box-shadow: 0 2px 8px rgba(22,101,52,.25); }
 .btn-excel:hover { background: #14532d; }
 
-/* ── PAGINATION ── */
-.pagination-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 4px;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.pagination-info {
-  font-size: 0.75rem;
-  color: var(--ink4);
-  font-weight: 500;
-}
-.pagination-controls {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-.pg-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  background: var(--surf);
-  color: var(--ink3);
-  font-family: inherit;
-  font-size: 0.75rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all .15s;
-}
+.pagination-bar { display: flex; align-items: center; justify-content: space-between; padding: 10px 4px; margin-bottom: 24px; flex-wrap: wrap; gap: 8px; }
+.pagination-info { font-size: 0.75rem; color: var(--ink4); font-weight: 500; }
+.pagination-controls { display: flex; align-items: center; gap: 4px; }
+.pg-btn { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 6px; border: 1px solid var(--border); background: var(--surf); color: var(--ink3); font-family: inherit; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all .15s; }
 .pg-btn:hover:not(:disabled):not(.active) { background: var(--bg); border-color: #cbd5e1; color: var(--ink2); }
 .pg-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; box-shadow: 0 2px 6px rgba(37,99,235,.2); }
 .pg-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-/* ══════════════════════════════════════
-   TABLE PAGES
-   ══════════════════════════════════════ */
 .asset-page { animation: fadeUp .15s ease-out; }
-
 .asset-page-hdr { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
 .asset-page-hdr-left { display: flex; align-items: center; gap: 16px; }
 .asset-page-hdr-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -849,7 +960,7 @@ body {
 .asset-table-wrap { background: var(--surf); border: 1px solid var(--border); border-radius: var(--r-lg); box-shadow: var(--sh); overflow: hidden; }
 .asset-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
 .asset-table thead tr { background: var(--bg); border-bottom: 2px solid var(--border); }
-.asset-table thead th { padding: 11px 14px; text-align: left; font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: var(--ink3); white-space: nowrap; border-right: 1px solid var(--border-lt); user-select: none; cursor: default; }
+.asset-table thead th { padding: 11px 14px; text-align: left; font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: var(--ink3); white-space: nowrap; border-right: 1px solid var(--border-lt); }
 .asset-table thead th:last-child { border-right: none; }
 .asset-table thead th.th-no { width: 44px; text-align: center; }
 .asset-table thead th.th-actions { width: 80px; text-align: center; }
@@ -902,7 +1013,6 @@ body {
 .asset-summary-stat span { font-size: 0.75rem; color: var(--ink4); font-weight: 500; }
 .asset-summary-stat strong { font-size: 0.85rem; font-weight: 800; color: var(--ink); }
 
-/* ── SUBPAGES ── */
 .subpage { animation: fadeUp .15s ease-out; max-width: 900px; margin: 0 auto; }
 .subpage-hdr { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
 .subpage-hdr h2 { font-size: 1.25rem; font-weight: 800; flex: 1; letter-spacing: -0.5px; }
@@ -916,6 +1026,49 @@ body {
 .sec-card-hdr h3 { font-size: 0.9rem; font-weight: 800; color: var(--ink); }
 .sec-card-body { padding: 20px; }
 
+/* ── HORIZONTAL FORM FIELDS ── */
+.hfld { display: flex; align-items: flex-start; gap: 0; border-bottom: 1px solid var(--border-lt); padding: 10px 0; }
+.hfld:last-child { border-bottom: none; }
+.hfld-label { width: 200px; min-width: 200px; font-size: 0.75rem; font-weight: 700; color: var(--ink3); text-transform: uppercase; letter-spacing: 0.5px; padding-top: 10px; padding-right: 16px; flex-shrink: 0; line-height: 1.4; }
+.hfld-label .req { color: var(--red); margin-left: 2px; }
+.hfld-input { flex: 1; }
+.hfld input, .hfld textarea, .hfld select { width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 0.85rem; color: var(--ink); outline: none; transition: all .15s; background: var(--surf); font-weight: 500; }
+.hfld input:focus, .hfld textarea:focus, .hfld select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+.hfld textarea { resize: vertical; min-height: 72px; }
+.hfld select { cursor: pointer; }
+.hfld-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 24px; }
+.hfld-row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0 16px; }
+.hfld-hint { font-size: 0.7rem; color: var(--ink4); margin-top: 4px; }
+
+/* ── ASSET ENTRY HORIZONTAL FIELDS ── */
+.aefld {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  border-bottom: 1px solid var(--border-lt);
+  padding: 8px 0;
+}
+.aefld:last-child { border-bottom: none; }
+.aefld-label {
+  width: 180px;
+  min-width: 180px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--ink3);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding-top: 9px;
+  padding-right: 14px;
+  flex-shrink: 0;
+  line-height: 1.4;
+}
+.aefld-label .req { color: var(--red); margin-left: 2px; }
+.aefld-input { flex: 1; }
+.aefld input, .aefld select { width: 100%; padding: 8px 11px; border: 1px solid #cbd5e1; border-radius: 7px; font-family: inherit; font-size: 0.83rem; color: var(--ink); outline: none; transition: all .15s; background: var(--surf); font-weight: 500; }
+.aefld input:focus, .aefld select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+.aefld-hint { font-size: 0.68rem; color: var(--ink4); margin-top: 3px; }
+
+/* Legacy edit-grid kept for backward compat */
 .edit-grid { display: grid; gap: 16px; }
 .g3 { grid-template-columns: repeat(3,1fr); }
 .g2 { grid-template-columns: repeat(2,1fr); }
@@ -927,94 +1080,55 @@ body {
 
 .edit-footer { background: var(--surf); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; box-shadow: var(--sh-md); margin-top: 24px; position: sticky; bottom: 24px; z-index: 10; }
 
-.acard { 
-  background: var(--surf); 
-  border: 1px solid var(--border); 
-  border-left: 5px solid var(--blue);
-  border-radius: var(--r-lg); 
-  overflow: hidden; 
-  margin-bottom: 24px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.03); 
-  transition: box-shadow 0.2s; 
-}
+.acard { background: var(--surf); border: 1px solid var(--border); border-left: 5px solid var(--blue); border-radius: var(--r-lg); overflow: hidden; margin-bottom: 24px; box-shadow: 0 4px 16px rgba(0,0,0,0.03); transition: box-shadow 0.2s; }
 .acard:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
 .acard-hdr { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--bg); border-bottom: 1px solid var(--border); }
 .acard-body { padding: 24px; }
-.asset-number-badge { 
-  background: var(--ink); 
-  color: #fff; 
-  font-size: 0.7rem; 
-  font-weight: 800; 
-  padding: 4px 10px; 
-  border-radius: 6px; 
-  letter-spacing: 0.5px; 
-}
+.asset-number-badge { background: var(--ink); color: #fff; font-size: 0.7rem; font-weight: 800; padding: 4px 10px; border-radius: 6px; letter-spacing: 0.5px; }
 
-.acard-image-section { 
-  display: flex; 
-  align-items: flex-start; 
-  gap: 20px; 
-  margin-bottom: 20px; 
-  border-bottom: 1px dashed var(--border); 
-  padding-bottom: 20px; 
-}
-.acard-image-box { 
-  width: 120px; 
-  height: 120px; 
-  border-radius: 8px; 
-  border: 1.5px dashed #cbd5e1; 
-  background: var(--bg); 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
-  flex-shrink: 0; 
-  position: relative; 
-  overflow: hidden; 
-  cursor: pointer; 
-  transition: all .15s; 
-}
+.acard-image-section { display: flex; align-items: flex-start; gap: 20px; margin-bottom: 20px; border-bottom: 1px dashed var(--border); padding-bottom: 20px; }
+.acard-image-box { width: 120px; height: 120px; border-radius: 8px; border: 1.5px dashed #cbd5e1; background: var(--bg); display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; overflow: hidden; cursor: pointer; transition: all .15s; }
 .acard-image-box:hover { border-color: var(--blue); background: var(--blue-lt); }
-.acard-image-preview-container { 
-  width: 100%; 
-  height: 100%; 
-  display: flex; 
-  flex-direction: column; 
-  align-items: center; 
-  justify-content: center; 
-}
-.acard-image-preview { 
-  max-width: 100%; 
-  max-height: 100%; 
-  object-fit: contain; 
-}
-.acard-image-upload-trigger { 
-  color: var(--ink4); 
-  display: flex; 
-  flex-direction: column; 
-  align-items: center; 
-  justify-content: center; 
-  gap: 6px; 
-  font-size: 0.7rem; 
-  font-weight: 600; 
-  text-align: center; 
-}
+.acard-image-preview-container { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.acard-image-preview { max-width: 100%; max-height: 100%; object-fit: contain; }
+.acard-image-upload-trigger { color: var(--ink4); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; font-size: 0.7rem; font-weight: 600; text-align: center; }
 .acard-image-upload-trigger:hover { color: var(--blue); }
-.abtn.clear { 
-  padding: 4px 8px; 
-  background: rgba(255,255,255,.8); 
-  color: var(--ink2); 
-  border: 1px solid var(--border); 
-  border-radius: 6px; 
-  font-size: 0.65rem; 
-  position: absolute; 
-  top: 6px; 
-  right: 6px; 
-  z-index: 2; 
-}
+.abtn.clear { padding: 4px 8px; background: rgba(255,255,255,.8); color: var(--ink2); border: 1px solid var(--border); border-radius: 6px; font-size: 0.65rem; position: absolute; top: 6px; right: 6px; z-index: 2; }
 .abtn.clear:hover { background: #fff; color: var(--red); border-color: #fca5a5; }
 
 .toast { position: fixed; bottom: 24px; right: 24px; background: var(--ink); color: #fff; padding: 12px 20px; border-radius: 12px; font-size: 0.85rem; font-weight: 600; box-shadow: var(--sh-lg); display: flex; align-items: center; gap: 8px; z-index: 9999; animation: toastIn .2s ease; }
 .cbox { background: var(--surf); border-radius: 16px; padding: 24px; max-width: 320px; width: 100%; box-shadow: var(--sh-lg); display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; animation: modalUp .2s ease; }
+
+/* ── MODAL TAMBAH PEKERJAAN ── */
+.add-modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.55); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(3px); padding: 20px; animation: fadeOvl .15s ease; }
+.add-modal-box { background: var(--surf); border-radius: 16px; width: 100%; max-width: 680px; max-height: 92vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: var(--sh-lg); animation: modalUp .22s cubic-bezier(.16,1,.3,1); }
+.add-modal-hdr { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid var(--border); flex-shrink: 0; background: var(--bg); }
+.add-modal-hdr-left { display: flex; align-items: center; gap: 12px; }
+.add-modal-ico { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+.add-modal-ico.blue { background: var(--blue-lt); color: var(--blue); }
+.add-modal-ico.green { background: var(--green-lt); color: var(--green); }
+.add-modal-hdr h3 { font-size: 1rem; font-weight: 800; color: var(--ink); margin: 0; }
+.add-modal-hdr p { font-size: 0.75rem; color: var(--ink4); font-weight: 500; margin: 2px 0 0; }
+
+.add-modal-body { flex: 1; overflow-y: auto; padding: 0; }
+.add-modal-section { border-bottom: 1px solid var(--border); }
+.add-modal-section-hdr { display: flex; align-items: center; gap: 10px; padding: 12px 24px; background: var(--border-lt); font-size: 0.72rem; font-weight: 800; color: var(--ink2); text-transform: uppercase; letter-spacing: 0.6px; border-bottom: 1px solid var(--border); }
+.add-modal-section-body { padding: 4px 24px 8px; }
+
+.mhfld { display: flex; align-items: flex-start; padding: 9px 0; gap: 0; border-bottom: 1px solid var(--border-lt); }
+.mhfld:last-child { border-bottom: none; }
+.mhfld-lbl { width: 190px; min-width: 190px; font-size: 0.72rem; font-weight: 700; color: var(--ink3); text-transform: uppercase; letter-spacing: 0.4px; padding-top: 10px; padding-right: 12px; flex-shrink: 0; line-height: 1.4; }
+.mhfld-lbl .req { color: var(--red); margin-left: 2px; }
+.mhfld-inp { flex: 1; }
+.mhfld input, .mhfld textarea, .mhfld select { width: 100%; padding: 8px 11px; border: 1px solid #cbd5e1; border-radius: 7px; font-family: inherit; font-size: 0.83rem; color: var(--ink); outline: none; transition: all .15s; background: var(--surf); font-weight: 500; }
+.mhfld input:focus, .mhfld textarea:focus, .mhfld select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+.mhfld.green input:focus, .mhfld.green textarea:focus, .mhfld.green select:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(22,163,74,.1); }
+.mhfld textarea { resize: vertical; min-height: 64px; }
+.mhfld select { cursor: pointer; }
+.mhfld-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.add-modal-foot { display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding: 14px 24px; border-top: 1px solid var(--border); flex-shrink: 0; background: var(--bg); }
+.req-note { font-size: 0.7rem; color: var(--ink4); padding: 8px 24px 4px; font-style: italic; }
 
 @keyframes slideDown { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
@@ -1039,20 +1153,19 @@ body {
   .g2 { grid-template-columns: 1fr; }
   .ctx-card { grid-template-columns: 1fr 1fr; }
   .opex-flt-select { min-width: 200px; }
+  .mhfld-lbl { width: 140px; min-width: 140px; }
+  .hfld-label { width: 160px; min-width: 160px; }
+  .aefld-label { width: 140px; min-width: 140px; }
 }
 `;
 
 const PAGE_SIZE = 5;
 
-// ══════════════════════════════════════════════════════════════════
-// PAGINATION COMPONENT
-// ══════════════════════════════════════════════════════════════════
 function Pagination({ total, page, onPage, label }) {
   const totalPages = Math.ceil(total / PAGE_SIZE);
   if (totalPages <= 1) return null;
   const start = (page - 1) * PAGE_SIZE + 1;
   const end = Math.min(page * PAGE_SIZE, total);
-
   const pages = [];
   for (let i = 1; i <= totalPages; i++) {
     if (i === 1 || i === totalPages || (i >= page - 1 && i <= page + 1)) {
@@ -1061,7 +1174,6 @@ function Pagination({ total, page, onPage, label }) {
       pages.push("...");
     }
   }
-
   return (
     <div className="pagination-bar">
       <span className="pagination-info">
@@ -1109,9 +1221,6 @@ function Pagination({ total, page, onPage, label }) {
   );
 }
 
-// ══════════════════════════════════════════════════════════════════
-// SHARED COMPONENTS
-// ══════════════════════════════════════════════════════════════════
 function Toast({ msg, onDone }) {
   useEffect(() => {
     const t = setTimeout(onDone, 2400);
@@ -1231,7 +1340,538 @@ function PctRing({ pct }) {
 }
 
 // ══════════════════════════════════════════════════════════════════
-// ASSET TABLE PAGE
+// FIX 1: MODAL TAMBAH CAPEX — Tgl BAMK dipindah ke bawah Tgl SP3
+// ══════════════════════════════════════════════════════════════════
+function TambahCapexModal({ capexData, onClose, onSave }) {
+  const [form, setForm] = useState({
+    anggaranId: capexData[0]?.id || "",
+    nm_pekerjaan: "",
+    nilai_rab: "",
+    nilai_kontrak: "",
+    no_pr: "",
+    no_po: "",
+    no_kontrak: "",
+    tgl_kontrak: "",
+    durasi_kontrak: "",
+    no_sp3: "",
+    tgl_sp3: "",
+    tgl_bamk: "",
+  });
+  const up = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+  const anggaranPilihan = capexData.find((a) => a.id === form.anggaranId);
+
+  const handleSave = () => {
+    if (!form.nm_pekerjaan || !form.anggaranId) return;
+    const newProj = {
+      id: `PKJ-${Date.now()}`,
+      nm_pekerjaan: form.nm_pekerjaan,
+      nilai_rab: parseFloat(form.nilai_rab) || 0,
+      nilai_kontrak: parseFloat(form.nilai_kontrak) || 0,
+      no_pr: form.no_pr,
+      no_po: form.no_po,
+      no_kontrak: form.no_kontrak,
+      tgl_kontrak: form.tgl_kontrak,
+      durasi_kontrak: parseInt(form.durasi_kontrak) || 0,
+      no_sp3: form.no_sp3,
+      tgl_sp3: form.tgl_sp3,
+      tgl_bamk: form.tgl_bamk,
+      assets: [],
+    };
+    onSave(form.anggaranId, newProj);
+  };
+
+  return (
+    <div className="add-modal-overlay" onClick={onClose}>
+      <div className="add-modal-box" onClick={(e) => e.stopPropagation()}>
+        <div className="add-modal-hdr">
+          <div className="add-modal-hdr-left">
+            <div className="add-modal-ico blue">
+              <Icon d={I.briefcase} size={18} />
+            </div>
+            <div>
+              <h3>Tambah Pekerjaan CAPEX</h3>
+              <p>Isi semua informasi pekerjaan baru di bawah ini</p>
+            </div>
+          </div>
+          <button className="m-close" onClick={onClose}>
+            <Icon d={I.x} size={14} />
+          </button>
+        </div>
+
+        <div className="add-modal-body">
+          <p className="req-note">
+            Kolom bertanda <span style={{ color: "var(--red)" }}>*</span> wajib
+            diisi
+          </p>
+
+          <div className="add-modal-section">
+            <div className="add-modal-section-hdr">
+              <Icon d={I.database} size={13} /> Pos Anggaran CAPEX
+            </div>
+            <div className="add-modal-section-body">
+              <div className="mhfld">
+                <div className="mhfld-lbl">
+                  Pos Anggaran<span className="req">*</span>
+                </div>
+                <div className="mhfld-inp">
+                  <select
+                    value={form.anggaranId}
+                    onChange={(e) => up("anggaranId", e.target.value)}
+                  >
+                    <option value="">— Pilih Pos Anggaran —</option>
+                    {capexData.map((a) => (
+                      <option key={a.id} value={a.id}>
+                        [{a.kode}] {a.thnAnggaran} —{" "}
+                        {a.nama.length > 50
+                          ? a.nama.substring(0, 50) + "..."
+                          : a.nama}
+                      </option>
+                    ))}
+                  </select>
+                  {anggaranPilihan && (
+                    <div
+                      style={{
+                        marginTop: 6,
+                        padding: "8px 10px",
+                        background: "var(--blue-lt)",
+                        borderRadius: 6,
+                        border: "1px solid var(--blue-mid)",
+                        fontSize: "0.75rem",
+                      }}
+                    >
+                      <div
+                        style={{ display: "flex", gap: 20, flexWrap: "wrap" }}
+                      >
+                        <span>
+                          <b style={{ color: "var(--ink3)" }}>Kode:</b>{" "}
+                          <code
+                            style={{
+                              fontFamily: "var(--mono)",
+                              color: "var(--blue)",
+                            }}
+                          >
+                            {anggaranPilihan.kode}
+                          </code>
+                        </span>
+                        <span>
+                          <b style={{ color: "var(--ink3)" }}>Tahun:</b>{" "}
+                          {anggaranPilihan.thnAnggaran}
+                        </span>
+                        {anggaranPilihan.pagu > 0 && (
+                          <span>
+                            <b style={{ color: "var(--ink3)" }}>Pagu:</b>{" "}
+                            <b style={{ color: "var(--blue)" }}>
+                              {fmt(anggaranPilihan.pagu)}
+                            </b>
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="add-modal-section">
+            <div className="add-modal-section-hdr">
+              <Icon d={I.fileText} size={13} /> Informasi Pekerjaan
+            </div>
+            <div className="add-modal-section-body">
+              <div className="mhfld">
+                <div className="mhfld-lbl">
+                  Nama Pekerjaan<span className="req">*</span>
+                </div>
+                <div className="mhfld-inp">
+                  <textarea
+                    placeholder="Deskripsi lengkap nama pekerjaan..."
+                    value={form.nm_pekerjaan}
+                    onChange={(e) => up("nm_pekerjaan", e.target.value)}
+                    rows={3}
+                  />
+                </div>
+              </div>
+              <div className="mhfld">
+                <div className="mhfld-lbl">Nilai RAB (IDR)</div>
+                <div className="mhfld-inp">
+                  <div className="mhfld-2col">
+                    <input
+                      type="number"
+                      placeholder="0"
+                      value={form.nilai_rab}
+                      onChange={(e) => up("nilai_rab", e.target.value)}
+                    />
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "center",
+                      }}
+                    >
+                      {form.nilai_rab > 0 && (
+                        <span
+                          style={{
+                            fontSize: "0.75rem",
+                            color: "var(--ink3)",
+                            fontWeight: 600,
+                          }}
+                        >
+                          {fmt(parseFloat(form.nilai_rab) || 0)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="mhfld">
+                <div className="mhfld-lbl">Nilai Kontrak (IDR)</div>
+                <div className="mhfld-inp">
+                  <div className="mhfld-2col">
+                    <input
+                      type="number"
+                      placeholder="0"
+                      value={form.nilai_kontrak}
+                      onChange={(e) => up("nilai_kontrak", e.target.value)}
+                    />
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "center",
+                      }}
+                    >
+                      {form.nilai_kontrak > 0 && (
+                        <span
+                          style={{
+                            fontSize: "0.75rem",
+                            color: "var(--red)",
+                            fontWeight: 600,
+                          }}
+                        >
+                          {fmt(parseFloat(form.nilai_kontrak) || 0)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="mhfld">
+                <div className="mhfld-lbl">Durasi Kontrak</div>
+                <div className="mhfld-inp">
+                  <div className="mhfld-2col">
+                    <input
+                      type="number"
+                      placeholder="Jumlah hari"
+                      value={form.durasi_kontrak}
+                      onChange={(e) => up("durasi_kontrak", e.target.value)}
+                    />
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                      <span
+                        style={{ fontSize: "0.78rem", color: "var(--ink3)" }}
+                      >
+                        hari kerja
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="add-modal-section">
+            <div className="add-modal-section-hdr">
+              <Icon d={I.tag} size={13} /> Referensi Dokumen
+            </div>
+            <div className="add-modal-section-body">
+              <div className="mhfld">
+                <div className="mhfld-lbl">No. PR</div>
+                <div className="mhfld-inp">
+                  <input
+                    placeholder="cth. 8260001121"
+                    value={form.no_pr}
+                    onChange={(e) => up("no_pr", e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="mhfld">
+                <div className="mhfld-lbl">No. PO</div>
+                <div className="mhfld-inp">
+                  <input
+                    placeholder="cth. 6440000839"
+                    value={form.no_po}
+                    onChange={(e) => up("no_po", e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="mhfld">
+                <div className="mhfld-lbl">No. Kontrak</div>
+                <div className="mhfld-inp">
+                  <input
+                    placeholder="cth. SI.01/10/9/2/PPTI/TEKI/PLMT-24"
+                    value={form.no_kontrak}
+                    onChange={(e) => up("no_kontrak", e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="mhfld">
+                <div className="mhfld-lbl">Tanggal Kontrak</div>
+                <div className="mhfld-inp">
+                  <input
+                    type="date"
+                    value={form.tgl_kontrak}
+                    onChange={(e) => up("tgl_kontrak", e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="mhfld">
+                <div className="mhfld-lbl">No. SP3</div>
+                <div className="mhfld-inp">
+                  <input
+                    placeholder="Nomor SP3"
+                    value={form.no_sp3}
+                    onChange={(e) => up("no_sp3", e.target.value)}
+                  />
+                </div>
+              </div>
+              {/* ── FIX 1: Tgl SP3 dan Tgl BAMK vertikal (tidak sejajar) ── */}
+              <div className="mhfld">
+                <div className="mhfld-lbl">Tanggal SP3</div>
+                <div className="mhfld-inp">
+                  <input
+                    type="date"
+                    value={form.tgl_sp3}
+                    onChange={(e) => up("tgl_sp3", e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="mhfld">
+                <div className="mhfld-lbl">Tanggal BAMK</div>
+                <div className="mhfld-inp">
+                  <input
+                    type="date"
+                    value={form.tgl_bamk}
+                    onChange={(e) => up("tgl_bamk", e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="add-modal-foot">
+          <button className="btn btn-outline" onClick={onClose}>
+            Batal
+          </button>
+          <button
+            className="btn btn-prim"
+            style={{
+              opacity: !form.nm_pekerjaan || !form.anggaranId ? 0.5 : 1,
+            }}
+            onClick={handleSave}
+          >
+            <Icon d={I.save} size={13} /> Simpan Pekerjaan
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TambahOpexModal({ onClose, onSave }) {
+  const currentYear = new Date().getFullYear();
+  const [form, setForm] = useState({
+    kd_anggaran_master: "",
+    nama: "",
+    thn_anggaran: String(currentYear),
+    nilai_anggaran_tahunan: "",
+  });
+  const up = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+  const handleMaster = (kd) => {
+    const m = BUDGET_MASTERS.find((x) => x.kd_anggaran_master === kd);
+    setForm((f) => ({
+      ...f,
+      kd_anggaran_master: kd,
+      nama: m ? m.nm_anggaran_master : f.nama,
+    }));
+  };
+  const handleSave = () => {
+    if (!form.nama || !form.thn_anggaran) return;
+    onSave({
+      id: `OPX-${Date.now()}`,
+      kd_anggaran_master: form.kd_anggaran_master,
+      nama: form.nama,
+      thn_anggaran: parseInt(form.thn_anggaran) || currentYear,
+      nilai_anggaran_tahunan: parseFloat(form.nilai_anggaran_tahunan) || 0,
+      type: "opex",
+      transaksi: [],
+    });
+  };
+  return (
+    <div className="add-modal-overlay" onClick={onClose}>
+      <div className="add-modal-box" onClick={(e) => e.stopPropagation()}>
+        <div className="add-modal-hdr">
+          <div className="add-modal-hdr-left">
+            <div className="add-modal-ico green">
+              <Icon d={I.monitor} size={18} />
+            </div>
+            <div>
+              <h3>Tambah Pos Anggaran OPEX</h3>
+              <p>Isi informasi pos anggaran OPEX baru</p>
+            </div>
+          </div>
+          <button className="m-close" onClick={onClose}>
+            <Icon d={I.x} size={14} />
+          </button>
+        </div>
+        <div className="add-modal-body">
+          <p className="req-note">
+            Kolom bertanda <span style={{ color: "var(--red)" }}>*</span> wajib
+            diisi
+          </p>
+          <div className="add-modal-section">
+            <div
+              className="add-modal-section-hdr"
+              style={{ color: "var(--green)" }}
+            >
+              <Icon d={I.database} size={13} /> Informasi Pos Anggaran
+            </div>
+            <div className="add-modal-section-body">
+              <div className="mhfld green">
+                <div className="mhfld-lbl">Kode Master Anggaran</div>
+                <div className="mhfld-inp">
+                  <select
+                    value={form.kd_anggaran_master}
+                    onChange={(e) => handleMaster(e.target.value)}
+                  >
+                    <option value="">— Pilih Kode Master (Opsional) —</option>
+                    {BUDGET_MASTERS.map((m) => (
+                      <option
+                        key={m.kd_anggaran_master}
+                        value={m.kd_anggaran_master}
+                      >
+                        {m.kd_anggaran_master} — {m.nm_anggaran_master}
+                      </option>
+                    ))}
+                  </select>
+                  {form.kd_anggaran_master && (
+                    <div
+                      style={{
+                        marginTop: 6,
+                        padding: "6px 10px",
+                        background: "var(--green-lt)",
+                        borderRadius: 6,
+                        border: "1px solid var(--green-mid)",
+                        fontSize: "0.74rem",
+                      }}
+                    >
+                      <span style={{ color: "var(--ink3)" }}>
+                        Kode terpilih:{" "}
+                      </span>
+                      <code
+                        style={{
+                          fontFamily: "var(--mono)",
+                          color: "var(--green)",
+                          fontWeight: 700,
+                        }}
+                      >
+                        {form.kd_anggaran_master}
+                      </code>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="mhfld green">
+                <div className="mhfld-lbl">
+                  Nama Pos Anggaran<span className="req">*</span>
+                </div>
+                <div className="mhfld-inp">
+                  <input
+                    placeholder="Nama pos anggaran OPEX..."
+                    value={form.nama}
+                    onChange={(e) => up("nama", e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="mhfld green">
+                <div className="mhfld-lbl">
+                  Tahun Anggaran<span className="req">*</span>
+                </div>
+                <div className="mhfld-inp">
+                  <div className="mhfld-2col">
+                    <input
+                      type="number"
+                      placeholder="cth. 2026"
+                      value={form.thn_anggaran}
+                      onChange={(e) => up("thn_anggaran", e.target.value)}
+                      min="2020"
+                      max="2030"
+                    />
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                      <span
+                        style={{ fontSize: "0.75rem", color: "var(--ink4)" }}
+                      >
+                        Tahun anggaran berlaku
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="mhfld green">
+                <div className="mhfld-lbl">Nilai Anggaran Tahunan (IDR)</div>
+                <div className="mhfld-inp">
+                  <div className="mhfld-2col">
+                    <input
+                      type="number"
+                      placeholder="0"
+                      value={form.nilai_anggaran_tahunan}
+                      onChange={(e) =>
+                        up("nilai_anggaran_tahunan", e.target.value)
+                      }
+                    />
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "center",
+                      }}
+                    >
+                      {form.nilai_anggaran_tahunan > 0 && (
+                        <span
+                          style={{
+                            fontSize: "0.75rem",
+                            color: "var(--green)",
+                            fontWeight: 700,
+                          }}
+                        >
+                          {fmt(parseFloat(form.nilai_anggaran_tahunan) || 0)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="add-modal-foot">
+          <button className="btn btn-outline" onClick={onClose}>
+            Batal
+          </button>
+          <button
+            className="btn btn-green"
+            style={{ opacity: !form.nama || !form.thn_anggaran ? 0.5 : 1 }}
+            onClick={handleSave}
+          >
+            <Icon d={I.save} size={13} /> Simpan Pos Anggaran
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════
+// FIX 3: ASSET TABLE PAGE — tambah tombol Export Excel
 // ══════════════════════════════════════════════════════════════════
 function AssetTablePage({
   project,
@@ -1245,9 +1885,7 @@ function AssetTablePage({
   const [catFilter, setCatFilter] = useState("all");
   const [locFilter, setLocFilter] = useState("all");
   const [confirm, setConfirm] = useState(null);
-
   const assets = project.assets || [];
-
   const cats = useMemo(
     () => [
       "all",
@@ -1262,7 +1900,6 @@ function AssetTablePage({
     ],
     [assets],
   );
-
   const filtered = useMemo(
     () =>
       assets.filter((a) => {
@@ -1288,92 +1925,32 @@ function AssetTablePage({
     0,
   );
   const totalAll = assets.reduce((s, a) => s + (a.acquisition_value || 0), 0);
+  const pct =
+    project.nilai_kontrak > 0
+      ? Math.round((totalAll / project.nilai_kontrak) * 100)
+      : 0;
 
-  const exportExcel = () => {
-    const headers = [
-      "No",
-      "Kode Aset",
-      "Serial Number",
-      "Nama Aset",
-      "Merek",
-      "Model/Tipe",
-      "Kategori",
-      "Lokasi",
-      "Tgl. Pengadaan",
-      "Nilai Perolehan (IDR)",
-    ];
-    const rows = filtered.map((a, i) => [
-      i + 1,
-      a.asset_code || "",
-      a.serial_number || "",
-      a.name || "",
-      a.brand || "",
-      a.model || "",
-      a.category || "",
-      a.location || "",
-      a.procurement_date
-        ? new Date(a.procurement_date).toLocaleDateString("id-ID")
-        : "",
-      a.acquisition_value || 0,
-    ]);
-    const infoRows = [
-      ["Laporan Daftar Aset CAPEX"],
-      ["Pekerjaan:", project.nm_pekerjaan || ""],
-      ["No. Kontrak:", project.no_kontrak || ""],
-      ["Nilai Kontrak:", project.nilai_kontrak || 0],
-      ["Tanggal Export:", new Date().toLocaleDateString("id-ID")],
-      [],
-      headers,
-      ...rows,
-      [],
-      ["", "", "", "", "", "", "", "", "TOTAL NILAI ASET", totalFiltered],
-    ];
-    const csvContent = infoRows
-      .map((row) =>
-        row
-          .map((cell) => {
-            const s = String(cell);
-            return s.includes(",") || s.includes('"') || s.includes("\n")
-              ? `"${s.replace(/"/g, '""')}"`
-              : s;
-          })
-          .join(","),
-      )
-      .join("\n");
-    const BOM = "\uFEFF";
-    const blob = new Blob([BOM + csvContent], {
-      type: "text/csv;charset=utf-8;",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    const safeName = (project.no_kontrak || "aset").replace(
-      /[^a-zA-Z0-9-]/g,
-      "_",
-    );
-    a.download = `Daftar_Aset_${safeName}_${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-    showToast("File berhasil diunduh (.csv)");
-  };
-
-  const deleteAsset = (id) => {
+  const deleteAsset = (id) =>
     setConfirm({
       msg: "Hapus aset ini dari daftar pekerjaan?",
       onConfirm: () => {
-        const updated = assets.filter((a) => a.id !== id);
-        onSaveAssets(project.id, updated);
+        onSaveAssets(
+          project.id,
+          assets.filter((a) => a.id !== id),
+        );
         showToast("Aset dihapus");
         setConfirm(null);
       },
     });
-  };
 
-  const assetTotal = assets.reduce((s, a) => s + (a.acquisition_value || 0), 0);
-  const pct =
-    project.nilai_kontrak > 0
-      ? Math.round((assetTotal / project.nilai_kontrak) * 100)
-      : 0;
+  const handleExport = () => {
+    if (filtered.length === 0) {
+      showToast("Tidak ada data untuk diekspor");
+      return;
+    }
+    exportAssetsToExcel(filtered, project.nm_pekerjaan, project.no_kontrak);
+    showToast(`${filtered.length} aset berhasil diekspor ke Excel`);
+  };
 
   return (
     <div className="asset-page">
@@ -1408,7 +1985,8 @@ function AssetTablePage({
           </div>
         </div>
         <div className="asset-page-hdr-right">
-          <button className="btn btn-excel" onClick={exportExcel}>
+          {/* ── FIX 3: Tombol Export Excel ── */}
+          <button className="btn btn-excel" onClick={handleExport}>
             <Icon d={I.download} size={13} /> Export Excel
           </button>
           <button className="btn btn-prim" onClick={onEntryNew}>
@@ -1416,7 +1994,6 @@ function AssetTablePage({
           </button>
         </div>
       </div>
-
       <div className="asset-ctx-banner">
         <div className="asset-ctx-item">
           <span>Pekerjaan</span>
@@ -1441,14 +2018,13 @@ function AssetTablePage({
         </div>
         <div className="asset-ctx-item">
           <span>Total Nilai Aset</span>
-          <strong style={{ color: "var(--blue)" }}>{fmt(assetTotal)}</strong>
+          <strong style={{ color: "var(--blue)" }}>{fmt(totalAll)}</strong>
         </div>
         <div className="asset-ctx-item">
           <span>Serapan Aset</span>
           <strong style={{ color: pctColor(pct) }}>{pct}%</strong>
         </div>
       </div>
-
       <div className="asset-toolbar">
         <div className="asset-toolbar-left">
           <div className="at-filter">
@@ -1495,7 +2071,6 @@ function AssetTablePage({
           </div>
         </div>
       </div>
-
       <div className="asset-table-wrap">
         <table className="asset-table">
           <thead>
@@ -1519,8 +2094,8 @@ function AssetTablePage({
                     <Icon d={I.package} size={36} style={{ opacity: 0.2 }} />
                     <span style={{ fontWeight: 600, fontSize: "0.85rem" }}>
                       {assets.length === 0
-                        ? "Belum ada aset terdaftar untuk pekerjaan ini."
-                        : "Tidak ada aset yang cocok dengan filter."}
+                        ? "Belum ada aset terdaftar."
+                        : "Tidak ada aset yang cocok."}
                     </span>
                     {assets.length === 0 && (
                       <button
@@ -1589,7 +2164,6 @@ function AssetTablePage({
                     <div className="td-act-row">
                       <button
                         className="abtn del"
-                        title="Hapus aset"
                         onClick={() => deleteAsset(a.id)}
                       >
                         <Icon d={I.trash} size={11} />
@@ -1611,9 +2185,7 @@ function AssetTablePage({
                     fontSize: "0.75rem",
                   }}
                 >
-                  {filtered.length < assets.length
-                    ? `Menampilkan ${filtered.length} dari ${assets.length} aset`
-                    : `Total ${assets.length} aset`}
+                  Total {filtered.length} aset
                 </td>
                 <td className="tfoot-total">{fmt(totalFiltered)}</td>
                 <td></td>
@@ -1621,63 +2193,7 @@ function AssetTablePage({
             </tfoot>
           )}
         </table>
-
-        {assets.length > 0 && (
-          <div className="asset-summary-bar">
-            <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
-              <div className="asset-summary-stat">
-                <span>Total Aset</span>
-                <strong>{assets.length} item</strong>
-              </div>
-              <div className="asset-summary-stat">
-                <span>Total Nilai Seluruh Aset</span>
-                <strong style={{ color: "var(--blue)" }}>
-                  {fmt(totalAll)}
-                </strong>
-              </div>
-              {filtered.length !== assets.length && (
-                <div className="asset-summary-stat">
-                  <span>Nilai Aset (Filter Aktif)</span>
-                  <strong style={{ color: "var(--amber)" }}>
-                    {fmt(totalFiltered)}
-                  </strong>
-                </div>
-              )}
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span
-                style={{
-                  fontSize: "0.75rem",
-                  color: "var(--ink4)",
-                  fontWeight: 500,
-                }}
-              >
-                {pct}% dari nilai kontrak terserapkan
-              </span>
-              <div
-                style={{
-                  width: 100,
-                  height: 6,
-                  background: "var(--border-lt)",
-                  borderRadius: 99,
-                  overflow: "hidden",
-                }}
-              >
-                <div
-                  style={{
-                    width: `${Math.min(pct, 100)}%`,
-                    height: "100%",
-                    background: pctColor(pct),
-                    borderRadius: 99,
-                    transition: "width .6s",
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        )}
       </div>
-
       {confirm && (
         <Confirm
           msg={confirm.msg}
@@ -1689,9 +2205,6 @@ function AssetTablePage({
   );
 }
 
-// ══════════════════════════════════════════════════════════════════
-// REALISASI TABLE PAGE
-// ══════════════════════════════════════════════════════════════════
 function RealisasiTablePage({
   ang,
   onBack,
@@ -1702,7 +2215,6 @@ function RealisasiTablePage({
 }) {
   const [searchQ, setSearchQ] = useState("");
   const transactions = ang.transaksi || [];
-
   const filtered = useMemo(
     () =>
       transactions.filter((t) => {
@@ -1717,67 +2229,11 @@ function RealisasiTablePage({
       }),
     [transactions, searchQ],
   );
-
   const totalFiltered = filtered.reduce((s, t) => s + (t.jumlah || 0), 0);
   const totalAll = transactions.reduce((s, t) => s + (t.jumlah || 0), 0);
   const pagu = ang.nilai_anggaran_tahunan || 0;
   const sisa = pagu - totalAll;
   const pct = pagu > 0 ? Math.round((totalAll / pagu) * 100) : 0;
-
-  const exportExcelOpex = () => {
-    const headers = [
-      "No",
-      "Tanggal",
-      "Keterangan",
-      "No. Invoice",
-      "Jumlah (IDR)",
-    ];
-    const rows = filtered.map((t, i) => [
-      i + 1,
-      t.tanggal ? new Date(t.tanggal).toLocaleDateString("id-ID") : "",
-      t.keterangan || "",
-      t.no_invoice || "",
-      t.jumlah || 0,
-    ]);
-    const infoRows = [
-      ["Laporan Riwayat Realisasi OPEX"],
-      ["Pos Anggaran:", ang.nama || ""],
-      ["Kode Master:", ang.kd_anggaran_master || ""],
-      ["Pagu Anggaran:", pagu],
-      ["Total Realisasi:", totalAll],
-      ["Sisa Anggaran:", sisa],
-      ["Tanggal Export:", new Date().toLocaleDateString("id-ID")],
-      [],
-      headers,
-      ...rows,
-      [],
-      ["", "", "", "TOTAL REALISASI", totalFiltered],
-    ];
-    const csvContent = infoRows
-      .map((row) =>
-        row
-          .map((cell) => {
-            const s = String(cell);
-            return s.includes(",") || s.includes('"') || s.includes("\n")
-              ? `"${s.replace(/"/g, '""')}"`
-              : s;
-          })
-          .join(","),
-      )
-      .join("\n");
-    const BOM = "\uFEFF";
-    const blob = new Blob([BOM + csvContent], {
-      type: "text/csv;charset=utf-8;",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    const safeName = (ang.nama || "opex").replace(/[^a-zA-Z0-9-]/g, "_");
-    a.download = `Realisasi_${safeName}_${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-    showToast("File berhasil diunduh (.csv)");
-  };
 
   return (
     <div className="asset-page">
@@ -1805,29 +2261,20 @@ function RealisasiTablePage({
                 fontWeight: 500,
               }}
             >
-              {transactions.length} transaksi tercatat ·{" "}
-              {ang.nama?.substring(0, 55)}
-              {ang.nama?.length > 55 ? "…" : ""}
+              {transactions.length} transaksi · {ang.nama?.substring(0, 55)}
             </p>
           </div>
         </div>
         <div className="asset-page-hdr-right">
-          <button className="btn btn-excel" onClick={exportExcelOpex}>
-            <Icon d={I.download} size={13} /> Export Excel
-          </button>
           <button className="btn btn-green" onClick={onEntryNew}>
             <Icon d={I.plus} size={13} /> Entry Transaksi Baru
           </button>
         </div>
       </div>
-
       <div className="asset-ctx-banner opex-theme">
         <div className="asset-ctx-item">
           <span>Pos Anggaran</span>
-          <strong style={{ maxWidth: 260 }}>
-            {ang.nama?.substring(0, 48)}
-            {ang.nama?.length > 48 ? "…" : ""}
-          </strong>
+          <strong>{ang.nama?.substring(0, 48)}</strong>
         </div>
         <div className="asset-ctx-item">
           <span>Kode Master</span>
@@ -1854,7 +2301,6 @@ function RealisasiTablePage({
           </strong>
         </div>
       </div>
-
       <div className="asset-toolbar">
         <div className="asset-toolbar-left">
           <div className="at-filter">
@@ -1867,7 +2313,6 @@ function RealisasiTablePage({
           </div>
         </div>
       </div>
-
       <div className="asset-table-wrap">
         <table className="asset-table opex-table">
           <thead>
@@ -1887,10 +2332,10 @@ function RealisasiTablePage({
                 <td colSpan={7}>
                   <div className="table-empty-inner">
                     <Icon d={I.fileText} size={36} style={{ opacity: 0.2 }} />
-                    <span style={{ fontWeight: 600, fontSize: "0.85rem" }}>
+                    <span style={{ fontWeight: 600 }}>
                       {transactions.length === 0
-                        ? "Belum ada riwayat realisasi untuk pos ini."
-                        : "Tidak ada transaksi yang cocok dengan pencarian."}
+                        ? "Belum ada riwayat realisasi."
+                        : "Tidak ada transaksi yang cocok."}
                     </span>
                     {transactions.length === 0 && (
                       <button
@@ -1930,7 +2375,8 @@ function RealisasiTablePage({
                           color: "var(--ink3)",
                         }}
                       >
-                        <Icon d={I.fileText} size={11} /> {t.lampiran}
+                        <Icon d={I.fileText} size={11} />
+                        {t.lampiran}
                       </span>
                     ) : (
                       <span style={{ color: "var(--ink4)" }}>—</span>
@@ -1946,16 +2392,11 @@ function RealisasiTablePage({
                   </td>
                   <td className="td-actions">
                     <div className="td-act-row">
-                      <button
-                        className="abtn"
-                        title="Edit"
-                        onClick={() => onEditRow(t)}
-                      >
+                      <button className="abtn" onClick={() => onEditRow(t)}>
                         <Icon d={I.edit} size={11} />
                       </button>
                       <button
                         className="abtn del"
-                        title="Hapus"
                         onClick={() => onDeleteRow(t.id)}
                       >
                         <Icon d={I.trash} size={11} />
@@ -1973,9 +2414,7 @@ function RealisasiTablePage({
                   colSpan={5}
                   style={{ fontWeight: 700, fontSize: "0.75rem" }}
                 >
-                  {filtered.length < transactions.length
-                    ? `Menampilkan ${filtered.length} dari ${transactions.length} transaksi`
-                    : `Total ${transactions.length} transaksi`}
+                  Total {filtered.length} transaksi
                 </td>
                 <td className="tfoot-total">{fmt(totalFiltered)}</td>
                 <td></td>
@@ -1983,69 +2422,11 @@ function RealisasiTablePage({
             </tfoot>
           )}
         </table>
-
-        {transactions.length > 0 && (
-          <div className="asset-summary-bar">
-            <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
-              <div className="asset-summary-stat">
-                <span>Total Transaksi</span>
-                <strong>{transactions.length} kali</strong>
-              </div>
-              <div className="asset-summary-stat">
-                <span>Total Realisasi OPEX</span>
-                <strong style={{ color: "var(--amber)" }}>
-                  {fmt(totalAll)}
-                </strong>
-              </div>
-              {filtered.length !== transactions.length && (
-                <div className="asset-summary-stat">
-                  <span>Realisasi (Pencarian Aktif)</span>
-                  <strong style={{ color: "var(--amber)" }}>
-                    {fmt(totalFiltered)}
-                  </strong>
-                </div>
-              )}
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span
-                style={{
-                  fontSize: "0.75rem",
-                  color: "var(--ink4)",
-                  fontWeight: 500,
-                }}
-              >
-                {pct}% pagu telah terserap
-              </span>
-              <div
-                style={{
-                  width: 100,
-                  height: 6,
-                  background: "var(--border-lt)",
-                  borderRadius: 99,
-                  overflow: "hidden",
-                }}
-              >
-                <div
-                  style={{
-                    width: `${Math.min(pct, 100)}%`,
-                    height: "100%",
-                    background: pctColor(pct),
-                    borderRadius: 99,
-                    transition: "width .6s",
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
 }
 
-// ══════════════════════════════════════════════════════════════════
-// CAPEX CARD
-// ══════════════════════════════════════════════════════════════════
 function CapexCard({ proj, onEdit, onAssetTable, onAssetEntry, onDelete }) {
   const [open, setOpen] = useState(false);
   const assets = proj.assets || [];
@@ -2069,7 +2450,6 @@ function CapexCard({ proj, onEdit, onAssetTable, onAssetEntry, onDelete }) {
               </div>
               <p className="jc-title">{proj.nm_pekerjaan}</p>
             </div>
-
             <div className="jc-meta">
               <span>
                 <Icon d={I.calendar} size={12} />
@@ -2082,7 +2462,6 @@ function CapexCard({ proj, onEdit, onAssetTable, onAssetEntry, onDelete }) {
                 </span>
               )}
             </div>
-
             <div className="jc-fin">
               <div className="amt-blk">
                 <span className="amt-lbl">Nilai Kontrak</span>
@@ -2094,7 +2473,6 @@ function CapexCard({ proj, onEdit, onAssetTable, onAssetEntry, onDelete }) {
                 <span className="amt-val blue">{fmt(assetTotal)}</span>
               </div>
             </div>
-
             <div className="jc-actions">
               <PctRing pct={pct} />
               <div className="act-btns" onClick={(e) => e.stopPropagation()}>
@@ -2117,7 +2495,6 @@ function CapexCard({ proj, onEdit, onAssetTable, onAssetEntry, onDelete }) {
               </div>
             </div>
           </div>
-
           {open && (
             <div className="jcard-detail">
               <div className="detail-grid">
@@ -2192,7 +2569,7 @@ function CapexCard({ proj, onEdit, onAssetTable, onAssetEntry, onDelete }) {
                   </div>
                   {assets.length === 0 ? (
                     <div className="d-empty">
-                      Belum ada aset ditambahkan.
+                      Belum ada aset.
                       <div style={{ marginTop: 10 }}>
                         <button
                           className="btn btn-prim"
@@ -2248,9 +2625,6 @@ function CapexCard({ proj, onEdit, onAssetTable, onAssetEntry, onDelete }) {
   );
 }
 
-// ══════════════════════════════════════════════════════════════════
-// OPEX CARD
-// ══════════════════════════════════════════════════════════════════
 function OpexCard({
   ang,
   onSaveOpex,
@@ -2261,7 +2635,6 @@ function OpexCard({
 }) {
   const [open, setOpen] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
-
   const totalReal = (ang.transaksi || []).reduce(
     (s, t) => s + (t.jumlah || 0),
     0,
@@ -2287,14 +2660,12 @@ function OpexCard({
               </div>
               <p className="jc-title">{ang.nama}</p>
             </div>
-
             <div className="jc-meta">
               <span>
                 <Icon d={I.database} size={12} />
                 {masterInfo?.nm_anggaran_master || ang.nama}
               </span>
             </div>
-
             <div className="jc-fin">
               <div className="amt-blk">
                 <span className="amt-lbl">Pagu Anggaran</span>
@@ -2313,7 +2684,6 @@ function OpexCard({
                 </span>
               </div>
             </div>
-
             <div className="jc-actions">
               <PctRing pct={pct} />
               <div className="act-btns" onClick={(e) => e.stopPropagation()}>
@@ -2345,7 +2715,6 @@ function OpexCard({
               </div>
             </div>
           </div>
-
           {showEdit && (
             <EditOpexInline
               ang={ang}
@@ -2357,7 +2726,6 @@ function OpexCard({
               onCancel={() => setShowEdit(false)}
             />
           )}
-
           {open && (
             <div className="jcard-detail">
               <div className="detail-grid">
@@ -2401,12 +2769,12 @@ function OpexCard({
                       className="inline-link"
                       onClick={() => onRealisasiTable(ang)}
                     >
-                      <Icon d={I.eye} size={11} /> Lihat & Edit Riwayat →
+                      <Icon d={I.eye} size={11} /> Lihat & Edit →
                     </button>
                   </div>
                   {!ang.transaksi || ang.transaksi.length === 0 ? (
                     <div className="d-empty">
-                      Belum ada realisasi tercatat.
+                      Belum ada realisasi.
                       <div style={{ marginTop: 10 }}>
                         <button
                           className="btn btn-green"
@@ -2437,7 +2805,7 @@ function OpexCard({
                             className="inline-link"
                             onClick={() => onRealisasiTable(ang)}
                           >
-                            + {ang.transaksi.length - 3} transaksi lainnya →
+                            + {ang.transaksi.length - 3} lainnya →
                           </button>
                         </div>
                       )}
@@ -2457,9 +2825,6 @@ function OpexCard({
   );
 }
 
-// ══════════════════════════════════════════════════════════════════
-// EDIT OPEX INLINE
-// ══════════════════════════════════════════════════════════════════
 function EditOpexInline({ ang, onSave, onCancel }) {
   const [form, setForm] = useState({
     kd_anggaran_master: ang.kd_anggaran_master || "",
@@ -2482,7 +2847,7 @@ function EditOpexInline({ ang, onSave, onCancel }) {
         background: "var(--green-lt)",
         borderTop: "1px solid var(--green-mid)",
         borderBottom: "1px solid var(--green-mid)",
-        padding: "20px 24px",
+        padding: "0",
       }}
     >
       <div
@@ -2490,12 +2855,13 @@ function EditOpexInline({ ang, onSave, onCancel }) {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          marginBottom: "16px",
+          padding: "12px 20px 8px",
+          borderBottom: "1px solid var(--green-mid)",
         }}
       >
         <h3
           style={{
-            fontSize: "0.85rem",
+            fontSize: "0.82rem",
             fontWeight: 800,
             color: "var(--green)",
             display: "flex",
@@ -2513,48 +2879,63 @@ function EditOpexInline({ ang, onSave, onCancel }) {
           <Icon d={I.x} size={10} /> Tutup
         </button>
       </div>
-      <div className="edit-grid g2" style={{ marginBottom: "16px" }}>
-        <div className="edit-fld">
-          <label>Kode Anggaran Master</label>
-          <select
-            value={form.kd_anggaran_master}
-            onChange={(e) => handleMaster(e.target.value)}
-          >
-            <option value="">— Pilih —</option>
-            {BUDGET_MASTERS.map((m) => (
-              <option key={m.kd_anggaran_master} value={m.kd_anggaran_master}>
-                {m.kd_anggaran_master} — {m.nm_anggaran_master}
-              </option>
-            ))}
-          </select>
+      <div style={{ padding: "4px 20px 8px" }}>
+        <div className="mhfld green">
+          <div className="mhfld-lbl">Kode Anggaran Master</div>
+          <div className="mhfld-inp">
+            <select
+              value={form.kd_anggaran_master}
+              onChange={(e) => handleMaster(e.target.value)}
+            >
+              <option value="">— Pilih —</option>
+              {BUDGET_MASTERS.map((m) => (
+                <option key={m.kd_anggaran_master} value={m.kd_anggaran_master}>
+                  {m.kd_anggaran_master} — {m.nm_anggaran_master}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
-        <div className="edit-fld">
-          <label>Nama Pos Anggaran</label>
-          <input
-            value={form.nama}
-            onChange={(e) => up("nama", e.target.value)}
-          />
+        <div className="mhfld green">
+          <div className="mhfld-lbl">Nama Pos Anggaran</div>
+          <div className="mhfld-inp">
+            <input
+              value={form.nama}
+              onChange={(e) => up("nama", e.target.value)}
+            />
+          </div>
+        </div>
+        <div className="mhfld green">
+          <div className="mhfld-lbl">Tahun Anggaran</div>
+          <div className="mhfld-inp">
+            <div className="mhfld-2col">
+              <input
+                type="number"
+                value={form.thn_anggaran}
+                onChange={(e) => up("thn_anggaran", e.target.value)}
+              />
+              <input
+                type="number"
+                placeholder="Nilai Anggaran Tahunan (IDR)"
+                value={form.nilai_anggaran_tahunan || ""}
+                onChange={(e) => up("nilai_anggaran_tahunan", e.target.value)}
+              />
+            </div>
+            <div
+              style={{ fontSize: "0.7rem", color: "var(--ink4)", marginTop: 3 }}
+            >
+              Kolom kedua: Nilai Anggaran Tahunan (IDR)
+            </div>
+          </div>
         </div>
       </div>
-      <div className="edit-grid g2" style={{ marginBottom: "16px" }}>
-        <div className="edit-fld">
-          <label>Tahun Anggaran</label>
-          <input
-            type="number"
-            value={form.thn_anggaran}
-            onChange={(e) => up("thn_anggaran", e.target.value)}
-          />
-        </div>
-        <div className="edit-fld">
-          <label>Nilai Anggaran Tahunan (IDR)</label>
-          <input
-            type="number"
-            value={form.nilai_anggaran_tahunan || ""}
-            onChange={(e) => up("nilai_anggaran_tahunan", e.target.value)}
-          />
-        </div>
-      </div>
-      <div style={{ display: "flex", justifyContent: "flex-end" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          padding: "8px 20px 14px",
+        }}
+      >
         <button
           className="btn btn-green"
           onClick={() =>
@@ -2575,9 +2956,6 @@ function EditOpexInline({ ang, onSave, onCancel }) {
   );
 }
 
-// ══════════════════════════════════════════════════════════════════
-// EDIT PROJECT PAGE
-// ══════════════════════════════════════════════════════════════════
 function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
   const [form, setForm] = useState({ ...project });
   const up = (k, v) => setForm((f) => ({ ...f, [k]: v }));
@@ -2616,21 +2994,25 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
           <span>Tahun</span>
           <strong>{anggaran?.thnAnggaran}</strong>
         </div>
-        <div className="ctx-item">
-          <span>Pagu</span>
-          <strong style={{ color: "var(--blue)" }}>
-            {anggaran?.pagu > 0 ? fmt(anggaran.pagu) : "—"}
-          </strong>
-        </div>
+        {anggaran?.pagu > 0 && (
+          <div className="ctx-item">
+            <span>Pagu</span>
+            <strong style={{ color: "var(--blue)" }}>
+              {fmt(anggaran.pagu)}
+            </strong>
+          </div>
+        )}
       </div>
       <div className="sec-card">
         <div className="sec-card-hdr">
           <h3>Informasi Pekerjaan</h3>
         </div>
         <div className="sec-card-body">
-          <div className="edit-grid g1" style={{ marginBottom: "16px" }}>
-            <div className="edit-fld full">
-              <label>Nama Pekerjaan *</label>
+          <div className="hfld">
+            <div className="hfld-label">
+              Nama Pekerjaan<span className="req">*</span>
+            </div>
+            <div className="hfld-input">
               <textarea
                 rows="2"
                 value={form.nm_pekerjaan || ""}
@@ -2638,30 +3020,46 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
               />
             </div>
           </div>
-          <div className="edit-grid g3">
-            <div className="edit-fld">
-              <label>Nilai RAB (IDR)</label>
+          <div className="hfld">
+            <div className="hfld-label">Nilai RAB (IDR)</div>
+            <div className="hfld-input">
               <input
                 type="number"
                 value={form.nilai_rab || ""}
                 onChange={(e) => up("nilai_rab", e.target.value)}
               />
+              {form.nilai_rab > 0 && (
+                <div className="hfld-hint">
+                  {fmt(parseFloat(form.nilai_rab))}
+                </div>
+              )}
             </div>
-            <div className="edit-fld">
-              <label>Nilai Kontrak (IDR)</label>
+          </div>
+          <div className="hfld">
+            <div className="hfld-label">Nilai Kontrak (IDR)</div>
+            <div className="hfld-input">
               <input
                 type="number"
                 value={form.nilai_kontrak || ""}
                 onChange={(e) => up("nilai_kontrak", e.target.value)}
               />
+              {form.nilai_kontrak > 0 && (
+                <div className="hfld-hint" style={{ color: "var(--red)" }}>
+                  {fmt(parseFloat(form.nilai_kontrak))}
+                </div>
+              )}
             </div>
-            <div className="edit-fld">
-              <label>Durasi Kontrak (Hari)</label>
+          </div>
+          <div className="hfld" style={{ borderBottom: "none" }}>
+            <div className="hfld-label">Durasi Kontrak</div>
+            <div className="hfld-input">
               <input
                 type="number"
                 value={form.durasi_kontrak || ""}
                 onChange={(e) => up("durasi_kontrak", e.target.value)}
+                placeholder="Jumlah hari"
               />
+              <div className="hfld-hint">hari kerja</div>
             </div>
           </div>
         </div>
@@ -2671,55 +3069,65 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
           <h3>Referensi Dokumen</h3>
         </div>
         <div className="sec-card-body">
-          <div className="edit-grid g3" style={{ marginBottom: "16px" }}>
-            <div className="edit-fld">
-              <label>No. PR</label>
+          <div className="hfld">
+            <div className="hfld-label">No. PR</div>
+            <div className="hfld-input">
               <input
                 value={form.no_pr || ""}
                 onChange={(e) => up("no_pr", e.target.value)}
               />
             </div>
-            <div className="edit-fld">
-              <label>No. PO</label>
+          </div>
+          <div className="hfld">
+            <div className="hfld-label">No. PO</div>
+            <div className="hfld-input">
               <input
                 value={form.no_po || ""}
                 onChange={(e) => up("no_po", e.target.value)}
               />
             </div>
-            <div className="edit-fld">
-              <label>No. Kontrak</label>
+          </div>
+          <div className="hfld">
+            <div className="hfld-label">No. Kontrak</div>
+            <div className="hfld-input">
               <input
                 value={form.no_kontrak || ""}
                 onChange={(e) => up("no_kontrak", e.target.value)}
               />
             </div>
           </div>
-          <div className="edit-grid g3">
-            <div className="edit-fld">
-              <label>Tgl. Kontrak</label>
+          <div className="hfld">
+            <div className="hfld-label">Tgl. Kontrak</div>
+            <div className="hfld-input">
               <input
                 type="date"
                 value={form.tgl_kontrak || ""}
                 onChange={(e) => up("tgl_kontrak", e.target.value)}
               />
             </div>
-            <div className="edit-fld">
-              <label>No. SP3</label>
+          </div>
+          <div className="hfld">
+            <div className="hfld-label">No. SP3</div>
+            <div className="hfld-input">
               <input
                 value={form.no_sp3 || ""}
                 onChange={(e) => up("no_sp3", e.target.value)}
               />
             </div>
-            <div className="edit-fld">
-              <label>Tgl. SP3</label>
+          </div>
+          <div className="hfld">
+            <div className="hfld-label">Tgl. SP3</div>
+            <div className="hfld-input">
               <input
                 type="date"
                 value={form.tgl_sp3 || ""}
                 onChange={(e) => up("tgl_sp3", e.target.value)}
               />
             </div>
-            <div className="edit-fld">
-              <label>Tgl. BAMK</label>
+          </div>
+          <div className="hfld" style={{ borderBottom: "none" }}>
+            <div className="hfld-label">Tgl. BAMK</div>
+            <div className="hfld-input">
               <input
                 type="date"
                 value={form.tgl_bamk || ""}
@@ -2730,9 +3138,13 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
         </div>
       </div>
       <div className="edit-footer">
-        <div className="edit-footer-info">
-          <span>Menyimpan Perubahan</span>
-          <strong>Pastikan semua nilai sudah benar.</strong>
+        <div>
+          <span style={{ fontSize: "0.75rem", color: "var(--ink3)" }}>
+            Menyimpan perubahan pekerjaan
+          </span>
+          <strong style={{ fontSize: "0.82rem", display: "block" }}>
+            Pastikan semua nilai sudah benar.
+          </strong>
         </div>
         <div style={{ display: "flex", gap: 12 }}>
           <button className="btn btn-outline" onClick={onBack}>
@@ -2748,7 +3160,7 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
 }
 
 // ══════════════════════════════════════════════════════════════════
-// ASSET ENTRY PAGE
+// FIX 2: ASSET ENTRY PAGE — form input aset jadi horizontal
 // ══════════════════════════════════════════════════════════════════
 function AssetEntryPage({ project, anggaran, onBack, onSave, showToast }) {
   const [assets, setAssets] = useState(
@@ -2792,17 +3204,14 @@ function AssetEntryPage({ project, anggaran, onBack, onSave, showToast }) {
       upd(id, "image", e.target.result);
     };
   };
-
   const triggerImageUpload = (id) => {
     setActiveAssetId(id);
     fileInputRef.current.click();
   };
-
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    if (file && file.type.startsWith("image/") && activeAssetId) {
+    if (file && file.type.startsWith("image/") && activeAssetId)
       handleFileRead(activeAssetId, file);
-    }
     setActiveAssetId(null);
     e.target.value = null;
   };
@@ -2886,7 +3295,6 @@ function AssetEntryPage({ project, anggaran, onBack, onSave, showToast }) {
           <strong style={{ color: "var(--blue)" }}>{fmt(total)}</strong>
         </div>
       </div>
-
       <div
         style={{
           display: "flex",
@@ -2895,20 +3303,15 @@ function AssetEntryPage({ project, anggaran, onBack, onSave, showToast }) {
           marginBottom: "16px",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontSize: "0.95rem", fontWeight: 800 }}>
-            Daftar Aset Terdaftar
-          </span>
-        </div>
+        <span style={{ fontSize: "0.95rem", fontWeight: 800 }}>
+          Daftar Aset
+        </span>
         <button className="btn btn-prim" onClick={add}>
           <Icon d={I.plus} size={12} /> Tambah Aset Baru
         </button>
       </div>
-
       {assets.length === 0 && (
-        <div className="empty">
-          Belum ada aset ditambahkan ke pekerjaan ini.
-        </div>
+        <div className="empty">Belum ada aset ditambahkan.</div>
       )}
       {assets.map((a, i) => (
         <div key={a.id} className="acard">
@@ -2963,6 +3366,7 @@ function AssetEntryPage({ project, anggaran, onBack, onSave, showToast }) {
             </button>
           </div>
           <div className="acard-body">
+            {/* Foto aset */}
             <div className="acard-image-section">
               <div
                 className="acard-image-box"
@@ -2972,7 +3376,7 @@ function AssetEntryPage({ project, anggaran, onBack, onSave, showToast }) {
                   <div className="acard-image-preview-container">
                     <img
                       src={a.image}
-                      alt="Preview Aset"
+                      alt="Preview"
                       className="acard-image-preview"
                     />
                     <button
@@ -3019,96 +3423,124 @@ function AssetEntryPage({ project, anggaran, onBack, onSave, showToast }) {
                   }}
                 >
                   Ketuk kotak di sebelah kiri untuk mengunggah foto fisik aset.
-                  Foto akan membantu identifikasi saat audit atau pelaporan
-                  kerusakan.
-                  <br />
                   Mendukung JPG, PNG (maks. 5MB).
                 </p>
               </div>
             </div>
 
-            {a._af && (
-              <div className="af-banner">
-                <Icon d={I.checkCirc} size={16} /> Data ditemukan & diisi
-                otomatis dari database!
+            {/* ── FIX 2: Form input horizontal (label : input) ── */}
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <div className="aefld">
+                <div className="aefld-label">
+                  Kode Aset<span className="req">*</span>
+                </div>
+                <div className="aefld-input">
+                  <input
+                    value={a.asset_code}
+                    onChange={(e) => tryAF(a.id, "asset_code", e.target.value)}
+                    placeholder="cth. SPMT-KPT-DTC-SRV-01"
+                  />
+                  <div className="aefld-hint">
+                    Ketik kode untuk auto-fill data aset
+                  </div>
+                </div>
               </div>
-            )}
-            <div className="edit-grid g3">
-              <div className="edit-fld">
-                <label>Kode Aset *</label>
-                <input
-                  value={a.asset_code}
-                  onChange={(e) => tryAF(a.id, "asset_code", e.target.value)}
-                  className={a._af ? "af-field" : ""}
-                />
+              <div className="aefld">
+                <div className="aefld-label">Serial Number</div>
+                <div className="aefld-input">
+                  <input
+                    value={a.serial_number || ""}
+                    onChange={(e) =>
+                      tryAF(a.id, "serial_number", e.target.value)
+                    }
+                    placeholder="cth. DELL-KPT-SRV-001"
+                  />
+                </div>
               </div>
-              <div className="edit-fld">
-                <label>Serial Number</label>
-                <input
-                  value={a.serial_number || ""}
-                  onChange={(e) => tryAF(a.id, "serial_number", e.target.value)}
-                  className={a._af ? "af-field" : ""}
-                />
+              <div className="aefld">
+                <div className="aefld-label">
+                  Nama Aset<span className="req">*</span>
+                </div>
+                <div className="aefld-input">
+                  <input
+                    value={a.name}
+                    onChange={(e) => upd(a.id, "name", e.target.value)}
+                    placeholder="Nama lengkap aset"
+                  />
+                </div>
               </div>
-              <div className="edit-fld">
-                <label>Tgl. Pengadaan</label>
-                <input
-                  type="date"
-                  value={a.procurement_date || ""}
-                  onChange={(e) =>
-                    upd(a.id, "procurement_date", e.target.value)
-                  }
-                />
+              <div className="aefld">
+                <div className="aefld-label">Merek</div>
+                <div className="aefld-input">
+                  <input
+                    value={a.brand || ""}
+                    onChange={(e) => upd(a.id, "brand", e.target.value)}
+                    placeholder="cth. Dell, Cisco, HP"
+                  />
+                </div>
               </div>
-              <div className="edit-fld full">
-                <label>Nama Aset *</label>
-                <input
-                  value={a.name}
-                  onChange={(e) => upd(a.id, "name", e.target.value)}
-                  className={a._af ? "af-field" : ""}
-                />
+              <div className="aefld">
+                <div className="aefld-label">Model / Tipe</div>
+                <div className="aefld-input">
+                  <input
+                    value={a.model || ""}
+                    onChange={(e) => upd(a.id, "model", e.target.value)}
+                    placeholder="cth. PowerEdge R750"
+                  />
+                </div>
               </div>
-              <div className="edit-fld">
-                <label>Merek</label>
-                <input
-                  value={a.brand || ""}
-                  onChange={(e) => upd(a.id, "brand", e.target.value)}
-                  className={a._af ? "af-field" : ""}
-                />
+              <div className="aefld">
+                <div className="aefld-label">Kategori</div>
+                <div className="aefld-input">
+                  <input
+                    value={a.category || ""}
+                    onChange={(e) => upd(a.id, "category", e.target.value)}
+                    placeholder="cth. Server, Network, Security"
+                  />
+                </div>
               </div>
-              <div className="edit-fld">
-                <label>Model / Tipe</label>
-                <input
-                  value={a.model || ""}
-                  onChange={(e) => upd(a.id, "model", e.target.value)}
-                  className={a._af ? "af-field" : ""}
-                />
+              <div className="aefld">
+                <div className="aefld-label">Lokasi</div>
+                <div className="aefld-input">
+                  <input
+                    value={a.location || ""}
+                    onChange={(e) => upd(a.id, "location", e.target.value)}
+                    placeholder="cth. Kantor Pusat, Malahayati"
+                  />
+                </div>
               </div>
-              <div className="edit-fld">
-                <label>Kategori</label>
-                <input
-                  value={a.category || ""}
-                  onChange={(e) => upd(a.id, "category", e.target.value)}
-                  className={a._af ? "af-field" : ""}
-                />
+              <div className="aefld">
+                <div className="aefld-label">Tgl. Pengadaan</div>
+                <div className="aefld-input">
+                  <input
+                    type="date"
+                    value={a.procurement_date || ""}
+                    onChange={(e) =>
+                      upd(a.id, "procurement_date", e.target.value)
+                    }
+                  />
+                </div>
               </div>
-              <div className="edit-fld">
-                <label>Lokasi</label>
-                <input
-                  value={a.location || ""}
-                  onChange={(e) => upd(a.id, "location", e.target.value)}
-                  className={a._af ? "af-field" : ""}
-                />
-              </div>
-              <div className="edit-fld">
-                <label>Nilai Perolehan (IDR)</label>
-                <input
-                  type="number"
-                  value={a.acquisition_value || ""}
-                  onChange={(e) =>
-                    upd(a.id, "acquisition_value", e.target.value)
-                  }
-                />
+              <div className="aefld" style={{ borderBottom: "none" }}>
+                <div className="aefld-label">Nilai Perolehan (IDR)</div>
+                <div className="aefld-input">
+                  <input
+                    type="number"
+                    value={a.acquisition_value || ""}
+                    onChange={(e) =>
+                      upd(a.id, "acquisition_value", e.target.value)
+                    }
+                    placeholder="0"
+                  />
+                  {parseFloat(a.acquisition_value) > 0 && (
+                    <div
+                      className="aefld-hint"
+                      style={{ color: "var(--blue)", fontWeight: 600 }}
+                    >
+                      {fmt(parseFloat(a.acquisition_value))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -3116,9 +3548,13 @@ function AssetEntryPage({ project, anggaran, onBack, onSave, showToast }) {
       ))}
       {assets.length > 0 && (
         <div className="edit-footer">
-          <div className="edit-footer-info">
-            <span>Total Nilai Semua Aset</span>
-            <strong style={{ color: "var(--blue)" }}>{fmt(total)}</strong>
+          <div>
+            <span style={{ fontSize: "0.75rem", color: "var(--ink3)" }}>
+              Total Nilai Semua Aset
+            </span>
+            <strong style={{ color: "var(--blue)", display: "block" }}>
+              {fmt(total)}
+            </strong>
           </div>
           <div style={{ display: "flex", gap: 12 }}>
             <button className="btn btn-outline" onClick={onBack}>
@@ -3141,9 +3577,6 @@ function AssetEntryPage({ project, anggaran, onBack, onSave, showToast }) {
   );
 }
 
-// ══════════════════════════════════════════════════════════════════
-// REALISASI PAGE (Form Entry)
-// ══════════════════════════════════════════════════════════════════
 function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
   const isEdit = !!editData;
   const [form, setForm] = useState(
@@ -3159,14 +3592,12 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
         },
   );
   const up = (k, v) => setForm((f) => ({ ...f, [k]: v }));
-
   const pagu = ang.nilai_anggaran_tahunan || 0;
   const prev = (ang.transaksi || [])
     .filter((t) => !isEdit || t.id !== editData.id)
     .reduce((s, t) => s + (t.jumlah || 0), 0);
   const jumlah = parseFloat(String(form.jumlah).replace(/[^\d.]/g, "")) || 0;
   const sisa = pagu - prev - jumlah;
-
   const save = () => {
     if (!form.tanggal || !form.keterangan || !form.jumlah) return;
     const j = parseFloat(String(form.jumlah).replace(/[^\d.]/g, "")) || 0;
@@ -3179,7 +3610,6 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
     showToast(isEdit ? "Realisasi diperbarui" : "Realisasi ditambahkan");
     onBack();
   };
-
   return (
     <div className="subpage">
       <div className="subpage-hdr">
@@ -3234,38 +3664,56 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
           </div>
         </div>
         <div className="sec-card-body">
-          <div className="edit-grid g2" style={{ marginBottom: "16px" }}>
-            <div className="edit-fld">
-              <label>Tanggal *</label>
+          <div className="hfld">
+            <div className="hfld-label">
+              Tanggal<span className="req">*</span>
+            </div>
+            <div className="hfld-input">
               <input
                 type="date"
                 value={form.tanggal}
                 onChange={(e) => up("tanggal", e.target.value)}
               />
             </div>
-            <div className="edit-fld">
-              <label>Keterangan *</label>
+          </div>
+          <div className="hfld">
+            <div className="hfld-label">
+              Keterangan<span className="req">*</span>
+            </div>
+            <div className="hfld-input">
               <input
                 value={form.keterangan}
                 onChange={(e) => up("keterangan", e.target.value)}
+                placeholder="Deskripsi realisasi..."
               />
             </div>
           </div>
-          <div className="edit-grid g2">
-            <div className="edit-fld">
-              <label>No. Invoice</label>
+          <div className="hfld">
+            <div className="hfld-label">No. Invoice</div>
+            <div className="hfld-input">
               <input
                 value={form.no_invoice}
                 onChange={(e) => up("no_invoice", e.target.value)}
+                placeholder="cth. INV/2026/001"
               />
             </div>
-            <div className="edit-fld">
-              <label>Jumlah (IDR) *</label>
+          </div>
+          <div className="hfld" style={{ borderBottom: "none" }}>
+            <div className="hfld-label">
+              Jumlah (IDR)<span className="req">*</span>
+            </div>
+            <div className="hfld-input">
               <input
                 type="number"
                 value={form.jumlah}
                 onChange={(e) => up("jumlah", e.target.value)}
+                placeholder="0"
               />
+              {jumlah > 0 && (
+                <div className="hfld-hint" style={{ color: "var(--green)" }}>
+                  {fmt(jumlah)}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -3309,20 +3757,17 @@ export default function BudgetManagement() {
   const [tahun, setTahun] = useState("all");
   const [angFilter, setAngFilter] = useState("all");
   const [search, setSearch] = useState("");
-
-  // ── State filter OPEX khusus kode anggaran master ──
   const [opexKdFilter, setOpexKdFilter] = useState("all");
   const [opexSearch, setOpexSearch] = useState("");
-
   const [page, setPage] = useState(null);
   const [toast, setToast] = useState(null);
   const [confirm, setConfirm] = useState(null);
   const [capexData, setCapexData] = useState(INIT_CAPEX);
   const [opexData, setOpexData] = useState(INIT_OPEX);
-
-  // Pagination state
   const [capexPage, setCapexPage] = useState(1);
   const [opexPage, setOpexPage] = useState(1);
+  const [showAddCapex, setShowAddCapex] = useState(false);
+  const [showAddOpex, setShowAddOpex] = useState(false);
 
   const showToast = (msg) => setToast(msg);
   const currentYear = new Date().getFullYear();
@@ -3348,20 +3793,18 @@ export default function BudgetManagement() {
     [capexData],
   );
 
-  // ── Filtered OPEX berdasarkan tahun, kode master, dan search ──
   const filteredOpex = useMemo(
     () =>
       opexData.filter((ang) => {
-        // Filter tahun
         if (tahun !== "all" && String(ang.thn_anggaran) !== tahun) return false;
-        // Filter kode anggaran master
         if (opexKdFilter !== "all" && ang.kd_anggaran_master !== opexKdFilter)
           return false;
-        // Filter search nama
         if (
           opexSearch &&
           !ang.nama?.toLowerCase().includes(opexSearch.toLowerCase()) &&
-          !ang.kd_anggaran_master?.toLowerCase().includes(opexSearch.toLowerCase())
+          !ang.kd_anggaran_master
+            ?.toLowerCase()
+            .includes(opexSearch.toLowerCase())
         )
           return false;
         return true;
@@ -3369,15 +3812,12 @@ export default function BudgetManagement() {
     [opexData, tahun, opexKdFilter, opexSearch],
   );
 
-  // Kode master yang aktif di data (untuk dropdown filter)
   const activeKdList = useMemo(() => {
     const allKd = opexData
       .filter((a) => tahun === "all" || String(a.thn_anggaran) === tahun)
       .map((a) => a.kd_anggaran_master);
     const unique = Array.from(new Set(allKd));
-    return BUDGET_MASTERS.filter((m) =>
-      unique.includes(m.kd_anggaran_master),
-    );
+    return BUDGET_MASTERS.filter((m) => unique.includes(m.kd_anggaran_master));
   }, [opexData, tahun]);
 
   const angList = useMemo(() => {
@@ -3407,7 +3847,6 @@ export default function BudgetManagement() {
     });
   }, [allProjects, typeFilter, tahun, angFilter, search]);
 
-  // Reset pagination when filters change
   useEffect(() => {
     setAngFilter("all");
     setOpexKdFilter("all");
@@ -3415,21 +3854,17 @@ export default function BudgetManagement() {
     setCapexPage(1);
     setOpexPage(1);
   }, [typeFilter, tahun]);
-
   useEffect(() => {
     setCapexPage(1);
   }, [search, angFilter]);
-
   useEffect(() => {
     setOpexPage(1);
   }, [opexKdFilter, opexSearch]);
 
-  // Paginated slices
   const paginatedCapex = useMemo(() => {
     const start = (capexPage - 1) * PAGE_SIZE;
     return filteredProjects.slice(start, start + PAGE_SIZE);
   }, [filteredProjects, capexPage]);
-
   const paginatedOpex = useMemo(() => {
     const start = (opexPage - 1) * PAGE_SIZE;
     return filteredOpex.slice(start, start + PAGE_SIZE);
@@ -3463,7 +3898,6 @@ export default function BudgetManagement() {
   }, [allProjects, filteredOpex, capexData, typeFilter, tahun]);
 
   const getAng = (id) => capexData.find((a) => a.id === id);
-
   const getLatestProject = (projId) => {
     for (const ang of capexData) {
       const p = ang.projects.find((pr) => pr.id === projId);
@@ -3523,6 +3957,23 @@ export default function BudgetManagement() {
     showToast("Pekerjaan dihapus");
   };
 
+  const handleAddCapex = (angId, newProj) => {
+    setCapexData((p) =>
+      p.map((ang) =>
+        ang.id === angId
+          ? { ...ang, projects: [...ang.projects, newProj] }
+          : ang,
+      ),
+    );
+    setShowAddCapex(false);
+    showToast("Pekerjaan CAPEX berhasil ditambahkan");
+  };
+  const handleAddOpex = (newOpex) => {
+    setOpexData((p) => [...p, newOpex]);
+    setShowAddOpex(false);
+    showToast("Pos anggaran OPEX berhasil ditambahkan");
+  };
+
   // ── PAGE ROUTING ──
   if (page?.type === "editProject") {
     return (
@@ -3541,7 +3992,6 @@ export default function BudgetManagement() {
       </>
     );
   }
-
   if (page?.type === "assetTable") {
     const latestProject = getLatestProject(page.projectId) || page.project;
     return (
@@ -3569,7 +4019,6 @@ export default function BudgetManagement() {
       </>
     );
   }
-
   if (page?.type === "asset") {
     const latestProject = getLatestProject(page.projectId) || page.project;
     return (
@@ -3601,7 +4050,6 @@ export default function BudgetManagement() {
       </>
     );
   }
-
   if (page?.type === "realisasiTable") {
     const angNow = opexData.find((a) => a.id === page.ang.id) || page.ang;
     return (
@@ -3628,7 +4076,7 @@ export default function BudgetManagement() {
                 returnToTable: true,
               })
             }
-            onDeleteRow={(id) => {
+            onDeleteRow={(id) =>
               setConfirm({
                 msg: "Hapus transaksi realisasi ini?",
                 onConfirm: () => {
@@ -3639,8 +4087,8 @@ export default function BudgetManagement() {
                   showToast("Transaksi dihapus");
                   setConfirm(null);
                 },
-              });
-            }}
+              })
+            }
             showToast={showToast}
           />
           {confirm && (
@@ -3654,7 +4102,6 @@ export default function BudgetManagement() {
       </>
     );
   }
-
   if (page?.type === "realisasi") {
     const angNow = opexData.find((a) => a.id === page.ang.id) || page.ang;
     return (
@@ -3683,8 +4130,6 @@ export default function BudgetManagement() {
   const showCapex = typeFilter !== "opex";
   const showOpex = typeFilter !== "capex";
   const showBoth = typeFilter === "all";
-
-  // Label filter OPEX aktif
   const activeOpexFilter = BUDGET_MASTERS.find(
     (m) => m.kd_anggaran_master === opexKdFilter,
   );
@@ -3694,7 +4139,6 @@ export default function BudgetManagement() {
       <style>{CSS}</style>
       <div className="root">
         {toast && <Toast msg={toast} onDone={() => setToast(null)} />}
-
         <div className="hdr">
           <div>
             <h1>Anggaran &amp; Pekerjaan</h1>
@@ -3784,7 +4228,6 @@ export default function BudgetManagement() {
           </div>
         </div>
 
-        {/* ── CAPEX TOOLBAR ── */}
         {showCapex && (
           <div className="toolbar">
             <div className="flt-box">
@@ -3812,10 +4255,16 @@ export default function BudgetManagement() {
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
+            <button
+              className="btn btn-prim"
+              style={{ marginLeft: "auto" }}
+              onClick={() => setShowAddCapex(true)}
+            >
+              <Icon d={I.plus} size={14} /> Tambah Pekerjaan CAPEX
+            </button>
           </div>
         )}
 
-        {/* ── CAPEX SECTION ── */}
         {showCapex && (
           <>
             {showBoth && (
@@ -3853,6 +4302,14 @@ export default function BudgetManagement() {
             {filteredProjects.length === 0 ? (
               <div className="empty">
                 Tidak ada pekerjaan CAPEX yang cocok dengan filter.
+                <div style={{ marginTop: 12 }}>
+                  <button
+                    className="btn btn-prim"
+                    onClick={() => setShowAddCapex(true)}
+                  >
+                    <Icon d={I.plus} size={13} /> Tambah Pekerjaan CAPEX Pertama
+                  </button>
+                </div>
               </div>
             ) : (
               <>
@@ -3911,7 +4368,6 @@ export default function BudgetManagement() {
           </>
         )}
 
-        {/* ── OPEX SECTION ── */}
         {showOpex && (
           <>
             {showBoth && (
@@ -3946,10 +4402,7 @@ export default function BudgetManagement() {
                 </div>
               </div>
             )}
-
-            {/* ── OPEX TOOLBAR — filter kode anggaran master + search ── */}
             <div className="opex-toolbar">
-              {/* Dropdown filter berdasarkan kode anggaran master */}
               <div className="opex-flt-box">
                 <Icon d={I.hash} size={14} />
                 <select
@@ -3983,8 +4436,6 @@ export default function BudgetManagement() {
                   ))}
                 </select>
               </div>
-
-              {/* Search nama pos anggaran */}
               <div className="opex-srch">
                 <Icon d={I.search} size={14} />
                 <input
@@ -3996,8 +4447,6 @@ export default function BudgetManagement() {
                   }}
                 />
               </div>
-
-              {/* Badge filter aktif */}
               {opexKdFilter !== "all" && activeOpexFilter && (
                 <div className="opex-filter-badge">
                   <Icon d={I.filter} size={11} />
@@ -4014,11 +4463,25 @@ export default function BudgetManagement() {
                   </button>
                 </div>
               )}
+              <button
+                className="btn btn-green"
+                style={{ marginLeft: "auto" }}
+                onClick={() => setShowAddOpex(true)}
+              >
+                <Icon d={I.plus} size={14} /> Tambah Pos OPEX
+              </button>
             </div>
-
             {filteredOpex.length === 0 ? (
               <div className="empty">
-                Tidak ada pos anggaran OPEX yang cocok dengan filter.
+                Tidak ada pos anggaran OPEX yang cocok.
+                <div style={{ marginTop: 12 }}>
+                  <button
+                    className="btn btn-green"
+                    onClick={() => setShowAddOpex(true)}
+                  >
+                    <Icon d={I.plus} size={13} /> Tambah Pos OPEX Pertama
+                  </button>
+                </div>
               </div>
             ) : (
               <>
@@ -4055,11 +4518,25 @@ export default function BudgetManagement() {
           </>
         )}
       </div>
+
       {confirm && (
         <Confirm
           msg={confirm.msg}
           onConfirm={confirm.onConfirm}
           onCancel={() => setConfirm(null)}
+        />
+      )}
+      {showAddCapex && (
+        <TambahCapexModal
+          capexData={capexData}
+          onClose={() => setShowAddCapex(false)}
+          onSave={handleAddCapex}
+        />
+      )}
+      {showAddOpex && (
+        <TambahOpexModal
+          onClose={() => setShowAddOpex(false)}
+          onSave={handleAddOpex}
         />
       )}
     </>
