@@ -322,6 +322,21 @@ const INIT_CAPEX_FORM = [
     pekerjaan: [],
     history_anggaran: [],
   },
+  {
+    id: "CAP-F-6",
+    kd_master: "5900100000",
+    nm_master: "Beban Investasi",
+    nm_anggaran: "Pengembangan Sistem Manajemen Aset Pelindo (RKAP Lanjutan)",
+    kd_capex: "2540012",
+    thn_rkap_awal: 2026,
+    thn_rkap_akhir: 2027,
+    thn_anggaran: 2026,
+    nilai_kad: 0,
+    nilai_rkap: 0,
+    anggaran_tahunan: [],
+    pekerjaan: [],
+    history_anggaran: [],
+  },
 ];
 
 const yearOpts = (() => {
@@ -4628,107 +4643,35 @@ function CapexInputAnggaranPage({ capex, onBack, onSave }) {
               padding: "16px 20px",
               display: "flex",
               flexDirection: "column",
-              gap: 10,
+              gap: 8,
             }}
           >
-            {history.map((h, i) => (
+            {history.map((h) => (
               <div
                 key={h.id}
                 style={{
                   display: "flex",
-                  alignItems: "center",
                   justifyContent: "space-between",
-                  padding: "12px 16px",
+                  alignItems: "center",
+                  padding: "10px 14px",
                   background: "#f8fafc",
-                  borderRadius: 8,
+                  borderRadius: 6,
                   border: "1px solid #e2e8f0",
+                  fontSize: "0.85rem",
                 }}
               >
-                <div style={{ display: "flex", align: "center", gap: 12 }}>
-                  <div
-                    style={{
-                      width: 36,
-                      height: 36,
-                      background: "#dbeafe",
-                      borderRadius: 8,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontWeight: 800,
-                      fontSize: "0.78rem",
-                      color: "#1d4ed8",
-                      flexShrink: 0,
-                    }}
-                  >
-                    {i + 1}
-                  </div>
-                  <div>
-                    <div
-                      style={{
-                        fontWeight: 700,
-                        color: "#1e293b",
-                        fontSize: "0.88rem",
-                      }}
-                    >
-                      {h.thn_rkap_awal} — {h.thn_rkap_akhir}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: "0.75rem",
-                        color: "#94a3b8",
-                        marginTop: 2,
-                      }}
-                    >
-                      {fmtDate(h.tgl)}
-                    </div>
-                  </div>
-                </div>
-                <div style={{ display: "flex", gap: 24, textAlign: "right" }}>
-                  <div>
-                    <div
-                      style={{
-                        fontSize: "0.65rem",
-                        fontWeight: 700,
-                        color: "#94a3b8",
-                        textTransform: "uppercase",
-                        marginBottom: 2,
-                      }}
-                    >
-                      Nilai KAD
-                    </div>
-                    <div
-                      style={{
-                        fontWeight: 700,
-                        color: "#2563eb",
-                        fontSize: "0.88rem",
-                      }}
-                    >
-                      {fmt(h.nilai_kad)}
-                    </div>
-                  </div>
-                  <div>
-                    <div
-                      style={{
-                        fontSize: "0.65rem",
-                        fontWeight: 700,
-                        color: "#94a3b8",
-                        textTransform: "uppercase",
-                        marginBottom: 2,
-                      }}
-                    >
-                      Nilai RKAP
-                    </div>
-                    <div
-                      style={{
-                        fontWeight: 700,
-                        color: "#16a34a",
-                        fontSize: "0.88rem",
-                      }}
-                    >
-                      {fmt(h.nilai_rkap)}
-                    </div>
-                  </div>
-                </div>
+                <span style={{ color: "#1e293b", fontWeight: 600 }}>
+                  {h.thn_rkap_akhir}
+                </span>
+                <span style={{ color: "#64748b" }}>—</span>
+                <span
+                  style={{
+                    color: "#16a34a",
+                    fontWeight: 700,
+                  }}
+                >
+                  {fmt(h.nilai_rkap)}
+                </span>
               </div>
             ))}
           </div>
