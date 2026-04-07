@@ -20,6 +20,7 @@ import {
   History,
   Calendar,
   Pencil,
+  PlusCircle,
 } from "lucide-react";
 
 // ════════════════════════════════════════════════════════════════
@@ -43,6 +44,8 @@ const newId = () =>
   `id-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 const uid = () => `ID-${Date.now().toString().slice(-6)}`;
 
+const CURRENT_YEAR = new Date().getFullYear(); // 2026
+
 function pctColor(p) {
   if (p >= 100) return "#ef4444";
   if (p >= 80) return "#f59e0b";
@@ -51,26 +54,11 @@ function pctColor(p) {
 }
 function pctMeta(p) {
   if (p >= 100)
-    return {
-      label: "Over Budget",
-      bg: "#fef2f2",
-      fg: "#dc2626",
-      border: "#fecaca",
-    };
+    return { label: "Over Budget", bg: "#fef2f2", fg: "#dc2626", border: "#fecaca" };
   if (p >= 80)
-    return {
-      label: "Near Limit",
-      bg: "#fffbeb",
-      fg: "#d97706",
-      border: "#fde68a",
-    };
+    return { label: "Near Limit", bg: "#fffbeb", fg: "#d97706", border: "#fde68a" };
   if (p >= 50)
-    return {
-      label: "On Track",
-      bg: "#eff6ff",
-      fg: "#2563eb",
-      border: "#bfdbfe",
-    };
+    return { label: "On Track", bg: "#eff6ff", fg: "#2563eb", border: "#bfdbfe" };
   return { label: "Healthy", bg: "#f0fdf4", fg: "#16a34a", border: "#bbf7d0" };
 }
 
@@ -82,179 +70,130 @@ const MASTER_LIST_INIT = [
   { kd: "5021300000", nm: "Beban Jaringan dan Koneksi Data", tipe: "OPEX" },
   { kd: "5021200000", nm: "Beban Perlengkapan Kantor", tipe: "OPEX" },
   { kd: "5081500000", nm: "Beban Jasa Konsultan", tipe: "OPEX" },
-  {
-    kd: "5060700000",
-    nm: "Beban Sumber Daya Pihak Ketiga Peralatan",
-    tipe: "OPEX",
-  },
+  { kd: "5060700000", nm: "Beban Sumber Daya Pihak Ketiga Peralatan", tipe: "OPEX" },
   { kd: "5900100000", nm: "Beban Investasi", tipe: "CAPEX" },
 ];
 
 const INIT_OPEX_MASTERS = [
   {
-    id: "OPX-M-1",
-    kd: "5030905000",
-    nama: "Beban Pemeliharaan Software",
-    thn_anggaran: 2026,
-    nilai_anggaran: 350000000,
+    id: "OPX-M-1", kd: "5030905000", nama: "Beban Pemeliharaan Software",
+    thn_anggaran: 2026, nilai_anggaran: 350000000,
     realisasi_tahunan: [
       {
-        id: uid(),
-        thn: 2026,
-        realisasi_murni: 900000000,
-        realisasi_bymhd: 100000000,
+        id: uid(), thn: 2026, realisasi_murni: 900000000, realisasi_bymhd: 100000000,
         history: [
-          {
-            id: uid(),
-            tgl: "2026-01-01",
-            tipe: "initial",
-            nilai: 900000000,
-            is_initial: true,
-            keterangan: "Input awal murni",
-          },
-          {
-            id: uid(),
-            tgl: "2026-01-02",
-            tipe: "bymhd",
-            nilai: 100000000,
-            is_initial: false,
-            keterangan: "Input awal BYMHD",
-          },
+          { id: uid(), tgl: "2026-01-01", tipe: "initial", nilai: 900000000, is_initial: true, keterangan: "Input awal murni" },
+          { id: uid(), tgl: "2026-01-02", tipe: "bymhd", nilai: 100000000, is_initial: false, keterangan: "Input awal BYMHD" },
         ],
       },
     ],
   },
   {
-    id: "OPX-M-2",
-    kd: "5021300000",
-    nama: "Beban Jaringan dan Koneksi Data",
-    thn_anggaran: 2026,
-    nilai_anggaran: 288000000,
+    id: "OPX-M-2", kd: "5021300000", nama: "Beban Jaringan dan Koneksi Data",
+    thn_anggaran: 2026, nilai_anggaran: 288000000,
     realisasi_tahunan: [
       {
-        id: uid(),
-        thn: 2026,
-        realisasi_murni: 240000000,
-        realisasi_bymhd: 0,
-        history: [
-          {
-            id: uid(),
-            tgl: "2026-01-05",
-            tipe: "initial",
-            nilai: 240000000,
-            is_initial: true,
-            keterangan: "Input awal murni",
-          },
-        ],
+        id: uid(), thn: 2026, realisasi_murni: 240000000, realisasi_bymhd: 0,
+        history: [{ id: uid(), tgl: "2026-01-05", tipe: "initial", nilai: 240000000, is_initial: true, keterangan: "Input awal murni" }],
       },
     ],
   },
+  { id: "OPX-M-3", kd: "5021200000", nama: "Beban Perlengkapan Kantor", thn_anggaran: 2026, nilai_anggaran: 120000000, realisasi_tahunan: [] },
   {
-    id: "OPX-M-3",
-    kd: "5021200000",
-    nama: "Beban Perlengkapan Kantor",
-    thn_anggaran: 2026,
-    nilai_anggaran: 120000000,
-    realisasi_tahunan: [],
-  },
-  {
-    id: "OPX-M-4",
-    kd: "5081500000",
-    nama: "Beban Jasa Konsultan",
-    thn_anggaran: 2026,
-    nilai_anggaran: 800000000,
+    id: "OPX-M-4", kd: "5081500000", nama: "Beban Jasa Konsultan",
+    thn_anggaran: 2026, nilai_anggaran: 800000000,
     realisasi_tahunan: [
       {
-        id: uid(),
-        thn: 2026,
-        realisasi_murni: 150000000,
-        realisasi_bymhd: 0,
-        history: [
-          {
-            id: uid(),
-            tgl: "2026-03-01",
-            tipe: "initial",
-            nilai: 150000000,
-            is_initial: true,
-            keterangan: "Konsultan IT Masterplan",
-          },
-        ],
+        id: uid(), thn: 2026, realisasi_murni: 150000000, realisasi_bymhd: 0,
+        history: [{ id: uid(), tgl: "2026-03-01", tipe: "initial", nilai: 150000000, is_initial: true, keterangan: "Konsultan IT Masterplan" }],
       },
     ],
   },
+  { id: "OPX-M-5", kd: "5060700000", nama: "Beban Sumber Daya Pihak Ketiga Peralatan", thn_anggaran: 2026, nilai_anggaran: 900000000, realisasi_tahunan: [] },
   {
-    id: "OPX-M-5",
-    kd: "5060700000",
-    nama: "Beban Sumber Daya Pihak Ketiga Peralatan",
-    thn_anggaran: 2026,
-    nilai_anggaran: 900000000,
-    realisasi_tahunan: [],
-  },
-  {
-    id: "OPX-M-6",
-    kd: "5030906000",
-    nama: "Beban Pemeliharaan Hardware",
-    thn_anggaran: 2026,
-    nilai_anggaran: 450000000,
+    id: "OPX-M-6", kd: "5030906000", nama: "Beban Pemeliharaan Hardware",
+    thn_anggaran: 2026, nilai_anggaran: 450000000,
     realisasi_tahunan: [
       {
-        id: uid(),
-        thn: 2026,
-        realisasi_murni: 25000000,
-        realisasi_bymhd: 0,
-        history: [
-          {
-            id: uid(),
-            tgl: "2026-02-20",
-            tipe: "initial",
-            nilai: 25000000,
-            is_initial: true,
-            keterangan: "Maintenance Server Dell R750",
-          },
-        ],
+        id: uid(), thn: 2026, realisasi_murni: 25000000, realisasi_bymhd: 0,
+        history: [{ id: uid(), tgl: "2026-02-20", tipe: "initial", nilai: 25000000, is_initial: true, keterangan: "Maintenance Server Dell R750" }],
       },
     ],
   },
-  {
-    id: "OPX-M-7",
-    kd: "5021400000",
-    nama: "Beban Lisensi dan Subskripsi",
-    thn_anggaran: 2026,
-    nilai_anggaran: 300000000,
-    realisasi_tahunan: [],
-  },
+  { id: "OPX-M-7", kd: "5021400000", nama: "Beban Lisensi dan Subskripsi", thn_anggaran: 2026, nilai_anggaran: 300000000, realisasi_tahunan: [] },
 ];
 
+// ── Data CAPEX lengkap dari Excel ──
 const INIT_CAPEX_FORM = [
   {
-    id: "CAP-F-1",
-    kd_master: "5900100000",
-    nm_master: "Beban Investasi",
+    id: "CAP-F-1", kd_master: "5900100000", nm_master: "Beban Investasi",
     nm_anggaran: "Implementasi dan Standarisasi IT Infrastruktur",
-    kd_capex: "2440015",
-    thn_rkap_awal: 2024,
-    thn_rkap_akhir: 2024,
-    thn_anggaran: 2024,
-    nilai_kad: 0,
-    nilai_rkap: 0,
-    anggaran_tahunan: [],
+    kd_capex: "2440015", thn_rkap_awal: 2024, thn_rkap_akhir: 2024, thn_anggaran: 2024,
+    nilai_kad: 0, nilai_rkap: 0, anggaran_tahunan: [],
     pekerjaan: [
       {
         id: "PKJ-001",
         nm: "Pekerjaan Implementasi dan Standarisasi IT Infrastruktur PT Pelindo Multi Terminal",
-        nilai_rab: 0,
-        nilai_kontrak: 0,
-        no_pr: "",
-        no_po: "6440000026",
-        no_kontrak: "SI.01/12/8/2/PPTI/TEKI/PLMT-24",
-        tgl_kontrak: "2024-08-12",
-        durasi_kontrak: 90,
-        no_sp3: "",
-        tgl_sp3: "",
-        tgl_bamk: "2024-08-02",
-        keterangan: "",
+        nilai_rab: 0, nilai_kontrak: 0, no_pr: "", no_po: "6440000026",
+        no_kontrak: "SI.01/12/8/2/PPTI/TEKI/PLMT-24", tgl_kontrak: "2024-08-12",
+        durasi_kontrak: 90, no_sp3: "", tgl_sp3: "", tgl_bamk: "2024-08-02", keterangan: "",
       },
     ],
+    history_anggaran: [],
+  },
+  {
+    id: "CAP-F-2", kd_master: "5900100000", nm_master: "Beban Investasi",
+    nm_anggaran: "Penyediaan Network di Branch SPMT",
+    kd_capex: "2440014", thn_rkap_awal: 2024, thn_rkap_akhir: 2024, thn_anggaran: 2024,
+    nilai_kad: 0, nilai_rkap: 0, anggaran_tahunan: [], pekerjaan: [], history_anggaran: [],
+  },
+  {
+    id: "CAP-F-3", kd_master: "5900100000", nm_master: "Beban Investasi",
+    nm_anggaran: "Penyiapan Infrastruktur IT (Kantor Pusat, Pelindo Place, Pelindo Tower, Malahayati, Lhokseumawe, Bima, Badas, Parepare, Gresik, Tanjung Emas, Mekar Putih, Meulaboh, Kuala Langsa dan Bumiharjo) PT Pelindo Multi Terminal",
+    kd_capex: "2440013", thn_rkap_awal: 2024, thn_rkap_akhir: 2024, thn_anggaran: 2024,
+    nilai_kad: 0, nilai_rkap: 0, anggaran_tahunan: [], pekerjaan: [], history_anggaran: [],
+  },
+  {
+    id: "CAP-F-4", kd_master: "5900100000", nm_master: "Beban Investasi",
+    nm_anggaran: "Revisi Capex (Pemenuhan Kebutuhan Gate dan PNC Transformasi pada Branch SPMT)",
+    kd_capex: "2440020", thn_rkap_awal: 2024, thn_rkap_akhir: 2025, thn_anggaran: 2025,
+    nilai_kad: 0, nilai_rkap: 0, anggaran_tahunan: [], pekerjaan: [], history_anggaran: [],
+  },
+  {
+    id: "CAP-F-5", kd_master: "5900100000", nm_master: "Beban Investasi",
+    nm_anggaran: "Transformasi dan Digitalisasi PT Pelindo Multi Terminal",
+    kd_capex: "2540011", thn_rkap_awal: 2025, thn_rkap_akhir: 2026, thn_anggaran: 2025,
+    nilai_kad: 0, nilai_rkap: 0, anggaran_tahunan: [], pekerjaan: [], history_anggaran: [],
+  },
+  {
+    id: "CAP-F-6", kd_master: "5900100000", nm_master: "Beban Investasi",
+    nm_anggaran: "Standarisasi Perangkat Jaringan di Lingkungan PT Pelindo Multi Terminal",
+    kd_capex: "2540012", thn_rkap_awal: 2025, thn_rkap_akhir: 2026, thn_anggaran: 2025,
+    nilai_kad: 0, nilai_rkap: 0, anggaran_tahunan: [], pekerjaan: [], history_anggaran: [],
+  },
+  {
+    id: "CAP-F-7", kd_master: "5900100000", nm_master: "Beban Investasi",
+    nm_anggaran: "Penyiapan Infrastruktur IT pada Kegiatan Roro",
+    kd_capex: "2540010", thn_rkap_awal: 2025, thn_rkap_akhir: 2026, thn_anggaran: 2025,
+    nilai_kad: 0, nilai_rkap: 0, anggaran_tahunan: [], pekerjaan: [], history_anggaran: [],
+  },
+  {
+    id: "CAP-F-8", kd_master: "5900100000", nm_master: "Beban Investasi",
+    nm_anggaran: "Transformasi dan Digitalisasi PT Pelindo Multi Terminal",
+    kd_capex: "2540011", thn_rkap_awal: 2025, thn_rkap_akhir: 2027, thn_anggaran: 2026,
+    nilai_kad: 0, nilai_rkap: 0, anggaran_tahunan: [], pekerjaan: [], history_anggaran: [],
+  },
+  {
+    id: "CAP-F-9", kd_master: "5900100000", nm_master: "Beban Investasi",
+    nm_anggaran: "Standarisasi Perangkat Jaringan di Lingkungan PT Pelindo Multi Terminal",
+    kd_capex: "2540012", thn_rkap_awal: 2026, thn_rkap_akhir: 2027, thn_anggaran: 2026,
+    nilai_kad: 0, nilai_rkap: 0, anggaran_tahunan: [], pekerjaan: [], history_anggaran: [],
+  },
+  {
+    id: "CAP-F-10", kd_master: "5900100000", nm_master: "Beban Investasi",
+    nm_anggaran: "Penyiapan Infrastruktur IT pada Kegiatan Roro",
+    kd_capex: "2540010", thn_rkap_awal: 2025, thn_rkap_akhir: 2026, thn_anggaran: 2026,
+    nilai_kad: 0, nilai_rkap: 0, anggaran_tahunan: [], pekerjaan: [], history_anggaran: [],
   },
 ];
 
@@ -318,89 +257,76 @@ body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:var(--bg);c
 // SHARED STYLES (inline)
 // ════════════════════════════════════════════════════════════════
 const OVS = {
-  position: "fixed",
-  inset: 0,
-  background: "rgba(15,23,42,.4)",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  zIndex: 9000,
-  padding: 20,
+  position: "fixed", inset: 0, background: "rgba(15,23,42,.4)",
+  display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9000, padding: 20,
 };
 const BTN = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 8,
-  padding: "8px 16px",
-  borderRadius: 6,
-  border: "none",
-  background: "#2563eb",
-  color: "white",
-  fontSize: "0.85rem",
-  fontWeight: 500,
-  cursor: "pointer",
+  display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 16px",
+  borderRadius: 6, border: "none", background: "#2563eb", color: "white",
+  fontSize: "0.85rem", fontWeight: 500, cursor: "pointer",
 };
 const BTNOUT = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 8,
-  padding: "8px 16px",
-  borderRadius: 6,
-  border: "1px solid #cbd5e1",
-  background: "white",
-  color: "#334155",
-  fontSize: "0.85rem",
-  fontWeight: 500,
-  cursor: "pointer",
+  display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 16px",
+  borderRadius: 6, border: "1px solid #cbd5e1", background: "white",
+  color: "#334155", fontSize: "0.85rem", fontWeight: 500, cursor: "pointer",
 };
 const INP = {
-  padding: "10px 14px",
-  border: "1px solid #cbd5e1",
-  borderRadius: 6,
-  fontSize: "0.85rem",
-  color: "#1e293b",
-  outline: "none",
-  width: "100%",
-  background: "white",
+  padding: "10px 14px", border: "1px solid #cbd5e1", borderRadius: 6,
+  fontSize: "0.85rem", color: "#1e293b", outline: "none", width: "100%", background: "white",
 };
 const LBL = {
-  fontSize: "0.75rem",
-  fontWeight: 700,
-  letterSpacing: ".5px",
-  color: "#475569",
-  textTransform: "uppercase",
+  fontSize: "0.75rem", fontWeight: 700, letterSpacing: ".5px",
+  color: "#475569", textTransform: "uppercase",
 };
-const TABLE = {
-  width: "100%",
-  borderCollapse: "collapse",
-  fontSize: "0.85rem",
-};
+const TABLE = { width: "100%", borderCollapse: "collapse", fontSize: "0.85rem" };
 const TH = {
-  padding: "12px 14px",
-  textAlign: "left",
-  fontSize: "0.72rem",
-  fontWeight: 700,
-  color: "#475569",
-  borderBottom: "1px solid #e2e8f0",
-  textTransform: "uppercase",
-  letterSpacing: ".4px",
-  background: "#f8fafc",
+  padding: "12px 14px", textAlign: "left", fontSize: "0.72rem", fontWeight: 700,
+  color: "#475569", borderBottom: "1px solid #e2e8f0", textTransform: "uppercase",
+  letterSpacing: ".4px", background: "#f8fafc",
 };
 const TD = {
-  padding: "12px 14px",
-  verticalAlign: "middle",
-  borderBottom: "1px solid #e2e8f0",
-  color: "#334155",
+  padding: "12px 14px", verticalAlign: "middle",
+  borderBottom: "1px solid #e2e8f0", color: "#334155",
 };
 const ABTN = {
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  padding: 5,
-  borderRadius: 4,
-  border: "1px solid #e2e8f0",
-  background: "white",
-  cursor: "pointer",
+  display: "inline-flex", alignItems: "center", justifyContent: "center",
+  padding: 5, borderRadius: 4, border: "1px solid #e2e8f0", background: "white", cursor: "pointer",
+};
+
+// ── Left-right row style for inline form layout ──
+const LR_ROW = {
+  display: "flex", alignItems: "center", gap: 0,
+  borderBottom: "1px solid #f1f5f9", minHeight: 52,
+};
+const LR_LABEL = {
+  flexShrink: 0, width: 220, padding: "12px 16px",
+  fontSize: "0.72rem", fontWeight: 700, color: "#64748b",
+  textTransform: "uppercase", letterSpacing: "0.5px",
+  background: "#f8fafc", alignSelf: "stretch",
+  display: "flex", alignItems: "center",
+  borderRight: "1px solid #f1f5f9",
+};
+const LR_VALUE = {
+  flex: 1, padding: "10px 16px",
+  display: "flex", alignItems: "center", flexWrap: "wrap", gap: 8,
+};
+
+// ── Left-right row style for MODAL forms (wider label for readability) ──
+const MLR_ROW = {
+  display: "flex", alignItems: "stretch",
+  borderBottom: "1px solid #f1f5f9",
+  minHeight: 56,
+};
+const MLR_LABEL = {
+  flexShrink: 0, width: 180, padding: "14px 16px",
+  fontSize: "0.72rem", fontWeight: 700, color: "#64748b",
+  textTransform: "uppercase", letterSpacing: "0.5px",
+  background: "#f8fafc", borderRight: "1px solid #f1f5f9",
+  display: "flex", alignItems: "center",
+};
+const MLR_VALUE = {
+  flex: 1, padding: "12px 16px",
+  display: "flex", flexDirection: "column", justifyContent: "center", gap: 4,
 };
 
 const MASTER_ACCENT_COLORS = [
@@ -426,9 +352,7 @@ function ToastMsg({ msg, onDone }) {
     return () => clearTimeout(t);
   }, []);
   return (
-    <div className="toast">
-      <CheckCircle size={14} /> {msg}
-    </div>
+    <div className="toast"><CheckCircle size={14} /> {msg}</div>
   );
 }
 
@@ -436,41 +360,13 @@ function ConfirmBox({ msg, onConfirm, onCancel }) {
   return (
     <div className="overlay" onClick={onCancel}>
       <div className="cbox" onClick={(e) => e.stopPropagation()}>
-        <div
-          style={{
-            width: 48,
-            height: 48,
-            background: "#fff7ed",
-            borderRadius: "50%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "#ea580c",
-          }}
-        >
+        <div style={{ width: 48, height: 48, background: "#fff7ed", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#ea580c" }}>
           <AlertTriangle size={24} />
         </div>
-        <p style={{ fontSize: "0.9rem", fontWeight: 600, color: "var(--ink)" }}>
-          {msg}
-        </p>
+        <p style={{ fontSize: "0.9rem", fontWeight: 600, color: "var(--ink)" }}>{msg}</p>
         <div style={{ display: "flex", gap: 8, width: "100%" }}>
-          <button
-            className="btn btn-outline"
-            style={{ flex: 1, justifyContent: "center" }}
-            onClick={onCancel}
-          >
-            Batal
-          </button>
-          <button
-            className="btn"
-            style={{
-              flex: 1,
-              justifyContent: "center",
-              background: "var(--red)",
-              color: "#fff",
-            }}
-            onClick={onConfirm}
-          >
+          <button className="btn btn-outline" style={{ flex: 1, justifyContent: "center" }} onClick={onCancel}>Batal</button>
+          <button className="btn" style={{ flex: 1, justifyContent: "center", background: "var(--red)", color: "#fff" }} onClick={onConfirm}>
             <Trash2 size={14} /> Hapus
           </button>
         </div>
@@ -482,31 +378,37 @@ function ConfirmBox({ msg, onConfirm, onCancel }) {
 function Fld({ label, required, children, helper }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-      <label style={LBL}>
-        {label}
-        {required && <span style={{ color: "#ef4444" }}> *</span>}
-      </label>
+      <label style={LBL}>{label}{required && <span style={{ color: "#ef4444" }}> *</span>}</label>
       {children}
-      {helper && (
-        <span style={{ fontSize: "0.75rem", color: "#94a3b8" }}>{helper}</span>
-      )}
+      {helper && <span style={{ fontSize: "0.75rem", color: "#94a3b8" }}>{helper}</span>}
     </div>
   );
 }
 
 function Card({ children, style }) {
   return (
-    <div
-      style={{
-        background: "white",
-        borderRadius: 10,
-        border: "1px solid #e2e8f0",
-        padding: "1.4rem",
-        boxShadow: "0 1px 2px rgba(0,0,0,.02)",
-        ...style,
-      }}
-    >
+    <div style={{ background: "white", borderRadius: 10, border: "1px solid #e2e8f0", padding: "1.4rem", boxShadow: "0 1px 2px rgba(0,0,0,.02)", ...style }}>
       {children}
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════
+// CAPEX MODAL FORM ROW — reusable left-right row for modals
+// ════════════════════════════════════════════════════════════════
+function ModalFormRow({ label, required, helper, children, noBorder }) {
+  return (
+    <div style={{ ...MLR_ROW, borderBottom: noBorder ? "none" : "1px solid #f1f5f9" }}>
+      <div style={MLR_LABEL}>
+        {label}
+        {required && <span style={{ color: "#ef4444", marginLeft: 2 }}>*</span>}
+      </div>
+      <div style={MLR_VALUE}>
+        {children}
+        {helper && (
+          <span style={{ fontSize: "0.72rem", color: "#94a3b8" }}>{helper}</span>
+        )}
+      </div>
     </div>
   );
 }
@@ -536,14 +438,7 @@ function HistoryPopup({ row, title, onClose, lbl = "Realisasi" }) {
   const grandTotal = rows.reduce((acc, r) => acc + (r.jumlah || 0), 0);
   return (
     <div style={OVS} onClick={onClose}>
-      <div
-        style={{
-          background: "white", borderRadius: 12, width: "100%", maxWidth: 720,
-          maxHeight: "85vh", display: "flex", flexDirection: "column",
-          boxShadow: "0 10px 25px rgba(0,0,0,.1)",
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div style={{ background: "white", borderRadius: 12, width: "100%", maxWidth: 720, maxHeight: "85vh", display: "flex", flexDirection: "column", boxShadow: "0 10px 25px rgba(0,0,0,.1)" }} onClick={(e) => e.stopPropagation()}>
         <div style={{ padding: "16px 20px", borderBottom: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
@@ -704,7 +599,7 @@ function InlineEditCurrencyField({ label, value, onSave }) {
 }
 
 // ════════════════════════════════════════════════════════════════
-// EDIT REALISASI
+// EDIT REALISASI — REVISED: left-right layout
 // ════════════════════════════════════════════════════════════════
 function EditRealisasiSection({ row, masterNama, onBack, onSave, onUpdateRow }) {
   const [tipe, setTipe] = useState("");
@@ -735,6 +630,7 @@ function EditRealisasiSection({ row, masterNama, onBack, onSave, onUpdateRow }) 
 
   return (
     <div style={{ border: "1px solid #e2e8f0", borderRadius: 8, overflow: "hidden", marginTop: 12 }}>
+      {/* Top info table — unchanged */}
       <table style={{ ...TABLE, border: "none" }}>
         <thead>
           <tr>
@@ -749,39 +645,89 @@ function EditRealisasiSection({ row, masterNama, onBack, onSave, onUpdateRow }) 
           <InlineEditCurrencyField label="Total Realisasi Berjalan" value={currentTotal} onSave={(v) => onUpdateRow && onUpdateRow({ overrideTotal: v })} />
         </tbody>
       </table>
-      <div style={{ padding: "16px 18px", borderTop: "1px solid #e2e8f0", background: "#fafafa" }}>
-        <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 10 }}>
-          Jenis Perubahan <span style={{ color: "#ef4444" }}>*</span>
-        </div>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {TIPE_OPTIONS.map((opt) => (
-            <button key={opt.value} onClick={() => setTipe(opt.value)}
-              style={{ padding: "8px 16px", borderRadius: 6, border: `2px solid ${tipe === opt.value ? opt.color : "#e2e8f0"}`, background: tipe === opt.value ? opt.bg : "white", color: tipe === opt.value ? opt.color : "#64748b", fontWeight: tipe === opt.value ? 700 : 500, fontSize: "0.82rem", cursor: "pointer", transition: "all .15s" }}>
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      </div>
-      {tipe && (
-        <div style={{ padding: "16px 18px", borderTop: "1px solid #e2e8f0", background: "white" }}>
-          <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-            <div style={{ flex: 1, minWidth: 200 }}>
-              <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>
-                Nilai Perubahan (IDR) <span style={{ color: "#ef4444" }}>*</span>
-              </div>
-              <input type="number" style={{ ...INP }} placeholder="Contoh: 50000000" value={nilai} onChange={(e) => setNilai(e.target.value)} />
-              {parseFloat(nilai) > 0 && <div style={{ marginTop: 4, fontSize: "0.78rem", color: "#64748b" }}>≈ {fmt(nilai)}</div>}
-            </div>
-            <div style={{ flex: 2, minWidth: 200 }}>
-              <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 6 }}>Keterangan (opsional)</div>
-              <input style={INP} placeholder="Catatan perubahan..." value={ket} onChange={(e) => setKet(e.target.value)} />
-            </div>
+
+      {/* ── REVISED: Jenis Perubahan — left label, right dropdown ── */}
+      <div style={{ borderTop: "1px solid #e2e8f0", background: "#fafafa" }}>
+        {/* Row: Jenis Perubahan */}
+        <div style={LR_ROW}>
+          <div style={LR_LABEL}>
+            Jenis Perubahan <span style={{ color: "#ef4444", marginLeft: 2 }}>*</span>
+          </div>
+          <div style={{ ...LR_VALUE, flexWrap: "wrap", gap: 8 }}>
+            <select
+              style={{
+                ...INP,
+                width: "auto",
+                minWidth: 220,
+                maxWidth: 340,
+                background: tipe ? (() => {
+                  const opt = TIPE_OPTIONS.find(o => o.value === tipe);
+                  return opt ? opt.bg : "white";
+                })() : "white",
+                color: tipe ? (() => {
+                  const opt = TIPE_OPTIONS.find(o => o.value === tipe);
+                  return opt ? opt.color : "#334155";
+                })() : "#334155",
+                border: tipe ? (() => {
+                  const opt = TIPE_OPTIONS.find(o => o.value === tipe);
+                  return opt ? `2px solid ${opt.color}` : "1px solid #cbd5e1";
+                })() : "1px solid #cbd5e1",
+                fontWeight: tipe ? 700 : 400,
+              }}
+              value={tipe}
+              onChange={(e) => setTipe(e.target.value)}
+            >
+              <option value="">— Pilih Jenis Perubahan —</option>
+              {TIPE_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
           </div>
         </div>
-      )}
+
+        {/* Row: Nilai Perubahan */}
+        <div style={LR_ROW}>
+          <div style={LR_LABEL}>
+            Nilai Perubahan (IDR) <span style={{ color: "#ef4444", marginLeft: 2 }}>*</span>
+          </div>
+          <div style={{ ...LR_VALUE, flexDirection: "column", alignItems: "flex-start", gap: 4 }}>
+            <input
+              type="number"
+              style={{ ...INP, maxWidth: 340, width: "100%" }}
+              placeholder="Contoh: 50000000"
+              value={nilai}
+              onChange={(e) => setNilai(e.target.value)}
+            />
+            {parseFloat(nilai) > 0 && (
+              <span style={{ fontSize: "0.78rem", color: "#64748b" }}>≈ {fmt(nilai)}</span>
+            )}
+          </div>
+        </div>
+
+        {/* Row: Keterangan */}
+        <div style={{ ...LR_ROW, borderBottom: "none" }}>
+          <div style={LR_LABEL}>
+            Keterangan <span style={{ fontSize: "0.65rem", color: "#94a3b8", fontWeight: 500, textTransform: "none", letterSpacing: 0, marginLeft: 4 }}>(opsional)</span>
+          </div>
+          <div style={LR_VALUE}>
+            <input
+              style={{ ...INP, maxWidth: 400, width: "100%" }}
+              placeholder="Catatan perubahan..."
+              value={ket}
+              onChange={(e) => setKet(e.target.value)}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Footer buttons */}
       <div style={{ padding: "12px 18px", borderTop: "1px solid #e2e8f0", background: "#f8fafc", display: "flex", justifyContent: "flex-end", gap: 10 }}>
         <button style={{ ...BTNOUT, fontSize: "0.82rem" }} onClick={onBack}>Batal</button>
-        <button style={{ ...BTN, background: "#ea580c", opacity: !tipe || !nilai ? 0.5 : 1, padding: "9px 18px", borderRadius: 8 }} disabled={!tipe || !nilai} onClick={handleSubmit}>
+        <button
+          style={{ ...BTN, background: "#ea580c", opacity: !tipe || !nilai ? 0.5 : 1, padding: "9px 18px", borderRadius: 8 }}
+          disabled={!tipe || !nilai}
+          onClick={handleSubmit}
+        >
           <Save size={15} /> Submit Perubahan
         </button>
       </div>
@@ -855,7 +801,7 @@ function RealisasiSection({ master, setMasters, toast_ }) {
             const nilaiEntry = Math.abs(selisih);
             updated.realisasi_murni = changes.overrideTotal;
             updated.realisasi_bymhd = 0;
-            updated.history = [...(r.history || []), { id: uid(), tgl: today, tipe: tipeEntry, nilai: nilaiEntry, keterangan: "Edit langsung total realisasi berjalan", is_initial: false }];
+            updated.history = [...(r.history || []), { id: uid(), tgl: new Date().toISOString().split("T")[0], tipe: tipeEntry, nilai: nilaiEntry, keterangan: "Edit langsung total realisasi berjalan", is_initial: false }];
           }
           return updated;
         }),
@@ -939,9 +885,7 @@ function RealisasiSection({ master, setMasters, toast_ }) {
         </thead>
         <tbody>
           {list.length === 0 ? (
-            <tr>
-              <td colSpan={6} style={{ ...TD, textAlign: "center", color: "#94a3b8", padding: 24, fontSize: "0.82rem", background: "#fafafa", fontStyle: "italic" }}>Belum ada data realisasi tahunan.</td>
-            </tr>
+            <tr><td colSpan={6} style={{ ...TD, textAlign: "center", color: "#94a3b8", padding: 24, fontSize: "0.82rem", background: "#fafafa", fontStyle: "italic" }}>Belum ada data realisasi tahunan.</td></tr>
           ) : (
             list.map((row, idx) => {
               const total = (row.realisasi_murni || 0) + (row.realisasi_bymhd || 0);
@@ -997,10 +941,8 @@ function OpexModule({ masterList, setMasterList }) {
   const [showAddMaster, setShowAddMaster] = useState(false);
   const [editMaster, setEditMaster] = useState(null);
 
-  // ── Filter states ──
   const [filterThnFrom, setFilterThnFrom] = useState("");
   const [filterThnTo, setFilterThnTo] = useState("");
-  // filterNama = nama pos anggaran yang dipilih dari dropdown (string)
   const [filterNama, setFilterNama] = useState("");
 
   const PAGE_SIZE = 5;
@@ -1038,7 +980,6 @@ function OpexModule({ masterList, setMasterList }) {
     });
   };
 
-  // ── Nama options: filtered by year range if set, else ALL masters ──
   const namaOptions = useMemo(() => {
     const yearFrom = filterThnFrom ? parseInt(filterThnFrom) : null;
     const yearTo = filterThnTo ? parseInt(filterThnTo) : null;
@@ -1048,23 +989,18 @@ function OpexModule({ masterList, setMasterList }) {
       return true;
     });
     const seen = new Set();
-    return pool
-      .map((m) => ({ id: m.id, nama: m.nama, kd: m.kd }))
-      .filter((item) => { if (seen.has(item.nama)) return false; seen.add(item.nama); return true; })
-      .sort((a, b) => a.nama.localeCompare(b.nama));
+    return pool.map((m) => ({ id: m.id, nama: m.nama, kd: m.kd })).filter((item) => { if (seen.has(item.nama)) return false; seen.add(item.nama); return true; }).sort((a, b) => a.nama.localeCompare(b.nama));
   }, [masters, filterThnFrom, filterThnTo]);
 
-  // ── When year range changes, reset filterNama if no longer in options ──
   useEffect(() => {
     if (filterNama && filterNama !== "SEMUA" && !namaOptions.find((o) => o.nama === filterNama)) {
       setFilterNama("");
     }
   }, [namaOptions]);
 
-  // ── filteredMasters: logic Tampilkan Semua / Filter Pos ──
   const filteredMasters = useMemo(() => {
     setCurrentPage(1);
-    if (!filterNama) return []; // belum pilih pos → jangan tampilkan apa-apa
+    if (!filterNama) return [];
     return masters.filter((m) => {
       if (filterThnFrom && m.thn_anggaran < parseInt(filterThnFrom)) return false;
       if (filterThnTo && m.thn_anggaran > parseInt(filterThnTo)) return false;
@@ -1073,10 +1009,8 @@ function OpexModule({ masterList, setMasterList }) {
     });
   }, [masters, filterThnFrom, filterThnTo, filterNama]);
 
-  // ── Summary stats (atas): hitung dari semua master sesuai filter tahun + nama ──
   const kpiBase = useMemo(() => {
     if (filterNama) return filteredMasters;
-    // Jika belum pilih nama, KPI berdasarkan filter tahun saja
     return masters.filter((m) => {
       if (filterThnFrom && m.thn_anggaran < parseInt(filterThnFrom)) return false;
       if (filterThnTo && m.thn_anggaran > parseInt(filterThnTo)) return false;
@@ -1099,7 +1033,6 @@ function OpexModule({ masterList, setMasterList }) {
       {toast && <ToastMsg msg={toast} onDone={() => setToast(null)} />}
       {confirm && <ConfirmBox msg={confirm.msg} onConfirm={confirm.onConfirm} onCancel={() => setConfirm(null)} />}
 
-      {/* Modal Tambah Master */}
       {showAddMaster && (
         <div style={OVS} onClick={() => setShowAddMaster(false)}>
           <div style={{ background: "white", borderRadius: 12, padding: 24, maxWidth: 440, width: "100%", boxShadow: "0 10px 25px rgba(0,0,0,.1)" }} onClick={(e) => e.stopPropagation()}>
@@ -1108,35 +1041,26 @@ function OpexModule({ masterList, setMasterList }) {
               <button style={{ background: "transparent", border: "none", cursor: "pointer", color: "#64748b" }} onClick={() => setShowAddMaster(false)}><X size={20} /></button>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-              <Fld label="Nama Anggaran Master" required>
-                <input style={INP} placeholder="Contoh: Beban Pemeliharaan Software" value={addForm.nama} onChange={(e) => setAddForm((f) => ({ ...f, nama: e.target.value }))} />
-              </Fld>
-              <Fld label="Kode Anggaran">
-                <input style={INP} placeholder="Contoh: 5030905000" value={addForm.kd} onChange={(e) => setAddForm((f) => ({ ...f, kd: e.target.value }))} />
-              </Fld>
+              <Fld label="Nama Anggaran Master" required><input style={INP} placeholder="Contoh: Beban Pemeliharaan Software" value={addForm.nama} onChange={(e) => setAddForm((f) => ({ ...f, nama: e.target.value }))} /></Fld>
+              <Fld label="Kode Anggaran"><input style={INP} placeholder="Contoh: 5030905000" value={addForm.kd} onChange={(e) => setAddForm((f) => ({ ...f, kd: e.target.value }))} /></Fld>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 <Fld label="Tahun Anggaran" required>
                   <select style={INP} value={addForm.thn_anggaran} onChange={(e) => setAddForm((f) => ({ ...f, thn_anggaran: e.target.value }))}>
                     {yearOpts.map((y) => <option key={y} value={y}>{y}</option>)}
                   </select>
                 </Fld>
-                <Fld label="Nilai Anggaran (Rp)" required>
-                  <input type="number" style={INP} placeholder="0" value={addForm.nilai_anggaran} onChange={(e) => setAddForm((f) => ({ ...f, nilai_anggaran: e.target.value }))} />
-                </Fld>
+                <Fld label="Nilai Anggaran (Rp)" required><input type="number" style={INP} placeholder="0" value={addForm.nilai_anggaran} onChange={(e) => setAddForm((f) => ({ ...f, nilai_anggaran: e.target.value }))} /></Fld>
               </div>
               {parseFloat(addForm.nilai_anggaran) > 0 && <div style={{ fontSize: "0.78rem", color: "#64748b" }}>≈ {fmt(addForm.nilai_anggaran)}</div>}
             </div>
             <div style={{ display: "flex", gap: 10, marginTop: 22, justifyContent: "flex-end" }}>
               <button style={BTNOUT} onClick={() => setShowAddMaster(false)}>Batal</button>
-              <button style={{ ...BTN, background: "#16a34a", opacity: addForm.nama && addForm.nilai_anggaran ? 1 : 0.5 }} disabled={!addForm.nama || !addForm.nilai_anggaran} onClick={handleAddMaster}>
-                <Plus size={14} /> Tambahkan
-              </button>
+              <button style={{ ...BTN, background: "#16a34a", opacity: addForm.nama && addForm.nilai_anggaran ? 1 : 0.5 }} disabled={!addForm.nama || !addForm.nilai_anggaran} onClick={handleAddMaster}><Plus size={14} /> Tambahkan</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal Edit Master */}
       {editMaster && (
         <div style={OVS} onClick={() => setEditMaster(null)}>
           <div style={{ background: "white", borderRadius: 12, padding: 24, maxWidth: 440, width: "100%", boxShadow: "0 10px 25px rgba(0,0,0,.1)" }} onClick={(e) => e.stopPropagation()}>
@@ -1145,18 +1069,14 @@ function OpexModule({ masterList, setMasterList }) {
               <button style={{ background: "transparent", border: "none", cursor: "pointer", color: "#64748b" }} onClick={() => setEditMaster(null)}><X size={20} /></button>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-              <Fld label="Nama Anggaran Master" required>
-                <input style={INP} value={editMaster.nama} onChange={(e) => setEditMaster((m) => ({ ...m, nama: e.target.value }))} />
-              </Fld>
+              <Fld label="Nama Anggaran Master" required><input style={INP} value={editMaster.nama} onChange={(e) => setEditMaster((m) => ({ ...m, nama: e.target.value }))} /></Fld>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 <Fld label="Tahun Anggaran">
                   <select style={INP} value={editMaster.thn_anggaran} onChange={(e) => setEditMaster((m) => ({ ...m, thn_anggaran: e.target.value }))}>
                     {yearOpts.map((y) => <option key={y} value={y}>{y}</option>)}
                   </select>
                 </Fld>
-                <Fld label="Nilai Anggaran (Rp)">
-                  <input type="number" style={INP} value={editMaster.nilai_anggaran} onChange={(e) => setEditMaster((m) => ({ ...m, nilai_anggaran: e.target.value }))} />
-                </Fld>
+                <Fld label="Nilai Anggaran (Rp)"><input type="number" style={INP} value={editMaster.nilai_anggaran} onChange={(e) => setEditMaster((m) => ({ ...m, nilai_anggaran: e.target.value }))} /></Fld>
               </div>
               {parseFloat(editMaster.nilai_anggaran) > 0 && <div style={{ fontSize: "0.78rem", color: "#64748b" }}>≈ {fmt(editMaster.nilai_anggaran)}</div>}
             </div>
@@ -1168,7 +1088,6 @@ function OpexModule({ masterList, setMasterList }) {
         </div>
       )}
 
-      {/* KPI STRIP */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14 }}>
         {[
           { label: filterNama && filterNama !== "SEMUA" ? "Total Anggaran (dipilih)" : "Total Anggaran", val: fmt(totalAnggaran), color: "#2563eb", bg: "#eff6ff" },
@@ -1183,164 +1102,61 @@ function OpexModule({ masterList, setMasterList }) {
         ))}
       </div>
 
-      {/* ── PANEL DAFTAR + FILTER (SUDAH DIPERBAIKI UI-NYA) ── */}
       <div style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 10, overflow: "hidden" }}>
-
-        {/* Baris atas: judul + tombol tambah */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 18px", borderBottom: "1px solid #f1f5f9" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <Database size={17} style={{ color: "#16a34a" }} />
             <span style={{ fontSize: "0.95rem", fontWeight: 800, color: "#0f172a" }}>Daftar Anggaran Master OPEX</span>
-            <span style={{ fontSize: "0.72rem", background: "#dcfce7", color: "#16a34a", fontWeight: 700, padding: "2px 8px", borderRadius: 99, border: "1px solid #bbf7d0" }}>
-              {masters.length} pos
-            </span>
+            <span style={{ fontSize: "0.72rem", background: "#dcfce7", color: "#16a34a", fontWeight: 700, padding: "2px 8px", borderRadius: 99, border: "1px solid #bbf7d0" }}>{masters.length} pos</span>
           </div>
-          <button style={{ ...BTN, background: "#16a34a", padding: "8px 14px", fontSize: "0.78rem" }} onClick={() => setShowAddMaster(true)}>
-            <Plus size={13} /> Tambah Anggaran Master
-          </button>
+          <button style={{ ...BTN, background: "#16a34a", padding: "8px 14px", fontSize: "0.78rem" }} onClick={() => setShowAddMaster(true)}><Plus size={13} /> Tambah Anggaran Master</button>
         </div>
 
-        {/* ── FILTER PANEL ── */}
         <div style={{ padding: "20px 24px", background: "#f8fafc", borderBottom: "1px solid #f1f5f9" }}>
-          
-          {/* Label Header Filter */}
           <div style={{ fontSize: "0.75rem", fontWeight: 800, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 16, display: "flex", alignItems: "center", gap: 6 }}>
-            <Search size={14} style={{ color: "#64748b" }} />
-            Filter & Pencarian
+            <Search size={14} style={{ color: "#64748b" }} />Filter & Pencarian
           </div>
-
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-
-            {/* ── BARIS 1: Filter range tahun (opsional) ── */}
             <div style={{ display: "flex", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
-              
-              {/* Kolom Label */}
               <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 160, paddingTop: 8 }}>
                 <Calendar size={15} style={{ color: "#64748b" }} />
-                <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "#334155", whiteSpace: "nowrap" }}>
-                  Tahun Anggaran
-                </span>
+                <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "#334155", whiteSpace: "nowrap" }}>Tahun Anggaran</span>
                 <span style={{ fontSize: "0.7rem", color: "#94a3b8", fontStyle: "italic", fontWeight: 500 }}>(opsional)</span>
               </div>
-
-              {/* Kolom Input */}
               <div style={{ display: "flex", alignItems: "center", gap: 12, flex: 1, flexWrap: "wrap" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: "0.85rem", color: "#64748b", fontWeight: 500, whiteSpace: "nowrap" }}>Dari</span>
-                  <select
-                    style={{
-                      ...INP, width: 130, padding: "8px 12px", fontSize: "0.85rem",
-                      background: filterThnFrom ? "#eff6ff" : "#ffffff",
-                      border: filterThnFrom ? "1px solid #bfdbfe" : "1px solid #cbd5e1",
-                      color: filterThnFrom ? "#1d4ed8" : "#334155",
-                      fontWeight: filterThnFrom ? 600 : 400, cursor: "pointer",
-                      boxShadow: "0 1px 2px rgba(0,0,0,0.02)"
-                    }}
-                    value={filterThnFrom}
-                    onChange={(e) => setFilterThnFrom(e.target.value)}
-                  >
+                  <select style={{ ...INP, width: 130, padding: "8px 12px", fontSize: "0.85rem", background: filterThnFrom ? "#eff6ff" : "#ffffff", border: filterThnFrom ? "1px solid #bfdbfe" : "1px solid #cbd5e1", color: filterThnFrom ? "#1d4ed8" : "#334155", fontWeight: filterThnFrom ? 600 : 400, cursor: "pointer" }} value={filterThnFrom} onChange={(e) => setFilterThnFrom(e.target.value)}>
                     <option value="">— Semua —</option>
                     {yearOpts.map((y) => <option key={y} value={y}>{y}</option>)}
                   </select>
                 </div>
-
                 <div style={{ width: 16, height: 2, background: hasYearFilter ? "#bfdbfe" : "#cbd5e1", borderRadius: 99, flexShrink: 0 }} />
-
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontSize: "0.85rem", color: "#64748b", fontWeight: 500, whiteSpace: "nowrap" }}>Sampai</span>
-                  <select
-                    style={{
-                      ...INP, width: 130, padding: "8px 12px", fontSize: "0.85rem",
-                      background: filterThnTo ? "#eff6ff" : "#ffffff",
-                      border: filterThnTo ? "1px solid #bfdbfe" : "1px solid #cbd5e1",
-                      color: filterThnTo ? "#1d4ed8" : "#334155",
-                      fontWeight: filterThnTo ? 600 : 400, cursor: "pointer",
-                      boxShadow: "0 1px 2px rgba(0,0,0,0.02)"
-                    }}
-                    value={filterThnTo}
-                    onChange={(e) => setFilterThnTo(e.target.value)}
-                  >
+                  <select style={{ ...INP, width: 130, padding: "8px 12px", fontSize: "0.85rem", background: filterThnTo ? "#eff6ff" : "#ffffff", border: filterThnTo ? "1px solid #bfdbfe" : "1px solid #cbd5e1", color: filterThnTo ? "#1d4ed8" : "#334155", fontWeight: filterThnTo ? 600 : 400, cursor: "pointer" }} value={filterThnTo} onChange={(e) => setFilterThnTo(e.target.value)}>
                     <option value="">— Semua —</option>
                     {yearOpts.map((y) => <option key={y} value={y}>{y}</option>)}
                   </select>
                 </div>
-
-                {/* Badge range aktif */}
-                {hasYearFilter && (
-                  <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 12px", background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 8, fontSize: "0.8rem", color: "#2563eb", fontWeight: 600, marginLeft: 8 }}>
-                    <Calendar size={13} />
-                    {filterThnFrom && filterThnTo ? `${filterThnFrom} – ${filterThnTo}` : filterThnFrom ? `≥ ${filterThnFrom}` : `≤ ${filterThnTo}`}
-                    <span style={{ fontSize: "0.75rem", color: "#64748b", fontWeight: 500 }}>({namaOptions.length} pos)</span>
-                  </div>
-                )}
               </div>
             </div>
-
-            {/* ── BARIS 2: Dropdown pos anggaran (auto-filtered by tahun) ── */}
             <div style={{ display: "flex", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
-              
-              {/* Kolom Label */}
               <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 160, paddingTop: 8 }}>
                 <Search size={15} style={{ color: "#64748b" }} />
                 <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "#334155", whiteSpace: "nowrap" }}>Pos Anggaran</span>
               </div>
-
-              {/* Kolom Input */}
               <div style={{ display: "flex", alignItems: "center", gap: 12, flex: 1, flexWrap: "wrap" }}>
-                <select
-                  style={{
-                    ...INP,
-                    maxWidth: 480,
-                    padding: "9px 12px",
-                    fontSize: "0.85rem",
-                    background: filterNama ? "#f0fdf4" : "#ffffff",
-                    border: filterNama ? "1px solid #bbf7d0" : "1px solid #cbd5e1",
-                    color: filterNama ? "#15803d" : "#334155",
-                    fontWeight: filterNama ? 600 : 400,
-                    cursor: "pointer",
-                    boxShadow: "0 1px 2px rgba(0,0,0,0.02)"
-                  }}
-                  value={filterNama}
-                  onChange={(e) => { setFilterNama(e.target.value); setCurrentPage(1); }}
-                >
-                  <option value="">
-                    {namaOptions.length === 0
-                      ? "— Tidak ada pos pada rentang tahun ini —"
-                      : `— Pilih Pos Anggaran (${namaOptions.length} tersedia) —`}
-                  </option>
-                  {/* OPSI TAMPILKAN SEMUA DITAMBAHKAN DI SINI */}
-                  {namaOptions.length > 0 && (
-                    <option value="SEMUA">— Tampilkan Semua Pos Anggaran —</option>
-                  )}
-                  {namaOptions.map((item) => (
-                    <option key={item.id} value={item.nama}>{item.nama}</option>
-                  ))}
+                <select style={{ ...INP, maxWidth: 480, padding: "9px 12px", fontSize: "0.85rem", background: filterNama ? "#f0fdf4" : "#ffffff", border: filterNama ? "1px solid #bbf7d0" : "1px solid #cbd5e1", color: filterNama ? "#15803d" : "#334155", fontWeight: filterNama ? 600 : 400, cursor: "pointer" }} value={filterNama} onChange={(e) => { setFilterNama(e.target.value); setCurrentPage(1); }}>
+                  <option value="">{namaOptions.length === 0 ? "— Tidak ada pos pada rentang tahun ini —" : `— Pilih Pos Anggaran (${namaOptions.length} tersedia) —`}</option>
+                  {namaOptions.length > 0 && <option value="SEMUA">— Tampilkan Semua Pos Anggaran —</option>}
+                  {namaOptions.map((item) => <option key={item.id} value={item.nama}>{item.nama}</option>)}
                 </select>
-
-                {/* Hint pilih pos */}
-                {!filterNama && (
-                  <div style={{ fontSize: "0.8rem", color: "#94a3b8", fontStyle: "italic", display: "flex", alignItems: "center", gap: 4 }}>
-                    <ChevronDown size={14} />
-                    Pilih pos anggaran untuk melihat detail
-                  </div>
-                )}
               </div>
             </div>
-
-            {/* ── BARIS 3: Info & reset filter ── */}
             {hasActiveFilter && (
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8, marginTop: 8, paddingTop: 16, borderTop: "1px dashed #cbd5e1" }}>
-                <div style={{ fontSize: "0.85rem", color: "#64748b" }}>
-                  {filterNama ? (
-                    <>Menampilkan detail <b style={{ color: "#15803d" }}>{filterNama === "SEMUA" ? "Semua Pos Anggaran" : `"${filterNama}"`}</b>{hasYearFilter && <> pada tahun <b style={{ color: "#1d4ed8" }}>{filterThnFrom && filterThnTo ? `${filterThnFrom}–${filterThnTo}` : filterThnFrom ? `≥${filterThnFrom}` : `≤${filterThnTo}`}</b></>}</>
-                  ) : (
-                    <>Filter tahun aktif — silakan pilih pos anggaran untuk melihat detail</>
-                  )}
-                </div>
-                <button
-                  style={{ ...BTNOUT, padding: "8px 14px", fontSize: "0.8rem", color: "#ef4444", borderColor: "#fecaca", background: "#fef2f2" }}
-                  onClick={() => { setFilterThnFrom(""); setFilterThnTo(""); setFilterNama(""); }}
-                >
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", marginTop: 8, paddingTop: 16, borderTop: "1px dashed #cbd5e1" }}>
+                <button style={{ ...BTNOUT, padding: "8px 14px", fontSize: "0.8rem", color: "#ef4444", borderColor: "#fecaca", background: "#fef2f2" }} onClick={() => { setFilterThnFrom(""); setFilterThnTo(""); setFilterNama(""); }}>
                   <X size={14} /> Reset Semua Filter
                 </button>
               </div>
@@ -1348,25 +1164,17 @@ function OpexModule({ masterList, setMasterList }) {
           </div>
         </div>
 
-        {/* ── PROMPT jika belum pilih pos ── */}
         {!filterNama && (
           <div style={{ padding: "32px 24px", textAlign: "center" }}>
             <div style={{ width: 56, height: 56, background: "#f0fdf4", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
               <Search size={24} style={{ color: "#16a34a" }} />
             </div>
-            <div style={{ fontSize: "0.95rem", fontWeight: 600, color: "#374151", marginBottom: 8 }}>
-              Pilih pos anggaran untuk melihat detail
-            </div>
-            <div style={{ fontSize: "0.82rem", color: "#94a3b8" }}>
-              {hasYearFilter
-                ? `${namaOptions.length} pos anggaran tersedia pada rentang tahun yang dipilih. Gunakan dropdown "Pos Anggaran" di atas.`
-                : `Gunakan dropdown "Pos Anggaran" di atas, atau filter tahun terlebih dahulu untuk mempersempit pilihan.`}
-            </div>
+            <div style={{ fontSize: "0.95rem", fontWeight: 600, color: "#374151", marginBottom: 8 }}>Pilih pos anggaran untuk melihat detail</div>
+            <div style={{ fontSize: "0.82rem", color: "#94a3b8" }}>Gunakan dropdown "Pos Anggaran" di atas, atau filter tahun terlebih dahulu.</div>
           </div>
         )}
       </div>
 
-      {/* ── DETAIL KARTU — hanya tampil setelah filterNama dipilih ── */}
       {filterNama && (
         <>
           {filteredMasters.length === 0 ? (
@@ -1381,16 +1189,12 @@ function OpexModule({ masterList, setMasterList }) {
                 const pc = pctColor(pct);
                 const pmeta = pctMeta(pct);
                 const accent = getMasterAccent(globalIdx);
-
                 return (
-                  <div key={m.id} style={{ background: "white", borderLeft: `5px solid ${accent.border}`, border: `1px solid ${accent.headerBorder}`, borderRadius: 12, overflow: "hidden", boxShadow: `0 2px 8px rgba(0,0,0,.04)` }}>
-                    {/* ── HEADER KARTU ── */}
+                  <div key={m.id} style={{ background: "white", borderLeft: `5px solid ${accent.border}`, border: `1px solid ${accent.headerBorder}`, borderRadius: 12, overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,.04)" }}>
                     <div style={{ background: accent.headerBg, borderBottom: `1px solid ${accent.headerBorder}`, padding: "14px 18px" }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
                         <div style={{ display: "flex", alignItems: "flex-start", gap: 12, flex: 1 }}>
-                          <div style={{ minWidth: 32, height: 32, borderRadius: 8, background: accent.badge, border: `1px solid ${accent.headerBorder}`, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "0.8rem", color: accent.badgeText, flexShrink: 0, marginTop: 2 }}>
-                            {globalIdx + 1}
-                          </div>
+                          <div style={{ minWidth: 32, height: 32, borderRadius: 8, background: accent.badge, border: `1px solid ${accent.headerBorder}`, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "0.8rem", color: accent.badgeText, flexShrink: 0, marginTop: 2 }}>{globalIdx + 1}</div>
                           <div style={{ flex: 1 }}>
                             <div style={{ fontWeight: 800, color: "#0f172a", fontSize: "0.95rem", lineHeight: 1.3, marginBottom: 6 }}>{m.nama}</div>
                             <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
@@ -1400,28 +1204,20 @@ function OpexModule({ masterList, setMasterList }) {
                             </div>
                           </div>
                         </div>
-
-                        {/* Progress + aksi */}
                         <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
                           <div style={{ textAlign: "center", minWidth: 68 }}>
                             <div style={{ fontSize: "1.1rem", fontWeight: 800, color: pc, lineHeight: 1, marginBottom: 5 }}>{pct}%</div>
                             <div style={{ width: 68, height: 6, background: "#e2e8f0", borderRadius: 99, overflow: "hidden" }}>
-                              <div style={{ width: `${Math.min(pct, 100)}%`, height: "100%", background: pc, borderRadius: 99, transition: "width .5s" }} />
+                              <div style={{ width: `${Math.min(pct, 100)}%`, height: "100%", background: pc, borderRadius: 99 }} />
                             </div>
                             <div style={{ fontSize: "0.62rem", color: "#94a3b8", marginTop: 3, fontWeight: 600 }}>TERPAKAI</div>
                           </div>
                           <div style={{ display: "flex", gap: 6 }}>
-                            <button style={{ ...ABTN, padding: "6px 10px", background: "#fffbeb", borderColor: "#fde68a" }} title="Edit Master" onClick={() => setEditMaster({ ...m })}>
-                              <Edit size={13} style={{ color: "#d97706" }} />
-                            </button>
-                            <button style={{ ...ABTN, padding: "6px 10px", background: "#fef2f2", borderColor: "#fecaca" }} title="Hapus" onClick={() => handleDeleteMaster(m.id)}>
-                              <Trash2 size={13} style={{ color: "#ef4444" }} />
-                            </button>
+                            <button style={{ ...ABTN, padding: "6px 10px", background: "#fffbeb", borderColor: "#fde68a" }} title="Edit Master" onClick={() => setEditMaster({ ...m })}><Edit size={13} style={{ color: "#d97706" }} /></button>
+                            <button style={{ ...ABTN, padding: "6px 10px", background: "#fef2f2", borderColor: "#fecaca" }} title="Hapus" onClick={() => handleDeleteMaster(m.id)}><Trash2 size={13} style={{ color: "#ef4444" }} /></button>
                           </div>
                         </div>
                       </div>
-
-                      {/* Ringkasan nilai */}
                       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginTop: 14, padding: "12px 0 0", borderTop: `1px dashed ${accent.headerBorder}` }}>
                         {[
                           { label: "Nilai Anggaran", val: fmt(m.nilai_anggaran), color: accent.badgeText },
@@ -1435,31 +1231,19 @@ function OpexModule({ masterList, setMasterList }) {
                         ))}
                       </div>
                     </div>
-
-                    {/* ── BODY: realisasi tahunan ── */}
                     <RealisasiSection master={masters.find((x) => x.id === m.id) || m} setMasters={setMasters} toast_={toast_} />
                   </div>
                 );
               })}
-
               {totalPages > 1 && (
                 <div style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 10, padding: "12px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <div style={{ fontSize: "0.8rem", color: "#64748b" }}>
-                    Menampilkan <b>{(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filteredMasters.length)}</b> dari <b>{filteredMasters.length}</b> pos anggaran
-                  </div>
+                  <div style={{ fontSize: "0.8rem", color: "#64748b" }}>Menampilkan <b>{(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filteredMasters.length)}</b> dari <b>{filteredMasters.length}</b></div>
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <button style={{ ...ABTN, padding: "6px 12px", opacity: currentPage === 1 ? 0.4 : 1, cursor: currentPage === 1 ? "not-allowed" : "pointer" }} disabled={currentPage === 1} onClick={() => setCurrentPage((p) => p - 1)}>
-                      <ChevronRight size={14} style={{ transform: "rotate(180deg)", color: "#475569" }} />
-                    </button>
+                    <button style={{ ...ABTN, padding: "6px 12px", opacity: currentPage === 1 ? 0.4 : 1 }} disabled={currentPage === 1} onClick={() => setCurrentPage((p) => p - 1)}><ChevronRight size={14} style={{ transform: "rotate(180deg)", color: "#475569" }} /></button>
                     {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((pg) => (
-                      <button key={pg} onClick={() => setCurrentPage(pg)}
-                        style={{ width: 32, height: 32, borderRadius: 6, border: pg === currentPage ? "2px solid #16a34a" : "1px solid #e2e8f0", background: pg === currentPage ? "#16a34a" : "white", color: pg === currentPage ? "white" : "#475569", fontWeight: pg === currentPage ? 700 : 500, fontSize: "0.82rem", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        {pg}
-                      </button>
+                      <button key={pg} onClick={() => setCurrentPage(pg)} style={{ width: 32, height: 32, borderRadius: 6, border: pg === currentPage ? "2px solid #16a34a" : "1px solid #e2e8f0", background: pg === currentPage ? "#16a34a" : "white", color: pg === currentPage ? "white" : "#475569", fontWeight: pg === currentPage ? 700 : 500, fontSize: "0.82rem", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>{pg}</button>
                     ))}
-                    <button style={{ ...ABTN, padding: "6px 12px", opacity: currentPage === totalPages ? 0.4 : 1, cursor: currentPage === totalPages ? "not-allowed" : "pointer" }} disabled={currentPage === totalPages} onClick={() => setCurrentPage((p) => p + 1)}>
-                      <ChevronRight size={14} style={{ color: "#475569" }} />
-                    </button>
+                    <button style={{ ...ABTN, padding: "6px 12px", opacity: currentPage === totalPages ? 0.4 : 1 }} disabled={currentPage === totalPages} onClick={() => setCurrentPage((p) => p + 1)}><ChevronRight size={14} style={{ color: "#475569" }} /></button>
                   </div>
                 </div>
               )}
@@ -1472,401 +1256,671 @@ function OpexModule({ masterList, setMasterList }) {
 }
 
 // ════════════════════════════════════════════════════════════════
-// CAPEX MODULE (UNCHANGED)
+// CAPEX — INPUT ANGGARAN PAGE — left-right layout
 // ════════════════════════════════════════════════════════════════
-function CapexModule({ capexList, setCapexList, masterList, setMasterList }) {
-  const [step, setStep] = useState(0);
-  const [toast, setToast] = useState(null);
-  const [confirm, setConfirm] = useState(null);
-  const [masterMode, setMasterMode] = useState("existing");
-  const [selKd, setSelKd] = useState("");
-  const [newMaster, setNewMaster] = useState({ kd: "", nm: "" });
-  const [anggaranMode, setAnggaranMode] = useState("existing");
-  const [selAnggaranId, setSelAnggaranId] = useState("");
-  const capexMasters = masterList.filter((m) => m.tipe === "CAPEX");
-  const [editDropItem, setEditDropItem] = useState(null);
-  const emptyNewAnggaran = { nm: "", kd_capex: "", thn_rkap_awal: new Date().getFullYear() - 1, thn_rkap_akhir: new Date().getFullYear() - 1, thn_anggaran: new Date().getFullYear() - 1, nilai_kad: "", nilai_rkap: "" };
-  const [newAnggaran, setNewAnggaran] = useState(emptyNewAnggaran);
-  const [editTarget, setEditTarget] = useState(null);
-  const [showPkj, setShowPkj] = useState(false);
-  const [pkjCapexId, setPkjCapexId] = useState(null);
-  const [pkjEditId, setPkjEditId] = useState(null);
-  const emptyPkj = { nm: "", nilai_rab: "", nilai_kontrak: "", no_pr: "", no_po: "", no_kontrak: "", tgl_kontrak: "", durasi_kontrak: "", no_sp3: "", tgl_sp3: "", tgl_bamk: "", keterangan: "" };
-  const [pkjForm, setPkjForm] = useState(emptyPkj);
-  const [viewDetail, setViewDetail] = useState(null);
+function CapexInputAnggaranPage({ capex, onBack, onSave }) {
+  const rkap_awal_opts = [CURRENT_YEAR, CURRENT_YEAR + 1];
 
-  const toast_ = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
-  const isMasterResolved = masterMode === "existing" ? !!selKd : !!(newMaster.kd && newMaster.nm);
-  const activeMasterKd = masterMode === "existing" ? selKd : newMaster.kd;
-  const availableCapex = capexList.filter((c) => c.kd_master === activeMasterKd);
-  const isAnggaranResolved = anggaranMode === "existing" ? !!selAnggaranId : !!(newAnggaran.nm && newAnggaran.kd_capex && newAnggaran.thn_anggaran);
-  useEffect(() => { if (isMasterResolved && masterMode === "existing" && availableCapex.length === 0) setAnggaranMode("new"); }, [isMasterResolved, masterMode, activeMasterKd, availableCapex.length]);
+  const [thnRkapAwal, setThnRkapAwal] = useState(
+    rkap_awal_opts.includes(capex.thn_rkap_awal) ? capex.thn_rkap_awal : CURRENT_YEAR
+  );
+  const [nilaiKad, setNilaiKad] = useState("");
+  const [nilaiRkap, setNilaiRkap] = useState("");
 
-  const TOGGLE = { display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 6, border: "none", background: "transparent", fontSize: "0.85rem", fontWeight: 500, color: "#64748b", cursor: "pointer" };
+  const rkap_akhir_opts = thnRkapAwal === CURRENT_YEAR
+    ? [CURRENT_YEAR]
+    : [CURRENT_YEAR, thnRkapAwal];
 
-  const handleLanjutToStep1 = () => {
-    if (masterMode === "new" && !capexMasters.find((m) => m.kd === newMaster.kd)) setMasterList((p) => [...p, { kd: newMaster.kd, nm: newMaster.nm, tipe: "CAPEX" }]);
-    if (anggaranMode === "new") {
-      const nmMaster = masterMode === "existing" ? capexMasters.find((m) => m.kd === selKd)?.nm : newMaster.nm;
-      const targetId = uid();
-      const newItem = { id: targetId, kd_master: activeMasterKd, nm_master: nmMaster, nm_anggaran: newAnggaran.nm, kd_capex: newAnggaran.kd_capex, thn_rkap_awal: parseInt(newAnggaran.thn_rkap_awal), thn_rkap_akhir: parseInt(newAnggaran.thn_rkap_akhir), thn_anggaran: parseInt(newAnggaran.thn_anggaran), nilai_kad: parseFloat(newAnggaran.nilai_kad) || 0, nilai_rkap: parseFloat(newAnggaran.nilai_rkap) || 0, anggaran_tahunan: [], pekerjaan: [] };
-      setCapexList((p) => [...p, newItem]);
-      setSelAnggaranId(targetId);
-      setNewAnggaran(emptyNewAnggaran);
-      setAnggaranMode("existing");
-      toast_("Data CAPEX ditambahkan.");
-    }
-    setStep(1);
+  const [thnRkapAkhir, setThnRkapAkhir] = useState(rkap_akhir_opts[0]);
+
+  useEffect(() => {
+    const opts = thnRkapAwal === CURRENT_YEAR ? [CURRENT_YEAR] : [CURRENT_YEAR, thnRkapAwal];
+    if (!opts.includes(thnRkapAkhir)) setThnRkapAkhir(opts[0]);
+  }, [thnRkapAwal]);
+
+  const history = capex.history_anggaran || [];
+
+  const handleSimpan = () => {
+    if (!nilaiKad && !nilaiRkap) return;
+    const entry = {
+      id: uid(),
+      tgl: new Date().toISOString().split("T")[0],
+      thn_rkap_awal: thnRkapAwal,
+      thn_rkap_akhir: thnRkapAkhir,
+      nilai_kad: parseFloat(nilaiKad) || 0,
+      nilai_rkap: parseFloat(nilaiRkap) || 0,
+    };
+    onSave(capex.id, entry, parseFloat(nilaiKad) || 0, parseFloat(nilaiRkap) || 0);
   };
 
-  const saveEditCapex = () => {
-    if (!editTarget) return;
-    setCapexList((p) => p.map((c) => c.id === editTarget.id ? { ...c, nm_anggaran: editTarget.nm_anggaran, kd_capex: editTarget.kd_capex, thn_rkap_awal: parseInt(editTarget.thn_rkap_awal), thn_rkap_akhir: parseInt(editTarget.thn_rkap_akhir), thn_anggaran: parseInt(editTarget.thn_anggaran), nilai_kad: parseFloat(editTarget.nilai_kad) || 0, nilai_rkap: parseFloat(editTarget.nilai_rkap) || 0 } : c));
-    setEditTarget(null);
-    toast_("Perubahan disimpan.");
-  };
-
-  const saveEditDrop = () => {
-    setMasterList((p) => p.map((m) => m.kd === editDropItem.oldKd && m.tipe === "CAPEX" ? { ...m, kd: editDropItem.kd, nm: editDropItem.nm } : m));
-    setCapexList((p) => p.map((x) => x.kd_master === editDropItem.oldKd ? { ...x, kd_master: editDropItem.kd, nm_master: editDropItem.nm } : x));
-    if (selKd === editDropItem.oldKd) setSelKd(editDropItem.kd);
-    setEditDropItem(null);
-    toast_("Pilihan master diperbarui.");
-  };
-
-  const openAddPkj = (capexId) => { setPkjCapexId(capexId); setPkjForm(emptyPkj); setPkjEditId(null); setShowPkj(true); };
-  const openEditPkj = (capexId, pkj) => { setPkjCapexId(capexId); setPkjForm({ ...pkj }); setPkjEditId(pkj.id); setShowPkj(true); };
-
-  const handleSavePkj = () => {
-    const payload = { ...pkjForm, nilai_rab: parseFloat(pkjForm.nilai_rab) || 0, nilai_kontrak: parseFloat(pkjForm.nilai_kontrak) || 0, durasi_kontrak: parseInt(pkjForm.durasi_kontrak) || 0 };
-    if (pkjEditId) {
-      setCapexList((p) => p.map((c) => c.id === pkjCapexId ? { ...c, pekerjaan: c.pekerjaan.map((pk) => pk.id === pkjEditId ? { ...pk, ...payload } : pk) } : c));
-      toast_("Pekerjaan diperbarui.");
-    } else {
-      setCapexList((p) => p.map((c) => c.id === pkjCapexId ? { ...c, pekerjaan: [...(c.pekerjaan || []), { id: uid(), ...payload }] } : c));
-      toast_("Pekerjaan ditambahkan.");
-    }
-    setShowPkj(false);
-  };
-
-  const reset = () => { setStep(0); setMasterMode("existing"); setSelKd(""); setNewMaster({ kd: "", nm: "" }); setAnggaranMode("existing"); setSelAnggaranId(""); setNewAnggaran(emptyNewAnggaran); };
-  const activeCapex = capexList.find((c) => c.id === selAnggaranId);
-
-  if (viewDetail) {
-    const { cap, pkj } = viewDetail;
-    return (
-      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <button style={BTNOUT} onClick={() => setViewDetail(null)}><ArrowLeft size={16} /> Kembali</button>
-          <h2 style={{ fontSize: "1.1rem", fontWeight: 600 }}>Detail Pekerjaan</h2>
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      {/* Back nav */}
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <button style={BTNOUT} onClick={onBack}><ArrowLeft size={16} /> Kembali ke Daftar CAPEX</button>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <PlusCircle size={18} style={{ color: "#2563eb" }} />
+          <h2 style={{ fontSize: "1rem", fontWeight: 700, color: "#1e293b" }}>Input Anggaran CAPEX</h2>
         </div>
-        <Card>
-          <div style={{ marginBottom: 24, paddingBottom: 16, borderBottom: "1px dashed #e2e8f0" }}>
-            <h3 style={{ fontSize: "1.2rem", fontWeight: 600, color: "#1e293b", marginBottom: 8 }}>{pkj.nm}</h3>
-            <p style={{ fontSize: "0.85rem", color: "#64748b" }}>Anggaran: {cap.nm_anggaran}</p>
+      </div>
+
+      {/* Form card — all left-right */}
+      <div style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 10, overflow: "hidden", boxShadow: "0 1px 2px rgba(0,0,0,.02)" }}>
+        <div style={{ padding: "14px 18px", borderBottom: "1px solid #f1f5f9", background: "#f8fafc", display: "flex", alignItems: "center", gap: 8 }}>
+          <PlusCircle size={15} style={{ color: "#2563eb" }} />
+          <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "#374151" }}>Form Entri Anggaran Baru</span>
+        </div>
+
+        {/* Nama Anggaran */}
+        <ModalFormRow label="Nama Anggaran">
+          <span style={{ fontWeight: 700, color: "#1e293b", fontSize: "0.9rem", lineHeight: 1.5 }}>
+            {capex.nm_anggaran}
+          </span>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 4 }}>
+            {capex.kd_capex && (
+              <span style={{ fontSize: "0.72rem", fontFamily: "monospace", background: "#dbeafe", color: "#1d4ed8", padding: "2px 8px", borderRadius: 4, fontWeight: 700, border: "1px solid #bfdbfe" }}>{capex.kd_capex}</span>
+            )}
+            <span style={{ fontSize: "0.72rem", background: "#e0f2fe", color: "#0369a1", padding: "2px 8px", borderRadius: 4, fontWeight: 600 }}>
+              RKAP Akhir Asal: {capex.thn_rkap_akhir}
+            </span>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 24 }}>
-            {[
-              { title: "Finansial", icon: <Database size={16} />, items: [["RAB", `Rp ${fmt(pkj.nilai_rab)}`], ["Kontrak", `Rp ${fmt(pkj.nilai_kontrak)}`]] },
-              { title: "Dokumen", icon: <FileText size={16} />, items: [["PR", pkj.no_pr || "-"], ["PO", pkj.no_po || "-"], ["Kontrak", pkj.no_kontrak || "-"], ["SP3", pkj.no_sp3 || "-"]] },
-              { title: "Waktu", icon: <Clock size={16} />, items: [["Tgl. Kontrak", fmtDate(pkj.tgl_kontrak) || "-"], ["Durasi", pkj.durasi_kontrak ? `${pkj.durasi_kontrak} hari` : "-"], ["Tgl. SP3", fmtDate(pkj.tgl_sp3) || "-"], ["Tgl. BAMK", fmtDate(pkj.tgl_bamk) || "-"]] },
-            ].map((sec) => (
-              <div key={sec.title} style={{ background: "#f8fafc", padding: 16, borderRadius: 8 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16, fontWeight: 600, color: "#475569" }}>{sec.icon}{sec.title}</div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  {sec.items.map(([lbl, val]) => (
-                    <div key={lbl} style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid #e2e8f0", paddingBottom: 4 }}>
-                      <span style={{ fontSize: "0.85rem", color: "#64748b" }}>{lbl}</span>
-                      <span style={{ fontSize: "0.85rem", fontWeight: 500, color: "#1e293b" }}>{val}</span>
+        </ModalFormRow>
+
+        {/* Tahun RKAP Awal */}
+        <ModalFormRow
+          label="Tahun RKAP Awal"
+          required
+          helper={`Pilihan: tahun berjalan (${CURRENT_YEAR}) atau P+1 (${CURRENT_YEAR + 1})`}
+        >
+          <select style={{ ...INP, maxWidth: 160 }} value={thnRkapAwal} onChange={(e) => setThnRkapAwal(parseInt(e.target.value))}>
+            {rkap_awal_opts.map((y) => <option key={y} value={y}>{y}</option>)}
+          </select>
+        </ModalFormRow>
+
+        {/* Tahun RKAP Akhir */}
+        <ModalFormRow
+          label="Tahun RKAP Akhir"
+          required
+          helper={thnRkapAwal === CURRENT_YEAR
+            ? `Hanya ${CURRENT_YEAR} (karena RKAP awal = ${CURRENT_YEAR})`
+            : `${CURRENT_YEAR} atau ${thnRkapAwal}`}
+        >
+          <select style={{ ...INP, maxWidth: 160 }} value={thnRkapAkhir} onChange={(e) => setThnRkapAkhir(parseInt(e.target.value))}>
+            {rkap_akhir_opts.map((y) => <option key={y} value={y}>{y}</option>)}
+          </select>
+        </ModalFormRow>
+
+        {/* Nilai KAD */}
+        <ModalFormRow label="Nilai KAD (Rp)">
+          <input type="number" style={{ ...INP, maxWidth: 340 }} placeholder="0" value={nilaiKad} onChange={(e) => setNilaiKad(e.target.value)} />
+          {parseFloat(nilaiKad) > 0 && (
+            <span style={{ fontSize: "0.78rem", color: "#64748b" }}>≈ {fmt(nilaiKad)}</span>
+          )}
+        </ModalFormRow>
+
+        {/* Nilai RKAP */}
+        <ModalFormRow label="Nilai RKAP (Rp)" required noBorder>
+          <input type="number" style={{ ...INP, maxWidth: 340 }} placeholder="0" value={nilaiRkap} onChange={(e) => setNilaiRkap(e.target.value)} />
+          {parseFloat(nilaiRkap) > 0 && (
+            <span style={{ fontSize: "0.72rem", color: "#64748b" }}>≈ {fmt(nilaiRkap)}</span>
+          )}
+        </ModalFormRow>
+
+        {/* Footer */}
+        <div style={{ padding: "14px 20px", borderTop: "1px solid #e2e8f0", background: "#f8fafc", display: "flex", justifyContent: "flex-end", gap: 10 }}>
+          <button style={BTNOUT} onClick={onBack}>Batal</button>
+          <button
+            style={{ ...BTN, background: "#2563eb", opacity: (nilaiKad || nilaiRkap) ? 1 : 0.5, padding: "9px 20px", borderRadius: 8 }}
+            disabled={!nilaiKad && !nilaiRkap}
+            onClick={handleSimpan}
+          >
+            <Save size={15} /> Simpan Entri Anggaran
+          </button>
+        </div>
+      </div>
+
+      {/* History anggaran */}
+      <div style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 10, overflow: "hidden", boxShadow: "0 1px 2px rgba(0,0,0,.02)" }}>
+        <div style={{ padding: "14px 18px", borderBottom: "1px solid #f1f5f9", background: "#f8fafc", display: "flex", alignItems: "center", gap: 8 }}>
+          <History size={16} style={{ color: "#2563eb" }} />
+          <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "#374151" }}>Riwayat Entri Anggaran</span>
+          <span style={{ fontSize: "0.72rem", color: "#64748b", background: "#e2e8f0", padding: "1px 7px", borderRadius: 99, fontWeight: 600 }}>{history.length} entri</span>
+        </div>
+
+        {history.length === 0 ? (
+          <div style={{ padding: "32px 24px", textAlign: "center", color: "#94a3b8", fontSize: "0.85rem", fontStyle: "italic" }}>
+            Belum ada riwayat entri anggaran.
+          </div>
+        ) : (
+          <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 10 }}>
+            {history.map((h, i) => (
+              <div key={h.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", background: "#f8fafc", borderRadius: 8, border: "1px solid #e2e8f0" }}>
+                <div style={{ display: "flex", align: "center", gap: 12 }}>
+                  <div style={{ width: 36, height: 36, background: "#dbeafe", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "0.78rem", color: "#1d4ed8", flexShrink: 0 }}>{i + 1}</div>
+                  <div>
+                    <div style={{ fontWeight: 700, color: "#1e293b", fontSize: "0.88rem" }}>
+                      {h.thn_rkap_awal} — {h.thn_rkap_akhir}
                     </div>
-                  ))}
+                    <div style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: 2 }}>{fmtDate(h.tgl)}</div>
+                  </div>
+                </div>
+                <div style={{ display: "flex", gap: 24, textAlign: "right" }}>
+                  <div>
+                    <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", marginBottom: 2 }}>Nilai KAD</div>
+                    <div style={{ fontWeight: 700, color: "#2563eb", fontSize: "0.88rem" }}>{fmt(h.nilai_kad)}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", marginBottom: 2 }}>Nilai RKAP</div>
+                    <div style={{ fontWeight: 700, color: "#16a34a", fontSize: "0.88rem" }}>{fmt(h.nilai_rkap)}</div>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
-        </Card>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════
+// CAPEX MODULE — with left-right modal forms
+// ════════════════════════════════════════════════════════════════
+function CapexModule({ capexList, setCapexList }) {
+  const [toast, setToast] = useState(null);
+  const [confirm, setConfirm] = useState(null);
+  const [editTarget, setEditTarget] = useState(null);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [inputAnggaranCapex, setInputAnggaranCapex] = useState(null);
+
+  const emptyNewCapex = {
+    nm_anggaran: "", kd_capex: "",
+    thn_rkap_awal: new Date().getFullYear() - 1,
+    thn_rkap_akhir: new Date().getFullYear() - 1,
+    thn_anggaran: new Date().getFullYear() - 1,
+    nilai_kad: "", nilai_rkap: "",
+  };
+  const [newCapex, setNewCapex] = useState(emptyNewCapex);
+
+  const toast_ = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
+
+  const handleAddCapex = () => {
+    if (!newCapex.nm_anggaran) return;
+    const item = {
+      id: uid(),
+      kd_master: "5900100000",
+      nm_master: "Beban Investasi",
+      nm_anggaran: newCapex.nm_anggaran,
+      kd_capex: newCapex.kd_capex,
+      thn_rkap_awal: parseInt(newCapex.thn_rkap_awal),
+      thn_rkap_akhir: parseInt(newCapex.thn_rkap_akhir),
+      thn_anggaran: parseInt(newCapex.thn_anggaran),
+      nilai_kad: parseFloat(newCapex.nilai_kad) || 0,
+      nilai_rkap: parseFloat(newCapex.nilai_rkap) || 0,
+      anggaran_tahunan: [],
+      pekerjaan: [],
+      history_anggaran: [],
+    };
+    setCapexList((p) => [...p, item]);
+    toast_("Data CAPEX baru ditambahkan.");
+    setShowAddForm(false);
+    setNewCapex(emptyNewCapex);
+  };
+
+  const saveEditCapex = () => {
+    if (!editTarget) return;
+    setCapexList((p) => p.map((c) => c.id === editTarget.id ? {
+      ...c,
+      nm_anggaran: editTarget.nm_anggaran,
+      kd_capex: editTarget.kd_capex,
+      thn_rkap_awal: parseInt(editTarget.thn_rkap_awal),
+      thn_rkap_akhir: parseInt(editTarget.thn_rkap_akhir),
+      thn_anggaran: parseInt(editTarget.thn_anggaran),
+      nilai_kad: parseFloat(editTarget.nilai_kad) || 0,
+      nilai_rkap: parseFloat(editTarget.nilai_rkap) || 0,
+    } : c));
+    setEditTarget(null);
+    toast_("Perubahan disimpan.");
+  };
+
+  const handleDeleteCapex = (id) => {
+    setConfirm({
+      msg: "Hapus data CAPEX ini beserta seluruh data di dalamnya?",
+      onConfirm: () => {
+        setCapexList((p) => p.filter((c) => c.id !== id));
+        setConfirm(null);
+        toast_("Data CAPEX dihapus.");
+      },
+    });
+  };
+
+  const handleSaveEntriAnggaran = (capexId, entry, nilaiKad, nilaiRkap) => {
+    setCapexList((p) => p.map((c) => {
+      if (c.id !== capexId) return c;
+      return {
+        ...c,
+        nilai_kad: nilaiKad,
+        nilai_rkap: nilaiRkap,
+        history_anggaran: [...(c.history_anggaran || []), entry],
+      };
+    }));
+    toast_("Entri anggaran berhasil disimpan.");
+    setInputAnggaranCapex((prev) => {
+      if (!prev || prev.id !== capexId) return prev;
+      return {
+        ...prev,
+        nilai_kad: nilaiKad,
+        nilai_rkap: nilaiRkap,
+        history_anggaran: [...(prev.history_anggaran || []), entry],
+      };
+    });
+  };
+
+  if (inputAnggaranCapex) {
+    const latestCapex = capexList.find((c) => c.id === inputAnggaranCapex.id) || inputAnggaranCapex;
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        {toast && <ToastMsg msg={toast} onDone={() => setToast(null)} />}
+        <CapexInputAnggaranPage
+          capex={latestCapex}
+          onBack={() => setInputAnggaranCapex(null)}
+          onSave={handleSaveEntriAnggaran}
+        />
       </div>
     );
   }
 
-  const steps = ["Pilih Master & Anggaran", "Daftar & Kelola CAPEX"];
+  // ── CAPEX MODAL: Tambah — left-right layout ──
+  const CapexAddModal = () => (
+    <div style={OVS} onClick={() => setShowAddForm(false)}>
+      <div
+        style={{ background: "white", borderRadius: 12, width: "100%", maxWidth: 600, maxHeight: "90vh", overflowY: "auto", boxShadow: "0 10px 25px rgba(0,0,0,.1)" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Modal header */}
+        <div style={{ padding: "16px 20px", borderBottom: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "flex-start", background: "#f8fafc" }}>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <Plus size={16} style={{ color: "#2563eb" }} />
+              <h3 style={{ fontWeight: 700, fontSize: "1rem", color: "#1e293b" }}>Tambah Anggaran CAPEX Baru</h3>
+            </div>
+            <div style={{ fontSize: "0.78rem", color: "#64748b", marginTop: 3 }}>
+              Master: <span style={{ fontFamily: "monospace", background: "#dbeafe", color: "#1d4ed8", padding: "1px 6px", borderRadius: 4, fontWeight: 700 }}>5900100000</span> Beban Investasi
+            </div>
+          </div>
+          <button style={{ background: "transparent", border: "none", cursor: "pointer", color: "#64748b" }} onClick={() => setShowAddForm(false)}><X size={20} /></button>
+        </div>
+
+        {/* Form rows — left-right */}
+        <div>
+          {/* Nama Anggaran CAPEX */}
+          <ModalFormRow label="Nama Anggaran" required>
+            <textarea
+              rows={2}
+              style={{ ...INP, resize: "vertical", maxWidth: "100%" }}
+              placeholder="Contoh: Transformasi dan Digitalisasi PT Pelindo"
+              value={newCapex.nm_anggaran}
+              onChange={(e) => setNewCapex((f) => ({ ...f, nm_anggaran: e.target.value }))}
+            />
+          </ModalFormRow>
+
+          {/* Kode CAPEX */}
+          <ModalFormRow label="Kode CAPEX">
+            <input
+              style={{ ...INP, maxWidth: 200 }}
+              placeholder="Contoh: 2540013"
+              value={newCapex.kd_capex}
+              onChange={(e) => setNewCapex((f) => ({ ...f, kd_capex: e.target.value }))}
+            />
+          </ModalFormRow>
+
+          {/* Tahun RKAP Awal */}
+          <ModalFormRow label="Tahun RKAP Awal">
+            <select
+              style={{ ...INP, maxWidth: 160 }}
+              value={newCapex.thn_rkap_awal}
+              onChange={(e) => setNewCapex((f) => ({ ...f, thn_rkap_awal: e.target.value }))}
+            >
+              {yearOpts.map((y) => <option key={y} value={y}>{y}</option>)}
+            </select>
+          </ModalFormRow>
+
+          {/* Tahun RKAP Akhir */}
+          <ModalFormRow label="Tahun RKAP Akhir">
+            <select
+              style={{ ...INP, maxWidth: 160 }}
+              value={newCapex.thn_rkap_akhir}
+              onChange={(e) => setNewCapex((f) => ({ ...f, thn_rkap_akhir: e.target.value }))}
+            >
+              {yearOpts.map((y) => <option key={y} value={y}>{y}</option>)}
+            </select>
+          </ModalFormRow>
+
+          {/* Tahun Anggaran */}
+          <ModalFormRow label="Tahun Anggaran">
+            <select
+              style={{ ...INP, maxWidth: 160 }}
+              value={newCapex.thn_anggaran}
+              onChange={(e) => setNewCapex((f) => ({ ...f, thn_anggaran: e.target.value }))}
+            >
+              {yearOpts.map((y) => <option key={y} value={y}>{y}</option>)}
+            </select>
+          </ModalFormRow>
+
+          {/* Nilai KAD */}
+          <ModalFormRow label="Nilai KAD (Rp)">
+            <input
+              type="number"
+              style={{ ...INP, maxWidth: 280 }}
+              placeholder="0"
+              value={newCapex.nilai_kad}
+              onChange={(e) => setNewCapex((f) => ({ ...f, nilai_kad: e.target.value }))}
+            />
+            {parseFloat(newCapex.nilai_kad) > 0 && (
+              <span style={{ fontSize: "0.78rem", color: "#64748b" }}>≈ {fmt(newCapex.nilai_kad)}</span>
+            )}
+          </ModalFormRow>
+
+          {/* Nilai RKAP */}
+          <ModalFormRow label="Nilai RKAP (Rp)" noBorder>
+            <input
+              type="number"
+              style={{ ...INP, maxWidth: 280 }}
+              placeholder="0"
+              value={newCapex.nilai_rkap}
+              onChange={(e) => setNewCapex((f) => ({ ...f, nilai_rkap: e.target.value }))}
+            />
+            {parseFloat(newCapex.nilai_rkap) > 0 && (
+              <span style={{ fontSize: "0.78rem", color: "#64748b" }}>≈ {fmt(newCapex.nilai_rkap)}</span>
+            )}
+          </ModalFormRow>
+        </div>
+
+        {/* Footer */}
+        <div style={{ padding: "14px 20px", borderTop: "1px solid #e2e8f0", background: "#f8fafc", display: "flex", justifyContent: "flex-end", gap: 10 }}>
+          <button style={BTNOUT} onClick={() => setShowAddForm(false)}>Batal</button>
+          <button
+            style={{ ...BTN, background: "#2563eb", opacity: newCapex.nm_anggaran ? 1 : 0.5 }}
+            disabled={!newCapex.nm_anggaran}
+            onClick={handleAddCapex}
+          >
+            <Plus size={14} /> Tambahkan
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── CAPEX MODAL: Edit — left-right layout ──
+  const CapexEditModal = () => (
+    <div style={OVS} onClick={() => setEditTarget(null)}>
+      <div
+        style={{ background: "white", borderRadius: 12, width: "100%", maxWidth: 600, maxHeight: "90vh", overflowY: "auto", boxShadow: "0 10px 25px rgba(0,0,0,.1)" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Modal header */}
+        <div style={{ padding: "16px 20px", borderBottom: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "flex-start", background: "#f8fafc" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <Edit size={16} style={{ color: "#d97706" }} />
+            <h3 style={{ fontWeight: 700, fontSize: "1rem", color: "#1e293b" }}>Edit Anggaran CAPEX</h3>
+          </div>
+          <button style={{ background: "transparent", border: "none", cursor: "pointer", color: "#64748b" }} onClick={() => setEditTarget(null)}><X size={20} /></button>
+        </div>
+
+        {/* Form rows — left-right */}
+        <div>
+          {/* Nama Anggaran CAPEX */}
+          <ModalFormRow label="Nama Anggaran" required>
+            <textarea
+              rows={2}
+              style={{ ...INP, resize: "vertical", maxWidth: "100%" }}
+              value={editTarget.nm_anggaran}
+              onChange={(e) => setEditTarget((t) => ({ ...t, nm_anggaran: e.target.value }))}
+            />
+          </ModalFormRow>
+
+          {/* Kode CAPEX */}
+          <ModalFormRow label="Kode CAPEX">
+            <input
+              style={{ ...INP, maxWidth: 200 }}
+              value={editTarget.kd_capex}
+              onChange={(e) => setEditTarget((t) => ({ ...t, kd_capex: e.target.value }))}
+            />
+          </ModalFormRow>
+
+          {/* Tahun RKAP Awal */}
+          <ModalFormRow label="Tahun RKAP Awal">
+            <select
+              style={{ ...INP, maxWidth: 160 }}
+              value={editTarget.thn_rkap_awal}
+              onChange={(e) => setEditTarget((t) => ({ ...t, thn_rkap_awal: e.target.value }))}
+            >
+              {yearOpts.map((y) => <option key={y} value={y}>{y}</option>)}
+            </select>
+          </ModalFormRow>
+
+          {/* Tahun RKAP Akhir */}
+          <ModalFormRow label="Tahun RKAP Akhir">
+            <select
+              style={{ ...INP, maxWidth: 160 }}
+              value={editTarget.thn_rkap_akhir}
+              onChange={(e) => setEditTarget((t) => ({ ...t, thn_rkap_akhir: e.target.value }))}
+            >
+              {yearOpts.map((y) => <option key={y} value={y}>{y}</option>)}
+            </select>
+          </ModalFormRow>
+
+          {/* Tahun Anggaran */}
+          <ModalFormRow label="Tahun Anggaran">
+            <select
+              style={{ ...INP, maxWidth: 160 }}
+              value={editTarget.thn_anggaran}
+              onChange={(e) => setEditTarget((t) => ({ ...t, thn_anggaran: e.target.value }))}
+            >
+              {yearOpts.map((y) => <option key={y} value={y}>{y}</option>)}
+            </select>
+          </ModalFormRow>
+
+          {/* Nilai KAD */}
+          <ModalFormRow label="Nilai KAD (Rp)">
+            <input
+              type="number"
+              style={{ ...INP, maxWidth: 280 }}
+              value={editTarget.nilai_kad}
+              onChange={(e) => setEditTarget((t) => ({ ...t, nilai_kad: e.target.value }))}
+            />
+            {parseFloat(editTarget.nilai_kad) > 0 && (
+              <span style={{ fontSize: "0.78rem", color: "#64748b" }}>≈ {fmt(editTarget.nilai_kad)}</span>
+            )}
+          </ModalFormRow>
+
+          {/* Nilai RKAP */}
+          <ModalFormRow label="Nilai RKAP (Rp)" noBorder>
+            <input
+              type="number"
+              style={{ ...INP, maxWidth: 280 }}
+              value={editTarget.nilai_rkap}
+              onChange={(e) => setEditTarget((t) => ({ ...t, nilai_rkap: e.target.value }))}
+            />
+            {parseFloat(editTarget.nilai_rkap) > 0 && (
+              <span style={{ fontSize: "0.78rem", color: "#64748b" }}>≈ {fmt(editTarget.nilai_rkap)}</span>
+            )}
+          </ModalFormRow>
+        </div>
+
+        {/* Footer */}
+        <div style={{ padding: "14px 20px", borderTop: "1px solid #e2e8f0", background: "#f8fafc", display: "flex", justifyContent: "flex-end", gap: 10 }}>
+          <button style={BTNOUT} onClick={() => setEditTarget(null)}>Batal</button>
+          <button style={{ ...BTN, background: "#d97706" }} onClick={saveEditCapex}>
+            <Save size={14} /> Simpan Perubahan
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       {toast && <ToastMsg msg={toast} onDone={() => setToast(null)} />}
       {confirm && <ConfirmBox msg={confirm.msg} onConfirm={confirm.onConfirm} onCancel={() => setConfirm(null)} />}
 
-      {editDropItem && (
-        <div style={OVS} onClick={() => setEditDropItem(null)}>
-          <div style={{ background: "white", borderRadius: 12, padding: 24, maxWidth: 420, width: "100%", boxShadow: "0 10px 25px rgba(0,0,0,.1)" }} onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ fontWeight: 600, marginBottom: 20 }}>Edit Pilihan Master Dropdown</h3>
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              <Fld label="Nama Anggaran Master"><input style={INP} value={editDropItem.nm} onChange={(e) => setEditDropItem((t) => ({ ...t, nm: e.target.value }))} /></Fld>
-              <Fld label="Kode Anggaran Master"><input style={INP} value={editDropItem.kd} onChange={(e) => setEditDropItem((t) => ({ ...t, kd: e.target.value }))} /></Fld>
-            </div>
-            <div style={{ display: "flex", gap: 12, marginTop: 24, justifyContent: "flex-end" }}>
-              <button style={BTNOUT} onClick={() => setEditDropItem(null)}>Batal</button>
-              <button style={BTN} onClick={saveEditDrop}>Simpan</button>
-            </div>
+      <div style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 10, padding: "16px 20px", display: "flex", alignItems: "center", gap: 14, boxShadow: "0 1px 2px rgba(0,0,0,.02)" }}>
+        <div style={{ width: 40, height: 40, background: "#eff6ff", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <Database size={20} style={{ color: "#2563eb" }} />
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontWeight: 800, color: "#1e293b", fontSize: "1rem" }}>Anggaran Master CAPEX</div>
+          <div style={{ fontSize: "0.82rem", color: "#64748b", marginTop: 2 }}>
+            <span style={{ fontFamily: "monospace", background: "#dbeafe", color: "#1d4ed8", padding: "1px 6px", borderRadius: 4, fontWeight: 700, fontSize: "0.78rem", marginRight: 8 }}>5900100000</span>
+            Beban Investasi
           </div>
+        </div>
+        <div style={{ fontSize: "0.72rem", background: "#dbeafe", color: "#1d4ed8", fontWeight: 700, padding: "4px 10px", borderRadius: 99, border: "1px solid #bfdbfe" }}>
+          {capexList.length} data CAPEX
+        </div>
+      </div>
+
+      <div style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 10, overflow: "hidden", boxShadow: "0 1px 2px rgba(0,0,0,.02)" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 20px", borderBottom: "1px solid #f1f5f9", background: "#f8fafc" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <Layers size={17} style={{ color: "#2563eb" }} />
+            <span style={{ fontSize: "0.95rem", fontWeight: 800, color: "#0f172a" }}>Daftar Anggaran CAPEX</span>
+          </div>
+          <button style={{ ...BTN, background: "#2563eb", padding: "8px 14px", fontSize: "0.78rem" }} onClick={() => setShowAddForm(true)}>
+            <Plus size={13} /> Tambah CAPEX Baru
+          </button>
+        </div>
+
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ ...TABLE, border: "none" }}>
+            <thead>
+              <tr>
+                <th style={{ ...TH, width: 48, textAlign: "center" }}>NO</th>
+                <th style={TH}>NAMA ANGGARAN CAPEX</th>
+                <th style={{ ...TH, width: 110, textAlign: "center" }}>KD CAPEX</th>
+                <th style={{ ...TH, width: 90, textAlign: "center" }}>RKAP AWAL</th>
+                <th style={{ ...TH, width: 90, textAlign: "center" }}>RKAP AKHIR</th>
+                <th style={{ ...TH, width: 100, textAlign: "center" }}>THN ANGGARAN</th>
+                <th style={{ ...TH, width: 140, textAlign: "right" }}>NILAI KAD</th>
+                <th style={{ ...TH, width: 140, textAlign: "right" }}>NILAI RKAP</th>
+                <th style={{ ...TH, width: 130, textAlign: "center" }}>AKSI</th>
+              </tr>
+            </thead>
+            <tbody>
+              {capexList.length === 0 ? (
+                <tr>
+                  <td colSpan={9} style={{ ...TD, textAlign: "center", color: "#94a3b8", padding: 32, fontStyle: "italic" }}>
+                    Belum ada data CAPEX. Klik "Tambah CAPEX Baru" untuk menambahkan.
+                  </td>
+                </tr>
+              ) : (
+                capexList.map((c, idx) => {
+                  const isRkapAkhirLebih = c.thn_rkap_akhir > CURRENT_YEAR;
+                  return (
+                    <tr key={c.id} style={{ transition: "background .12s", background: isRkapAkhirLebih ? "#fffbeb" : "white" }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = isRkapAkhirLebih ? "#fef9ec" : "#f8faff"}
+                      onMouseLeave={(e) => e.currentTarget.style.background = isRkapAkhirLebih ? "#fffbeb" : "white"}>
+                      <td style={{ ...TD, textAlign: "center", fontWeight: 700, fontSize: "0.78rem", color: "#94a3b8" }}>{idx + 1}</td>
+                      <td style={{ ...TD }}>
+                        <div style={{ fontWeight: 600, color: "#1e293b", lineHeight: 1.4, fontSize: "0.88rem" }}>{c.nm_anggaran}</div>
+                        {isRkapAkhirLebih && (
+                          <div style={{ marginTop: 4 }}>
+                            <span style={{ fontSize: "0.68rem", background: "#fef3c7", color: "#b45309", padding: "2px 6px", borderRadius: 4, fontWeight: 700, border: "1px solid #fde68a" }}>
+                              ★ RKAP Akhir melewati tahun berjalan
+                            </span>
+                          </div>
+                        )}
+                      </td>
+                      <td style={{ ...TD, textAlign: "center" }}>
+                        {c.kd_capex ? (
+                          <span style={{ fontFamily: "monospace", background: "#dbeafe", color: "#1d4ed8", padding: "3px 8px", borderRadius: 4, fontWeight: 700, fontSize: "0.8rem" }}>{c.kd_capex}</span>
+                        ) : <span style={{ color: "#cbd5e1" }}>—</span>}
+                      </td>
+                      <td style={{ ...TD, textAlign: "center", color: "#64748b", fontWeight: 600 }}>{c.thn_rkap_awal}</td>
+                      <td style={{ ...TD, textAlign: "center" }}>
+                        <span style={{
+                          background: isRkapAkhirLebih ? "#fef3c7" : "#f1f5f9",
+                          color: isRkapAkhirLebih ? "#b45309" : "#64748b",
+                          border: isRkapAkhirLebih ? "1px solid #fde68a" : "1px solid #e2e8f0",
+                          padding: "3px 10px", borderRadius: 99, fontWeight: 700, fontSize: "0.78rem"
+                        }}>{c.thn_rkap_akhir}</span>
+                      </td>
+                      <td style={{ ...TD, textAlign: "center" }}>
+                        <span style={{ background: "#f0fdf4", color: "#16a34a", border: "1px solid #bbf7d0", padding: "3px 10px", borderRadius: 99, fontWeight: 700, fontSize: "0.78rem" }}>{c.thn_anggaran}</span>
+                      </td>
+                      <td style={{ ...TD, textAlign: "right" }}>
+                        {c.nilai_kad > 0
+                          ? <span style={{ fontWeight: 700, color: "#2563eb", fontSize: "0.82rem" }}>{fmt(c.nilai_kad)}</span>
+                          : <span style={{ color: "#cbd5e1" }}>—</span>}
+                      </td>
+                      <td style={{ ...TD, textAlign: "right" }}>
+                        {c.nilai_rkap > 0
+                          ? <span style={{ fontWeight: 700, color: "#16a34a", fontSize: "0.82rem" }}>{fmt(c.nilai_rkap)}</span>
+                          : <span style={{ color: "#cbd5e1" }}>—</span>}
+                      </td>
+                      <td style={{ ...TD, textAlign: "center" }}>
+                        <div style={{ display: "flex", gap: 5, justifyContent: "center", flexWrap: "wrap" }}>
+                          {isRkapAkhirLebih && (
+                            <button
+                              style={{ ...ABTN, padding: "5px 8px", background: "#fffbeb", borderColor: "#fde68a", gap: 4 }}
+                              title="Input Anggaran Baru"
+                              onClick={() => setInputAnggaranCapex({ ...c })}
+                            >
+                              <PlusCircle size={13} style={{ color: "#d97706" }} />
+                              <span style={{ fontSize: "0.7rem", fontWeight: 700, color: "#d97706" }}>Anggaran</span>
+                            </button>
+                          )}
+                          <button
+                            style={{ ...ABTN, padding: "5px 8px", background: "#fffbeb", borderColor: "#fde68a" }}
+                            title="Edit"
+                            onClick={() => setEditTarget({ ...c })}
+                          >
+                            <Edit size={13} style={{ color: "#d97706" }} />
+                          </button>
+                          <button
+                            style={{ ...ABTN, padding: "5px 8px", background: "#fef2f2", borderColor: "#fecaca" }}
+                            title="Hapus"
+                            onClick={() => handleDeleteCapex(c.id)}
+                          >
+                            <Trash2 size={13} style={{ color: "#ef4444" }} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+            {capexList.length > 0 && (
+              <tfoot>
+                <tr style={{ background: "#eff6ff" }}>
+                  <td colSpan={6} style={{ ...TD, textAlign: "right", fontWeight: 700, color: "#1d4ed8", fontSize: "0.75rem" }}>TOTAL</td>
+                  <td style={{ ...TD, textAlign: "right", fontWeight: 800, color: "#1d4ed8", fontSize: "0.82rem" }}>
+                    {fmt(capexList.reduce((s, c) => s + (c.nilai_kad || 0), 0))}
+                  </td>
+                  <td style={{ ...TD, textAlign: "right", fontWeight: 800, color: "#16a34a", fontSize: "0.82rem" }}>
+                    {fmt(capexList.reduce((s, c) => s + (c.nilai_rkap || 0), 0))}
+                  </td>
+                  <td style={TD} />
+                </tr>
+              </tfoot>
+            )}
+          </table>
+        </div>
+      </div>
+
+      {capexList.some(c => c.thn_rkap_akhir > CURRENT_YEAR) && (
+        <div style={{ background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 8, padding: "10px 16px", display: "flex", alignItems: "center", gap: 8 }}>
+          <AlertTriangle size={15} style={{ color: "#d97706", flexShrink: 0 }} />
+          <span style={{ fontSize: "0.78rem", color: "#92400e" }}>
+            Baris berwarna kuning menandakan CAPEX dengan RKAP akhir melewati tahun berjalan ({CURRENT_YEAR}). Klik tombol <b>Anggaran</b> pada baris tersebut untuk menginput data anggaran baru.
+          </span>
         </div>
       )}
 
-      {/* Stepper */}
-      <div style={{ display: "flex", alignItems: "center", gap: 8, background: "white", padding: "1rem 1.4rem", borderRadius: 10, border: "1px solid #e2e8f0", boxShadow: "0 1px 2px rgba(0,0,0,.02)" }}>
-        {steps.map((s, i) => (
-          <React.Fragment key={s}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <div style={{ width: 26, height: 26, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, fontSize: "0.75rem", background: step > i ? "#16a34a" : step === i ? "#2563eb" : "#f1f5f9", color: step >= i ? "white" : "#94a3b8", flexShrink: 0 }}>
-                {step > i ? <CheckCircle size={14} /> : i + 1}
-              </div>
-              <span style={{ fontSize: "0.8rem", fontWeight: step === i ? 600 : 500, color: step >= i ? "#1e293b" : "#94a3b8", whiteSpace: "nowrap" }}>{s}</span>
-            </div>
-            {i < steps.length - 1 && <div style={{ flex: 1, height: 2, background: step > i ? "#16a34a" : "#f1f5f9", borderRadius: 99 }} />}
-          </React.Fragment>
-        ))}
-      </div>
-
-      {step === 0 && (
-        <>
-          <Card>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, paddingBottom: 12, borderBottom: "1px solid #f1f5f9" }}>
-              <Database size={18} style={{ color: "#2563eb" }} />
-              <h2 style={{ fontSize: "0.95rem", fontWeight: 600, color: "#1e293b" }}>Anggaran Master CAPEX</h2>
-            </div>
-            <div style={{ display: "flex", background: "#f1f5f9", borderRadius: 8, padding: 4, gap: 4, marginBottom: 20 }}>
-              {[["existing", "Pilih Master Tersimpan"], ["new", "Tambah Master Baru"]].map(([v, lbl]) => (
-                <button key={v} style={{ ...TOGGLE, flex: 1, justifyContent: "center", ...(masterMode === v ? { background: "white", color: "#2563eb", boxShadow: "0 1px 2px rgba(0,0,0,.05)" } : {}) }} onClick={() => { setMasterMode(v); setSelKd(""); }}>
-                  {v === "existing" ? <Search size={14} /> : <Plus size={14} />} {lbl}
-                </button>
-              ))}
-            </div>
-            {masterMode === "existing" && (
-              <Fld label="Nama Anggaran Master" required>
-                <select style={{ ...INP, cursor: "pointer" }} value={selKd} onChange={(e) => setSelKd(e.target.value)}>
-                  <option value="">-- Pilih Master --</option>
-                  {capexMasters.map((m) => <option key={m.kd} value={m.kd}>{m.nm} ({m.kd})</option>)}
-                </select>
-              </Fld>
-            )}
-            {masterMode === "new" && (
-              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                <Fld label="Nama Anggaran Master" required><input style={INP} value={newMaster.nm} onChange={(e) => setNewMaster((f) => ({ ...f, nm: e.target.value }))} /></Fld>
-                <Fld label="Kode Anggaran Master" required><input style={INP} value={newMaster.kd} onChange={(e) => setNewMaster((f) => ({ ...f, kd: e.target.value }))} /></Fld>
-              </div>
-            )}
-          </Card>
-
-          {isMasterResolved && (
-            <Card style={{ marginTop: 16 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, paddingBottom: 12, borderBottom: "1px solid #f1f5f9" }}>
-                <Layers size={18} style={{ color: "#2563eb" }} />
-                <h2 style={{ fontSize: "0.95rem", fontWeight: 600, color: "#1e293b" }}>Pilih / Buat Anggaran CAPEX</h2>
-              </div>
-              <div style={{ display: "flex", background: "#f1f5f9", borderRadius: 8, padding: 4, gap: 4, marginBottom: 20 }}>
-                {[["existing", "Pilih Anggaran Tersimpan"], ["new", "Tambah Anggaran Baru"]].map(([v, lbl]) => (
-                  <button key={v} style={{ ...TOGGLE, flex: 1, justifyContent: "center", ...(anggaranMode === v ? { background: "white", color: "#2563eb", boxShadow: "0 1px 2px rgba(0,0,0,.05)" } : {}) }} onClick={() => setAnggaranMode(v)}>{lbl}</button>
-                ))}
-              </div>
-              {anggaranMode === "existing" && (
-                <>
-                  <Fld label="Pilih Anggaran" required>
-                    {availableCapex.length > 0 ? (
-                      <select style={INP} value={selAnggaranId} onChange={(e) => setSelAnggaranId(e.target.value)}>
-                        <option value="">-- Pilih Anggaran --</option>
-                        {availableCapex.map((c) => <option key={c.id} value={c.id}>{c.nm_anggaran}{c.kd_capex ? ` (${c.kd_capex})` : ""}</option>)}
-                      </select>
-                    ) : (
-                      <div style={{ fontSize: "0.8rem", color: "#ef4444", background: "#fef2f2", padding: 12, borderRadius: 6 }}>Belum ada anggaran. Pilih "Tambah Anggaran Baru".</div>
-                    )}
-                  </Fld>
-                  <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 24 }}>
-                    <button style={{ ...BTN, background: "#2563eb", opacity: selAnggaranId ? 1 : 0.5 }} disabled={!selAnggaranId}
-                      onClick={() => { if (masterMode === "new" && !capexMasters.find((m) => m.kd === newMaster.kd)) setMasterList((p) => [...p, { kd: newMaster.kd, nm: newMaster.nm, tipe: "CAPEX" }]); setStep(1); }}>
-                      Lanjut Kelola Daftar <ChevronRight size={16} />
-                    </button>
-                  </div>
-                </>
-              )}
-              {anggaranMode === "new" && (
-                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                  <Fld label="Nama Anggaran CAPEX" required><input style={INP} value={newAnggaran.nm} onChange={(e) => setNewAnggaran((f) => ({ ...f, nm: e.target.value }))} /></Fld>
-                  <Fld label="Kode CAPEX"><input style={INP} value={newAnggaran.kd_capex} onChange={(e) => setNewAnggaran((f) => ({ ...f, kd_capex: e.target.value }))} /></Fld>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
-                    {["thn_rkap_awal", "thn_rkap_akhir", "thn_anggaran"].map((key) => (
-                      <Fld key={key} label={key.replace(/_/g, " ").toUpperCase()}>
-                        <select style={INP} value={newAnggaran[key]} onChange={(e) => setNewAnggaran((f) => ({ ...f, [key]: e.target.value }))}>
-                          {yearOpts.map((y) => <option key={y} value={y}>{y}</option>)}
-                        </select>
-                      </Fld>
-                    ))}
-                  </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-                    <Fld label="Nilai KAD (Rp)"><input type="number" style={INP} value={newAnggaran.nilai_kad} onChange={(e) => setNewAnggaran((f) => ({ ...f, nilai_kad: e.target.value }))} /></Fld>
-                    <Fld label="Nilai RKAP (Rp)"><input type="number" style={INP} value={newAnggaran.nilai_rkap} onChange={(e) => setNewAnggaran((f) => ({ ...f, nilai_rkap: e.target.value }))} /></Fld>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 16 }}>
-                    <button style={BTNOUT} onClick={() => setAnggaranMode("existing")}>Kembali</button>
-                    <button style={{ ...BTN, background: "#2563eb", opacity: newAnggaran.nm ? 1 : 0.5 }} disabled={!newAnggaran.nm} onClick={handleLanjutToStep1}>Simpan & Lanjut <ChevronRight size={16} /></button>
-                  </div>
-                </div>
-              )}
-            </Card>
-          )}
-        </>
-      )}
-
-      {step === 1 && (
-        <>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-            <h2 style={{ fontWeight: 600, fontSize: "1.1rem" }}>Kelola Anggaran CAPEX</h2>
-            <button style={{ ...BTN, background: "#2563eb" }} onClick={reset}><Plus size={16} /> Pilih / Tambah CAPEX Lain</button>
-          </div>
-          {!activeCapex ? (
-            <Card style={{ textAlign: "center", padding: "3rem", color: "#64748b" }}>Data tidak ditemukan.</Card>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-              <div style={{ background: "white", borderRadius: 12, border: "1px solid #e2e8f0", padding: "20px 24px", boxShadow: "0 1px 3px rgba(0,0,0,.02)" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                  <div>
-                    <h3 style={{ fontSize: "1.3rem", fontWeight: 700, color: "#1e293b", marginBottom: 12 }}>{activeCapex.nm_anggaran}</h3>
-                    <div style={{ display: "flex", gap: 20, fontSize: "0.9rem", color: "#64748b" }}>
-                      <span>Kode: <b>{activeCapex.kd_capex || "-"}</b></span>
-                      <span>Tahun: <b>{activeCapex.thn_anggaran}</b></span>
-                      <span>RKAP: <b>{activeCapex.thn_rkap_awal} - {activeCapex.thn_rkap_akhir}</b></span>
-                    </div>
-                  </div>
-                  <div style={{ textAlign: "right" }}>
-                    <div style={{ fontSize: "0.75rem", color: "#64748b", fontWeight: 700, marginBottom: 6 }}>NILAI RKAP</div>
-                    <div style={{ fontSize: "1.3rem", fontWeight: 700, color: "#2563eb" }}>Rp {fmt(activeCapex.nilai_rkap)}</div>
-                    <div style={{ marginTop: 12, display: "flex", gap: 8, justifyContent: "flex-end" }}>
-                      <button style={{ ...BTNOUT, padding: "6px 12px", fontSize: "0.8rem" }} onClick={() => setEditTarget({ ...activeCapex })}><Edit size={14} /> Edit Detail</button>
-                      <button style={{ ...BTNOUT, padding: "6px 12px", fontSize: "0.8rem", color: "#ef4444", borderColor: "#fecaca" }}
-                        onClick={() => setConfirm({ msg: "Hapus anggaran CAPEX ini?", onConfirm: () => { setCapexList((p) => p.filter((c) => c.id !== activeCapex.id)); setConfirm(null); reset(); } })}>
-                        <Trash2 size={14} /> Hapus
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ background: "white", borderRadius: 12, border: "1px solid #e2e8f0", overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,.02)" }}>
-                <div style={{ background: "#f8fafc", borderBottom: "1px solid #e2e8f0", padding: "16px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <Layers size={18} style={{ color: "#2563eb" }} />
-                    <span style={{ fontSize: "1.05rem", fontWeight: 700, color: "#0f172a" }}>Daftar Pekerjaan ({activeCapex.pekerjaan?.length || 0})</span>
-                  </div>
-                  <button style={{ ...BTN, background: "#2563eb", padding: "8px 14px", fontSize: "0.8rem" }} onClick={() => openAddPkj(activeCapex.id)}><Plus size={14} /> Tambah Pekerjaan</button>
-                </div>
-                <div style={{ overflowX: "auto" }}>
-                  <table style={{ ...TABLE, border: "none" }}>
-                    <thead>
-                      <tr>
-                        <th style={{ ...TH, width: 40, textAlign: "center" }}>No</th>
-                        <th style={TH}>Nama Pekerjaan</th>
-                        <th style={{ ...TH, width: 120 }}>Tgl Kontrak</th>
-                        <th style={{ ...TH, width: 100 }}>Durasi</th>
-                        <th style={{ ...TH, textAlign: "right" }}>Nilai Kontrak</th>
-                        <th style={{ ...TH, textAlign: "center", width: 120 }}>Aksi</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {!activeCapex.pekerjaan || activeCapex.pekerjaan.length === 0 ? (
-                        <tr><td colSpan={6} style={{ ...TD, textAlign: "center", color: "#94a3b8", padding: 24 }}>Belum ada pekerjaan.</td></tr>
-                      ) : (
-                        activeCapex.pekerjaan.map((pkj, idx) => (
-                          <tr key={pkj.id}>
-                            <td style={{ ...TD, textAlign: "center" }}>{idx + 1}</td>
-                            <td style={{ ...TD, fontWeight: 500, color: "#1e293b" }}>{pkj.nm}</td>
-                            <td style={{ ...TD, color: "#64748b" }}>{fmtDate(pkj.tgl_kontrak) || "-"}</td>
-                            <td style={{ ...TD, color: "#64748b" }}>{pkj.durasi_kontrak ? `${pkj.durasi_kontrak} hari` : "-"}</td>
-                            <td style={{ ...TD, textAlign: "right", color: "#2563eb", fontWeight: 600 }}>Rp {fmt(pkj.nilai_kontrak)}</td>
-                            <td style={{ ...TD, textAlign: "center" }}>
-                              <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>
-                                <button style={ABTN} onClick={() => setViewDetail({ cap: activeCapex, pkj })} title="Lihat Detail"><Eye size={14} style={{ color: "#2563eb" }} /></button>
-                                <button style={ABTN} onClick={() => openEditPkj(activeCapex.id, pkj)} title="Edit"><Edit size={14} style={{ color: "#d97706" }} /></button>
-                                <button style={ABTN} title="Hapus"
-                                  onClick={() => setConfirm({ msg: "Hapus pekerjaan ini?", onConfirm: () => { setCapexList((p) => p.map((c) => c.id === activeCapex.id ? { ...c, pekerjaan: c.pekerjaan.filter((pk) => pk.id !== pkj.id) } : c)); setConfirm(null); } })}>
-                                  <Trash2 size={14} style={{ color: "#ef4444" }} />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {showPkj && (
-            <div style={OVS} onClick={() => setShowPkj(false)}>
-              <div style={{ background: "white", borderRadius: 12, width: "100%", maxWidth: 650, maxHeight: "90vh", display: "flex", flexDirection: "column" }} onClick={(e) => e.stopPropagation()}>
-                <div style={{ padding: 20, borderBottom: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between" }}>
-                  <h3 style={{ fontWeight: 600 }}>{pkjEditId ? "Edit Pekerjaan" : "Tambah Pekerjaan"}</h3>
-                  <button style={{ background: "transparent", border: "none", cursor: "pointer" }} onClick={() => setShowPkj(false)}><X size={20} /></button>
-                </div>
-                <div style={{ overflowY: "auto", padding: 20, display: "flex", flexDirection: "column", gap: 16 }}>
-                  <Fld label="Nama Pekerjaan" required><textarea rows={2} style={INP} value={pkjForm.nm} onChange={(e) => setPkjForm((f) => ({ ...f, nm: e.target.value }))} /></Fld>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-                    <Fld label="Nilai RAB (Rp)"><input type="number" style={INP} value={pkjForm.nilai_rab} onChange={(e) => setPkjForm((f) => ({ ...f, nilai_rab: e.target.value }))} /></Fld>
-                    <Fld label="Nilai Kontrak (Rp)"><input type="number" style={INP} value={pkjForm.nilai_kontrak} onChange={(e) => setPkjForm((f) => ({ ...f, nilai_kontrak: e.target.value }))} /></Fld>
-                  </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
-                    <Fld label="Nomor PR"><input style={INP} value={pkjForm.no_pr} onChange={(e) => setPkjForm((f) => ({ ...f, no_pr: e.target.value }))} /></Fld>
-                    <Fld label="Nomor PO"><input style={INP} value={pkjForm.no_po} onChange={(e) => setPkjForm((f) => ({ ...f, no_po: e.target.value }))} /></Fld>
-                    <Fld label="Nomor Kontrak"><input style={INP} value={pkjForm.no_kontrak} onChange={(e) => setPkjForm((f) => ({ ...f, no_kontrak: e.target.value }))} /></Fld>
-                  </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
-                    <Fld label="Tanggal Kontrak"><input type="date" style={INP} value={pkjForm.tgl_kontrak} onChange={(e) => setPkjForm((f) => ({ ...f, tgl_kontrak: e.target.value }))} /></Fld>
-                    <Fld label="Durasi (Hari)"><input type="number" style={INP} value={pkjForm.durasi_kontrak} onChange={(e) => setPkjForm((f) => ({ ...f, durasi_kontrak: e.target.value }))} /></Fld>
-                    <Fld label="Tanggal BAMK"><input type="date" style={INP} value={pkjForm.tgl_bamk} onChange={(e) => setPkjForm((f) => ({ ...f, tgl_bamk: e.target.value }))} /></Fld>
-                  </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-                    <Fld label="Nomor SP3"><input style={INP} value={pkjForm.no_sp3} onChange={(e) => setPkjForm((f) => ({ ...f, no_sp3: e.target.value }))} /></Fld>
-                    <Fld label="Tanggal SP3"><input type="date" style={INP} value={pkjForm.tgl_sp3} onChange={(e) => setPkjForm((f) => ({ ...f, tgl_sp3: e.target.value }))} /></Fld>
-                  </div>
-                  <Fld label="Keterangan"><textarea rows={2} style={INP} value={pkjForm.keterangan} onChange={(e) => setPkjForm((f) => ({ ...f, keterangan: e.target.value }))} /></Fld>
-                </div>
-                <div style={{ padding: "16px 20px", borderTop: "1px solid #e2e8f0", display: "flex", justifyContent: "flex-end", gap: 12 }}>
-                  <button style={BTNOUT} onClick={() => setShowPkj(false)}>Batal</button>
-                  <button style={{ ...BTN, opacity: pkjForm.nm ? 1 : 0.5 }} disabled={!pkjForm.nm} onClick={handleSavePkj}>Simpan Pekerjaan</button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {editTarget && (
-            <div style={OVS} onClick={() => setEditTarget(null)}>
-              <div style={{ background: "white", borderRadius: 12, padding: 24, maxWidth: 500, width: "100%" }} onClick={(e) => e.stopPropagation()}>
-                <h3 style={{ fontWeight: 600, marginBottom: 20 }}>Edit Info CAPEX</h3>
-                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                  <Fld label="Nama Anggaran CAPEX"><input style={INP} value={editTarget.nm_anggaran} onChange={(e) => setEditTarget((t) => ({ ...t, nm_anggaran: e.target.value }))} /></Fld>
-                  <Fld label="Kode CAPEX"><input style={INP} value={editTarget.kd_capex} onChange={(e) => setEditTarget((t) => ({ ...t, kd_capex: e.target.value }))} /></Fld>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
-                    {["thn_rkap_awal", "thn_rkap_akhir", "thn_anggaran"].map((key) => (
-                      <Fld key={key} label={key.replace(/_/g, " ").toUpperCase()}>
-                        <select style={INP} value={editTarget[key]} onChange={(e) => setEditTarget((t) => ({ ...t, [key]: e.target.value }))}>
-                          {yearOpts.map((y) => <option key={y} value={y}>{y}</option>)}
-                        </select>
-                      </Fld>
-                    ))}
-                  </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                    <Fld label="Nilai KAD (Rp)"><input type="number" style={INP} value={editTarget.nilai_kad} onChange={(e) => setEditTarget((t) => ({ ...t, nilai_kad: e.target.value }))} /></Fld>
-                    <Fld label="Nilai RKAP (Rp)"><input type="number" style={INP} value={editTarget.nilai_rkap} onChange={(e) => setEditTarget((t) => ({ ...t, nilai_rkap: e.target.value }))} /></Fld>
-                  </div>
-                </div>
-                <div style={{ display: "flex", gap: 12, marginTop: 24, justifyContent: "flex-end" }}>
-                  <button style={BTNOUT} onClick={() => setEditTarget(null)}>Batal</button>
-                  <button style={BTN} onClick={saveEditCapex}>Simpan</button>
-                </div>
-              </div>
-            </div>
-          )}
-        </>
-      )}
+      {/* Render modals */}
+      {showAddForm && <CapexAddModal />}
+      {editTarget && <CapexEditModal />}
     </div>
   );
 }
@@ -1879,7 +1933,11 @@ export default function App() {
   const [masterList, setMasterList] = useState(MASTER_LIST_INIT);
   const [capexList, setCapexList] = useState(INIT_CAPEX_FORM);
 
-  const BTNOUT_HOME = { display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 16px", borderRadius: 6, border: "1px solid #cbd5e1", background: "white", color: "#334155", fontSize: "0.85rem", fontWeight: 500, cursor: "pointer", marginBottom: 20 };
+  const BTNOUT_HOME = {
+    display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 16px",
+    borderRadius: 6, border: "1px solid #cbd5e1", background: "white", color: "#334155",
+    fontSize: "0.85rem", fontWeight: 500, cursor: "pointer", marginBottom: 20,
+  };
 
   if (tipe === "OPEX") {
     return (
@@ -1899,9 +1957,9 @@ export default function App() {
       <div style={{ minHeight: "100vh", background: "#f8fafc" }}>
         <style>{CSS_BM}</style>
         <style>{`*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif!important;}body{-webkit-font-smoothing:antialiased;}`}</style>
-        <div style={{ padding: "2rem" }}>
+        <div style={{ padding: "2rem", maxWidth: 1400, margin: "0 auto" }}>
           <button style={BTNOUT_HOME} onClick={() => setTipe(null)}><ArrowLeft size={16} /> Pilih Menu Utama</button>
-          <CapexModule capexList={capexList} setCapexList={setCapexList} masterList={masterList} setMasterList={setMasterList} />
+          <CapexModule capexList={capexList} setCapexList={setCapexList} />
         </div>
       </div>
     );
@@ -1923,7 +1981,7 @@ export default function App() {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
           {[
             { tipe: "OPEX", icon: <Package size={24} style={{ color: "#16a34a" }} />, bg: "#dcfce7", color: "#16a34a", sub: "Anggaran Operasional", count: `${masterList.filter((m) => m.tipe === "OPEX").length} pos anggaran master` },
-            { tipe: "CAPEX", icon: <FileText size={24} style={{ color: "#2563eb" }} />, bg: "#dbeafe", color: "#2563eb", sub: "Anggaran Investasi & Pekerjaan", count: `${masterList.filter((m) => m.tipe === "CAPEX").length} pos anggaran master` },
+            { tipe: "CAPEX", icon: <FileText size={24} style={{ color: "#2563eb" }} />, bg: "#dbeafe", color: "#2563eb", sub: "Anggaran Investasi & Pekerjaan", count: `${capexList.length} data CAPEX` },
           ].map((item) => (
             <div key={item.tipe}
               style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 12, padding: 24, cursor: "pointer", transition: "all .2s", boxShadow: "0 1px 3px rgba(0,0,0,.02)" }}
