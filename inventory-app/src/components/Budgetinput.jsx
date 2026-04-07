@@ -4356,47 +4356,98 @@ function OpexModule({ masterList, setMasterList }) {
 // CAPEX — INPUT ANGGARAN PAGE — (LEGACY/ALTERNATIF CAPEX)
 // ════════════════════════════════════════════════════════════════
 function CapexInputAnggaranPage({ capex, onBack, onSave }) {
-  const rkap_awal_opts = [CURRENT_YEAR, CURRENT_YEAR + 1];
-
+  // Tahun RKAP Awal & Akhir - fleksibel, input apapun dulu
   const [thnRkapAwal, setThnRkapAwal] = useState(
-    rkap_awal_opts.includes(capex.thn_rkap_awal)
-      ? capex.thn_rkap_awal
-      : CURRENT_YEAR,
+    capex.thn_rkap_awal || CURRENT_YEAR,
   );
+  const [thnRkapAkhir, setThnRkapAkhir] = useState(
+    capex.thn_rkap_akhir || CURRENT_YEAR,
+  );
+
+  // Validasi: Awal ≤ Akhir (dan keduanya minimal 4 digit)
+  const awal = parseInt(thnRkapAwal) || 0;
+  const akhir = parseInt(thnRkapAkhir) || 0;
+  const isRangeValid =
+    awal >= 1900 &&
+    awal <= 2999 &&
+    akhir >= 1900 &&
+    akhir <= 2999 &&
+    awal <= akhir;
+
+  // Auto-generate list Tahun Anggaran dari rentang RKAP Awal - Akhir (single source)
+  const generateTahunAnggaran = () => {
+    if (!isRangeValid) return [];
+    const years = [];
+    for (let y = awal; y <= akhir; y++) {
+      years.push(y);
+    }
+    return years;
+  };
+
+  const tahunAnggaranOpts = generateTahunAnggaran();
+  const [thnAnggaran, setThnAnggaran] = useState(tahunAnggaranOpts[0] || "");
+
+  // Update thnAnggaran ketika tahun list berubah
+  useEffect(() => {
+    if (
+      tahunAnggaranOpts.length > 0 &&
+      !tahunAnggaranOpts.includes(parseInt(thnAnggaran))
+    ) {
+      setThnAnggaran(tahunAnggaranOpts[0]);
+    }
+  }, [tahunAnggaranOpts, thnAnggaran]);
+
   const [nilaiKad, setNilaiKad] = useState("");
   const [nilaiRkap, setNilaiRkap] = useState("");
-
-  const rkap_akhir_opts =
-    thnRkapAwal === CURRENT_YEAR ? [CURRENT_YEAR] : [CURRENT_YEAR, thnRkapAwal];
-
-  const [thnRkapAkhir, setThnRkapAkhir] = useState(rkap_akhir_opts[0]);
-
-  useEffect(() => {
-    const opts =
-      thnRkapAwal === CURRENT_YEAR
-        ? [CURRENT_YEAR]
-        : [CURRENT_YEAR, thnRkapAwal];
-    if (!opts.includes(thnRkapAkhir)) setThnRkapAkhir(opts[0]);
-  }, [thnRkapAwal]);
 
   const history = capex.history_anggaran || [];
 
   const handleSimpan = () => {
-    if (!nilaiKad && !nilaiRkap) return;
+    // Validasi: range valid?
+    if (!isRangeValid) {
+      alert(
+        "Tahun RKAP Awal harus ≤ Tahun RKAP Akhir! (format: tahun 4 digit, misal 2026)",
+      );
+      return;
+    }
+
+    // Validasi: Tahun Anggaran dipilih?
+    if (!thnAnggaran) {
+      alert("Pilih Tahun Anggaran terlebih dahulu!");
+      return;
+    }
+
+    // Validasi: minimal salah satu nilai harus ada
+    if (!nilaiKad && !nilaiRkap) {
+      alert("Minimal salah satu nilai (KAD atau RKAP) harus diisi!");
+      return;
+    }
+
+    // Validasi: nilai harus numerik dan tidak negatif
+    const kad = parseFloat(nilaiKad) || 0;
+    const rkap = parseFloat(nilaiRkap) || 0;
+
+    if (kad < 0 || rkap < 0) {
+      alert("Nilai tidak boleh negatif!");
+      return;
+    }
+
     const entry = {
       id: uid(),
       tgl: new Date().toISOString().split("T")[0],
-      thn_rkap_awal: thnRkapAwal,
-      thn_rkap_akhir: thnRkapAkhir,
-      nilai_kad: parseFloat(nilaiKad) || 0,
-      nilai_rkap: parseFloat(nilaiRkap) || 0,
+      thn_rkap_awal: awal,
+      thn_rkap_akhir: akhir,
+      thn_anggaran: parseInt(thnAnggaran),
+      nilai_kad: kad,
+      nilai_rkap: rkap,
     };
-    onSave(
-      capex.id,
-      entry,
-      parseFloat(nilaiKad) || 0,
-      parseFloat(nilaiRkap) || 0,
-    );
+
+    onSave(capex.id, entry, kad, rkap);
+
+    // Reset form setelah simpan
+    setNilaiKad("");
+    setNilaiRkap("");
+    setThnAnggaran(tahunAnggaranOpts[0] || "");
   };
 
   return (
@@ -4488,42 +4539,69 @@ function CapexInputAnggaranPage({ capex, onBack, onSave }) {
         <ModalFormRow
           label="Tahun RKAP Awal"
           required
-          helper={`Pilihan: tahun berjalan (${CURRENT_YEAR}) atau P+1 (${CURRENT_YEAR + 1})`}
+          helper={
+            awal >= 1900 && awal <= 2999
+              ? "✓ Tahun valid"
+              : "⚠ Format tahun (misal: 2026)"
+          }
         >
-          <select
-            style={{ ...INP, maxWidth: 160 }}
+          <input
+            type="number"
+            className="no-spinners"
+            style={{
+              ...INP,
+              maxWidth: 160,
+              borderColor: awal >= 1900 && awal <= 2999 ? "#16a34a" : "#ef4444",
+            }}
             value={thnRkapAwal}
-            onChange={(e) => setThnRkapAwal(parseInt(e.target.value))}
-          >
-            {rkap_awal_opts.map((y) => (
-              <option key={y} value={y}>
-                {y}
-              </option>
-            ))}
-          </select>
+            onChange={(e) => setThnRkapAwal(e.target.value)}
+          />
         </ModalFormRow>
 
         <ModalFormRow
           label="Tahun RKAP Akhir"
           required
           helper={
-            thnRkapAwal === CURRENT_YEAR
-              ? `Hanya ${CURRENT_YEAR} (karena RKAP awal = ${CURRENT_YEAR})`
-              : `${CURRENT_YEAR} atau ${thnRkapAwal}`
+            isRangeValid
+              ? `✓ Valid: rentang ${awal}–${akhir}`
+              : akhir < 1900 || akhir > 2999
+                ? "⚠ Format tahun (misal: 2027)"
+                : "⚠ Tahun Akhir harus ≥ Tahun Awal"
           }
         >
-          <select
-            style={{ ...INP, maxWidth: 160 }}
+          <input
+            type="number"
+            className="no-spinners"
+            style={{
+              ...INP,
+              maxWidth: 160,
+              borderColor: isRangeValid ? "#16a34a" : "#ef4444",
+            }}
             value={thnRkapAkhir}
-            onChange={(e) => setThnRkapAkhir(parseInt(e.target.value))}
-          >
-            {rkap_akhir_opts.map((y) => (
-              <option key={y} value={y}>
-                {y}
-              </option>
-            ))}
-          </select>
+            onChange={(e) => setThnRkapAkhir(e.target.value)}
+          />
         </ModalFormRow>
+
+        {isRangeValid && tahunAnggaranOpts.length > 0 && (
+          <ModalFormRow
+            label="Tahun Anggaran"
+            required
+            helper={`Pilih 1 tahun dari rentang ${awal}–${akhir}`}
+          >
+            <select
+              style={{ ...INP, maxWidth: 160 }}
+              value={thnAnggaran}
+              onChange={(e) => setThnAnggaran(parseInt(e.target.value))}
+            >
+              <option value="">-- Pilih Tahun --</option>
+              {tahunAnggaranOpts.map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
+            </select>
+          </ModalFormRow>
+        )}
 
         <ModalFormRow label="Nilai KAD (Rp)">
           <input
@@ -4532,7 +4610,12 @@ function CapexInputAnggaranPage({ capex, onBack, onSave }) {
             style={{ ...INP, maxWidth: 340 }}
             placeholder="0"
             value={nilaiKad}
-            onChange={(e) => setNilaiKad(e.target.value)}
+            onChange={(e) => {
+              const val = e.target.value;
+              if (val === "" || parseFloat(val) >= 0) {
+                setNilaiKad(val);
+              }
+            }}
           />
           {parseFloat(nilaiKad) > 0 && (
             <span style={{ fontSize: "0.78rem", color: "#64748b" }}>
@@ -4548,7 +4631,12 @@ function CapexInputAnggaranPage({ capex, onBack, onSave }) {
             style={{ ...INP, maxWidth: 340 }}
             placeholder="0"
             value={nilaiRkap}
-            onChange={(e) => setNilaiRkap(e.target.value)}
+            onChange={(e) => {
+              const val = e.target.value;
+              if (val === "" || parseFloat(val) >= 0) {
+                setNilaiRkap(val);
+              }
+            }}
           />
           {parseFloat(nilaiRkap) > 0 && (
             <span style={{ fontSize: "0.72rem", color: "#64748b" }}>
@@ -4661,7 +4749,7 @@ function CapexInputAnggaranPage({ capex, onBack, onSave }) {
                 }}
               >
                 <span style={{ color: "#1e293b", fontWeight: 600 }}>
-                  {h.thn_rkap_akhir}
+                  {h.thn_anggaran || h.thn_rkap_akhir}
                 </span>
                 <span style={{ color: "#64748b" }}>—</span>
                 <span
