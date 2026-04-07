@@ -322,83 +322,6 @@ const INIT_CAPEX_FORM = [
     pekerjaan: [],
     history_anggaran: [],
   },
-  {
-    id: "CAP-F-6",
-    kd_master: "5900100000",
-    nm_master: "Beban Investasi",
-    nm_anggaran:
-      "Standarisasi Perangkat Jaringan di Lingkungan PT Pelindo Multi Terminal",
-    kd_capex: "2540012",
-    thn_rkap_awal: 2025,
-    thn_rkap_akhir: 2026,
-    thn_anggaran: 2025,
-    nilai_kad: 0,
-    nilai_rkap: 0,
-    anggaran_tahunan: [],
-    pekerjaan: [],
-    history_anggaran: [],
-  },
-  {
-    id: "CAP-F-7",
-    kd_master: "5900100000",
-    nm_master: "Beban Investasi",
-    nm_anggaran: "Penyiapan Infrastruktur IT pada Kegiatan Roro",
-    kd_capex: "2540010",
-    thn_rkap_awal: 2025,
-    thn_rkap_akhir: 2026,
-    thn_anggaran: 2025,
-    nilai_kad: 0,
-    nilai_rkap: 0,
-    anggaran_tahunan: [],
-    pekerjaan: [],
-    history_anggaran: [],
-  },
-  {
-    id: "CAP-F-8",
-    kd_master: "5900100000",
-    nm_master: "Beban Investasi",
-    nm_anggaran: "Transformasi dan Digitalisasi PT Pelindo Multi Terminal",
-    kd_capex: "2540011",
-    thn_rkap_awal: 2025,
-    thn_rkap_akhir: 2027,
-    thn_anggaran: 2026,
-    nilai_kad: 0,
-    nilai_rkap: 0,
-    anggaran_tahunan: [],
-    pekerjaan: [],
-    history_anggaran: [],
-  },
-  {
-    id: "CAP-F-9",
-    kd_master: "5900100000",
-    nm_master: "Beban Investasi",
-    nm_anggaran:
-      "Standarisasi Perangkat Jaringan di Lingkungan PT Pelindo Multi Terminal",
-    kd_capex: "2540012",
-    thn_rkap_awal: 2026,
-    thn_rkap_akhir: 2027,
-    thn_anggaran: 2026,
-    nilai_kad: 0,
-    nilai_rkap: 0,
-    anggaran_tahunan: [],
-    pekerjaan: [],
-    history_anggaran: [],
-  },
-  {
-    id: "CAP-F-10",
-    kd_master: "5900100000",
-    nm_master: "Beban Investasi",
-    nm_anggaran: "Penyiapan Infrastruktur IT pada Kegiatan Roro",
-    kd_capex: "2540010",
-    thn_rkap_awal: 2025,
-    thn_rkap_akhir: 2026,
-    thn_anggaran: 2026,
-    nilai_kad: 0,
-    nilai_rkap: 0,
-    anggaran_tahunan: [],
-    pekerjaan: [],
-    history_anggaran: [],
-  },
 ];
 
 const yearOpts = (() => {
@@ -456,6 +379,7 @@ body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:var(--bg);c
 @keyframes slideDown{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
+/* KELAS MENGHILANGKAN SPINNER UNTUK INPUT NUMBER */
 .no-spinners::-webkit-inner-spin-button,
 .no-spinners::-webkit-outer-spin-button {
   -webkit-appearance: none;
@@ -650,30 +574,6 @@ const MASTER_ACCENT_COLORS = [
     badgeText: "#6d28d9",
     dot: "#7c3aed",
   },
-  {
-    border: "#0891b2",
-    headerBg: "#ecfeff",
-    headerBorder: "#a5f3fc",
-    badge: "#cffafe",
-    badgeText: "#0e7490",
-    dot: "#0891b2",
-  },
-  {
-    border: "#db2777",
-    headerBg: "#fdf2f8",
-    headerBorder: "#fbcfe8",
-    badge: "#fce7f3",
-    badgeText: "#be185d",
-    dot: "#db2777",
-  },
-  {
-    border: "#65a30d",
-    headerBg: "#f7fee7",
-    headerBorder: "#d9f99d",
-    badge: "#ecfccb",
-    badgeText: "#4d7c0f",
-    dot: "#65a30d",
-  },
 ];
 
 function getMasterAccent(globalIdx) {
@@ -757,26 +657,6 @@ function Fld({ label, required, children, helper }) {
   );
 }
 
-function Card({ children, style }) {
-  return (
-    <div
-      style={{
-        background: "white",
-        borderRadius: 10,
-        border: "1px solid #e2e8f0",
-        padding: "1.4rem",
-        boxShadow: "0 1px 2px rgba(0,0,0,.02)",
-        ...style,
-      }}
-    >
-      {children}
-    </div>
-  );
-}
-
-// ════════════════════════════════════════════════════════════════
-// CAPEX MODAL FORM ROW — reusable left-right row for modals
-// ════════════════════════════════════════════════════════════════
 function ModalFormRow({ label, required, helper, children, noBorder }) {
   return (
     <div
@@ -802,7 +682,7 @@ function ModalFormRow({ label, required, helper, children, noBorder }) {
 }
 
 // ════════════════════════════════════════════════════════════════
-// HISTORY POPUP
+// HISTORY POPUP (OPEX)
 // ════════════════════════════════════════════════════════════════
 function HistoryPopup({ row, title, onClose, lbl = "Realisasi" }) {
   const history = row.history || [];
@@ -837,6 +717,7 @@ function HistoryPopup({ row, title, onClose, lbl = "Realisasi" }) {
     return { ...h, real, bymhd, jumlah, meta };
   });
   const grandTotal = rows.reduce((acc, r) => acc + (r.jumlah || 0), 0);
+
   return (
     <div style={OVS} onClick={onClose}>
       <div
@@ -1016,6 +897,289 @@ function HistoryPopup({ row, title, onClose, lbl = "Realisasi" }) {
                     }}
                   >
                     {grandTotal < 0 ? "−" : ""}Rp {fmt(Math.abs(grandTotal))}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          )}
+        </div>
+        <div
+          style={{
+            padding: "16px",
+            borderTop: "1px solid #e2e8f0",
+            display: "flex",
+            justifyContent: "flex-end",
+          }}
+        >
+          <button style={BTNOUT} onClick={onClose}>
+            Tutup
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════
+// HISTORY POPUP (CAPEX)
+// ════════════════════════════════════════════════════════════════
+function CapexHistoryPopup({ row, title, onClose }) {
+  const history = row.history || [];
+  const TIPE_META = {
+    initial: { label: "Input Awal", color: "#0284c7", bg: "#e0f2fe" },
+    penambahan: { label: "Penambahan", color: "#16a34a", bg: "#dcfce7" },
+    pengurangan: { label: "Pengurangan", color: "#dc2626", bg: "#fee2e2" },
+  };
+
+  let totalReal = 0,
+    totalBymhd = 0;
+  const rows = history.map((h) => {
+    const meta = TIPE_META[h.tipe] || {
+      label: h.tipe,
+      color: "#475569",
+      bg: "#f1f5f9",
+    };
+
+    // Logic: Penambahan → BYMHD, Pengurangan → Real (negative), Initial → Real
+    let real = null,
+      bymhd = null;
+    if (h.is_initial || h.tipe === "initial") {
+      real = h.nilai;
+      totalReal += h.nilai;
+    } else if (h.tipe === "penambahan") {
+      bymhd = h.nilai;
+      totalBymhd += h.nilai;
+    } else if (h.tipe === "pengurangan") {
+      real = -h.nilai;
+      totalReal -= h.nilai;
+    }
+
+    const jumlah = (real || 0) + (bymhd || 0);
+    return { ...h, meta, real, bymhd, jumlah };
+  });
+
+  return (
+    <div style={OVS} onClick={onClose}>
+      <div
+        style={{
+          background: "white",
+          borderRadius: 12,
+          width: "100%",
+          maxWidth: 640,
+          maxHeight: "85vh",
+          display: "flex",
+          flexDirection: "column",
+          boxShadow: "0 10px 25px rgba(0,0,0,.1)",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div
+          style={{
+            padding: "16px 20px",
+            borderBottom: "1px solid #e2e8f0",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+          }}
+        >
+          <div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                marginBottom: 4,
+              }}
+            >
+              <History size={18} style={{ color: "#2563eb" }} />
+              <h3
+                style={{ fontWeight: 600, fontSize: "1rem", color: "#1e293b" }}
+              >
+                Riwayat Perubahan Anggaran
+              </h3>
+            </div>
+            <div style={{ fontSize: "0.8rem", color: "#64748b" }}>
+              <b>{title}</b> — Tahun {row.thn}
+            </div>
+          </div>
+          <button
+            style={{
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              color: "#64748b",
+            }}
+            onClick={onClose}
+          >
+            <X size={20} />
+          </button>
+        </div>
+        <div style={{ overflowY: "auto", padding: "16px", flex: 1 }}>
+          {history.length === 0 ? (
+            <div
+              style={{
+                textAlign: "center",
+                padding: "32px 0",
+                color: "#94a3b8",
+                fontSize: "0.85rem",
+              }}
+            >
+              Belum ada riwayat.
+            </div>
+          ) : (
+            <table style={TABLE}>
+              <thead>
+                <tr>
+                  <th style={{ ...TH, width: 40, textAlign: "center" }}>NO</th>
+                  <th style={{ ...TH, width: 80, textAlign: "center" }}>
+                    TAHUN
+                  </th>
+                  <th style={{ ...TH, width: 100 }}>TIPE</th>
+                  <th style={{ ...TH, textAlign: "right" }}>REAL (Rp)</th>
+                  <th style={{ ...TH, textAlign: "right" }}>BYMHD (Rp)</th>
+                  <th style={{ ...TH, textAlign: "right" }}>JUMLAH (Rp)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((h, i) => (
+                  <tr key={h.id}>
+                    <td style={{ ...TD, textAlign: "center" }}>{i + 1}</td>
+                    <td
+                      style={{
+                        ...TD,
+                        textAlign: "center",
+                        fontWeight: 600,
+                        color: "#0f172a",
+                      }}
+                    >
+                      {row.thn}
+                    </td>
+                    <td style={TD}>
+                      <span
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          padding: "4px 8px",
+                          borderRadius: 4,
+                          fontSize: "0.75rem",
+                          fontWeight: 600,
+                          background: h.meta.bg,
+                          color: h.meta.color,
+                        }}
+                      >
+                        {h.meta.label}
+                      </span>
+                      {h.keterangan && (
+                        <div
+                          style={{
+                            fontSize: "0.75rem",
+                            color: "#94a3b8",
+                            marginTop: 4,
+                          }}
+                        >
+                          {h.keterangan}
+                        </div>
+                      )}
+                    </td>
+                    <td
+                      style={{
+                        ...TD,
+                        textAlign: "right",
+                        fontWeight: 600,
+                        color:
+                          h.real === null
+                            ? "#cbd5e1"
+                            : h.real < 0
+                              ? "#ef4444"
+                              : "#16a34a",
+                      }}
+                    >
+                      {h.real !== null ? (
+                        <>
+                          {h.real < 0 ? "−" : ""} {fmt(Math.abs(h.real))}
+                        </>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+                    <td
+                      style={{
+                        ...TD,
+                        textAlign: "right",
+                        fontWeight: 600,
+                        color:
+                          h.bymhd === null
+                            ? "#cbd5e1"
+                            : h.bymhd < 0
+                              ? "#ef4444"
+                              : "#d97706",
+                      }}
+                    >
+                      {h.bymhd !== null ? fmt(h.bymhd) : "—"}
+                    </td>
+                    <td
+                      style={{
+                        ...TD,
+                        textAlign: "right",
+                        fontWeight: 600,
+                        color:
+                          h.jumlah < 0
+                            ? "#ef4444"
+                            : h.jumlah > 0
+                              ? "#2563eb"
+                              : "#cbd5e1",
+                      }}
+                    >
+                      {h.jumlah >= 0 ? "" : "−"} {fmt(Math.abs(h.jumlah))}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr style={{ background: "#f8fafc" }}>
+                  <td
+                    colSpan={3}
+                    style={{
+                      ...TD,
+                      textAlign: "right",
+                      fontWeight: 600,
+                      color: "#475569",
+                    }}
+                  >
+                    TOTAL SAAT INI
+                  </td>
+                  <td
+                    style={{
+                      ...TD,
+                      textAlign: "right",
+                      fontWeight: 700,
+                      color: "#16a34a",
+                      fontSize: "0.9rem",
+                    }}
+                  >
+                    {fmt(totalReal)}
+                  </td>
+                  <td
+                    style={{
+                      ...TD,
+                      textAlign: "right",
+                      fontWeight: 700,
+                      color: "#d97706",
+                      fontSize: "0.9rem",
+                    }}
+                  >
+                    {fmt(totalBymhd)}
+                  </td>
+                  <td
+                    style={{
+                      ...TD,
+                      textAlign: "right",
+                      fontWeight: 700,
+                      color: "#2563eb",
+                      fontSize: "0.9rem",
+                    }}
+                  >
+                    {fmt(totalReal + totalBymhd)}
                   </td>
                 </tr>
               </tfoot>
@@ -1250,6 +1414,7 @@ function InlineEditCurrencyField({ label, value, onSave }) {
           <div>
             <input
               type="number"
+              className="no-spinners"
               style={{ ...INP, width: "100%", maxWidth: 320 }}
               value={val}
               onChange={(e) => setVal(e.target.value)}
@@ -1320,7 +1485,7 @@ function InlineEditCurrencyField({ label, value, onSave }) {
 }
 
 // ════════════════════════════════════════════════════════════════
-// EDIT REALISASI — REVISED: left-right layout
+// EDIT REALISASI SECTION (OPEX)
 // ════════════════════════════════════════════════════════════════
 function EditRealisasiSection({
   row,
@@ -1395,7 +1560,6 @@ function EditRealisasiSection({
         marginTop: 12,
       }}
     >
-      {/* Top info table — unchanged */}
       <table style={{ ...TABLE, border: "none" }}>
         <thead>
           <tr>
@@ -1423,9 +1587,7 @@ function EditRealisasiSection({
         </tbody>
       </table>
 
-      {/* ── REVISED: Jenis Perubahan — left label, right dropdown ── */}
       <div style={{ borderTop: "1px solid #e2e8f0", background: "#fafafa" }}>
-        {/* Row: Jenis Perubahan */}
         <div style={LR_ROW}>
           <div style={LR_LABEL}>
             Jenis Perubahan{" "}
@@ -1439,24 +1601,14 @@ function EditRealisasiSection({
                 minWidth: 220,
                 maxWidth: 340,
                 background: tipe
-                  ? (() => {
-                      const opt = TIPE_OPTIONS.find((o) => o.value === tipe);
-                      return opt ? opt.bg : "white";
-                    })()
+                  ? TIPE_OPTIONS.find((o) => o.value === tipe)?.bg || "white"
                   : "white",
                 color: tipe
-                  ? (() => {
-                      const opt = TIPE_OPTIONS.find((o) => o.value === tipe);
-                      return opt ? opt.color : "#334155";
-                    })()
+                  ? TIPE_OPTIONS.find((o) => o.value === tipe)?.color ||
+                    "#334155"
                   : "#334155",
                 border: tipe
-                  ? (() => {
-                      const opt = TIPE_OPTIONS.find((o) => o.value === tipe);
-                      return opt
-                        ? `2px solid ${opt.color}`
-                        : "1px solid #cbd5e1";
-                    })()
+                  ? `2px solid ${TIPE_OPTIONS.find((o) => o.value === tipe)?.color}`
                   : "1px solid #cbd5e1",
                 fontWeight: tipe ? 700 : 400,
               }}
@@ -1473,7 +1625,6 @@ function EditRealisasiSection({
           </div>
         </div>
 
-        {/* Row: Nilai Perubahan */}
         <div style={LR_ROW}>
           <div style={LR_LABEL}>
             Nilai Perubahan (IDR){" "}
@@ -1489,6 +1640,7 @@ function EditRealisasiSection({
           >
             <input
               type="number"
+              className="no-spinners"
               style={{ ...INP, maxWidth: 340, width: "100%" }}
               placeholder="Contoh: 50000000"
               value={nilai}
@@ -1502,7 +1654,6 @@ function EditRealisasiSection({
           </div>
         </div>
 
-        {/* Row: Keterangan */}
         <div style={{ ...LR_ROW, borderBottom: "none" }}>
           <div style={LR_LABEL}>
             Keterangan{" "}
@@ -1530,7 +1681,6 @@ function EditRealisasiSection({
         </div>
       </div>
 
-      {/* Footer buttons */}
       <div
         style={{
           padding: "12px 18px",
@@ -1563,7 +1713,221 @@ function EditRealisasiSection({
 }
 
 // ════════════════════════════════════════════════════════════════
-// REALISASI TAHUNAN PER MASTER
+// EDIT ANGGARAN SECTION (CAPEX) - HANYA PENAMBAHAN & PENGURANGAN
+// ════════════════════════════════════════════════════════════════
+function EditCapexAnggaranSection({
+  row,
+  capexNama,
+  onBack,
+  onSave,
+  onUpdateRow,
+}) {
+  const [tipe, setTipe] = useState("");
+  const [nilai, setNilai] = useState("");
+  const [ket, setKet] = useState("");
+
+  // FITUR: Hanya Penambahan & Pengurangan untuk CAPEX
+  const TIPE_OPTIONS = [
+    {
+      value: "penambahan",
+      label: "Penambahan",
+      color: "#16a34a",
+      bg: "#f0fdf4",
+      border: "#bbf7d0",
+    },
+    {
+      value: "pengurangan",
+      label: "Pengurangan",
+      color: "#dc2626",
+      bg: "#fef2f2",
+      border: "#fecaca",
+    },
+  ];
+
+  const currentTotal = (row.history || []).reduce((acc, h) => {
+    if (h.is_initial || h.tipe === "initial") return acc + h.nilai;
+    if (h.tipe === "penambahan") return acc + h.nilai;
+    if (h.tipe === "pengurangan") return acc - h.nilai;
+    return acc;
+  }, 0);
+
+  const handleSubmit = () => {
+    if (!tipe || !nilai) return;
+    const today = new Date().toISOString().split("T")[0];
+    const newEntry = {
+      id: uid(),
+      tgl: today,
+      tipe,
+      nilai: parseFloat(nilai) || 0,
+      keterangan: ket,
+      is_initial: false,
+    };
+    onSave(row.id, newEntry, tipe, parseFloat(nilai) || 0);
+  };
+
+  return (
+    <div
+      style={{
+        border: "1px solid #e2e8f0",
+        borderRadius: 8,
+        overflow: "hidden",
+        marginTop: 12,
+      }}
+    >
+      <table style={{ ...TABLE, border: "none" }}>
+        <thead>
+          <tr>
+            <th style={{ ...TH, width: 220 }}>FIELD</th>
+            <th style={TH}>NILAI</th>
+            <th style={{ ...TH, width: 100, textAlign: "right" }}>AKSI</th>
+          </tr>
+        </thead>
+        <tbody>
+          <InlineEditField
+            label="Nama Anggaran CAPEX"
+            value={capexNama}
+            onSave={(v) => onUpdateRow && onUpdateRow({ capexNama: v })}
+          />
+          <InlineEditYearField
+            label="Tahun Anggaran"
+            value={row.thn}
+            onSave={(v) => onUpdateRow && onUpdateRow({ thn: v })}
+          />
+          <InlineEditCurrencyField
+            label="Total Anggaran Berjalan"
+            value={currentTotal}
+            onSave={(v) => onUpdateRow && onUpdateRow({ overrideTotal: v })}
+          />
+        </tbody>
+      </table>
+
+      <div style={{ borderTop: "1px solid #e2e8f0", background: "#fafafa" }}>
+        <div style={LR_ROW}>
+          <div style={LR_LABEL}>
+            Jenis Perubahan{" "}
+            <span style={{ color: "#ef4444", marginLeft: 2 }}>*</span>
+          </div>
+          <div style={{ ...LR_VALUE, flexWrap: "wrap", gap: 8 }}>
+            <select
+              style={{
+                ...INP,
+                width: "auto",
+                minWidth: 220,
+                maxWidth: 340,
+                background: tipe
+                  ? TIPE_OPTIONS.find((o) => o.value === tipe)?.bg || "white"
+                  : "white",
+                color: tipe
+                  ? TIPE_OPTIONS.find((o) => o.value === tipe)?.color ||
+                    "#334155"
+                  : "#334155",
+                border: tipe
+                  ? `2px solid ${TIPE_OPTIONS.find((o) => o.value === tipe)?.color}`
+                  : "1px solid #cbd5e1",
+                fontWeight: tipe ? 700 : 400,
+              }}
+              value={tipe}
+              onChange={(e) => setTipe(e.target.value)}
+            >
+              <option value="">— Pilih Jenis Perubahan —</option>
+              {TIPE_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div style={LR_ROW}>
+          <div style={LR_LABEL}>
+            Nilai Perubahan (IDR){" "}
+            <span style={{ color: "#ef4444", marginLeft: 2 }}>*</span>
+          </div>
+          <div
+            style={{
+              ...LR_VALUE,
+              flexDirection: "column",
+              alignItems: "flex-start",
+              gap: 4,
+            }}
+          >
+            <input
+              type="number"
+              className="no-spinners"
+              style={{ ...INP, maxWidth: 340, width: "100%" }}
+              placeholder="Contoh: 50000000"
+              value={nilai}
+              onChange={(e) => setNilai(e.target.value)}
+            />
+            {parseFloat(nilai) > 0 && (
+              <span style={{ fontSize: "0.78rem", color: "#64748b" }}>
+                ≈ {fmt(nilai)}
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div style={{ ...LR_ROW, borderBottom: "none" }}>
+          <div style={LR_LABEL}>
+            Keterangan{" "}
+            <span
+              style={{
+                fontSize: "0.65rem",
+                color: "#94a3b8",
+                fontWeight: 500,
+                textTransform: "none",
+                letterSpacing: 0,
+                marginLeft: 4,
+              }}
+            >
+              (opsional)
+            </span>
+          </div>
+          <div style={LR_VALUE}>
+            <input
+              style={{ ...INP, maxWidth: 400, width: "100%" }}
+              placeholder="Catatan perubahan..."
+              value={ket}
+              onChange={(e) => setKet(e.target.value)}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div
+        style={{
+          padding: "12px 18px",
+          borderTop: "1px solid #e2e8f0",
+          background: "#f8fafc",
+          display: "flex",
+          justifyContent: "flex-end",
+          gap: 10,
+        }}
+      >
+        <button style={{ ...BTNOUT, fontSize: "0.82rem" }} onClick={onBack}>
+          Batal
+        </button>
+        <button
+          style={{
+            ...BTN,
+            background: "#ea580c",
+            opacity: !tipe || !nilai ? 0.5 : 1,
+            padding: "9px 18px",
+            borderRadius: 8,
+          }}
+          disabled={!tipe || !nilai}
+          onClick={handleSubmit}
+        >
+          <Save size={15} /> Submit Perubahan
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════
+// REALISASI SECTION (OPEX)
 // ════════════════════════════════════════════════════════════════
 function RealisasiSection({ master, setMasters, toast_ }) {
   const [showForm, setShowForm] = useState(false);
@@ -1814,6 +2178,7 @@ function RealisasiSection({ master, setMasters, toast_ }) {
                 <Fld label="Realisasi Murni (Rp)" required>
                   <input
                     type="number"
+                    className="no-spinners"
                     style={INP}
                     placeholder="0"
                     value={form.realisasi_murni}
@@ -1828,6 +2193,7 @@ function RealisasiSection({ master, setMasters, toast_ }) {
                 <Fld label="Realisasi BYMHD (Rp)">
                   <input
                     type="number"
+                    className="no-spinners"
                     style={INP}
                     placeholder="0"
                     value={form.realisasi_bymhd}
@@ -2099,7 +2465,671 @@ function RealisasiSection({ master, setMasters, toast_ }) {
 }
 
 // ════════════════════════════════════════════════════════════════
-// OPEX MODULE — REVISED FILTER FLOW
+// CAPEX ANGGARAN TAHUNAN SECTION (MENIRU ALUR REALISASI OPEX)
+// ════════════════════════════════════════════════════════════════
+function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
+  const [showForm, setShowForm] = useState(false);
+  const [editRowId, setEditRowId] = useState(null);
+  const [historyRow, setHistoryRow] = useState(null);
+  const [confirm, setConfirm] = useState(null);
+
+  const emptyForm = { thn: new Date().getFullYear(), nilai_anggaran: "" };
+  const [form, setForm] = useState(emptyForm);
+  const list = capex.anggaran_tahunan || [];
+
+  // Helper function to calculate Real and BYMHD from history
+  const calculateRealBymhd = (history) => {
+    let real = 0,
+      bymhd = 0;
+    (history || []).forEach((h) => {
+      if (h.is_initial || h.tipe === "initial") {
+        real += h.nilai;
+      } else if (h.tipe === "penambahan") {
+        bymhd += h.nilai;
+      } else if (h.tipe === "pengurangan") {
+        real -= h.nilai;
+      }
+    });
+    return { real, bymhd, total: real + bymhd };
+  };
+
+  const handleSaveNew = () => {
+    const today = new Date().toISOString().split("T")[0];
+    const payload = {
+      id: uid(),
+      thn: parseInt(form.thn),
+      nilai_anggaran: parseFloat(form.nilai_anggaran) || 0,
+      history: [
+        {
+          id: uid(),
+          tgl: today,
+          tipe: "initial",
+          nilai: parseFloat(form.nilai_anggaran) || 0,
+          keterangan: "Input awal",
+          is_initial: true,
+        },
+      ],
+    };
+    setCapexList((prev) =>
+      prev.map((c) =>
+        c.id === capex.id
+          ? { ...c, anggaran_tahunan: [...(c.anggaran_tahunan || []), payload] }
+          : c,
+      ),
+    );
+    toast_("Data anggaran ditambahkan.");
+    setShowForm(false);
+    setForm(emptyForm);
+  };
+
+  const handleSavePerubahan = (rowId, newHistoryEntry, tipe, nilai) => {
+    setCapexList((prev) =>
+      prev.map((c) => {
+        if (c.id !== capex.id) return c;
+        return {
+          ...c,
+          anggaran_tahunan: (c.anggaran_tahunan || []).map((r) => {
+            if (r.id !== rowId) return r;
+            let newNilai = r.nilai_anggaran;
+            if (tipe === "pengurangan") newNilai -= nilai;
+            else if (tipe === "penambahan") newNilai += nilai;
+            return {
+              ...r,
+              nilai_anggaran: newNilai,
+              history: [...(r.history || []), newHistoryEntry],
+            };
+          }),
+        };
+      }),
+    );
+    toast_("Perubahan anggaran disimpan.");
+    setEditRowId(null);
+  };
+
+  const handleUpdateRow = (rowId, changes) => {
+    setCapexList((prev) =>
+      prev.map((c) => {
+        if (c.id !== capex.id) return c;
+        let updatedCapex = { ...c };
+        if (changes.capexNama !== undefined)
+          updatedCapex.nm_anggaran = changes.capexNama;
+
+        return {
+          ...updatedCapex,
+          anggaran_tahunan: (c.anggaran_tahunan || []).map((r) => {
+            if (r.id !== rowId) return r;
+            let updated = { ...r };
+            if (changes.thn !== undefined) updated.thn = changes.thn;
+            if (changes.overrideTotal !== undefined) {
+              const selisih = changes.overrideTotal - r.nilai_anggaran;
+              const tipeEntry = selisih >= 0 ? "penambahan" : "pengurangan";
+              const nilaiEntry = Math.abs(selisih);
+              updated.nilai_anggaran = changes.overrideTotal;
+              updated.history = [
+                ...(r.history || []),
+                {
+                  id: uid(),
+                  tgl: new Date().toISOString().split("T")[0],
+                  tipe: tipeEntry,
+                  nilai: nilaiEntry,
+                  keterangan: "Edit langsung total anggaran berjalan",
+                  is_initial: false,
+                },
+              ];
+            }
+            return updated;
+          }),
+        };
+      }),
+    );
+    toast_("Data berhasil diperbarui.");
+  };
+
+  const handleDelete = (rowId) => {
+    setConfirm({
+      msg: "Hapus data anggaran tahunan ini?",
+      onConfirm: () => {
+        setCapexList((prev) =>
+          prev.map((c) =>
+            c.id === capex.id
+              ? {
+                  ...c,
+                  anggaran_tahunan: (c.anggaran_tahunan || []).filter(
+                    (r) => r.id !== rowId,
+                  ),
+                }
+              : c,
+          ),
+        );
+        setConfirm(null);
+        toast_("Data anggaran dihapus.");
+      },
+    });
+  };
+
+  return (
+    <div style={{ marginTop: 0, padding: "0 20px 20px" }}>
+      {confirm && (
+        <ConfirmBox
+          msg={confirm.msg}
+          onConfirm={confirm.onConfirm}
+          onCancel={() => setConfirm(null)}
+        />
+      )}
+      {historyRow && (
+        <CapexHistoryPopup
+          row={historyRow}
+          title={capex.nm_anggaran}
+          onClose={() => setHistoryRow(null)}
+        />
+      )}
+
+      {showForm && (
+        <div style={OVS} onClick={() => setShowForm(false)}>
+          <div
+            style={{
+              background: "white",
+              borderRadius: 12,
+              padding: 24,
+              maxWidth: 420,
+              width: "100%",
+              boxShadow: "0 10px 25px rgba(0,0,0,.1)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 20,
+              }}
+            >
+              <div>
+                <h3 style={{ fontWeight: 600, fontSize: "1rem" }}>
+                  Input Anggaran Baru
+                </h3>
+                <div
+                  style={{
+                    fontSize: "0.78rem",
+                    color: "#64748b",
+                    marginTop: 2,
+                  }}
+                >
+                  {capex.nm_anggaran}
+                </div>
+              </div>
+              <button
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "#64748b",
+                }}
+                onClick={() => setShowForm(false)}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              <Fld label="Tahun Anggaran" required>
+                <select
+                  style={INP}
+                  value={form.thn}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, thn: e.target.value }))
+                  }
+                >
+                  {yearOpts.map((y) => (
+                    <option key={y} value={y}>
+                      {y}
+                    </option>
+                  ))}
+                </select>
+              </Fld>
+              <Fld label="Nilai Anggaran (Rp)" required>
+                <input
+                  type="number"
+                  className="no-spinners"
+                  style={INP}
+                  placeholder="0"
+                  value={form.nilai_anggaran}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, nilai_anggaran: e.target.value }))
+                  }
+                />
+              </Fld>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                gap: 10,
+                marginTop: 20,
+                justifyContent: "flex-end",
+              }}
+            >
+              <button style={BTNOUT} onClick={() => setShowForm(false)}>
+                Batal
+              </button>
+              <button
+                style={{
+                  ...BTN,
+                  background: "#16a34a",
+                  opacity: form.nilai_anggaran ? 1 : 0.5,
+                }}
+                disabled={!form.nilai_anggaran}
+                onClick={handleSaveNew}
+              >
+                Simpan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "10px 16px",
+          background: "#f8fafc",
+          borderTop: "1px solid #e2e8f0",
+          borderLeft: "1px solid #e2e8f0",
+          borderRight: "1px solid #e2e8f0",
+          borderRadius: "8px 8px 0 0",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <Calendar size={14} style={{ color: "#2563eb" }} />
+          <span
+            style={{ fontSize: "0.8rem", fontWeight: 700, color: "#374151" }}
+          >
+            Daftar Anggaran per Tahun
+          </span>
+          <span
+            style={{
+              fontSize: "0.72rem",
+              color: "#64748b",
+              background: "#e2e8f0",
+              padding: "1px 7px",
+              borderRadius: 99,
+              fontWeight: 600,
+            }}
+          >
+            {list.length} tahun
+          </span>
+        </div>
+        <button
+          style={{
+            ...BTN,
+            background: "#2563eb",
+            padding: "6px 12px",
+            fontSize: "0.75rem",
+          }}
+          onClick={() => setShowForm(true)}
+        >
+          <Plus size={12} /> Input Anggaran
+        </button>
+      </div>
+
+      <div
+        style={{
+          border: "1px solid #e2e8f0",
+          borderRadius: "0 0 8px 8px",
+          overflow: "hidden",
+        }}
+      >
+        <table style={{ ...TABLE, border: "none" }}>
+          <thead>
+            <tr>
+              <th style={{ ...TH, width: 40, textAlign: "center" }}>NO</th>
+              <th style={{ ...TH, width: 80, textAlign: "center" }}>TAHUN</th>
+              <th style={{ ...TH, textAlign: "right" }}>REAL (Rp)</th>
+              <th style={{ ...TH, textAlign: "right" }}>BYMHD (Rp)</th>
+              <th style={{ ...TH, textAlign: "right" }}>TOTAL (Rp)</th>
+              <th style={{ ...TH, textAlign: "center", width: 120 }}>AKSI</th>
+            </tr>
+          </thead>
+          <tbody>
+            {list.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={6}
+                  style={{
+                    ...TD,
+                    textAlign: "center",
+                    color: "#94a3b8",
+                    padding: 24,
+                    fontSize: "0.82rem",
+                    background: "#fafafa",
+                    fontStyle: "italic",
+                  }}
+                >
+                  Belum ada data anggaran di tabel ini.
+                </td>
+              </tr>
+            ) : (
+              list.map((row, idx) => {
+                const { real, bymhd, total } = calculateRealBymhd(row.history);
+                return (
+                  <React.Fragment key={row.id}>
+                    <tr
+                      style={{
+                        background: editRowId === row.id ? "#fffbeb" : "white",
+                      }}
+                    >
+                      <td
+                        style={{
+                          ...TD,
+                          textAlign: "center",
+                          fontSize: "0.72rem",
+                          color: "#94a3b8",
+                          fontWeight: 700,
+                        }}
+                      >
+                        {idx + 1}
+                      </td>
+                      <td
+                        style={{
+                          ...TD,
+                          textAlign: "center",
+                          fontWeight: 700,
+                          color: "#0f172a",
+                        }}
+                      >
+                        {row.thn}
+                      </td>
+                      <td
+                        style={{
+                          ...TD,
+                          textAlign: "right",
+                          fontWeight: 600,
+                          color: real < 0 ? "#ef4444" : "#16a34a",
+                        }}
+                      >
+                        {fmt(Math.abs(real))}
+                      </td>
+                      <td
+                        style={{
+                          ...TD,
+                          textAlign: "right",
+                          fontWeight: 600,
+                          color: bymhd > 0 ? "#d97706" : "#cbd5e1",
+                        }}
+                      >
+                        {fmt(bymhd)}
+                      </td>
+                      <td
+                        style={{
+                          ...TD,
+                          textAlign: "right",
+                          fontWeight: 700,
+                          color: "#1d4ed8",
+                        }}
+                      >
+                        {fmt(total)}
+                      </td>
+                      <td style={{ ...TD, textAlign: "center" }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: 4,
+                            justifyContent: "center",
+                          }}
+                        >
+                          <button
+                            style={ABTN}
+                            title="Edit / Revisi"
+                            onClick={() =>
+                              setEditRowId(editRowId === row.id ? null : row.id)
+                            }
+                          >
+                            <Edit size={12} style={{ color: "#d97706" }} />
+                          </button>
+                          <button
+                            style={ABTN}
+                            title="Riwayat"
+                            onClick={() => setHistoryRow({ ...row })}
+                          >
+                            <History size={12} style={{ color: "#2563eb" }} />
+                          </button>
+                          <button
+                            style={ABTN}
+                            title="Hapus"
+                            onClick={() => handleDelete(row.id)}
+                          >
+                            <Trash2 size={12} style={{ color: "#ef4444" }} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                    {editRowId === row.id && (
+                      <tr>
+                        <td
+                          colSpan={6}
+                          style={{
+                            padding: "0 16px 16px",
+                            background: "#fffbeb",
+                            borderBottom: "1px solid #e2e8f0",
+                          }}
+                        >
+                          <EditCapexAnggaranSection
+                            row={row}
+                            capexNama={capex.nm_anggaran}
+                            onBack={() => setEditRowId(null)}
+                            onSave={handleSavePerubahan}
+                            onUpdateRow={(changes) =>
+                              handleUpdateRow(row.id, changes)
+                            }
+                          />
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                );
+              })
+            )}
+          </tbody>
+          {list.length > 0 && (
+            <tfoot>
+              <tr style={{ background: "#eff6ff" }}>
+                <td
+                  colSpan={2}
+                  style={{
+                    ...TD,
+                    textAlign: "right",
+                    fontWeight: 700,
+                    color: "#1d4ed8",
+                    fontSize: "0.75rem",
+                  }}
+                >
+                  GRAND TOTAL
+                </td>
+                <td
+                  style={{
+                    ...TD,
+                    textAlign: "right",
+                    fontWeight: 800,
+                    color: "#16a34a",
+                    fontSize: "0.88rem",
+                  }}
+                >
+                  {fmt(
+                    list.reduce(
+                      (acc, r) => acc + calculateRealBymhd(r.history).real,
+                      0,
+                    ),
+                  )}
+                </td>
+                <td
+                  style={{
+                    ...TD,
+                    textAlign: "right",
+                    fontWeight: 800,
+                    color: "#d97706",
+                    fontSize: "0.88rem",
+                  }}
+                >
+                  {fmt(
+                    list.reduce(
+                      (acc, r) => acc + calculateRealBymhd(r.history).bymhd,
+                      0,
+                    ),
+                  )}
+                </td>
+                <td
+                  style={{
+                    ...TD,
+                    textAlign: "right",
+                    fontWeight: 800,
+                    color: "#2563eb",
+                    fontSize: "0.88rem",
+                  }}
+                >
+                  {fmt(
+                    list.reduce(
+                      (acc, r) => acc + calculateRealBymhd(r.history).total,
+                      0,
+                    ),
+                  )}
+                </td>
+                <td style={TD} />
+              </tr>
+            </tfoot>
+          )}
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════
+// HALAMAN DETAIL CAPEX (HALAMAN BARU YANG DIMINTA)
+// ════════════════════════════════════════════════════════════════
+function CapexDetailPage({ capex, onBack, setCapexList, toast_ }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      {/* Tombol Back */}
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <button style={BTNOUT} onClick={onBack}>
+          <ArrowLeft size={16} /> Kembali ke Daftar CAPEX
+        </button>
+      </div>
+
+      {/* Kontainer Utama */}
+      <div
+        style={{
+          background: "white",
+          borderRadius: 12,
+          border: "1px solid #bfdbfe",
+          overflow: "hidden",
+          boxShadow: "0 4px 12px rgba(0,0,0,.04)",
+        }}
+      >
+        {/* Header Detail */}
+        <div
+          style={{
+            background: "#eff6ff",
+            borderBottom: "1px solid #bfdbfe",
+            padding: "20px 24px",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
+            <div
+              style={{
+                minWidth: 44,
+                height: 44,
+                borderRadius: 10,
+                background: "#2563eb",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "white",
+                flexShrink: 0,
+              }}
+            >
+              <Layers size={22} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <div
+                style={{
+                  fontSize: "0.72rem",
+                  fontWeight: 700,
+                  color: "#2563eb",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.5px",
+                  marginBottom: 4,
+                }}
+              >
+                Detail Anggaran CAPEX
+              </div>
+              <h2
+                style={{
+                  fontWeight: 800,
+                  color: "#0f172a",
+                  fontSize: "1.15rem",
+                  lineHeight: 1.3,
+                  marginBottom: 8,
+                }}
+              >
+                {capex.nm_anggaran}
+              </h2>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  flexWrap: "wrap",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: "0.75rem",
+                    fontFamily: "monospace",
+                    color: "#1d4ed8",
+                    background: "white",
+                    padding: "2px 8px",
+                    borderRadius: 4,
+                    border: "1px solid #bfdbfe",
+                    fontWeight: 700,
+                  }}
+                >
+                  {capex.kd_capex || "KODE_KOSONG"}
+                </span>
+                <span
+                  style={{
+                    fontSize: "0.75rem",
+                    color: "#64748b",
+                    background: "white",
+                    padding: "2px 8px",
+                    borderRadius: 4,
+                    border: "1px solid #e2e8f0",
+                    fontWeight: 600,
+                  }}
+                >
+                  RKAP {capex.thn_rkap_awal} — {capex.thn_rkap_akhir}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Pemanggilan Tabel (Flow mirip OPEX) */}
+        <div style={{ padding: "20px 0 0" }}>
+          <CapexAnggaranTahunanSection
+            capex={capex}
+            setCapexList={setCapexList}
+            toast_={toast_}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════
+// OPEX MODULE
 // ════════════════════════════════════════════════════════════════
 function OpexModule({ masterList, setMasterList }) {
   const [masters, setMasters] = useState(INIT_OPEX_MASTERS);
@@ -2347,6 +3377,7 @@ function OpexModule({ masterList, setMasterList }) {
                 <Fld label="Nilai Anggaran (Rp)" required>
                   <input
                     type="number"
+                    className="no-spinners"
                     style={INP}
                     placeholder="0"
                     value={addForm.nilai_anggaran}
@@ -2466,6 +3497,7 @@ function OpexModule({ masterList, setMasterList }) {
                 <Fld label="Nilai Anggaran (Rp)">
                   <input
                     type="number"
+                    className="no-spinners"
                     style={INP}
                     value={editMaster.nilai_anggaran}
                     onChange={(e) =>
@@ -3306,7 +4338,7 @@ function OpexModule({ masterList, setMasterList }) {
 }
 
 // ════════════════════════════════════════════════════════════════
-// CAPEX — INPUT ANGGARAN PAGE — left-right layout
+// CAPEX — INPUT ANGGARAN PAGE — (LEGACY/ALTERNATIF CAPEX)
 // ════════════════════════════════════════════════════════════════
 function CapexInputAnggaranPage({ capex, onBack, onSave }) {
   const rkap_awal_opts = [CURRENT_YEAR, CURRENT_YEAR + 1];
@@ -3354,7 +4386,6 @@ function CapexInputAnggaranPage({ capex, onBack, onSave }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-      {/* Back nav */}
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <button style={BTNOUT} onClick={onBack}>
           <ArrowLeft size={16} /> Kembali ke Daftar CAPEX
@@ -3367,7 +4398,6 @@ function CapexInputAnggaranPage({ capex, onBack, onSave }) {
         </div>
       </div>
 
-      {/* Form card — all left-right */}
       <div
         style={{
           background: "white",
@@ -3395,7 +4425,6 @@ function CapexInputAnggaranPage({ capex, onBack, onSave }) {
           </span>
         </div>
 
-        {/* Nama Anggaran */}
         <ModalFormRow label="Nama Anggaran">
           <span
             style={{
@@ -3441,7 +4470,6 @@ function CapexInputAnggaranPage({ capex, onBack, onSave }) {
           </div>
         </ModalFormRow>
 
-        {/* Tahun RKAP Awal */}
         <ModalFormRow
           label="Tahun RKAP Awal"
           required
@@ -3460,7 +4488,6 @@ function CapexInputAnggaranPage({ capex, onBack, onSave }) {
           </select>
         </ModalFormRow>
 
-        {/* Tahun RKAP Akhir */}
         <ModalFormRow
           label="Tahun RKAP Akhir"
           required
@@ -3483,7 +4510,6 @@ function CapexInputAnggaranPage({ capex, onBack, onSave }) {
           </select>
         </ModalFormRow>
 
-        {/* Nilai KAD */}
         <ModalFormRow label="Nilai KAD (Rp)">
           <input
             type="number"
@@ -3500,7 +4526,6 @@ function CapexInputAnggaranPage({ capex, onBack, onSave }) {
           )}
         </ModalFormRow>
 
-        {/* Nilai RKAP */}
         <ModalFormRow label="Nilai RKAP (Rp)" required noBorder>
           <input
             type="number"
@@ -3517,7 +4542,6 @@ function CapexInputAnggaranPage({ capex, onBack, onSave }) {
           )}
         </ModalFormRow>
 
-        {/* Footer */}
         <div
           style={{
             padding: "14px 20px",
@@ -3547,7 +4571,6 @@ function CapexInputAnggaranPage({ capex, onBack, onSave }) {
         </div>
       </div>
 
-      {/* History anggaran */}
       <div
         style={{
           background: "white",
@@ -3716,7 +4739,7 @@ function CapexInputAnggaranPage({ capex, onBack, onSave }) {
 }
 
 // ════════════════════════════════════════════════════════════════
-// CAPEX MODULE — with left-right modal forms
+// CAPEX MODULE
 // ════════════════════════════════════════════════════════════════
 function CapexModule({ capexList, setCapexList }) {
   const [toast, setToast] = useState(null);
@@ -3724,6 +4747,9 @@ function CapexModule({ capexList, setCapexList }) {
   const [editTarget, setEditTarget] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [inputAnggaranCapex, setInputAnggaranCapex] = useState(null);
+
+  // STATE BARU: Untuk Detail CAPEX
+  const [detailCapex, setDetailCapex] = useState(null);
 
   const emptyNewCapex = {
     nm_anggaran: "",
@@ -3821,6 +4847,24 @@ function CapexModule({ capexList, setCapexList }) {
     });
   };
 
+  // TAMPILAN HALAMAN DETAIL CAPEX
+  if (detailCapex) {
+    const latestCapex =
+      capexList.find((c) => c.id === detailCapex.id) || detailCapex;
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        {toast && <ToastMsg msg={toast} onDone={() => setToast(null)} />}
+        <CapexDetailPage
+          capex={latestCapex}
+          onBack={() => setDetailCapex(null)}
+          setCapexList={setCapexList}
+          toast_={toast_}
+        />
+      </div>
+    );
+  }
+
+  // TAMPILAN HALAMAN INPUT ANGGARAN (LEGACY)
   if (inputAnggaranCapex) {
     const latestCapex =
       capexList.find((c) => c.id === inputAnggaranCapex.id) ||
@@ -4158,6 +5202,20 @@ function CapexModule({ capexList, setCapexList }) {
                             flexWrap: "wrap",
                           }}
                         >
+                          {/* FITUR BARU: TOMBOL DETAIL */}
+                          <button
+                            style={{
+                              ...ABTN,
+                              padding: "5px 8px",
+                              background: "#eff6ff",
+                              borderColor: "#bfdbfe",
+                            }}
+                            title="Detail Anggaran (Flow OPEX)"
+                            onClick={() => setDetailCapex({ ...c })}
+                          >
+                            <Eye size={13} style={{ color: "#2563eb" }} />
+                          </button>
+
                           {isRkapAkhirLebih && (
                             <button
                               style={{
@@ -4287,7 +5345,6 @@ function CapexModule({ capexList, setCapexList }) {
         </div>
       )}
 
-      {/* Render modals - INLINED TO FIX FOCUS LOSS */}
       {showAddForm && (
         <div style={OVS} onClick={() => setShowAddForm(false)}>
           <div
@@ -4302,7 +5359,6 @@ function CapexModule({ capexList, setCapexList }) {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Modal header */}
             <div
               style={{
                 padding: "16px 20px",
@@ -4361,10 +5417,7 @@ function CapexModule({ capexList, setCapexList }) {
                 <X size={20} />
               </button>
             </div>
-
-            {/* Form rows — left-right */}
             <div>
-              {/* Nama Anggaran CAPEX */}
               <ModalFormRow label="Nama Anggaran" required>
                 <textarea
                   rows={2}
@@ -4376,8 +5429,6 @@ function CapexModule({ capexList, setCapexList }) {
                   }
                 />
               </ModalFormRow>
-
-              {/* Kode CAPEX */}
               <ModalFormRow label="Kode CAPEX">
                 <input
                   style={{ ...INP, maxWidth: 200 }}
@@ -4388,8 +5439,6 @@ function CapexModule({ capexList, setCapexList }) {
                   }
                 />
               </ModalFormRow>
-
-              {/* Tahun RKAP Awal */}
               <ModalFormRow label="Tahun RKAP Awal">
                 <select
                   style={{ ...INP, maxWidth: 160 }}
@@ -4408,8 +5457,6 @@ function CapexModule({ capexList, setCapexList }) {
                   ))}
                 </select>
               </ModalFormRow>
-
-              {/* Tahun RKAP Akhir */}
               <ModalFormRow label="Tahun RKAP Akhir">
                 <select
                   style={{ ...INP, maxWidth: 160 }}
@@ -4428,8 +5475,6 @@ function CapexModule({ capexList, setCapexList }) {
                   ))}
                 </select>
               </ModalFormRow>
-
-              {/* Tahun Anggaran */}
               <ModalFormRow label="Tahun Anggaran">
                 <select
                   style={{ ...INP, maxWidth: 160 }}
@@ -4445,8 +5490,6 @@ function CapexModule({ capexList, setCapexList }) {
                   ))}
                 </select>
               </ModalFormRow>
-
-              {/* Nilai KAD */}
               <ModalFormRow label="Nilai KAD (Rp)">
                 <input
                   type="number"
@@ -4464,8 +5507,6 @@ function CapexModule({ capexList, setCapexList }) {
                   </span>
                 )}
               </ModalFormRow>
-
-              {/* Nilai RKAP */}
               <ModalFormRow label="Nilai RKAP (Rp)" noBorder>
                 <input
                   type="number"
@@ -4484,8 +5525,6 @@ function CapexModule({ capexList, setCapexList }) {
                 )}
               </ModalFormRow>
             </div>
-
-            {/* Footer */}
             <div
               style={{
                 padding: "14px 20px",
@@ -4529,7 +5568,6 @@ function CapexModule({ capexList, setCapexList }) {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Modal header */}
             <div
               style={{
                 padding: "16px 20px",
@@ -4564,10 +5602,7 @@ function CapexModule({ capexList, setCapexList }) {
                 <X size={20} />
               </button>
             </div>
-
-            {/* Form rows — left-right */}
             <div>
-              {/* Nama Anggaran CAPEX */}
               <ModalFormRow label="Nama Anggaran" required>
                 <textarea
                   rows={2}
@@ -4581,8 +5616,6 @@ function CapexModule({ capexList, setCapexList }) {
                   }
                 />
               </ModalFormRow>
-
-              {/* Kode CAPEX */}
               <ModalFormRow label="Kode CAPEX">
                 <input
                   style={{ ...INP, maxWidth: 200 }}
@@ -4592,8 +5625,6 @@ function CapexModule({ capexList, setCapexList }) {
                   }
                 />
               </ModalFormRow>
-
-              {/* Tahun RKAP Awal */}
               <ModalFormRow label="Tahun RKAP Awal">
                 <select
                   style={{ ...INP, maxWidth: 160 }}
@@ -4612,8 +5643,6 @@ function CapexModule({ capexList, setCapexList }) {
                   ))}
                 </select>
               </ModalFormRow>
-
-              {/* Tahun RKAP Akhir */}
               <ModalFormRow label="Tahun RKAP Akhir">
                 <select
                   style={{ ...INP, maxWidth: 160 }}
@@ -4632,8 +5661,6 @@ function CapexModule({ capexList, setCapexList }) {
                   ))}
                 </select>
               </ModalFormRow>
-
-              {/* Tahun Anggaran */}
               <ModalFormRow label="Tahun Anggaran">
                 <select
                   style={{ ...INP, maxWidth: 160 }}
@@ -4652,8 +5679,6 @@ function CapexModule({ capexList, setCapexList }) {
                   ))}
                 </select>
               </ModalFormRow>
-
-              {/* Nilai KAD */}
               <ModalFormRow label="Nilai KAD (Rp)">
                 <input
                   type="number"
@@ -4670,8 +5695,6 @@ function CapexModule({ capexList, setCapexList }) {
                   </span>
                 )}
               </ModalFormRow>
-
-              {/* Nilai RKAP */}
               <ModalFormRow label="Nilai RKAP (Rp)" noBorder>
                 <input
                   type="number"
@@ -4689,8 +5712,6 @@ function CapexModule({ capexList, setCapexList }) {
                 )}
               </ModalFormRow>
             </div>
-
-            {/* Footer */}
             <div
               style={{
                 padding: "14px 20px",
