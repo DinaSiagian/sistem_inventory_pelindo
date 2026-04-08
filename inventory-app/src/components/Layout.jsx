@@ -19,6 +19,7 @@ import batikImg from "../pictures/batik.png";
 const Layout = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [pageTitle, setPageTitle] = useState("Dashboard");
+  const [expandedMenu, setExpandedMenu] = useState(null);
 
   // 1. TAMBAHKAN STATE INI UNTUK TRIGGER RESET
   const [resetKey, setResetKey] = useState(0);
@@ -41,7 +42,15 @@ const Layout = () => {
       label: "Input Pekerjaan",
       icon: <FaMoneyBillWave />,
     },
-    { path: "/budget/input", label: "Input Anggaran", icon: <FaPlusCircle /> },
+    {
+      path: "/budget/input",
+      label: "Input Anggaran",
+      icon: <FaPlusCircle />,
+      submenu: [
+        { path: "/budget/input/opex", label: "OPEX" },
+        { path: "/budget/input/capex", label: "CAPEX" },
+      ],
+    },
     { category: "Administrasi" },
     { path: "/users", label: "User Management", icon: <FaUsers /> },
   ];
@@ -50,7 +59,22 @@ const Layout = () => {
     const currentMenu = menuItems.find(
       (item) => item.path === location.pathname,
     );
-    if (currentMenu) setPageTitle(currentMenu.label);
+    if (currentMenu) {
+      setPageTitle(currentMenu.label);
+    } else {
+      // Check submenu items
+      for (const item of menuItems) {
+        if (item.submenu) {
+          const subItem = item.submenu.find(
+            (sub) => sub.path === location.pathname,
+          );
+          if (subItem) {
+            setPageTitle(`${item.label} - ${subItem.label}`);
+            break;
+          }
+        }
+      }
+    }
   }, [location]);
 
   useEffect(() => {
@@ -94,6 +118,55 @@ const Layout = () => {
                   {item.category}
                 </div>
               )
+            ) : item.submenu ? (
+              <div key={index}>
+                <button
+                  className={`menu-item ${expandedMenu === index ? "active" : ""} ${location.pathname.includes(item.path) ? "active" : ""}`}
+                  onClick={() => setExpandedMenu(expandedMenu === index ? null : index)}
+                  style={{
+                    width: "100%",
+                    textAlign: "left",
+                    background: expandedMenu === index ? "rgba(0, 181, 226, 0.15)" : "none",
+                    border: expandedMenu === index ? "1px solid rgba(0, 181, 226, 0.3)" : "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  <div className="menu-icon">{item.icon}</div>
+                  {!collapsed && (
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flex: 1 }}>
+                      <span className="menu-text">{item.label}</span>
+                      <FaChevronRight
+                        style={{
+                          transition: "transform 0.3s",
+                          transform: expandedMenu === index ? "rotate(90deg)" : "rotate(0deg)",
+                          fontSize: "0.75rem",
+                        }}
+                      />
+                    </div>
+                  )}
+                </button>
+                {expandedMenu === index && !collapsed && (
+                  <div style={{
+                    paddingLeft: "12px",
+                    paddingTop: "4px",
+                    paddingBottom: "4px",
+                    background: "rgba(255,255,255,0.05)",
+                    borderRadius: "8px",
+                    margin: "4px 0",
+                  }}>
+                    {item.submenu.map((subItem, subIndex) => (
+                      <Link
+                        key={`${index}-${subIndex}`}
+                        to={subItem.path}
+                        className={`menu-item submenu-item ${location.pathname === subItem.path ? "active" : ""}`}
+                        onClick={() => handleMenuClick(subItem.path)}
+                      >
+                        <span className="menu-text">{subItem.label}</span>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
             ) : (
               <Link
                 key={index}

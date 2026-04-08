@@ -36,7 +36,8 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/assets" element={<ViewAsset />} />
           <Route path="/peminjaman" element={<Peminjaman />} />
-          <Route path="/budget/input" element={<Budgetinput />} />
+          <Route path="/budget/input" element={<Navigate to="/budget/input/opex" />} />
+          <Route path="/budget/input/:type" element={<Budgetinput />} />
           <Route path="/budget" element={<BudgetManagement />} />
           <Route
             path="/projects"
