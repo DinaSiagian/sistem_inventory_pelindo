@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
 
-// ─── INLINE SVG ICONS ─────────────────────────────────────────
 const Icon = {
   Search: () => (
     <svg
@@ -89,7 +88,6 @@ const Icon = {
       strokeWidth="2.5"
       strokeLinecap="round"
       strokeLinejoin="round"
-      style={{ display: "block" }}
     >
       <line x1="18" y1="6" x2="6" y2="18" />
       <line x1="6" y1="6" x2="18" y2="18" />
@@ -401,29 +399,7 @@ const Icon = {
       <polyline points="12 5 19 12 12 19" />
     </svg>
   ),
-  ClipboardEmpty: () => (
-    <svg
-      width="32"
-      height="32"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-      <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
-    </svg>
-  ),
-  Dots: () => (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
-      <circle cx="12" cy="5" r="1.5" />
-      <circle cx="12" cy="12" r="1.5" />
-      <circle cx="12" cy="19" r="1.5" />
-    </svg>
-  ),
-  Download: () => (
+  ArrowLeft: () => (
     <svg
       width="13"
       height="13"
@@ -434,9 +410,8 @@ const Icon = {
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-      <polyline points="7 10 12 15 17 10" />
-      <line x1="12" y1="15" x2="12" y2="3" />
+      <line x1="19" y1="12" x2="5" y2="12" />
+      <polyline points="12 19 5 12 12 5" />
     </svg>
   ),
   Printer: () => (
@@ -455,23 +430,6 @@ const Icon = {
       <rect x="6" y="14" width="12" height="8" />
     </svg>
   ),
-  UserArrow: () => (
-    <svg
-      width="13"
-      height="13"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <polyline points="19 8 21 10 19 12" />
-      <line x1="15" y1="10" x2="21" y2="10" />
-    </svg>
-  ),
   Briefcase: () => (
     <svg
       width="13"
@@ -485,13 +443,12 @@ const Icon = {
     >
       <rect x="2" y="7" width="20" height="14" rx="2" />
       <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
-      <line x1="12" y1="12" x2="12" y2="12" />
     </svg>
   ),
-  Tag: () => (
+  Download: () => (
     <svg
-      width="11"
-      height="11"
+      width="13"
+      height="13"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -499,13 +456,28 @@ const Icon = {
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
-      <line x1="7" y1="7" x2="7.01" y2="7" />
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="7 10 12 15 17 10" />
+      <line x1="12" y1="15" x2="12" y2="3" />
+    </svg>
+  ),
+  ClipboardEmpty: () => (
+    <svg
+      width="32"
+      height="32"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+      <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
     </svg>
   ),
 };
 
-// ─── CONFIG & MOCK DATA ────────────────────────────────────────
 const LOGGED_IN_ADMIN_ID = 1;
 
 const conditionConfig = {
@@ -882,7 +854,6 @@ const initReturns = [
   },
 ];
 
-// ─── HELPERS ───────────────────────────────────────────────────
 const getUser = (id) =>
   mockUsers.find((u) => u.id === id) || { name: "—", branch: "", jabatan: "" };
 const getAsset = (code) => mockAssets.find((a) => a.code === code);
@@ -919,7 +890,6 @@ const genNomorBAST = (id, date) => {
   return `BAST-IT/${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, "0")}/${String(id).padStart(4, "0")}`;
 };
 
-// ─── BAST PDF GENERATOR ─────────────────────────────────────────
 const generateBAST = (item, type = "borrow") => {
   const isBorrow = type === "borrow";
   const giver = getUser(item.giver_id);
@@ -929,477 +899,793 @@ const generateBAST = (item, type = "borrow") => {
   const kondisi =
     conditionConfig[isBorrow ? item.condition : item.return_condition];
   const pekerjaan = getPekerjaan(item.pekerjaan_kode);
-
-  const html = `<!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="UTF-8"/>
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Times New Roman', Times, serif; font-size: 12pt; color: #000; background: #fff; padding: 40px 50px; }
-  .kop { display: flex; align-items: center; gap: 20px; border-bottom: 3px double #000; padding-bottom: 14px; margin-bottom: 20px; }
-  .kop-logo { width: 70px; height: 70px; background: #003675; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 11pt; text-align: center; padding: 8px; flex-shrink: 0; }
-  .kop-text h1 { font-size: 14pt; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; }
-  .kop-text p { font-size: 10pt; color: #333; }
-  .judul-doc { text-align: center; margin: 24px 0 6px; }
-  .judul-doc h2 { font-size: 14pt; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; text-decoration: underline; }
-  .nomor-doc { text-align: center; font-size: 11pt; margin-bottom: 20px; color: #333; }
-  .intro { margin-bottom: 18px; line-height: 1.8; text-align: justify; }
-  .section-title { font-weight: bold; font-size: 11pt; margin: 18px 0 8px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #999; padding-bottom: 4px; }
-  table.detail { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
-  table.detail td { padding: 6px 8px; font-size: 11pt; vertical-align: top; }
-  table.detail td:first-child { width: 38%; font-weight: 500; }
-  table.detail td:nth-child(2) { width: 4%; text-align: center; }
-  table.asset-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-  table.asset-table th { background: #003675; color: white; padding: 8px 10px; font-size: 10.5pt; font-weight: bold; border: 1px solid #003675; }
-  table.asset-table td { border: 1px solid #ccc; padding: 7px 10px; font-size: 11pt; }
-  table.asset-table tr:nth-child(even) td { background: #f4f7fb; }
-  .kondisi-badge { display: inline-block; padding: 2px 10px; border-radius: 4px; font-weight: bold; font-size: 10.5pt; background: ${kondisi?.bg}; color: ${kondisi?.color}; border: 1px solid ${kondisi?.color}; }
-  .pernyataan { margin: 18px 0; line-height: 1.9; text-align: justify; font-size: 11pt; }
-  .ttd-section { display: flex; justify-content: space-between; margin-top: 40px; gap: 20px; }
-  .ttd-box { flex: 1; text-align: center; }
-  .ttd-box .ttd-label { font-weight: bold; font-size: 11pt; margin-bottom: 4px; }
-  .ttd-box .ttd-role { font-size: 10pt; color: #555; margin-bottom: 70px; }
-  .ttd-box .ttd-nama { font-weight: bold; font-size: 11pt; border-top: 1.5px solid #000; padding-top: 6px; }
-  .ttd-box .ttd-jabatan { font-size: 10pt; color: #444; }
-  .footer-note { margin-top: 28px; padding: 10px 14px; background: #f8fafc; border-left: 4px solid #003675; font-size: 10pt; color: #555; line-height: 1.6; }
-  @media print { body { padding: 20px 30px; } .no-print { display: none !important; } }
-</style>
-</head>
-<body>
-<div class="kop">
-  <div class="kop-logo">PELINDO</div>
-  <div class="kop-text">
-    <h1>PT Pelabuhan Indonesia (Persero)</h1>
-    <p>Divisi Teknologi Informasi — Asset Management System</p>
-    <p>Jl. Medan Merdeka Timur No.16, Jakarta Pusat 10110</p>
-  </div>
-</div>
-<div class="judul-doc">
-  <h2>Berita Acara Serah Terima Aset</h2>
-  <p style="font-size:11pt; margin-top:4px; font-style:italic; color:#555;">${isBorrow ? "Peminjaman / Pengeluaran Aset IT" : "Pengembalian Aset IT"}</p>
-</div>
-<div class="nomor-doc">Nomor: ${nomorBAST}</div>
-<div class="intro">Pada hari ini, <strong>${tglDokumen}</strong>, yang bertanda tangan di bawah ini telah melaksanakan serah terima aset teknologi informasi milik PT Pelabuhan Indonesia (Persero), dengan rincian sebagai berikut:</div>
-${pekerjaan ? `<div class="section-title">Referensi Pekerjaan</div><table class="detail"><tr><td>No. Anggaran</td><td>:</td><td><strong>${pekerjaan.no_anggaran}</strong></td></tr><tr><td>Jenis Anggaran</td><td>:</td><td>${pekerjaan.jenis}</td></tr><tr><td>Nama Pekerjaan</td><td>:</td><td>${pekerjaan.nama}</td></tr></table>` : ""}
-<div class="section-title">Pihak yang Terlibat</div>
-<table class="detail">
-  <tr><td>Pihak Pemberi / Penyerah</td><td>:</td><td><strong>${giver.name}</strong> &nbsp;|&nbsp; ${giver.jabatan} &nbsp;|&nbsp; ${giver.branch}</td></tr>
-  <tr><td>Pihak Penerima</td><td>:</td><td><strong>${receiver.name}</strong> &nbsp;|&nbsp; ${receiver.jabatan} &nbsp;|&nbsp; ${receiver.branch}</td></tr>
-  <tr><td>Dicatat oleh (Admin IT)</td><td>:</td><td>${getUser(item.performed_by_id).name} &nbsp;|&nbsp; ${getUser(item.performed_by_id).jabatan}</td></tr>
-</table>
-<div class="section-title">Detail Transaksi</div>
-<table class="detail">
-  <tr><td>Tanggal Serah Terima</td><td>:</td><td>${tglDokumen}</td></tr>
-  ${isBorrow ? `<tr><td>Jatuh Tempo Pengembalian</td><td>:</td><td>${fmtDate(item.due_date)}</td></tr>` : `<tr><td>Tanggal Pengembalian</td><td>:</td><td>${fmtDate(item.return_date)}</td></tr>`}
-  <tr><td>Lokasi Asal</td><td>:</td><td>${item.from_zone}</td></tr>
-  <tr><td>Lokasi Tujuan</td><td>:</td><td>${item.to_zone}</td></tr>
-  <tr><td>Tujuan / Keperluan</td><td>:</td><td>${item.reason || "-"}</td></tr>
-  ${!isBorrow && item.return_notes ? `<tr><td>Catatan Pengembalian</td><td>:</td><td>${item.return_notes}</td></tr>` : ""}
-</table>
-<div class="section-title">Data Aset yang Diserahterimakan</div>
-<table class="asset-table">
-  <thead><tr><th>No.</th><th>Kode Aset</th><th>Nama / Deskripsi Aset</th><th>Kondisi</th></tr></thead>
-  <tbody><tr><td style="text-align:center">1</td><td style="font-family:monospace; font-weight:bold">${item.code}</td><td>${item.name}</td><td><span class="kondisi-badge">${kondisi?.label || "-"}</span></td></tr></tbody>
-</table>
-<div class="pernyataan">Dengan ditandatanganinya dokumen ini, kedua belah pihak menyatakan telah menerima dan menyerahkan aset tersebut di atas dalam kondisi yang tercantum, dan bertanggung jawab atas pemeliharaan dan keamanan aset selama berada dalam penguasaannya. ${isBorrow ? `Pihak penerima wajib mengembalikan aset paling lambat pada tanggal <strong>${fmtDate(item.due_date)}</strong>.` : `Aset dinyatakan telah dikembalikan kepada pihak pemberi dalam kondisi <strong>${kondisi?.label}</strong>.`}</div>
-<div class="ttd-section">
-  <div class="ttd-box"><div class="ttd-label">Pihak Pemberi / Penyerah</div><div class="ttd-role">(Menyerahkan Aset)</div><div class="ttd-nama">${giver.name}</div><div class="ttd-jabatan">${giver.jabatan} — ${giver.branch}</div></div>
-  <div class="ttd-box"><div class="ttd-label">Pihak Penerima</div><div class="ttd-role">(Menerima Aset)</div><div class="ttd-nama">${receiver.name}</div><div class="ttd-jabatan">${receiver.jabatan} — ${receiver.branch}</div></div>
-  <div class="ttd-box"><div class="ttd-label">Mengetahui</div><div class="ttd-role">(Admin IT / Sistem)</div><div class="ttd-nama">${getUser(item.performed_by_id).name}</div><div class="ttd-jabatan">${getUser(item.performed_by_id).jabatan}</div></div>
-</div>
-<div class="footer-note"><strong>Catatan:</strong> Dokumen ini digenerate secara otomatis oleh sistem Asset Management PT Pelabuhan Indonesia (Persero). Nomor referensi: <strong>${nomorBAST}</strong>. Harap simpan dokumen ini sebagai bukti serah terima resmi.</div>
-<div class="no-print" style="margin-top:24px; text-align:center;"><button onclick="window.print()" style="padding:10px 28px; background:#003675; color:white; border:none; border-radius:8px; font-size:13pt; cursor:pointer; font-family:inherit;">🖨️ Cetak / Simpan PDF</button></div>
-</body>
-</html>`;
-
+  const html = `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"/><style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Times New Roman',Times,serif;font-size:12pt;color:#000;background:#fff;padding:40px 50px;}.kop{display:flex;align-items:center;gap:20px;border-bottom:3px double #000;padding-bottom:14px;margin-bottom:20px;}.kop-logo{width:70px;height:70px;background:#003675;border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:11pt;text-align:center;padding:8px;flex-shrink:0;}.kop-text h1{font-size:14pt;font-weight:bold;letter-spacing:1px;text-transform:uppercase;}.kop-text p{font-size:10pt;color:#333;}.judul-doc{text-align:center;margin:24px 0 6px;}.judul-doc h2{font-size:14pt;font-weight:bold;text-transform:uppercase;letter-spacing:2px;text-decoration:underline;}.nomor-doc{text-align:center;font-size:11pt;margin-bottom:20px;color:#333;}.intro{margin-bottom:18px;line-height:1.8;text-align:justify;}.section-title{font-weight:bold;font-size:11pt;margin:18px 0 8px;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #999;padding-bottom:4px;}table.detail{width:100%;border-collapse:collapse;margin-bottom:16px;}table.detail td{padding:6px 8px;font-size:11pt;vertical-align:top;}table.detail td:first-child{width:38%;font-weight:500;}table.detail td:nth-child(2){width:4%;text-align:center;}table.asset-table{width:100%;border-collapse:collapse;margin-bottom:20px;}table.asset-table th{background:#003675;color:white;padding:8px 10px;font-size:10.5pt;font-weight:bold;border:1px solid #003675;}table.asset-table td{border:1px solid #ccc;padding:7px 10px;font-size:11pt;}table.asset-table tr:nth-child(even) td{background:#f4f7fb;}.kondisi-badge{display:inline-block;padding:2px 10px;border-radius:4px;font-weight:bold;font-size:10.5pt;background:${kondisi?.bg};color:${kondisi?.color};border:1px solid ${kondisi?.color};}.pernyataan{margin:18px 0;line-height:1.9;text-align:justify;font-size:11pt;}.ttd-section{display:flex;justify-content:space-between;margin-top:40px;gap:20px;}.ttd-box{flex:1;text-align:center;}.ttd-box .ttd-label{font-weight:bold;font-size:11pt;margin-bottom:4px;}.ttd-box .ttd-role{font-size:10pt;color:#555;margin-bottom:70px;}.ttd-box .ttd-nama{font-weight:bold;font-size:11pt;border-top:1.5px solid #000;padding-top:6px;}.ttd-box .ttd-jabatan{font-size:10pt;color:#444;}.footer-note{margin-top:28px;padding:10px 14px;background:#f8fafc;border-left:4px solid #003675;font-size:10pt;color:#555;line-height:1.6;}@media print{body{padding:20px 30px;}.no-print{display:none!important;}}</style></head><body><div class="kop"><div class="kop-logo">PELINDO</div><div class="kop-text"><h1>PT Pelabuhan Indonesia (Persero)</h1><p>Divisi Teknologi Informasi — Asset Management System</p><p>Jl. Medan Merdeka Timur No.16, Jakarta Pusat 10110</p></div></div><div class="judul-doc"><h2>Berita Acara Serah Terima Aset</h2><p style="font-size:11pt;margin-top:4px;font-style:italic;color:#555;">${isBorrow ? "Peminjaman / Pengeluaran Aset IT" : "Pengembalian Aset IT"}</p></div><div class="nomor-doc">Nomor: ${nomorBAST}</div><div class="intro">Pada hari ini, <strong>${tglDokumen}</strong>, yang bertanda tangan di bawah ini telah melaksanakan serah terima aset teknologi informasi milik PT Pelabuhan Indonesia (Persero), dengan rincian sebagai berikut:</div>${pekerjaan ? `<div class="section-title">Referensi Pekerjaan</div><table class="detail"><tr><td>No. Anggaran</td><td>:</td><td><strong>${pekerjaan.no_anggaran}</strong></td></tr><tr><td>Jenis Anggaran</td><td>:</td><td>${pekerjaan.jenis}</td></tr><tr><td>Nama Pekerjaan</td><td>:</td><td>${pekerjaan.nama}</td></tr></table>` : ""}<div class="section-title">Pihak yang Terlibat</div><table class="detail"><tr><td>Pihak Pemberi / Penyerah</td><td>:</td><td><strong>${giver.name}</strong> &nbsp;|&nbsp; ${giver.jabatan} &nbsp;|&nbsp; ${giver.branch}</td></tr><tr><td>Pihak Penerima</td><td>:</td><td><strong>${receiver.name}</strong> &nbsp;|&nbsp; ${receiver.jabatan} &nbsp;|&nbsp; ${receiver.branch}</td></tr><tr><td>Dicatat oleh (Admin IT)</td><td>:</td><td>${getUser(item.performed_by_id).name} &nbsp;|&nbsp; ${getUser(item.performed_by_id).jabatan}</td></tr></table><div class="section-title">Detail Transaksi</div><table class="detail"><tr><td>Tanggal Serah Terima</td><td>:</td><td>${tglDokumen}</td></tr>${isBorrow ? `<tr><td>Jatuh Tempo Pengembalian</td><td>:</td><td>${fmtDate(item.due_date)}</td></tr>` : `<tr><td>Tanggal Pengembalian</td><td>:</td><td>${fmtDate(item.return_date)}</td></tr>`}<tr><td>Lokasi Asal</td><td>:</td><td>${item.from_zone}</td></tr><tr><td>Lokasi Tujuan</td><td>:</td><td>${item.to_zone}</td></tr><tr><td>Tujuan / Keperluan</td><td>:</td><td>${item.reason || "-"}</td></tr>${!isBorrow && item.return_notes ? `<tr><td>Catatan Pengembalian</td><td>:</td><td>${item.return_notes}</td></tr>` : ""}</table><div class="section-title">Data Aset yang Diserahterimakan</div><table class="asset-table"><thead><tr><th>No.</th><th>Kode Aset</th><th>Nama / Deskripsi Aset</th><th>Kondisi</th></tr></thead><tbody><tr><td style="text-align:center">1</td><td style="font-family:monospace;font-weight:bold">${item.code}</td><td>${item.name}</td><td><span class="kondisi-badge">${kondisi?.label || "-"}</span></td></tr></tbody></table><div class="pernyataan">Dengan ditandatanganinya dokumen ini, kedua belah pihak menyatakan telah menerima dan menyerahkan aset tersebut di atas dalam kondisi yang tercantum, dan bertanggung jawab atas pemeliharaan dan keamanan aset selama berada dalam penguasaannya. ${isBorrow ? `Pihak penerima wajib mengembalikan aset paling lambat pada tanggal <strong>${fmtDate(item.due_date)}</strong>.` : `Aset dinyatakan telah dikembalikan kepada pihak pemberi dalam kondisi <strong>${kondisi?.label}</strong>.`}</div><div class="ttd-section"><div class="ttd-box"><div class="ttd-label">Pihak Pemberi / Penyerah</div><div class="ttd-role">(Menyerahkan Aset)</div><div class="ttd-nama">${giver.name}</div><div class="ttd-jabatan">${giver.jabatan} — ${giver.branch}</div></div><div class="ttd-box"><div class="ttd-label">Pihak Penerima</div><div class="ttd-role">(Menerima Aset)</div><div class="ttd-nama">${receiver.name}</div><div class="ttd-jabatan">${receiver.jabatan} — ${receiver.branch}</div></div><div class="ttd-box"><div class="ttd-label">Mengetahui</div><div class="ttd-role">(Admin IT / Sistem)</div><div class="ttd-nama">${getUser(item.performed_by_id).name}</div><div class="ttd-jabatan">${getUser(item.performed_by_id).jabatan}</div></div></div><div class="footer-note"><strong>Catatan:</strong> Dokumen ini digenerate secara otomatis oleh sistem Asset Management PT Pelabuhan Indonesia (Persero). Nomor referensi: <strong>${nomorBAST}</strong>. Harap simpan dokumen ini sebagai bukti serah terima resmi.</div><div class="no-print" style="margin-top:24px;text-align:center;"><button onclick="window.print()" style="padding:10px 28px;background:#003675;color:white;border:none;border-radius:8px;font-size:13pt;cursor:pointer;font-family:inherit;">Cetak / Simpan PDF</button></div></body></html>`;
   const blob = new Blob([html], { type: "text/html" });
   const url = URL.createObjectURL(blob);
   const win = window.open(url, "_blank");
   if (win) win.focus();
 };
 
-// ─── STYLES ────────────────────────────────────────────────────
-const styles = `
-@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
-:root {
-  --blue: #2563eb; --blue-dk: #1d4ed8; --blue-lt: #eff6ff;
-  --green: #16a34a; --green-dk: #15803d; --green-lt: #dcfce7;
-  --red: #dc2626; --red-lt: #fee2e2;
-  --warn: #d97706; --warn-lt: #fef3c7;
-  --slate: #0f172a; --slate-6: #64748b; --slate-4: #94a3b8;
-  --border: #e2e8f0; --bg: #f8fafc;
-  --radius: 12px; --shadow: 0 1px 4px rgba(0,0,0,0.06); --shadow-md: 0 4px 16px rgba(0,0,0,0.1);
-}
-* { box-sizing: border-box; }
-.pjm-root { padding: 1.5rem; max-width: 1420px; margin: 0 auto; font-family: "Plus Jakarta Sans","Inter",sans-serif; background: var(--bg); min-height: 100vh; }
-.pjm-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem; flex-wrap: wrap; gap: .75rem; }
-.pjm-title { font-size: 1.45rem; font-weight: 800; color: var(--slate); margin: 0 0 3px; letter-spacing: -0.02em; }
-.pjm-subtitle { font-size: 0.8rem; color: var(--slate-6); margin: 0; }
-.pjm-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: .75rem; margin-bottom: 1.1rem; }
-@media(max-width:900px){.pjm-stats{grid-template-columns:repeat(2,1fr);}}
-.pjm-stat-card { background: #fff; border-radius: var(--radius); border: 1px solid var(--border); padding: .85rem 1rem; display: flex; align-items: center; gap: .75rem; box-shadow: var(--shadow); transition: box-shadow .2s,transform .2s; }
-.pjm-stat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
-.pjm-stat-card--warn { border-color: #fca5a5; background: #fff5f5; }
-.pjm-stat-ico { width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: .9rem; flex-shrink: 0; }
-.pjm-stat-n { font-size: 1.4rem; font-weight: 800; color: var(--slate); line-height: 1; }
-.pjm-stat-l { font-size: 0.72rem; color: var(--slate-6); margin-top: 2px; }
-.pjm-tab-sw { display: flex; gap: 0; margin-bottom: .85rem; background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 3px; width: fit-content; box-shadow: var(--shadow); }
-.pjm-tsb { display: inline-flex; align-items: center; gap: .4rem; padding: .45rem 1rem; border-radius: 8px; border: none; font-size: 0.8rem; font-weight: 600; color: var(--slate-6); cursor: pointer; background: transparent; transition: all .18s; font-family: inherit; }
-.pjm-tsb:hover { color: var(--slate); background: var(--bg); }
-.pjm-tsb--blue { background: var(--blue-lt) !important; color: var(--blue) !important; }
-.pjm-tsb--green { background: var(--green-lt) !important; color: var(--green) !important; }
-.pjm-tsbadge { font-size: 0.67rem; font-weight: 700; background: var(--border); color: var(--slate-6); padding: 1px 6px; border-radius: 99px; min-width: 18px; text-align: center; }
-.pjm-tsbadge--green { background: var(--green-lt); color: var(--green); }
-.pjm-tsbadge--warn { background: var(--red-lt); color: var(--red); }
-.pjm-toolbar { display: flex; align-items: center; gap: .6rem; margin-bottom: .85rem; flex-wrap: wrap; }
-.pjm-search-wrap { flex: 1; min-width: 220px; display: flex; align-items: center; gap: .45rem; background: #fff; border: 1.5px solid var(--border); border-radius: 9px; padding: .45rem .8rem; transition: border-color .15s; }
-.pjm-search-wrap:focus-within { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,.08); }
-.pjm-search-wrap svg { color: var(--slate-4); flex-shrink: 0; }
-.pjm-search-wrap input { border: none; outline: none; font-size: .8rem; flex: 1; color: var(--slate); background: #fff; font-family: inherit; }
-.pjm-search-clear { background: none; border: none; cursor: pointer; color: var(--slate-4); padding: 0; display: flex; align-items: center; }
-.pjm-filter-wrap { display: flex; align-items: center; gap: .4rem; background: #fff; border: 1.5px solid var(--border); border-radius: 9px; padding: .42rem .75rem; }
-.pjm-filter-wrap svg { color: var(--slate-4); }
-.pjm-filter-wrap select { border: none; outline: none; font-size: .78rem; color: #334155; background: #fff; cursor: pointer; font-family: inherit; }
-.pjm-count-badge { font-size: .76rem; font-weight: 600; color: var(--slate-6); background: #fff; border: 1px solid var(--border); border-radius: 7px; padding: .35rem .7rem; white-space: nowrap; }
-.pjm-groups { display: flex; flex-direction: column; gap: .7rem; }
-.pjm-cat-group { background: #fff; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); transition: box-shadow .2s; }
-.pjm-cat-group:hover { box-shadow: var(--shadow-md); }
-.pjm-cat-hdr { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: .7rem 1rem; background: #fff; border: none; cursor: pointer; font-family: inherit; transition: background .15s; }
-.pjm-cat-hdr:hover { background: var(--bg); }
-.pjm-cat-left { display: flex; align-items: center; gap: .6rem; }
-.pjm-cat-ico { width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.pjm-cat-lbl { font-size: .82rem; font-weight: 700; color: var(--slate); }
-.pjm-cat-cnt { font-size: .68rem; font-weight: 700; background: var(--bg); color: var(--slate-6); border: 1px solid var(--border); padding: 1px 7px; border-radius: 99px; }
-.pjm-cat-chev { color: var(--slate-4); display: flex; }
-.pjm-cat-body { border-top: 1px solid var(--border); overflow-x: auto; }
-.pjm-table-wrap { background: #fff; border-radius: 12px; border: 1px solid var(--border); overflow-x: auto; box-shadow: var(--shadow); }
+// ─── CSS ───────────────────────────────────────────────────────
+const S = {
+  root: {
+    padding: "1.5rem",
+    maxWidth: 1300,
+    margin: "0 auto",
+    fontFamily: "'Inter','Plus Jakarta Sans',sans-serif",
+    background: "#f8fafc",
+    minHeight: "100vh",
+  },
+  header: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: "1.25rem",
+    flexWrap: "wrap",
+    gap: ".75rem",
+  },
+  title: {
+    fontSize: "1.35rem",
+    fontWeight: 800,
+    color: "#0f172a",
+    margin: "0 0 3px",
+    letterSpacing: "-0.02em",
+  },
+  subtitle: { fontSize: "0.78rem", color: "#64748b", margin: 0 },
+  statsGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(4,1fr)",
+    gap: ".75rem",
+    marginBottom: "1.1rem",
+  },
+  statCard: {
+    background: "#fff",
+    borderRadius: 12,
+    border: "1px solid #e2e8f0",
+    padding: ".85rem 1rem",
+    display: "flex",
+    alignItems: "center",
+    gap: ".75rem",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+  },
+  statCardWarn: { border: "1px solid #fca5a5", background: "#fff5f5" },
+  statIco: {
+    width: 36,
+    height: 36,
+    borderRadius: 9,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  statN: {
+    fontSize: "1.35rem",
+    fontWeight: 800,
+    color: "#0f172a",
+    lineHeight: 1,
+  },
+  statL: { fontSize: "0.7rem", color: "#64748b", marginTop: 2 },
+  tabSw: {
+    display: "flex",
+    gap: 0,
+    marginBottom: ".85rem",
+    background: "#fff",
+    border: "1px solid #e2e8f0",
+    borderRadius: 12,
+    padding: 3,
+    width: "fit-content",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+  },
+  tabBtn: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: ".4rem",
+    padding: ".45rem 1rem",
+    borderRadius: 8,
+    border: "none",
+    fontSize: "0.78rem",
+    fontWeight: 600,
+    color: "#64748b",
+    cursor: "pointer",
+    background: "transparent",
+    fontFamily: "inherit",
+    transition: "all .15s",
+  },
+  tabBtnBlue: { background: "#eff6ff", color: "#2563eb" },
+  tabBtnGreen: { background: "#dcfce7", color: "#16a34a" },
+  tabBadge: {
+    fontSize: "0.65rem",
+    fontWeight: 700,
+    background: "#e2e8f0",
+    color: "#64748b",
+    padding: "1px 6px",
+    borderRadius: 99,
+    minWidth: 18,
+    textAlign: "center",
+  },
+  tabBadgeGreen: { background: "#dcfce7", color: "#16a34a" },
+  tabBadgeWarn: { background: "#fee2e2", color: "#dc2626" },
+  toolbar: {
+    display: "flex",
+    alignItems: "center",
+    gap: ".6rem",
+    marginBottom: ".85rem",
+    flexWrap: "wrap",
+  },
+  searchWrap: {
+    flex: 1,
+    minWidth: 220,
+    display: "flex",
+    alignItems: "center",
+    gap: ".45rem",
+    background: "#fff",
+    border: "1.5px solid #e2e8f0",
+    borderRadius: 9,
+    padding: ".45rem .8rem",
+  },
+  searchInput: {
+    border: "none",
+    outline: "none",
+    fontSize: ".78rem",
+    flex: 1,
+    color: "#0f172a",
+    background: "#fff",
+    fontFamily: "inherit",
+  },
+  filterWrap: {
+    display: "flex",
+    alignItems: "center",
+    gap: ".4rem",
+    background: "#fff",
+    border: "1.5px solid #e2e8f0",
+    borderRadius: 9,
+    padding: ".42rem .75rem",
+  },
+  filterSelect: {
+    border: "none",
+    outline: "none",
+    fontSize: ".78rem",
+    color: "#334155",
+    background: "#fff",
+    cursor: "pointer",
+    fontFamily: "inherit",
+  },
+  countBadge: {
+    fontSize: ".74rem",
+    fontWeight: 600,
+    color: "#64748b",
+    background: "#fff",
+    border: "1px solid #e2e8f0",
+    borderRadius: 7,
+    padding: ".35rem .7rem",
+    whiteSpace: "nowrap",
+  },
+  tableCard: {
+    background: "#fff",
+    borderRadius: 12,
+    border: "1px solid #e2e8f0",
+    overflow: "hidden",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+  },
+  table: { width: "100%", borderCollapse: "collapse", fontSize: ".78rem" },
+  thead: { background: "#f8fafc", borderBottom: "1px solid #e2e8f0" },
+  theadGreen: { background: "#f0fdf4" },
+  th: {
+    padding: ".7rem 1rem",
+    textAlign: "left",
+    fontWeight: 700,
+    fontSize: ".68rem",
+    color: "#64748b",
+    textTransform: "uppercase",
+    letterSpacing: ".04em",
+    whiteSpace: "nowrap",
+  },
+  tr: {
+    borderBottom: "1px solid #f1f5f9",
+    cursor: "pointer",
+    transition: "background .1s",
+  },
+  trOver: { background: "#fff8f8" },
+  td: { padding: ".65rem 1rem", verticalAlign: "middle" },
+  code: {
+    fontFamily: "'Courier New',monospace",
+    fontSize: ".68rem",
+    fontWeight: 700,
+    color: "#2563eb",
+    background: "#eff6ff",
+    padding: "1px 5px",
+    borderRadius: 4,
+    whiteSpace: "nowrap",
+  },
+  assetName: {
+    fontSize: ".75rem",
+    fontWeight: 600,
+    color: "#1e293b",
+    marginTop: 2,
+  },
+  muted: { fontSize: ".68rem", color: "#94a3b8" },
+  pill: {
+    display: "inline-flex",
+    alignItems: "center",
+    padding: "2px 8px",
+    borderRadius: 99,
+    fontSize: ".67rem",
+    fontWeight: 600,
+    whiteSpace: "nowrap",
+  },
+  overduePill: {
+    fontSize: ".63rem",
+    fontWeight: 700,
+    background: "#fee2e2",
+    color: "#dc2626",
+    padding: "1px 6px",
+    borderRadius: 99,
+    whiteSpace: "nowrap",
+  },
+  avatar: {
+    width: 22,
+    height: 22,
+    borderRadius: "50%",
+    fontWeight: 700,
+    fontSize: ".65rem",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  locFlow: {
+    display: "flex",
+    alignItems: "center",
+    gap: 4,
+    fontSize: ".74rem",
+  },
+  actionRow: { display: "flex", alignItems: "center", gap: 4 },
+  iconBtn: {
+    background: "none",
+    border: "none",
+    cursor: "pointer",
+    padding: "4px 6px",
+    borderRadius: 6,
+    display: "flex",
+    alignItems: "center",
+    fontSize: ".7rem",
+    fontWeight: 600,
+    gap: 4,
+    transition: "background .12s, color .12s",
+    fontFamily: "inherit",
+  },
+  page: {
+    background: "#fff",
+    borderRadius: 12,
+    border: "1px solid #e2e8f0",
+    overflow: "hidden",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+  },
+  pageHeader: {
+    padding: "1rem 1.25rem",
+    borderBottom: "1px solid #f1f5f9",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  pageTitle: {
+    fontSize: ".9rem",
+    fontWeight: 700,
+    color: "#0f172a",
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+  },
+  backBtn: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: ".4rem",
+    padding: ".4rem .85rem",
+    borderRadius: 8,
+    border: "1.5px solid #e2e8f0",
+    fontSize: ".78rem",
+    fontWeight: 600,
+    color: "#475569",
+    background: "#f8fafc",
+    cursor: "pointer",
+    fontFamily: "inherit",
+    transition: "background .13s",
+  },
+  sectionLabel: {
+    fontSize: ".63rem",
+    fontWeight: 800,
+    textTransform: "uppercase",
+    letterSpacing: ".06em",
+    color: "#94a3b8",
+    marginBottom: 8,
+  },
+  hRow: {
+    display: "flex",
+    alignItems: "flex-start",
+    gap: 0,
+    borderBottom: "1px solid #f8fafc",
+    padding: ".42rem 0",
+    minHeight: 32,
+  },
+  hRowLast: { borderBottom: "none" },
+  hLbl: {
+    flexShrink: 0,
+    width: 170,
+    fontSize: ".72rem",
+    fontWeight: 700,
+    color: "#94a3b8",
+    textTransform: "uppercase",
+    letterSpacing: ".04em",
+    paddingTop: 2,
+    paddingRight: 10,
+  },
+  hColon: {
+    flexShrink: 0,
+    fontSize: ".72rem",
+    color: "#cbd5e1",
+    marginRight: 10,
+    paddingTop: 2,
+  },
+  hVal: {
+    flex: 1,
+    fontSize: ".8rem",
+    color: "#0f172a",
+    display: "flex",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: 4,
+  },
+  formSection: {
+    display: "flex",
+    flexDirection: "column",
+    gap: ".6rem",
+    padding: "1rem 1.25rem",
+    borderBottom: "1px solid #f1f5f9",
+  },
+  frow: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: ".6rem" },
+  fhRow: {
+    display: "flex",
+    alignItems: "flex-start",
+    gap: 0,
+    padding: ".35rem 0",
+    borderBottom: "1px solid #f8fafc",
+  },
+  fhLbl: {
+    flexShrink: 0,
+    width: 160,
+    fontSize: ".72rem",
+    fontWeight: 700,
+    color: "#475569",
+    paddingTop: 8,
+    paddingRight: 10,
+  },
+  fhColon: {
+    flexShrink: 0,
+    fontSize: ".72rem",
+    color: "#cbd5e1",
+    marginRight: 10,
+    paddingTop: 8,
+  },
+  fhCtrl: { flex: 1 },
+  fg: { display: "flex", flexDirection: "column", gap: ".25rem" },
+  flabel: { fontSize: ".73rem", fontWeight: 600, color: "#475569" },
+  finput: {
+    padding: ".45rem .7rem",
+    borderRadius: 8,
+    border: "1.5px solid #e2e8f0",
+    fontSize: ".78rem",
+    outline: "none",
+    fontFamily: "inherit",
+    background: "#fff",
+    color: "#0f172a",
+    width: "100%",
+    boxSizing: "border-box",
+  },
+  finputRo: {
+    background: "#f8fafc",
+    color: "#64748b",
+    cursor: "default",
+    border: "1.5px solid #e2e8f0",
+  },
+  ferr: { fontSize: ".67rem", color: "#dc2626" },
+  chips: { display: "flex", gap: ".4rem", flexWrap: "wrap" },
+  chip: {
+    display: "flex",
+    alignItems: "center",
+    padding: ".32rem .75rem",
+    borderRadius: 99,
+    border: "1.5px solid #e2e8f0",
+    cursor: "pointer",
+    fontSize: ".74rem",
+    fontWeight: 600,
+    color: "#64748b",
+    background: "#fff",
+    fontFamily: "inherit",
+    transition: "all .13s",
+  },
+  btnBlue: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: ".35rem",
+    padding: ".45rem 1rem",
+    borderRadius: 9,
+    fontSize: ".78rem",
+    fontWeight: 600,
+    border: "none",
+    cursor: "pointer",
+    background: "#2563eb",
+    color: "#fff",
+    fontFamily: "inherit",
+    transition: "all .15s",
+  },
+  btnGreen: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: ".35rem",
+    padding: ".45rem 1rem",
+    borderRadius: 9,
+    fontSize: ".78rem",
+    fontWeight: 600,
+    border: "none",
+    cursor: "pointer",
+    background: "#16a34a",
+    color: "#fff",
+    fontFamily: "inherit",
+    transition: "all .15s",
+  },
+  btnPurple: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: ".35rem",
+    padding: ".45rem 1rem",
+    borderRadius: 9,
+    fontSize: ".78rem",
+    fontWeight: 600,
+    border: "none",
+    cursor: "pointer",
+    background: "#7c3aed",
+    color: "#fff",
+    fontFamily: "inherit",
+    transition: "all .15s",
+  },
+  btnRed: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: ".35rem",
+    padding: ".45rem 1rem",
+    borderRadius: 9,
+    fontSize: ".78rem",
+    fontWeight: 600,
+    border: "none",
+    cursor: "pointer",
+    background: "#dc2626",
+    color: "#fff",
+    fontFamily: "inherit",
+    transition: "all .15s",
+  },
+  btnGhost: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: ".35rem",
+    padding: ".45rem 1rem",
+    borderRadius: 9,
+    fontSize: ".78rem",
+    fontWeight: 600,
+    border: "1.5px solid #e2e8f0",
+    cursor: "pointer",
+    background: "#f8fafc",
+    color: "#475569",
+    fontFamily: "inherit",
+    transition: "all .15s",
+  },
+  btnGhostSm: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: ".3rem",
+    padding: ".32rem .75rem",
+    borderRadius: 7,
+    fontSize: ".73rem",
+    fontWeight: 600,
+    border: "1.5px solid #e2e8f0",
+    cursor: "pointer",
+    background: "#f8fafc",
+    color: "#475569",
+    fontFamily: "inherit",
+    transition: "all .15s",
+  },
+  btnRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: 6,
+    padding: "1rem 1.25rem",
+    borderTop: "1px solid #f1f5f9",
+    flexWrap: "wrap",
+  },
+  catHdr: {
+    display: "flex",
+    alignItems: "center",
+    gap: ".6rem",
+    padding: ".65rem 1rem",
+    background: "#f8fafc",
+    borderBottom: "1px solid #e2e8f0",
+    cursor: "pointer",
+    border: "none",
+    width: "100%",
+    fontFamily: "inherit",
+    justifyContent: "space-between",
+  },
+  catIco: {
+    width: 26,
+    height: 26,
+    borderRadius: 6,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  catLbl: { fontSize: ".8rem", fontWeight: 700, color: "#0f172a" },
+  catCnt: {
+    fontSize: ".66rem",
+    fontWeight: 700,
+    background: "#e2e8f0",
+    color: "#64748b",
+    padding: "1px 7px",
+    borderRadius: 99,
+  },
+  pkjBadge: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 3,
+    fontSize: ".65rem",
+    fontWeight: 700,
+    color: "#0891b2",
+    background: "#ecfeff",
+    border: "1px solid #a5f3fc",
+    borderRadius: 4,
+    padding: "1px 5px",
+    whiteSpace: "nowrap",
+  },
+  pkjInfoName: {
+    fontSize: ".78rem",
+    fontWeight: 600,
+    color: "#0e7490",
+    lineHeight: 1.4,
+  },
+  pkjInfoMeta: { fontSize: ".68rem", color: "#0891b2", marginTop: 3 },
+  retInfoCard: {
+    background: "#f8fafc",
+    border: "1px solid #e2e8f0",
+    borderRadius: 9,
+    padding: ".75rem 1rem",
+    display: "flex",
+    flexDirection: "column",
+    gap: 0,
+    margin: "0 1.25rem",
+  },
+  histPill: {
+    display: "inline-flex",
+    alignItems: "center",
+    padding: "2px 9px",
+    borderRadius: 20,
+    fontSize: ".68rem",
+    fontWeight: 700,
+  },
+  deleteBox: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    textAlign: "center",
+    padding: "2rem 1.25rem 1.25rem",
+  },
+  deleteIco: {
+    width: 46,
+    height: 46,
+    borderRadius: "50%",
+    background: "#fee2e2",
+    color: "#dc2626",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 12,
+  },
+  deleteTitle: {
+    fontSize: ".95rem",
+    fontWeight: 700,
+    color: "#0f172a",
+    marginBottom: 6,
+  },
+  deleteDesc: { fontSize: ".78rem", color: "#64748b" },
+  fileZone: {
+    border: "2px dashed #e2e8f0",
+    borderRadius: 9,
+    padding: "1.1rem .85rem",
+    textAlign: "center",
+    cursor: "pointer",
+    background: "#fff",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: ".4rem",
+  },
+  filePreview: {
+    display: "flex",
+    alignItems: "center",
+    gap: ".5rem",
+    padding: ".5rem .75rem",
+    background: "#eff6ff",
+    borderRadius: 8,
+    border: "1.5px solid #bfdbfe",
+  },
+  pkjList: {
+    display: "flex",
+    flexDirection: "column",
+    gap: ".3rem",
+    maxHeight: 220,
+    overflowY: "auto",
+  },
+  pkjItem: {
+    display: "flex",
+    alignItems: "flex-start",
+    gap: ".5rem",
+    padding: ".55rem .8rem",
+    border: "1.5px solid #e2e8f0",
+    borderRadius: 8,
+    cursor: "pointer",
+    background: "#fff",
+    fontFamily: "inherit",
+    width: "100%",
+    textAlign: "left",
+    transition: "all .13s",
+  },
+  pkjItemActive: {
+    borderColor: "#2563eb",
+    background: "#eff6ff",
+    boxShadow: "0 0 0 2px rgba(37,99,235,.1)",
+  },
+  comboWrap: { position: "relative" },
+  comboInput: {
+    display: "flex",
+    alignItems: "center",
+    gap: ".4rem",
+    padding: ".45rem .7rem",
+    border: "1.5px solid #e2e8f0",
+    borderRadius: 8,
+    background: "#fff",
+    cursor: "pointer",
+    minHeight: 34,
+  },
+  comboDropdown: {
+    position: "absolute",
+    top: "calc(100% + 4px)",
+    left: 0,
+    right: 0,
+    background: "#fff",
+    border: "1.5px solid #e2e8f0",
+    borderRadius: 9,
+    boxShadow: "0 8px 24px rgba(0,0,0,.1)",
+    zIndex: 200,
+    maxHeight: 220,
+    overflowY: "auto",
+  },
+  comboItem: {
+    padding: ".45rem .75rem",
+    cursor: "pointer",
+    fontSize: ".77rem",
+    color: "#0f172a",
+    display: "flex",
+    alignItems: "center",
+    gap: ".4rem",
+    border: "none",
+    background: "transparent",
+    width: "100%",
+    textAlign: "left",
+    fontFamily: "inherit",
+    transition: "background .1s",
+  },
+  comboTag: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 4,
+    background: "#eff6ff",
+    color: "#2563eb",
+    borderRadius: 5,
+    padding: "1px 7px",
+    fontSize: ".73rem",
+    fontWeight: 600,
+    whiteSpace: "nowrap",
+  },
+  detailItem: { display: "flex", flexDirection: "column", gap: 3 },
+  detailLbl: {
+    fontSize: ".65rem",
+    fontWeight: 700,
+    color: "#94a3b8",
+    textTransform: "uppercase",
+    letterSpacing: ".04em",
+  },
+  detailVal: { fontSize: ".8rem", color: "#0f172a" },
+  detailGrid: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: "1rem 1.5rem",
+    padding: "1rem 1.25rem",
+  },
+};
 
-/* ── COMPACT TABLE ── */
-.pjm-table { width: 100%; border-collapse: collapse; font-size: .76rem; table-layout: fixed; }
-.pjm-table thead tr { background: linear-gradient(135deg,#1e3a8a,var(--blue)); }
-.pjm-table--ret thead tr { background: linear-gradient(135deg,#14532d,var(--green)); }
-.pjm-table thead th { color: #fff; padding: .6rem .75rem; text-align: left; font-weight: 600; font-size: .7rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pjm-table tbody tr { border-bottom: 1px solid #f1f5f9; transition: background .12s; }
-.pjm-table tbody tr:last-child { border-bottom: none; }
-.pjm-table tbody tr:hover { background: #fafbff; }
-.pjm-table tbody td { padding: .6rem .75rem; vertical-align: middle; overflow: hidden; }
-.pjm-row--over { background: #fff8f8 !important; }
-.pjm-row--over:hover { background: #fff1f1 !important; }
-
-/* Column widths for borrow table (Simplified) */
-.pjm-table--borrow th:nth-child(1), .pjm-table--borrow td:nth-child(1) { width: 35%; }
-.pjm-table--borrow th:nth-child(2), .pjm-table--borrow td:nth-child(2) { width: 20%; }
-.pjm-table--borrow th:nth-child(3), .pjm-table--borrow td:nth-child(3) { width: 25%; }
-.pjm-table--borrow th:nth-child(4), .pjm-table--borrow td:nth-child(4) { width: 15%; }
-.pjm-table--borrow th:nth-child(5), .pjm-table--borrow td:nth-child(5) { width: 5%; text-align: center; }
-
-/* Column widths for return table (Simplified) */
-.pjm-table--ret th:nth-child(1), .pjm-table--ret td:nth-child(1) { width: 35%; }
-.pjm-table--ret th:nth-child(2), .pjm-table--ret td:nth-child(2) { width: 25%; }
-.pjm-table--ret th:nth-child(3), .pjm-table--ret td:nth-child(3) { width: 20%; }
-.pjm-table--ret th:nth-child(4), .pjm-table--ret td:nth-child(4) { width: 15%; }
-.pjm-table--ret th:nth-child(5), .pjm-table--ret td:nth-child(5) { width: 5%; text-align: center; }
-
-.pjm-ctag { font-family: "Courier New",monospace; font-size: .69rem; font-weight: 700; color: var(--blue); background: var(--blue-lt); padding: 1px 5px; border-radius: 4px; white-space: nowrap; }
-.pjm-asub { font-size: .69rem; color: var(--slate-6); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pjm-td-date { font-size: .73rem; color: var(--slate-6); white-space: nowrap; }
-.pjm-td-date--green { color: var(--green); font-weight: 600; }
-.pjm-td-notes { font-size: .72rem; color: var(--slate-6); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 120px; }
-.pjm-ucell { display: flex; align-items: center; gap: .5rem; }
-.pjm-uav { width: 24px; height: 24px; border-radius: 50%; background: var(--blue-lt); color: var(--blue); font-weight: 700; font-size: .72rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.pjm-uav--green { background: var(--green-lt); color: var(--green); }
-.pjm-uav--orange { background: #fef3c7; color: #d97706; }
-.pjm-uname { font-size: .75rem; font-weight: 600; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pjm-ubranch { font-size: .68rem; color: var(--slate-6); }
-.pjm-user-flow { display: flex; align-items: center; gap: 4px; flex-wrap: nowrap; }
-.pjm-user-mini { display: flex; align-items: center; gap: 4px; min-width: 0; }
-.pjm-user-mini-av { width: 20px; height: 20px; border-radius: 50%; font-size: .64rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.pjm-user-mini-name { font-size: .71rem; font-weight: 600; color: var(--slate); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70px; }
-.pjm-user-flow-arr { color: var(--slate-4); display: flex; flex-shrink: 0; }
-.pjm-loc-flow { display: flex; align-items: center; gap: .25rem; font-size: .72rem; }
-.pjm-loc-f { color: var(--slate-6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60px; }
-.pjm-loc-arr { color: var(--slate-4); display: flex; flex-shrink: 0; }
-.pjm-loc-t { color: var(--blue); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60px; }
-.pjm-due { font-size: .72rem; color: var(--slate-6); display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; }
-.pjm-due--over { color: var(--red); font-weight: 700; }
-.pjm-cond-sm { display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 99px; font-size: .68rem; font-weight: 600; white-space: nowrap; }
-.pjm-attach-sm { display: inline-flex; align-items: center; gap: 3px; font-size: .68rem; color: var(--blue); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
-.pjm-overdue-pill { font-size: .65rem; font-weight: 700; background: var(--red-lt); color: var(--red); padding: 1px 6px; border-radius: 99px; white-space: nowrap; }
-.pjm-bast-gen-btn { display: inline-flex; align-items: center; gap: 3px; font-size: .67rem; font-weight: 700; color: #7c3aed; background: #f3e8ff; border: 1px solid #c4b5fd; border-radius: 5px; padding: 2px 6px; cursor: pointer; transition: all .15s; white-space: nowrap; font-family: inherit; }
-.pjm-bast-gen-btn:hover { background: #ede9fe; border-color: #a78bfa; }
-.pjm-pkj-badge { display: inline-flex; align-items: center; gap: 3px; font-size: .66rem; font-weight: 700; color: #0891b2; background: #ecfeff; border: 1px solid #a5f3fc; border-radius: 4px; padding: 1px 5px; white-space: nowrap; }
-.pjm-pkj-name-sm { font-size: .67rem; color: var(--slate-6); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.3; }
-
-/* ── ACTION DOTS DROPDOWN — FIXED POSITION ── */
-.pjm-action-wrap { position: relative; display: inline-block; }
-.pjm-dot-btn { background: transparent; border: none; color: var(--slate-4); cursor: pointer; padding: 4px 6px; border-radius: 6px; display: flex; align-items: center; justify-content: center; transition: background .15s, color .15s; line-height: 1; }
-.pjm-dot-btn:hover { background: var(--bg); color: #334155; }
-.pjm-dot-dropdown-fixed { position: fixed; background: #fff; border: 1px solid var(--border); border-radius: 11px; box-shadow: 0 12px 32px -6px rgba(0,0,0,0.18); z-index: 9999; min-width: 190px; padding: 4px; animation: pjmDropIn 0.13s ease-out; }
-@keyframes pjmDropIn { from { opacity: 0; transform: translateY(-6px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
-.pjm-dot-dropdown-fixed button { width: 100%; background: none; border: none; padding: 8px 12px; text-align: left; font-size: 0.775rem; font-weight: 600; color: #334155; cursor: pointer; border-radius: 7px; display: flex; align-items: center; gap: 8px; transition: background .12s, color .12s; font-family: inherit; }
-.pjm-dot-dropdown-fixed button:hover { background: var(--bg); color: var(--slate); }
-.pjm-dot-dropdown-fixed button.dd-ret:hover { background: #d1fae5; color: #065f46; }
-.pjm-dot-dropdown-fixed button.dd-hist:hover { background: #f3e8ff; color: #6d28d9; }
-.pjm-dot-dropdown-fixed button.dd-bast:hover { background: #f3e8ff; color: #6d28d9; }
-.pjm-dot-dropdown-fixed button.dd-del { color: var(--red); }
-.pjm-dot-dropdown-fixed button.dd-del:hover { background: var(--red-lt); }
-.pjm-dot-dropdown-fixed hr { border: none; border-top: 1px solid var(--border); margin: 3px 4px; }
-
-.pjm-btn { display: inline-flex; align-items: center; gap: .35rem; padding: .45rem 1rem; border-radius: 9px; font-size: .8rem; font-weight: 600; border: none; cursor: pointer; transition: all .18s; font-family: inherit; }
-.pjm-btn-lg { padding: .55rem 1.2rem; font-size: .84rem; }
-.pjm-btn-blue { background: linear-gradient(135deg,var(--blue-dk),var(--blue)); color: #fff; box-shadow: 0 2px 8px rgba(37,99,235,.25); }
-.pjm-btn-blue:hover { filter: brightness(1.1); transform: translateY(-1px); }
-.pjm-btn-green { background: linear-gradient(135deg,var(--green-dk),var(--green)); color: #fff; box-shadow: 0 2px 8px rgba(22,163,74,.25); }
-.pjm-btn-green:hover { filter: brightness(1.1); transform: translateY(-1px); }
-.pjm-btn-red { background: linear-gradient(135deg,#b91c1c,var(--red)); color: #fff; }
-.pjm-btn-ghost { background: var(--bg); color: #475569; border: 1.5px solid var(--border); }
-.pjm-btn-ghost:hover { background: #e9eef5; }
-.pjm-btn-purple { background: linear-gradient(135deg,#6d28d9,#7c3aed); color: #fff; box-shadow: 0 2px 8px rgba(124,58,237,.25); }
-.pjm-btn-purple:hover { filter: brightness(1.1); transform: translateY(-1px); }
-.pjm-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .75rem; padding: 3rem 1rem; background: #fff; border-radius: 12px; border: 1px solid var(--border); color: var(--slate-4); font-size: .85rem; box-shadow: var(--shadow); }
-.pjm-empty-ico { width: 46px; height: 46px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-.pjm-empty-ico--blue { background: var(--blue-lt); color: var(--blue); }
-.pjm-empty-ico--green { background: var(--green-lt); color: var(--green); }
-.pjm-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1rem; }
-
-/* ── MODAL ── */
-.pjm-modal { background: #fff; border-radius: 16px; width: 100%; max-width: 500px; max-height: 92vh; display: flex; flex-direction: column; box-shadow: 0 24px 64px rgba(0,0,0,.2); overflow: hidden; }
-.pjm-modal--form { max-width: 600px; }
-.pjm-modal--sm { max-width: 380px; }
-.pjm-modal--hist { max-width: 640px; }
-.pjm-modal-header { padding: .9rem 1.25rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); background: #fff; }
-.pjm-mh--blue { border-top: 3px solid var(--blue); }
-.pjm-mh--green { border-top: 3px solid var(--green); }
-.pjm-mh--purple { border-top: 3px solid #7c3aed; }
-.pjm-modal-header h2 { font-size: .88rem; font-weight: 700; color: var(--slate); display: flex; align-items: center; gap: .45rem; margin: 0; }
-.pjm-mh-ico { width: 24px; height: 24px; border-radius: 6px; background: var(--blue-lt); color: var(--blue); display: flex; align-items: center; justify-content: center; }
-.pjm-mh-ico--green { background: var(--green-lt); color: var(--green); }
-.pjm-mh-ico--purple { background: #f3e8ff; color: #7c3aed; }
-.pjm-modal-close { background: none; border: none; cursor: pointer; color: var(--slate-4); padding: .15rem; border-radius: 5px; display: flex; align-items: center; }
-.pjm-modal-close:hover { background: var(--bg); color: var(--slate-6); }
-.pjm-modal-body { padding: 1rem 1.25rem; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: .8rem; background: #fff; }
-.pjm-modal-footer { padding: .75rem 1.25rem; border-top: 1px solid var(--border); display: flex; gap: .5rem; justify-content: flex-end; background: #fff; }
-.pjm-frow { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; }
-@media(max-width:520px){.pjm-frow{grid-template-columns:1fr;}}
-.pjm-fg { display: flex; flex-direction: column; gap: .28rem; }
-.pjm-fg label { font-size: .75rem; font-weight: 600; color: #475569; }
-.pjm-fg input,.pjm-fg select,.pjm-fg textarea { padding: .45rem .7rem; border-radius: 8px; border: 1.5px solid var(--border); font-size: .78rem; outline: none; transition: border .15s,box-shadow .15s; font-family: inherit; background: #fff !important; color: var(--slate) !important; -webkit-appearance: auto; appearance: auto; }
-.pjm-fg input:focus,.pjm-fg select:focus,.pjm-fg textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,.09); }
-.pjm-fg textarea { resize: vertical; }
-.pjm-input-ro { background: #f8fafc !important; color: var(--slate-6) !important; cursor: default !important; border-color: var(--border) !important; }
-.pjm-err-input { border-color: var(--red) !important; }
-.pjm-ferr { font-size: .68rem; color: var(--red); }
-.pjm-req { color: var(--red); }
-.pjm-field-hint { font-size: .69rem; color: var(--slate-6); display: inline-flex; align-items: center; gap: 3px; }
-.pjm-chips { display: flex; gap: .4rem; flex-wrap: wrap; }
-.pjm-chip { display: flex; align-items: center; padding: .35rem .8rem; border-radius: 99px; border: 1.5px solid var(--border); cursor: pointer; font-size: .75rem; font-weight: 600; color: var(--slate-6); background: #fff; transition: all .14s; font-family: inherit; }
-.pjm-chip:hover { border-color: #cbd5e1; background: var(--bg); }
-.pjm-chip--on { font-weight: 700; }
-.pjm-ret-info-card { background: var(--bg); border: 1px solid var(--border); border-radius: 9px; padding: .75rem .9rem; display: flex; flex-direction: column; gap: .4rem; }
-.pjm-ric-row { display: flex; align-items: center; gap: .6rem; font-size: .77rem; }
-.pjm-ric-lbl { font-size: .68rem; font-weight: 700; color: var(--slate-4); text-transform: uppercase; letter-spacing: .04em; min-width: 100px; }
-.pjm-text-blue { color: var(--blue); font-weight: 600; }
-.pjm-text-green { color: var(--green); font-weight: 600; }
-.pjm-form-section { display: flex; align-items: center; gap: 8px; margin: 3px 0; }
-.pjm-form-section-label { font-size: .67rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; }
-.pjm-form-section-line { flex: 1; height: 1px; background: var(--border); }
-.pjm-bast-note { display: flex; align-items: flex-start; gap: 8px; padding: 8px 12px; background: #f3e8ff; border: 1px solid #c4b5fd; border-radius: 9px; font-size: .75rem; color: #5b21b6; }
-.pjm-bast-note-icon { font-size: .9rem; flex-shrink: 0; margin-top: 1px; }
-
-/* ── DETAIL MODAL ── */
-.pjm-detail-banner { display: flex; align-items: center; gap: .75rem; padding: .75rem .9rem; border-radius: 10px; background: var(--bg); border: 1px solid var(--border); }
-.pjm-db-cat { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.pjm-db-name { font-size: .82rem; font-weight: 600; color: var(--slate); margin-top: 2px; }
-.pjm-db-info { flex: 1; }
-.pjm-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem 1.2rem; }
-.pjm-dgi { display: flex; flex-direction: column; gap: 2px; }
-.pjm-dgi--full { grid-column: 1/-1; }
-.pjm-dgi-lbl { font-size: .66rem; font-weight: 700; color: var(--slate-4); text-transform: uppercase; letter-spacing: .04em; }
-.pjm-dgi-val { font-size: .79rem; color: var(--slate); }
-.pjm-text-danger { color: var(--red); font-weight: 700; }
-.pjm-text-muted { color: var(--slate-4); }
-.pjm-del-ico { width: 46px; height: 46px; border-radius: 50%; background: var(--red-lt); color: var(--red); display: flex; align-items: center; justify-content: center; margin: 0 auto .75rem; }
-.pjm-del-title { font-size: .96rem; font-weight: 700; color: var(--slate); margin: 0 0 .4rem; }
-.pjm-del-desc { font-size: .8rem; color: var(--slate-6); margin: 0; }
-
-/* ── PEKERJAAN SELECTOR ── */
-.pjm-pkj-list { display: flex; flex-direction: column; gap: .35rem; max-height: 260px; overflow-y: auto; }
-.pjm-pkj-item { display: flex; align-items: flex-start; gap: .6rem; padding: .6rem .85rem; border: 1.5px solid var(--border); border-radius: 9px; cursor: pointer; background: #fff; transition: all .15s; text-align: left; font-family: inherit; width: 100%; }
-.pjm-pkj-item:hover { border-color: #93c5fd; background: #f0f7ff; }
-.pjm-pkj-item--active { border-color: var(--blue) !important; background: var(--blue-lt) !important; box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
-.pjm-pkj-no { font-size: .67rem; font-weight: 800; color: #0891b2; background: #ecfeff; border: 1px solid #a5f3fc; border-radius: 4px; padding: 1px 6px; white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
-.pjm-pkj-jenis { font-size: .65rem; font-weight: 700; padding: 1px 6px; border-radius: 4px; white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
-.pjm-pkj-jenis--capex { background: #fef3c7; color: #d97706; border: 1px solid #fcd34d; }
-.pjm-pkj-jenis--opex { background: #ede9fe; color: #7c3aed; border: 1px solid #c4b5fd; }
-.pjm-pkj-nama { font-size: .77rem; font-weight: 600; color: var(--slate); line-height: 1.4; flex: 1; }
-.pjm-pkj-nama-active { color: var(--blue-dk); }
-.pjm-pkj-check { width: 16px; height: 16px; border-radius: 50%; background: var(--blue); color: white; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
-.pjm-pkj-selected-card { display: flex; align-items: flex-start; gap: .6rem; padding: .65rem .9rem; border: 1.5px solid var(--blue); border-radius: 9px; background: var(--blue-lt); }
-.pjm-pkj-selected-info { flex: 1; }
-.pjm-pkj-selected-name { font-size: .78rem; font-weight: 600; color: var(--blue-dk); line-height: 1.4; }
-.pjm-pkj-selected-meta { font-size: .69rem; color: var(--slate-6); margin-top: 3px; display: flex; gap: 7px; }
-.pjm-pkj-change-btn { background: none; border: none; cursor: pointer; color: var(--blue); font-size: .71rem; font-weight: 700; padding: 2px 5px; border-radius: 4px; white-space: nowrap; transition: background .15s; font-family: inherit; }
-.pjm-pkj-change-btn:hover { background: #bfdbfe; }
-.pjm-pkj-aset-cnt { font-size: .65rem; font-weight: 700; background: var(--bg); color: var(--slate-6); border: 1px solid var(--border); padding: 1px 5px; border-radius: 99px; margin-top: 2px; white-space: nowrap; }
-
-/* ── COMBO ── */
-.pjm-combo { position: relative; }
-.pjm-combo-input-wrap { display: flex; align-items: center; gap: .4rem; padding: .45rem .7rem; border: 1.5px solid var(--border); border-radius: 8px; background: #fff; cursor: pointer; transition: border .15s,box-shadow .15s; min-height: 34px; }
-.pjm-combo-input-wrap:focus-within,.pjm-combo-input-wrap.open { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,.09); }
-.pjm-combo-input-wrap.pjm-err-border { border-color: var(--red) !important; }
-.pjm-combo-input-wrap input { border: none !important; outline: none !important; box-shadow: none !important; padding: 0 !important; font-size: .78rem; flex: 1; background: #fff !important; color: var(--slate) !important; font-family: inherit; min-width: 0; }
-.pjm-combo-selected-tag { display: inline-flex; align-items: center; gap: 4px; background: var(--blue-lt); color: var(--blue); border-radius: 5px; padding: 1px 7px; font-size: .74rem; font-weight: 600; white-space: nowrap; }
-.pjm-combo-selected-tag button { background: none; border: none; cursor: pointer; color: var(--blue); padding: 0; display: flex; align-items: center; }
-.pjm-combo-arrow { color: var(--slate-4); display: flex; flex-shrink: 0; transition: transform .15s; }
-.pjm-combo-arrow.open { transform: rotate(180deg); }
-.pjm-combo-dropdown { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #fff; border: 1.5px solid var(--border); border-radius: 9px; box-shadow: 0 8px 24px rgba(0,0,0,.12); z-index: 200; max-height: 240px; overflow-y: auto; }
-.pjm-combo-search-box { padding: .45rem .65rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: .4rem; position: sticky; top: 0; background: #fff; }
-.pjm-combo-search-box input { border: none; outline: none; font-size: .78rem; flex: 1; color: var(--slate); font-family: inherit; background: #fff; }
-.pjm-combo-item { padding: .48rem .75rem; cursor: pointer; font-size: .78rem; color: var(--slate); display: flex; align-items: center; gap: .4rem; transition: background .1s; border: none; background: transparent; width: 100%; text-align: left; font-family: inherit; }
-.pjm-combo-item:hover { background: var(--bg); }
-.pjm-combo-item.selected { background: var(--blue-lt); color: var(--blue); font-weight: 600; }
-.pjm-combo-item-sub { font-size: .69rem; color: var(--slate-4); margin-left: auto; }
-.pjm-combo-empty { padding: .85rem; text-align: center; font-size: .77rem; color: var(--slate-4); }
-.pjm-combo-item--disabled { opacity: .45; cursor: not-allowed; pointer-events: none; }
-
-/* File upload */
-.pjm-file-zone { border: 2px dashed var(--border); border-radius: 9px; padding: 1.2rem .85rem; text-align: center; cursor: pointer; transition: all .15s; background: #fff; display: flex; flex-direction: column; align-items: center; gap: .4rem; }
-.pjm-file-zone:hover,.pjm-file-zone.drag { border-color: var(--blue); background: var(--blue-lt); }
-.pjm-file-zone-ico { color: var(--blue); }
-.pjm-file-zone-txt { font-size: .77rem; font-weight: 600; color: var(--blue); }
-.pjm-file-zone-sub { font-size: .69rem; color: var(--slate-4); }
-.pjm-file-preview { display: flex; align-items: center; gap: .5rem; padding: .5rem .75rem; background: var(--blue-lt); border-radius: 8px; border: 1.5px solid #bfdbfe; }
-.pjm-file-preview-name { font-size: .77rem; font-weight: 600; color: var(--blue); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pjm-file-preview-size { font-size: .69rem; color: var(--slate-6); }
-.pjm-file-preview-del { background: none; border: none; cursor: pointer; color: var(--slate-4); padding: 0; display: flex; align-items: center; }
-.pjm-file-preview-del:hover { color: var(--red); }
-
-/* History modal */
-.pjm-hist-header-info { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: #f8fafc; border-radius: 9px; border: 1px solid var(--border); }
-.pjm-hist-code { font-family: "Courier New",monospace; font-size: .72rem; font-weight: 700; color: var(--blue); background: var(--blue-lt); padding: 2px 7px; border-radius: 4px; }
-.pjm-hist-name { font-size: .82rem; font-weight: 600; color: var(--slate); }
-.pjm-hist-summary { display: flex; gap: 6px; flex-wrap: wrap; }
-.pjm-hist-pill { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 20px; font-size: .7rem; font-weight: 700; }
-.pjm-hist-pill--total { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
-.pjm-hist-pill--done { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
-.pjm-hist-pill--active { background: #fef9c3; color: #92400e; border: 1px solid #fde68a; }
-.pjm-hist-table-wrap { overflow-x: auto; border-radius: 9px; border: 1px solid var(--border); }
-.pjm-hist-table { width: 100%; border-collapse: collapse; font-size: .76rem; }
-.pjm-hist-table thead tr { background: linear-gradient(135deg,#4c1d95,#7c3aed); }
-.pjm-hist-table thead th { color: #fff; padding: .6rem .85rem; text-align: left; font-weight: 600; font-size: .7rem; white-space: nowrap; }
-.pjm-hist-table tbody tr { border-bottom: 1px solid #f1f5f9; transition: background .12s; }
-.pjm-hist-table tbody tr:last-child { border-bottom: none; }
-.pjm-hist-table tbody tr:hover { background: #fafbff; }
-.pjm-hist-table tbody tr.pjm-hist-row--active { background: #fffbeb; }
-.pjm-hist-table tbody tr.pjm-hist-row--active:hover { background: #fef3c7; }
-.pjm-hist-table tbody td { padding: .6rem .85rem; vertical-align: middle; }
-.pjm-hist-num { font-family: "Courier New",monospace; font-size: .68rem; font-weight: 700; color: var(--slate-4); text-align: center; }
-.pjm-hist-user { display: flex; align-items: center; gap: 6px; }
-.pjm-hist-av { width: 22px; height: 22px; border-radius: 50%; background: #dbeafe; color: #2563eb; font-weight: 700; font-size: .72rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.pjm-hist-uname { font-size: .75rem; font-weight: 600; color: #1e293b; white-space: nowrap; }
-.pjm-hist-ubranch { font-size: .67rem; color: var(--slate-6); }
-.pjm-hist-loc { display: flex; align-items: center; gap: 3px; font-size: .73rem; white-space: nowrap; }
-.pjm-hist-loc-from { color: var(--slate-6); }
-.pjm-hist-loc-arr { color: var(--slate-4); display: flex; }
-.pjm-hist-loc-to { color: var(--blue); font-weight: 600; }
-.pjm-hist-date { font-size: .73rem; color: var(--slate-6); white-space: nowrap; }
-.pjm-hist-date-ret { color: var(--green); font-weight: 600; }
-.pjm-hist-no-ret { color: var(--warn); font-weight: 600; font-size: .71rem; }
-.pjm-hist-cond { display: inline-flex; align-items: center; padding: 1px 7px; border-radius: 20px; font-size: .68rem; font-weight: 700; white-space: nowrap; }
-.pjm-hist-status { display: inline-flex; align-items: center; padding: 1px 7px; border-radius: 20px; font-size: .67rem; font-weight: 700; white-space: nowrap; text-transform: uppercase; letter-spacing: .4px; }
-.pjm-hist-status--done { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
-.pjm-hist-status--active { background: #fef9c3; color: #92400e; border: 1px solid #fde68a; }
-.pjm-hist-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 2.5rem 1rem; color: var(--slate-4); text-align: center; }
-.pjm-hist-empty-title { font-size: .85rem; font-weight: 700; color: #475569; }
-.pjm-hist-empty-sub { font-size: .77rem; }
-
-/* Pekerjaan info box */
-.pjm-pkj-info-box { display: flex; align-items: flex-start; gap: .5rem; padding: .55rem .85rem; background: #ecfeff; border: 1px solid #a5f3fc; border-radius: 9px; }
-.pjm-pkj-info-lbl { font-size: .63rem; font-weight: 800; color: #0891b2; text-transform: uppercase; letter-spacing: .04em; }
-.pjm-pkj-info-name { font-size: .77rem; font-weight: 600; color: #0e7490; line-height: 1.4; }
-.pjm-pkj-info-meta { font-size: .67rem; color: #0891b2; margin-top: 2px; }
-`;
-
-// ─── ACTION DROPDOWN — FIXED POSITION (menghindari overflow:hidden terpotong) ──
-function ActionDropdown({ id, activeId, setActiveId, items }) {
-  const btnRef = useRef(null);
-  const dropRef = useRef(null);
-  const [pos, setPos] = useState({ top: 0, right: 0 });
-
-  // Tutup dropdown saat klik di luar
-  useEffect(() => {
-    if (activeId !== id) return;
-    const handler = (e) => {
-      const clickedBtn = btnRef.current && btnRef.current.contains(e.target);
-      const clickedDrop = dropRef.current && dropRef.current.contains(e.target);
-      if (!clickedBtn && !clickedDrop) {
-        setActiveId(null);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [activeId, id, setActiveId]);
-
-  // Tutup dropdown saat scroll
-  useEffect(() => {
-    if (activeId !== id) return;
-    const handler = () => setActiveId(null);
-    window.addEventListener("scroll", handler, true);
-    return () => window.removeEventListener("scroll", handler, true);
-  }, [activeId, id, setActiveId]);
-
-  const isOpen = activeId === id;
-
-  const handleToggle = (e) => {
-    e.stopPropagation();
-    if (!isOpen && btnRef.current) {
-      const rect = btnRef.current.getBoundingClientRect();
-      setPos({
-        top: rect.bottom + 4,
-        right: window.innerWidth - rect.right,
-      });
-      setActiveId(id);
-    } else {
-      setActiveId(null);
-    }
-  };
-
+// ── Section title with blue styling ──────────────────────────
+function SectionTitle({ n, label, active }) {
   return (
-    <div className="pjm-action-wrap">
-      <button ref={btnRef} className="pjm-dot-btn" onClick={handleToggle}>
-        <Icon.Dots />
-      </button>
-      {isOpen && (
-        <div
-          ref={dropRef}
-          className="pjm-dot-dropdown-fixed"
-          style={{ top: pos.top, right: pos.right }}
-        >
-          {items.map((item, idx) => {
-            if (item.type === "divider") return <hr key={idx} />;
-            return (
-              <button
-                key={idx}
-                className={item.className || ""}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  item.onClick();
-                  setActiveId(null);
-                }}
-              >
-                {item.icon}
-                {item.label}
-              </button>
-            );
-          })}
-        </div>
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        marginBottom: 10,
+      }}
+    >
+      <span
+        style={{
+          width: 18,
+          height: 18,
+          borderRadius: "50%",
+          background: active ? "#2563eb" : "#cbd5e1",
+          color: "#fff",
+          fontSize: ".6rem",
+          fontWeight: 800,
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {n}
+      </span>
+      <span
+        style={{
+          fontSize: ".68rem",
+          fontWeight: 800,
+          textTransform: "uppercase",
+          letterSpacing: ".06em",
+          color: active ? "#1d4ed8" : "#94a3b8",
+        }}
+      >
+        {label}
+      </span>
+      {active && (
+        <span
+          style={{ flex: 1, height: 1, background: "#bfdbfe", marginLeft: 4 }}
+        />
       )}
     </div>
   );
 }
 
-// ─── SEARCHABLE COMBOBOX ───────────────────────────────────────
+// ── Horizontal field row (label : value) ──────────────────────
+function HRow({ label, children, last }) {
+  return (
+    <div style={{ ...S.hRow, ...(last ? S.hRowLast : {}) }}>
+      <span style={S.hLbl}>{label}</span>
+      <span style={S.hColon}>:</span>
+      <span style={S.hVal}>{children}</span>
+    </div>
+  );
+}
+
+// ── Horizontal form field row (label : input) ─────────────────
+function FHRow({ label, required, children, last }) {
+  return (
+    <div style={{ ...S.fhRow, ...(last ? { borderBottom: "none" } : {}) }}>
+      <span style={S.fhLbl}>
+        {label}
+        {required && <span style={{ color: "#dc2626", marginLeft: 2 }}>*</span>}
+      </span>
+      <span style={S.fhColon}>:</span>
+      <div style={S.fhCtrl}>{children}</div>
+    </div>
+  );
+}
+
+// Searchable Combobox
 function SearchCombobox({
   options,
   value,
@@ -1426,23 +1712,36 @@ function SearchCombobox({
   const selected = options.find((o) => String(o.value) === String(value));
   return (
     <div
-      className="pjm-combo"
+      style={S.comboWrap}
       ref={ref}
-      style={disabled ? { opacity: 0.55, pointerEvents: "none" } : {}}
+      {...(disabled
+        ? { style: { ...S.comboWrap, opacity: 0.55, pointerEvents: "none" } }
+        : {})}
     >
       <div
-        className={`pjm-combo-input-wrap ${open ? "open" : ""} ${hasError ? "pjm-err-border" : ""}`}
+        style={{
+          ...S.comboInput,
+          ...(hasError ? { borderColor: "#dc2626" } : {}),
+        }}
         onClick={() => !disabled && setOpen(!open)}
       >
-        <span style={{ color: "var(--slate-4)", display: "flex" }}>
+        <span style={{ color: "#94a3b8", display: "flex" }}>
           <Icon.Search />
         </span>
         {selected ? (
           <>
-            <span className="pjm-combo-selected-tag">
+            <span style={S.comboTag}>
               {renderLabel(selected)}
               <button
                 type="button"
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "#2563eb",
+                  padding: 0,
+                  display: "flex",
+                }}
                 onClick={(e) => {
                   e.stopPropagation();
                   onChange("");
@@ -1455,10 +1754,9 @@ function SearchCombobox({
             {renderSub && (
               <span
                 style={{
-                  fontSize: ".69rem",
+                  fontSize: ".68rem",
                   color: "#94a3b8",
                   marginLeft: "auto",
-                  paddingRight: "4px",
                 }}
               >
                 {renderSub(selected)}
@@ -1477,17 +1775,37 @@ function SearchCombobox({
               e.stopPropagation();
               setOpen(true);
             }}
+            style={{
+              border: "none",
+              outline: "none",
+              fontSize: ".78rem",
+              flex: 1,
+              background: "#fff",
+              color: "#0f172a",
+              fontFamily: "inherit",
+            }}
           />
         )}
-        <span className={`pjm-combo-arrow ${open ? "open" : ""}`}>
+        <span style={{ color: "#94a3b8", display: "flex", flexShrink: 0 }}>
           <Icon.ChevronDown />
         </span>
       </div>
       {open && (
-        <div className="pjm-combo-dropdown">
+        <div style={S.comboDropdown}>
           {selected && (
-            <div className="pjm-combo-search-box">
-              <span style={{ color: "var(--slate-4)", display: "flex" }}>
+            <div
+              style={{
+                padding: ".4rem .65rem",
+                borderBottom: "1px solid #e2e8f0",
+                display: "flex",
+                alignItems: "center",
+                gap: ".4rem",
+                position: "sticky",
+                top: 0,
+                background: "#fff",
+              }}
+            >
+              <span style={{ color: "#94a3b8", display: "flex" }}>
                 <Icon.Search />
               </span>
               <input
@@ -1495,11 +1813,25 @@ function SearchCombobox({
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Ketik untuk mencari..."
+                style={{
+                  border: "none",
+                  outline: "none",
+                  fontSize: ".78rem",
+                  flex: 1,
+                  fontFamily: "inherit",
+                }}
               />
             </div>
           )}
           {filtered.length === 0 ? (
-            <div className="pjm-combo-empty">
+            <div
+              style={{
+                padding: ".85rem",
+                textAlign: "center",
+                fontSize: ".77rem",
+                color: "#94a3b8",
+              }}
+            >
               Tidak ada hasil untuk "{query}"
             </div>
           ) : (
@@ -1507,7 +1839,16 @@ function SearchCombobox({
               <button
                 key={o.value}
                 type="button"
-                className={`pjm-combo-item ${String(o.value) === String(value) ? "selected" : ""} ${o.disabled ? "pjm-combo-item--disabled" : ""}`}
+                style={{
+                  ...S.comboItem,
+                  ...(String(o.value) === String(value)
+                    ? {
+                        background: "#eff6ff",
+                        color: "#2563eb",
+                        fontWeight: 600,
+                      }
+                    : {}),
+                }}
                 onClick={() => {
                   if (!o.disabled) {
                     onChange(o.value);
@@ -1518,7 +1859,15 @@ function SearchCombobox({
               >
                 <span style={{ flex: 1 }}>{renderLabel(o)}</span>
                 {renderSub && (
-                  <span className="pjm-combo-item-sub">{renderSub(o)}</span>
+                  <span
+                    style={{
+                      fontSize: ".68rem",
+                      color: "#94a3b8",
+                      marginLeft: "auto",
+                    }}
+                  >
+                    {renderSub(o)}
+                  </span>
                 )}
               </button>
             ))
@@ -1529,7 +1878,238 @@ function SearchCombobox({
   );
 }
 
-// ─── PDF UPLOAD ────────────────────────────────────────────────
+// PekerjaanSelector
+function PekerjaanSelector({ value, onChange, error }) {
+  const [search, setSearch] = useState("");
+  const selected = mockPekerjaan.find((p) => p.kode === value);
+  const filtered = mockPekerjaan.filter(
+    (p) =>
+      p.nama.toLowerCase().includes(search.toLowerCase()) ||
+      p.no_anggaran.includes(search) ||
+      p.kode.toLowerCase().includes(search.toLowerCase()),
+  );
+  const getAssetCount = (kode) =>
+    mockAssets.filter((a) => a.pekerjaan_kode === kode).length;
+  if (selected) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "flex-start",
+          gap: ".6rem",
+          padding: ".6rem .85rem",
+          border: "1.5px solid #2563eb",
+          borderRadius: 9,
+          background: "#eff6ff",
+        }}
+      >
+        <span
+          style={{
+            color: "#0891b2",
+            display: "flex",
+            marginTop: 2,
+            flexShrink: 0,
+          }}
+        >
+          <Icon.Briefcase />
+        </span>
+        <div style={{ flex: 1 }}>
+          <div
+            style={{
+              fontSize: ".77rem",
+              fontWeight: 600,
+              color: "#1d4ed8",
+              lineHeight: 1.4,
+            }}
+          >
+            {selected.nama}
+          </div>
+          <div
+            style={{
+              fontSize: ".68rem",
+              color: "#64748b",
+              marginTop: 3,
+              display: "flex",
+              gap: 7,
+            }}
+          >
+            <span style={{ fontWeight: 700, color: "#0891b2" }}>
+              {selected.no_anggaran}
+            </span>
+            <span>·</span>
+            <span
+              style={{
+                background: "#fef3c7",
+                color: "#d97706",
+                border: "1px solid #fcd34d",
+                borderRadius: 4,
+                padding: "1px 5px",
+                fontSize: ".63rem",
+                fontWeight: 700,
+              }}
+            >
+              {selected.jenis}
+            </span>
+            <span>·</span>
+            <span>{getAssetCount(selected.kode)} aset</span>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => onChange("")}
+          style={{
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            color: "#2563eb",
+            fontSize: ".7rem",
+            fontWeight: 700,
+            padding: "2px 5px",
+            borderRadius: 4,
+            fontFamily: "inherit",
+          }}
+        >
+          Ganti
+        </button>
+      </div>
+    );
+  }
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: ".35rem" }}>
+      <div style={S.searchWrap}>
+        <Icon.Search />
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Cari nama pekerjaan atau nomor anggaran..."
+          style={S.searchInput}
+        />
+        {search && (
+          <button
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              color: "#94a3b8",
+              padding: 0,
+              display: "flex",
+            }}
+            onClick={() => setSearch("")}
+          >
+            <Icon.Times />
+          </button>
+        )}
+      </div>
+      {error && <span style={S.ferr}>{error}</span>}
+      <div style={S.pkjList}>
+        {filtered.length === 0 ? (
+          <div
+            style={{
+              textAlign: "center",
+              padding: "1rem",
+              color: "#94a3b8",
+              fontSize: ".77rem",
+            }}
+          >
+            Tidak ada pekerjaan ditemukan
+          </div>
+        ) : (
+          filtered.map((p) => {
+            const cnt = getAssetCount(p.kode);
+            return (
+              <button
+                key={p.kode}
+                type="button"
+                style={{
+                  ...S.pkjItem,
+                  ...(value === p.kode ? S.pkjItemActive : {}),
+                }}
+                onClick={() => onChange(p.kode)}
+              >
+                <span
+                  style={{
+                    fontSize: ".65rem",
+                    fontWeight: 800,
+                    color: "#0891b2",
+                    background: "#ecfeff",
+                    border: "1px solid #a5f3fc",
+                    borderRadius: 4,
+                    padding: "1px 6px",
+                    whiteSpace: "nowrap",
+                    flexShrink: 0,
+                    marginTop: 2,
+                  }}
+                >
+                  {p.no_anggaran}
+                </span>
+                <span
+                  style={{
+                    fontSize: ".63rem",
+                    fontWeight: 700,
+                    background: "#fef3c7",
+                    color: "#d97706",
+                    border: "1px solid #fcd34d",
+                    borderRadius: 4,
+                    padding: "1px 5px",
+                    whiteSpace: "nowrap",
+                    flexShrink: 0,
+                    marginTop: 2,
+                  }}
+                >
+                  {p.jenis}
+                </span>
+                <span
+                  style={{
+                    fontSize: ".77rem",
+                    fontWeight: 600,
+                    color: value === p.kode ? "#1d4ed8" : "#0f172a",
+                    lineHeight: 1.4,
+                    flex: 1,
+                  }}
+                >
+                  {p.nama}
+                </span>
+                <span
+                  style={{
+                    fontSize: ".63rem",
+                    fontWeight: 700,
+                    background: "#f1f5f9",
+                    color: "#64748b",
+                    border: "1px solid #e2e8f0",
+                    padding: "1px 5px",
+                    borderRadius: 99,
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {cnt}
+                </span>
+                {value === p.kode && (
+                  <span
+                    style={{
+                      width: 15,
+                      height: 15,
+                      borderRadius: "50%",
+                      background: "#2563eb",
+                      color: "#fff",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <Icon.Check />
+                  </span>
+                )}
+              </button>
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
+}
+
+// PdfUpload
 function PdfUpload({ value, onChange }) {
   const [drag, setDrag] = useState(false);
   const inputRef = useRef(null);
@@ -1546,10 +2126,10 @@ function PdfUpload({ value, onChange }) {
       ? (b / 1024).toFixed(1) + " KB"
       : (b / (1024 * 1024)).toFixed(1) + " MB";
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: ".28rem" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: ".25rem" }}>
       <label
         style={{
-          fontSize: ".75rem",
+          fontSize: ".73rem",
           fontWeight: 600,
           color: "#475569",
           display: "flex",
@@ -1557,38 +2137,55 @@ function PdfUpload({ value, onChange }) {
           gap: 4,
         }}
       >
-        <Icon.Paperclip /> Lampiran BAST (PDF) &nbsp;
-        <span
-          style={{
-            fontSize: ".67rem",
-            color: "var(--slate-4)",
-            fontWeight: 400,
-          }}
-        >
+        <Icon.Paperclip /> Lampiran BAST (PDF){" "}
+        <span style={{ fontSize: ".66rem", color: "#94a3b8", fontWeight: 400 }}>
           — Opsional
         </span>
       </label>
       {value ? (
-        <div className="pjm-file-preview">
-          <span style={{ color: "var(--blue)", display: "flex" }}>
+        <div style={S.filePreview}>
+          <span style={{ color: "#2563eb", display: "flex" }}>
             <Icon.FileText />
           </span>
-          <span className="pjm-file-preview-name">{value.name}</span>
+          <span
+            style={{
+              fontSize: ".77rem",
+              fontWeight: 600,
+              color: "#2563eb",
+              flex: 1,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {value.name}
+          </span>
           {value.size && (
-            <span className="pjm-file-preview-size">{fmtSize(value.size)}</span>
+            <span style={{ fontSize: ".68rem", color: "#64748b" }}>
+              {fmtSize(value.size)}
+            </span>
           )}
           <button
             type="button"
-            className="pjm-file-preview-del"
-            title="Hapus"
             onClick={() => onChange(null)}
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              color: "#94a3b8",
+              padding: 0,
+              display: "flex",
+            }}
           >
             <Icon.Times />
           </button>
         </div>
       ) : (
         <div
-          className={`pjm-file-zone ${drag ? "drag" : ""}`}
+          style={{
+            ...S.fileZone,
+            ...(drag ? { borderColor: "#2563eb", background: "#eff6ff" } : {}),
+          }}
           onDragOver={(e) => {
             e.preventDefault();
             setDrag(true);
@@ -1608,200 +2205,585 @@ function PdfUpload({ value, onChange }) {
             style={{ display: "none" }}
             onChange={(e) => handleFile(e.target.files[0])}
           />
-          <span className="pjm-file-zone-ico">
+          <span style={{ color: "#2563eb" }}>
             <Icon.Upload />
           </span>
-          <span className="pjm-file-zone-txt">Klik atau drag & drop PDF</span>
-          <span className="pjm-file-zone-sub">Maks. 10 MB</span>
+          <span
+            style={{ fontSize: ".76rem", fontWeight: 600, color: "#2563eb" }}
+          >
+            Klik atau drag & drop PDF
+          </span>
+          <span style={{ fontSize: ".68rem", color: "#94a3b8" }}>
+            Maks. 10 MB
+          </span>
         </div>
       )}
     </div>
   );
 }
 
-// ─── USER FLOW CELL ────────────────────────────────────────────
-function UserFlowCell({ giverId, receiverId, colorScheme = "blue" }) {
-  const giver = getUser(giverId);
-  const receiver = getUser(receiverId);
-  return (
-    <div className="pjm-user-flow">
-      <div className="pjm-user-mini">
-        <div
-          className="pjm-user-mini-av"
-          style={{ background: "#fef3c7", color: "#d97706" }}
-        >
-          {giver.name.charAt(0)}
-        </div>
-        <div style={{ minWidth: 0 }}>
-          <div className="pjm-user-mini-name">{giver.name}</div>
-          <div style={{ fontSize: ".63rem", color: "#94a3b8" }}>Pemberi</div>
-        </div>
-      </div>
-      <span className="pjm-user-flow-arr">
-        <Icon.ArrowRight />
-      </span>
-      <div className="pjm-user-mini">
-        <div
-          className="pjm-user-mini-av"
-          style={{
-            background: colorScheme === "green" ? "#dcfce7" : "#dbeafe",
-            color: colorScheme === "green" ? "#16a34a" : "#2563eb",
-          }}
-        >
-          {receiver.name.charAt(0)}
-        </div>
-        <div style={{ minWidth: 0 }}>
-          <div className="pjm-user-mini-name">{receiver.name}</div>
-          <div style={{ fontSize: ".63rem", color: "#94a3b8" }}>Penerima</div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── PEKERJAAN SELECTOR ────────────────────────────────────────
-function PekerjaanSelector({ value, onChange, error }) {
-  const [search, setSearch] = useState("");
-  const selected = mockPekerjaan.find((p) => p.kode === value);
-  const filtered = mockPekerjaan.filter(
-    (p) =>
-      p.nama.toLowerCase().includes(search.toLowerCase()) ||
-      p.no_anggaran.includes(search) ||
-      p.kode.toLowerCase().includes(search.toLowerCase()),
-  );
-  const getAssetCount = (kode) =>
-    mockAssets.filter((a) => a.pekerjaan_kode === kode).length;
-
-  if (selected) {
-    return (
-      <div className="pjm-pkj-selected-card">
-        <span
-          style={{
-            color: "#0891b2",
-            display: "flex",
-            marginTop: 2,
-            flexShrink: 0,
-          }}
-        >
-          <Icon.Briefcase />
-        </span>
-        <div className="pjm-pkj-selected-info">
-          <div className="pjm-pkj-selected-name">{selected.nama}</div>
-          <div className="pjm-pkj-selected-meta">
-            <span style={{ fontWeight: 700, color: "#0891b2" }}>
-              {selected.no_anggaran}
-            </span>
-            <span>·</span>
-            <span
-              className={`pjm-pkj-jenis pjm-pkj-jenis--${selected.jenis.toLowerCase()}`}
-            >
-              {selected.jenis}
-            </span>
-            <span>·</span>
-            <span>{getAssetCount(selected.kode)} aset</span>
-          </div>
-        </div>
-        <button
-          type="button"
-          className="pjm-pkj-change-btn"
-          onClick={() => onChange("")}
-        >
-          Ganti
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: ".4rem" }}>
-      <div className="pjm-search-wrap" style={{ minWidth: "unset" }}>
-        <Icon.Search />
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Cari nama pekerjaan atau nomor anggaran..."
-          style={{
-            border: "none",
-            outline: "none",
-            fontSize: ".78rem",
-            flex: 1,
-            background: "transparent",
-            fontFamily: "inherit",
-          }}
-        />
-        {search && (
-          <button
-            style={{
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              color: "var(--slate-4)",
-              padding: 0,
-              display: "flex",
-            }}
-            onClick={() => setSearch("")}
-          >
-            <Icon.Times />
-          </button>
-        )}
-      </div>
-      {error && <span className="pjm-ferr">{error}</span>}
-      <div className="pjm-pkj-list">
-        {filtered.length === 0 ? (
-          <div
-            style={{
-              textAlign: "center",
-              padding: "1.2rem",
-              color: "var(--slate-4)",
-              fontSize: ".78rem",
-            }}
-          >
-            Tidak ada pekerjaan ditemukan
-          </div>
-        ) : (
-          filtered.map((p) => {
-            const cnt = getAssetCount(p.kode);
-            return (
-              <button
-                key={p.kode}
-                type="button"
-                className={`pjm-pkj-item ${value === p.kode ? "pjm-pkj-item--active" : ""}`}
-                onClick={() => onChange(p.kode)}
-              >
-                <span className="pjm-pkj-no">{p.no_anggaran}</span>
-                <span
-                  className={`pjm-pkj-jenis pjm-pkj-jenis--${p.jenis.toLowerCase()}`}
-                >
-                  {p.jenis}
-                </span>
-                <span
-                  className={`pjm-pkj-nama ${value === p.kode ? "pjm-pkj-nama-active" : ""}`}
-                >
-                  {p.nama}
-                </span>
-                <span className="pjm-pkj-aset-cnt">{cnt}</span>
-                {value === p.kode && (
-                  <span className="pjm-pkj-check">
-                    <Icon.Check />
-                  </span>
-                )}
-              </button>
-            );
-          })
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ─── ASSET HISTORY MODAL ──────────────────────────────────────
-function AssetHistoryModal({
-  assetCode,
-  assetName,
+// ─── PAGE: BORROW DETAIL ──────────────────────────────────────
+function BorrowDetailPage({
+  item,
   borrows,
   returns,
-  onClose,
+  onBack,
+  onEdit,
+  onReturn,
+  onViewHistory,
 }) {
+  if (!item) return null;
+  const giver = getUser(item.giver_id);
+  const receiver = getUser(item.receiver_id);
+  const performer = getUser(item.performed_by_id);
+  const cond = conditionConfig[item.condition];
+  const over = isOverdue(item.due_date);
+  const cat = assetCategories[getCategory(item.code)];
+  const pekerjaan = getPekerjaan(item.pekerjaan_kode);
+  const histCount = [
+    ...borrows.filter((b) => b.code === item.code),
+    ...returns.filter((r) => r.code === item.code),
+  ].length;
+  return (
+    <div>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          marginBottom: "1rem",
+          flexWrap: "wrap",
+        }}
+      >
+        <button style={S.backBtn} onClick={onBack}>
+          <Icon.ArrowLeft /> Kembali
+        </button>
+        <span style={{ fontSize: ".75rem", color: "#94a3b8" }}>
+          / Detail Serah Terima
+        </span>
+      </div>
+      <div style={S.page}>
+        <div style={{ ...S.pageHeader, borderTop: "3px solid #2563eb" }}>
+          <div style={S.pageTitle}>
+            <span
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: 7,
+                background: "#eff6ff",
+                color: "#2563eb",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Icon.Exchange />
+            </span>
+            Detail Serah Terima
+            {over && <span style={S.overduePill}>⚠ Terlambat</span>}
+          </div>
+          <div style={{ display: "flex", gap: 6 }}>
+            <button
+              style={{
+                ...S.btnGhost,
+                color: "#7c3aed",
+                borderColor: "#c4b5fd",
+              }}
+              onClick={() => onViewHistory(item)}
+            >
+              <Icon.History /> Riwayat ({histCount})
+            </button>
+            <button
+              style={{
+                ...S.btnGhost,
+                color: "#7c3aed",
+                borderColor: "#c4b5fd",
+              }}
+              onClick={() => generateBAST(item, "borrow")}
+            >
+              <Icon.Printer /> BAST
+            </button>
+            <button style={S.btnGhost} onClick={() => onEdit(item)}>
+              <Icon.Edit /> Edit
+            </button>
+            <button style={S.btnGreen} onClick={() => onReturn(item)}>
+              <Icon.Undo /> Catat Kembali
+            </button>
+          </div>
+        </div>
+        {pekerjaan && (
+          <div
+            style={{
+              padding: "1rem 1.25rem",
+              borderBottom: "1px solid #f1f5f9",
+            }}
+          >
+            <div style={S.sectionLabel}>Pekerjaan / Anggaran</div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "flex-start",
+                gap: ".5rem",
+                padding: ".6rem .9rem",
+                background: "#ecfeff",
+                border: "1px solid #a5f3fc",
+                borderRadius: 9,
+              }}
+            >
+              <span style={{ color: "#0891b2", display: "flex", marginTop: 2 }}>
+                <Icon.Briefcase />
+              </span>
+              <div>
+                <div style={S.pkjInfoName}>{pekerjaan.nama}</div>
+                <div style={S.pkjInfoMeta}>
+                  {pekerjaan.no_anggaran} · {pekerjaan.jenis}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        <div
+          style={{ padding: "1rem 1.25rem", borderBottom: "1px solid #f1f5f9" }}
+        >
+          <div style={S.sectionLabel}>Informasi Aset</div>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: ".75rem",
+              padding: ".75rem .9rem",
+              background: "#f8fafc",
+              border: "1px solid #e2e8f0",
+              borderRadius: 9,
+            }}
+          >
+            <div
+              style={{
+                ...S.catIco,
+                background: cat.bg,
+                color: cat.color,
+                width: 34,
+                height: 34,
+                borderRadius: 9,
+              }}
+            >
+              {cat.icon}
+            </div>
+            <div>
+              <code style={S.code}>{item.code}</code>
+              <div style={{ ...S.assetName, fontSize: ".85rem", marginTop: 3 }}>
+                {item.name}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          style={{ padding: "1rem 1.25rem", borderBottom: "1px solid #f1f5f9" }}
+        >
+          <div style={S.sectionLabel}>Detail Transaksi</div>
+          <HRow label="Tanggal Serah Terima">{fmtDT(item.borrow_date)}</HRow>
+          <HRow label="Jatuh Tempo">
+            <span
+              style={{ fontWeight: 700, color: over ? "#dc2626" : "#0f172a" }}
+            >
+              {fmtDate(item.due_date)}
+            </span>
+          </HRow>
+          <HRow label="Dari Lokasi">{item.from_zone}</HRow>
+          <HRow label="Ke Lokasi">
+            <span style={{ color: "#2563eb", fontWeight: 600 }}>
+              {item.to_zone}
+            </span>
+          </HRow>
+          <HRow label="Kondisi Aset">
+            {cond && (
+              <span
+                style={{ ...S.pill, background: cond.bg, color: cond.color }}
+              >
+                {cond.label}
+              </span>
+            )}
+          </HRow>
+          <HRow label="Nomor BAST">
+            <span
+              style={{
+                fontFamily: "monospace",
+                fontSize: ".75rem",
+                color: "#7c3aed",
+              }}
+            >
+              {genNomorBAST(item.id, item.borrow_date)}
+            </span>
+          </HRow>
+          {item.reason && <HRow label="Alasan / Keperluan">{item.reason}</HRow>}
+          {item.notes && <HRow label="Catatan">{item.notes}</HRow>}
+          {item.attachment && (
+            <HRow label="Lampiran" last>
+              <span
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 5,
+                  color: "#2563eb",
+                }}
+              >
+                <Icon.Paperclip />
+                {item.attachment}
+              </span>
+            </HRow>
+          )}
+        </div>
+        <div style={{ padding: "1rem 1.25rem" }}>
+          <div style={S.sectionLabel}>Pihak yang Terlibat</div>
+          <table style={{ ...S.table, marginTop: 8 }}>
+            <thead style={S.thead}>
+              <tr>
+                <th style={S.th}>Peran</th>
+                <th style={S.th}>Nama</th>
+                <th style={S.th}>Jabatan</th>
+                <th style={S.th}>Cabang</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                {
+                  peran: "Pemberi / Penyerah",
+                  user: giver,
+                  bg: "#fef3c7",
+                  color: "#d97706",
+                },
+                {
+                  peran: "Penerima",
+                  user: receiver,
+                  bg: "#dbeafe",
+                  color: "#2563eb",
+                },
+                {
+                  peran: "Dicatat oleh (Admin IT)",
+                  user: performer,
+                  bg: "#ede9fe",
+                  color: "#7c3aed",
+                },
+              ].map((p) => (
+                <tr key={p.peran} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                  <td style={{ ...S.td, fontSize: ".74rem", color: "#64748b" }}>
+                    {p.peran}
+                  </td>
+                  <td style={S.td}>
+                    <div
+                      style={{ display: "flex", alignItems: "center", gap: 7 }}
+                    >
+                      <div
+                        style={{
+                          ...S.avatar,
+                          background: p.bg,
+                          color: p.color,
+                        }}
+                      >
+                        {p.user.name.charAt(0)}
+                      </div>
+                      <span
+                        style={{
+                          fontSize: ".78rem",
+                          fontWeight: 600,
+                          color: "#0f172a",
+                        }}
+                      >
+                        {p.user.name}
+                      </span>
+                    </div>
+                  </td>
+                  <td style={{ ...S.td, fontSize: ".74rem", color: "#64748b" }}>
+                    {p.user.jabatan}
+                  </td>
+                  <td style={{ ...S.td, fontSize: ".74rem", color: "#64748b" }}>
+                    {p.user.branch}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── PAGE: RETURN DETAIL ──────────────────────────────────────
+function ReturnDetailPage({ item, borrows, returns, onBack, onViewHistory }) {
+  if (!item) return null;
+  const giver = getUser(item.giver_id);
+  const receiver = getUser(item.receiver_id);
+  const performer = getUser(item.performed_by_id);
+  const cond = conditionConfig[item.return_condition];
+  const pekerjaan = getPekerjaan(item.pekerjaan_kode);
+  const histCount = [
+    ...borrows.filter((b) => b.code === item.code),
+    ...returns.filter((r) => r.code === item.code),
+  ].length;
+  const cat = assetCategories[getCategory(item.code)];
+  return (
+    <div>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          marginBottom: "1rem",
+          flexWrap: "wrap",
+        }}
+      >
+        <button style={S.backBtn} onClick={onBack}>
+          <Icon.ArrowLeft /> Kembali
+        </button>
+        <span style={{ fontSize: ".75rem", color: "#94a3b8" }}>
+          / Detail Pengembalian
+        </span>
+      </div>
+      <div style={S.page}>
+        <div style={{ ...S.pageHeader, borderTop: "3px solid #16a34a" }}>
+          <div style={S.pageTitle}>
+            <span
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: 7,
+                background: "#dcfce7",
+                color: "#16a34a",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Icon.CheckCircle />
+            </span>
+            Detail Pengembalian
+          </div>
+          <div style={{ display: "flex", gap: 6 }}>
+            <button
+              style={{
+                ...S.btnGhost,
+                color: "#7c3aed",
+                borderColor: "#c4b5fd",
+              }}
+              onClick={() => onViewHistory(item)}
+            >
+              <Icon.History /> Riwayat ({histCount})
+            </button>
+            <button
+              style={{
+                ...S.btnGhost,
+                color: "#7c3aed",
+                borderColor: "#c4b5fd",
+              }}
+              onClick={() => generateBAST(item, "return")}
+            >
+              <Icon.Printer /> BAST
+            </button>
+          </div>
+        </div>
+        {pekerjaan && (
+          <div
+            style={{
+              padding: "1rem 1.25rem",
+              borderBottom: "1px solid #f1f5f9",
+            }}
+          >
+            <div style={S.sectionLabel}>Pekerjaan / Anggaran</div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "flex-start",
+                gap: ".5rem",
+                padding: ".6rem .9rem",
+                background: "#ecfeff",
+                border: "1px solid #a5f3fc",
+                borderRadius: 9,
+              }}
+            >
+              <span style={{ color: "#0891b2", display: "flex", marginTop: 2 }}>
+                <Icon.Briefcase />
+              </span>
+              <div>
+                <div style={S.pkjInfoName}>{pekerjaan.nama}</div>
+                <div style={S.pkjInfoMeta}>
+                  {pekerjaan.no_anggaran} · {pekerjaan.jenis}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        <div
+          style={{ padding: "1rem 1.25rem", borderBottom: "1px solid #f1f5f9" }}
+        >
+          <div style={S.sectionLabel}>Informasi Aset</div>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: ".75rem",
+              padding: ".75rem .9rem",
+              background: "#f8fafc",
+              border: "1px solid #e2e8f0",
+              borderRadius: 9,
+            }}
+          >
+            <div
+              style={{
+                ...S.catIco,
+                background: cat.bg,
+                color: cat.color,
+                width: 34,
+                height: 34,
+                borderRadius: 9,
+              }}
+            >
+              {cat.icon}
+            </div>
+            <div>
+              <code style={S.code}>{item.code}</code>
+              <div style={{ ...S.assetName, fontSize: ".85rem", marginTop: 3 }}>
+                {item.name}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          style={{ padding: "1rem 1.25rem", borderBottom: "1px solid #f1f5f9" }}
+        >
+          <div style={S.sectionLabel}>Detail Transaksi</div>
+          <HRow label="Tanggal Dipinjam">{fmtDT(item.borrow_date)}</HRow>
+          <HRow label="Tanggal Dikembalikan">
+            <span style={{ color: "#16a34a", fontWeight: 600 }}>
+              {fmtDT(item.return_date)}
+            </span>
+          </HRow>
+          <HRow label="Dari Lokasi">{item.from_zone}</HRow>
+          <HRow label="Ke Lokasi">
+            <span style={{ color: "#2563eb", fontWeight: 600 }}>
+              {item.to_zone}
+            </span>
+          </HRow>
+          <HRow label="Kondisi Dikembalikan">
+            {cond && (
+              <span
+                style={{ ...S.pill, background: cond.bg, color: cond.color }}
+              >
+                {cond.label}
+              </span>
+            )}
+          </HRow>
+          <HRow label="Nomor BAST">
+            <span
+              style={{
+                fontFamily: "monospace",
+                fontSize: ".75rem",
+                color: "#7c3aed",
+              }}
+            >
+              {genNomorBAST(item.id, item.borrow_date)}
+            </span>
+          </HRow>
+          {item.reason && (
+            <HRow label="Alasan / Keperluan Awal">{item.reason}</HRow>
+          )}
+          {item.return_notes && (
+            <HRow label="Catatan Pengembalian">{item.return_notes}</HRow>
+          )}
+          {item.attachment && (
+            <HRow label="Lampiran" last>
+              <span
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 5,
+                  color: "#2563eb",
+                }}
+              >
+                <Icon.Paperclip />
+                {item.attachment}
+              </span>
+            </HRow>
+          )}
+        </div>
+        <div style={{ padding: "1rem 1.25rem" }}>
+          <div style={S.sectionLabel}>Pihak yang Terlibat</div>
+          <table style={{ ...S.table, marginTop: 8 }}>
+            <thead style={S.thead}>
+              <tr>
+                <th style={S.th}>Peran</th>
+                <th style={S.th}>Nama</th>
+                <th style={S.th}>Jabatan</th>
+                <th style={S.th}>Cabang</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                {
+                  peran: "Pemberi / Penyerah",
+                  user: giver,
+                  bg: "#fef3c7",
+                  color: "#d97706",
+                },
+                {
+                  peran: "Penerima",
+                  user: receiver,
+                  bg: "#dbeafe",
+                  color: "#2563eb",
+                },
+                {
+                  peran: "Dicatat oleh (Admin IT)",
+                  user: performer,
+                  bg: "#ede9fe",
+                  color: "#7c3aed",
+                },
+              ].map((p) => (
+                <tr key={p.peran} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                  <td style={{ ...S.td, fontSize: ".74rem", color: "#64748b" }}>
+                    {p.peran}
+                  </td>
+                  <td style={S.td}>
+                    <div
+                      style={{ display: "flex", alignItems: "center", gap: 7 }}
+                    >
+                      <div
+                        style={{
+                          ...S.avatar,
+                          background: p.bg,
+                          color: p.color,
+                        }}
+                      >
+                        {p.user.name.charAt(0)}
+                      </div>
+                      <span
+                        style={{
+                          fontSize: ".78rem",
+                          fontWeight: 600,
+                          color: "#0f172a",
+                        }}
+                      >
+                        {p.user.name}
+                      </span>
+                    </div>
+                  </td>
+                  <td style={{ ...S.td, fontSize: ".74rem", color: "#64748b" }}>
+                    {p.user.jabatan}
+                  </td>
+                  <td style={{ ...S.td, fontSize: ".74rem", color: "#64748b" }}>
+                    {p.user.branch}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── PAGE: HISTORY ────────────────────────────────────────────
+function HistoryPage({ assetCode, assetName, borrows, returns, onBack }) {
   const allHistory = useMemo(() => {
     const active = borrows
       .filter((b) => b.code === assetCode)
@@ -1815,189 +2797,376 @@ function AssetHistoryModal({
   }, [assetCode, borrows, returns]);
   const activeCount = allHistory.filter((h) => !h.is_returned).length;
   const doneCount = allHistory.filter((h) => h.is_returned).length;
-
+  const cat = assetCategories[getCategory(assetCode)];
   return (
-    <div className="pjm-overlay" onClick={onClose}>
+    <div>
       <div
-        className="pjm-modal pjm-modal--hist"
-        onClick={(e) => e.stopPropagation()}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          marginBottom: "1rem",
+        }}
       >
-        <div className="pjm-modal-header pjm-mh--purple">
-          <h2>
-            <span className="pjm-mh-ico pjm-mh-ico--purple">
+        <button style={S.backBtn} onClick={onBack}>
+          <Icon.ArrowLeft /> Kembali
+        </button>
+        <span style={{ fontSize: ".75rem", color: "#94a3b8" }}>
+          / Riwayat Aset
+        </span>
+      </div>
+      <div style={S.page}>
+        <div style={{ ...S.pageHeader, borderTop: "3px solid #7c3aed" }}>
+          <div style={S.pageTitle}>
+            <span
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: 7,
+                background: "#f3e8ff",
+                color: "#7c3aed",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               <Icon.History />
             </span>
             Riwayat Serah Terima
-          </h2>
-          <button className="pjm-modal-close" onClick={onClose}>
-            <Icon.Times />
-          </button>
-        </div>
-        <div className="pjm-modal-body">
-          <div className="pjm-hist-header-info">
-            <code className="pjm-hist-code">{assetCode}</code>
-            <span className="pjm-hist-name">{assetName}</span>
           </div>
-          <div className="pjm-hist-summary">
-            <span className="pjm-hist-pill pjm-hist-pill--total">
+          <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+            <span
+              style={{
+                ...S.histPill,
+                background: "#eff6ff",
+                color: "#1d4ed8",
+                border: "1px solid #bfdbfe",
+              }}
+            >
               {allHistory.length}x Total
             </span>
-            <span className="pjm-hist-pill pjm-hist-pill--done">
+            <span
+              style={{
+                ...S.histPill,
+                background: "#dcfce7",
+                color: "#15803d",
+                border: "1px solid #bbf7d0",
+              }}
+            >
               {doneCount}x Selesai
             </span>
             {activeCount > 0 && (
-              <span className="pjm-hist-pill pjm-hist-pill--active">
+              <span
+                style={{
+                  ...S.histPill,
+                  background: "#fef9c3",
+                  color: "#92400e",
+                  border: "1px solid #fde68a",
+                }}
+              >
                 {activeCount}x Aktif
               </span>
             )}
           </div>
-          {allHistory.length === 0 ? (
-            <div className="pjm-hist-empty">
-              <span style={{ color: "#cbd5e1" }}>
-                <Icon.ClipboardEmpty />
-              </span>
-              <span className="pjm-hist-empty-title">Belum Ada Riwayat</span>
-              <span className="pjm-hist-empty-sub">
-                Aset ini belum pernah diserahterimakan.
-              </span>
+        </div>
+        <div
+          style={{ padding: "1rem 1.25rem", borderBottom: "1px solid #f1f5f9" }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: ".75rem",
+              padding: ".75rem .9rem",
+              background: "#f8fafc",
+              border: "1px solid #e2e8f0",
+              borderRadius: 9,
+            }}
+          >
+            <div
+              style={{
+                ...S.catIco,
+                background: cat.bg,
+                color: cat.color,
+                width: 32,
+                height: 32,
+                borderRadius: 8,
+              }}
+            >
+              {cat.icon}
             </div>
-          ) : (
-            <div className="pjm-hist-table-wrap">
-              <table className="pjm-hist-table">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Pemberi → Penerima</th>
-                    <th>Dari → Ke</th>
-                    <th>Tgl Pinjam</th>
-                    <th>Tgl Kembali</th>
-                    <th>Kondisi</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {allHistory.map((h, idx) => {
-                    const giver = getUser(h.giver_id);
-                    const receiver = getUser(h.receiver_id);
-                    const condKey = h.is_returned
-                      ? h.return_condition
-                      : h.condition;
-                    const cond = conditionConfig[condKey];
-                    return (
-                      <tr
-                        key={`${h.id}-${h.source}`}
-                        className={!h.is_returned ? "pjm-hist-row--active" : ""}
+            <div>
+              <code style={S.code}>{assetCode}</code>
+              <div style={{ ...S.assetName, marginTop: 3 }}>{assetName}</div>
+            </div>
+          </div>
+        </div>
+        {allHistory.length === 0 ? (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              padding: "3rem 1rem",
+              color: "#94a3b8",
+              gap: ".5rem",
+            }}
+          >
+            <Icon.ClipboardEmpty />
+            <span style={{ fontWeight: 700, color: "#475569" }}>
+              Belum Ada Riwayat
+            </span>
+            <span style={{ fontSize: ".78rem" }}>
+              Aset ini belum pernah diserahterimakan.
+            </span>
+          </div>
+        ) : (
+          <div style={{ overflowX: "auto" }}>
+            <table style={S.table}>
+              <thead>
+                <tr
+                  style={{
+                    background: "linear-gradient(135deg,#4c1d95,#7c3aed)",
+                  }}
+                >
+                  {[
+                    "#",
+                    "Pemberi → Penerima",
+                    "Dari → Ke",
+                    "Tgl Pinjam",
+                    "Tgl Kembali",
+                    "Kondisi",
+                    "Status",
+                  ].map((h) => (
+                    <th
+                      key={h}
+                      style={{
+                        ...S.th,
+                        color: "#fff",
+                        fontWeight: 600,
+                        fontSize: ".7rem",
+                      }}
+                    >
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {allHistory.map((h, idx) => {
+                  const giver = getUser(h.giver_id);
+                  const receiver = getUser(h.receiver_id);
+                  const condKey = h.is_returned
+                    ? h.return_condition
+                    : h.condition;
+                  const cond = conditionConfig[condKey];
+                  return (
+                    <tr
+                      key={`${h.id}-${h.source}`}
+                      style={{
+                        ...S.tr,
+                        ...(!h.is_returned ? { background: "#fffbeb" } : {}),
+                      }}
+                    >
+                      <td
+                        style={{
+                          ...S.td,
+                          fontFamily: "monospace",
+                          fontSize: ".68rem",
+                          color: "#94a3b8",
+                          textAlign: "center",
+                        }}
                       >
-                        <td className="pjm-hist-num">
-                          {allHistory.length - idx}
-                        </td>
-                        <td>
+                        {allHistory.length - idx}
+                      </td>
+                      <td style={S.td}>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 4,
+                          }}
+                        >
                           <div
                             style={{
                               display: "flex",
                               alignItems: "center",
-                              gap: 4,
+                              gap: 5,
                             }}
                           >
-                            <div className="pjm-hist-user">
+                            <div
+                              style={{
+                                ...S.avatar,
+                                background: "#fef3c7",
+                                color: "#d97706",
+                              }}
+                            >
+                              {giver.name.charAt(0)}
+                            </div>
+                            <div>
                               <div
-                                className="pjm-hist-av"
                                 style={{
-                                  background: "#fef3c7",
-                                  color: "#d97706",
+                                  fontSize: ".73rem",
+                                  fontWeight: 600,
+                                  color: "#1e293b",
+                                  whiteSpace: "nowrap",
                                 }}
                               >
-                                {giver.name.charAt(0)}
+                                {giver.name}
                               </div>
-                              <div>
-                                <div className="pjm-hist-uname">
-                                  {giver.name}
-                                </div>
-                                <div className="pjm-hist-ubranch">Pemberi</div>
-                              </div>
-                            </div>
-                            <span style={{ color: "#94a3b8", display: "flex" }}>
-                              <Icon.ArrowRight />
-                            </span>
-                            <div className="pjm-hist-user">
-                              <div className="pjm-hist-av">
-                                {receiver.name.charAt(0)}
-                              </div>
-                              <div>
-                                <div className="pjm-hist-uname">
-                                  {receiver.name}
-                                </div>
-                                <div className="pjm-hist-ubranch">Penerima</div>
+                              <div
+                                style={{ fontSize: ".63rem", color: "#94a3b8" }}
+                              >
+                                Pemberi
                               </div>
                             </div>
                           </div>
-                        </td>
-                        <td>
-                          <div className="pjm-hist-loc">
-                            <span className="pjm-hist-loc-from">
-                              {h.from_zone}
-                            </span>
-                            <span className="pjm-hist-loc-arr">
-                              <Icon.ArrowRight />
-                            </span>
-                            <span className="pjm-hist-loc-to">{h.to_zone}</span>
-                          </div>
-                        </td>
-                        <td className="pjm-hist-date">
-                          {fmtDateShort(h.borrow_date)}
-                        </td>
-                        <td className="pjm-hist-date">
-                          {h.is_returned ? (
-                            <span className="pjm-hist-date-ret">
-                              {fmtDateShort(h.return_date)}
-                            </span>
-                          ) : (
-                            <span className="pjm-hist-no-ret">
-                              Belum kembali
-                            </span>
-                          )}
-                        </td>
-                        <td>
-                          {cond && (
-                            <span
-                              className="pjm-hist-cond"
-                              style={{ background: cond.bg, color: cond.color }}
+                          <span style={{ color: "#94a3b8", display: "flex" }}>
+                            <Icon.ArrowRight />
+                          </span>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 5,
+                            }}
+                          >
+                            <div
+                              style={{
+                                ...S.avatar,
+                                background: "#dbeafe",
+                                color: "#2563eb",
+                              }}
                             >
-                              {cond.label}
-                            </span>
-                          )}
-                        </td>
-                        <td>
-                          {h.is_returned ? (
-                            <span className="pjm-hist-status pjm-hist-status--done">
-                              Selesai
-                            </span>
-                          ) : (
-                            <span className="pjm-hist-status pjm-hist-status--active">
-                              Aktif
-                            </span>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-        <div className="pjm-modal-footer">
-          <button className="pjm-btn pjm-btn-ghost" onClick={onClose}>
-            Tutup
-          </button>
-        </div>
+                              {receiver.name.charAt(0)}
+                            </div>
+                            <div>
+                              <div
+                                style={{
+                                  fontSize: ".73rem",
+                                  fontWeight: 600,
+                                  color: "#1e293b",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {receiver.name}
+                              </div>
+                              <div
+                                style={{ fontSize: ".63rem", color: "#94a3b8" }}
+                              >
+                                Penerima
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td style={S.td}>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 4,
+                            fontSize: ".73rem",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          <span style={{ color: "#64748b" }}>
+                            {h.from_zone}
+                          </span>
+                          <span style={{ color: "#94a3b8", display: "flex" }}>
+                            <Icon.ArrowRight />
+                          </span>
+                          <span style={{ color: "#2563eb", fontWeight: 600 }}>
+                            {h.to_zone}
+                          </span>
+                        </div>
+                      </td>
+                      <td
+                        style={{
+                          ...S.td,
+                          fontSize: ".73rem",
+                          color: "#64748b",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {fmtDateShort(h.borrow_date)}
+                      </td>
+                      <td style={{ ...S.td, whiteSpace: "nowrap" }}>
+                        {h.is_returned ? (
+                          <span
+                            style={{
+                              fontSize: ".73rem",
+                              color: "#16a34a",
+                              fontWeight: 600,
+                            }}
+                          >
+                            {fmtDateShort(h.return_date)}
+                          </span>
+                        ) : (
+                          <span
+                            style={{
+                              fontSize: ".71rem",
+                              color: "#d97706",
+                              fontWeight: 600,
+                            }}
+                          >
+                            Belum kembali
+                          </span>
+                        )}
+                      </td>
+                      <td style={S.td}>
+                        {cond && (
+                          <span
+                            style={{
+                              ...S.pill,
+                              background: cond.bg,
+                              color: cond.color,
+                            }}
+                          >
+                            {cond.label}
+                          </span>
+                        )}
+                      </td>
+                      <td style={S.td}>
+                        {h.is_returned ? (
+                          <span
+                            style={{
+                              ...S.pill,
+                              background: "#dcfce7",
+                              color: "#15803d",
+                              border: "1px solid #bbf7d0",
+                            }}
+                          >
+                            Selesai
+                          </span>
+                        ) : (
+                          <span
+                            style={{
+                              ...S.pill,
+                              background: "#fef9c3",
+                              color: "#92400e",
+                              border: "1px solid #fde68a",
+                            }}
+                          >
+                            Aktif
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-// ─── BORROW FORM ──────────────────────────────────────────────
-function BorrowFormModal({ borrow, onClose, onSave }) {
+// ─── PAGE: BORROW FORM ────────────────────────────────────────
+// REVISED: Single-column vertical layout, sections 4 & 5 moved below 1–3
+function BorrowFormPage({ borrow, onBack, onSave }) {
   const isEdit = !!borrow;
   const defaultDueDate = new Date();
   defaultDueDate.setDate(defaultDueDate.getDate() + 7);
@@ -2087,7 +3256,7 @@ function BorrowFormModal({ borrow, onClose, onSave }) {
       performed_by_id: LOGGED_IN_ADMIN_ID,
       attachment: form.attachmentFile?.name || null,
     });
-    onClose();
+    onBack();
   };
 
   const handleGenerateBAST = () => {
@@ -2111,63 +3280,64 @@ function BorrowFormModal({ borrow, onClose, onSave }) {
     );
   };
 
-  const selectedPekerjaan = mockPekerjaan.find(
-    (p) => p.kode === form.pekerjaan_kode,
-  );
-
-  const stepNum = (n, active) => (
-    <span
-      style={{
-        width: 16,
-        height: 16,
-        borderRadius: "50%",
-        background: active ? undefined : "var(--slate-4)",
-        color: "white",
-        fontSize: ".6rem",
-        fontWeight: 800,
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      {n}
-    </span>
-  );
+  // Blue section header style
+  const sectionHeaderStyle = {
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    padding: ".65rem 1.25rem",
+    background: "linear-gradient(90deg, #eff6ff 0%, #f8fafc 100%)",
+    borderBottom: "1px solid #bfdbfe",
+    borderTop: "1px solid #e2e8f0",
+  };
 
   return (
-    <div className="pjm-overlay" onClick={onClose}>
+    <div>
       <div
-        className="pjm-modal pjm-modal--form"
-        onClick={(e) => e.stopPropagation()}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          marginBottom: "1rem",
+        }}
       >
-        <div className="pjm-modal-header pjm-mh--blue">
-          <h2>
-            <span className="pjm-mh-ico">
+        <button style={S.backBtn} onClick={onBack}>
+          <Icon.ArrowLeft /> Batal
+        </button>
+        <span style={{ fontSize: ".75rem", color: "#94a3b8" }}>
+          / {isEdit ? "Edit Serah Terima" : "Catat Serah Terima"}
+        </span>
+      </div>
+      <div style={S.page}>
+        <div style={{ ...S.pageHeader, borderTop: "3px solid #2563eb" }}>
+          <div style={S.pageTitle}>
+            <span
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: 7,
+                background: "#eff6ff",
+                color: "#2563eb",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               <Icon.Exchange />
             </span>
-            {isEdit ? "Edit Serah Terima" : "Catat Serah Terima"}
-          </h2>
-          <button className="pjm-modal-close" onClick={onClose}>
-            <Icon.Times />
-          </button>
-        </div>
-        <div className="pjm-modal-body">
-          <div className="pjm-form-section">
-            <span
-              className="pjm-form-section-label"
-              style={{ color: "#0891b2" }}
-            >
-              <span
-                style={{ display: "inline-flex", alignItems: "center", gap: 4 }}
-              >
-                {stepNum(1, true)} Pilih Pekerjaan
-              </span>
-            </span>
-            <div className="pjm-form-section-line" />
+            {isEdit ? "Edit Serah Terima" : "Catat Serah Terima Baru"}
           </div>
-          <div className="pjm-fg">
-            <label>
-              Pekerjaan / Program Anggaran <span className="pjm-req">*</span>
+        </div>
+
+        {/* ── Section 1: Pilih Pekerjaan ── */}
+        <div style={sectionHeaderStyle}>
+          <SectionTitle n={1} label="Pilih Pekerjaan" active={true} />
+        </div>
+        <div style={S.formSection}>
+          <div style={S.fg}>
+            <label style={S.flabel}>
+              Pekerjaan / Program Anggaran{" "}
+              <span style={{ color: "#dc2626" }}>*</span>
             </label>
             <PekerjaanSelector
               value={form.pekerjaan_kode}
@@ -2175,266 +3345,205 @@ function BorrowFormModal({ borrow, onClose, onSave }) {
               error={errors.pekerjaan_kode}
             />
           </div>
+        </div>
 
-          <div className="pjm-form-section">
-            <span
-              className="pjm-form-section-label"
-              style={{
-                color: form.pekerjaan_kode ? "var(--blue)" : "var(--slate-4)",
-              }}
-            >
-              <span
-                style={{ display: "inline-flex", alignItems: "center", gap: 4 }}
-              >
-                {stepNum(2, !!form.pekerjaan_kode)} Pilih Aset
-              </span>
-            </span>
-            <div className="pjm-form-section-line" />
-          </div>
-          <div className="pjm-fg">
-            <label>
-              Aset <span className="pjm-req">*</span>
-              {selectedPekerjaan && (
-                <span
-                  style={{
-                    marginLeft: 5,
-                    fontSize: ".67rem",
-                    fontWeight: 600,
-                    color: "#0891b2",
-                  }}
-                >
-                  — {availableAssets.length} aset tersedia
-                </span>
-              )}
-            </label>
+        {/* ── Section 2: Pilih Aset ── */}
+        <div style={sectionHeaderStyle}>
+          <SectionTitle
+            n={2}
+            label="Pilih Aset"
+            active={!!form.pekerjaan_kode}
+          />
+        </div>
+        <div style={S.formSection}>
+          <FHRow label="Aset" required>
             {!form.pekerjaan_kode ? (
               <div
                 style={{
-                  padding: ".6rem .85rem",
+                  padding: ".55rem .8rem",
                   background: "#f8fafc",
-                  border: "1.5px dashed var(--border)",
+                  border: "1.5px dashed #e2e8f0",
                   borderRadius: 8,
-                  fontSize: ".77rem",
-                  color: "var(--slate-4)",
+                  fontSize: ".76rem",
+                  color: "#94a3b8",
                   display: "flex",
                   alignItems: "center",
                   gap: 7,
                 }}
               >
-                <Icon.ArrowRight />
-                Pilih pekerjaan terlebih dahulu
+                <Icon.ArrowRight /> Pilih pekerjaan terlebih dahulu
               </div>
             ) : (
-              <>
-                <SearchCombobox
-                  options={assetOptions}
-                  value={form.code}
-                  onChange={handleAssetChange}
-                  placeholder="Cari kode atau nama aset..."
-                  renderLabel={(o) => `${o.label} — ${o.fullName}`}
-                  renderSub={(o) => o.zone}
-                  hasError={!!errors.code}
-                />
-                {form.code && (
-                  <span className="pjm-field-hint">
-                    <Icon.MapPin /> Lokasi:{" "}
-                    <strong>{getAsset(form.code)?.zone}</strong>
-                  </span>
-                )}
-                {errors.code && <span className="pjm-ferr">{errors.code}</span>}
-              </>
+              <SearchCombobox
+                options={assetOptions}
+                value={form.code}
+                onChange={handleAssetChange}
+                placeholder="Cari kode atau nama aset..."
+                renderLabel={(o) => `${o.label} — ${o.fullName}`}
+                renderSub={(o) => o.zone}
+                hasError={!!errors.code}
+              />
             )}
-          </div>
-
-          <div className="pjm-form-section">
-            <span
-              className="pjm-form-section-label"
-              style={{ color: form.code ? "#d97706" : "var(--slate-4)" }}
-            >
+            {form.code && (
               <span
-                style={{ display: "inline-flex", alignItems: "center", gap: 4 }}
+                style={{
+                  fontSize: ".69rem",
+                  color: "#64748b",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 3,
+                  marginTop: 4,
+                }}
               >
-                {stepNum(3, !!form.code)} Pihak yang Terlibat
+                <Icon.MapPin /> Lokasi:{" "}
+                <strong>{getAsset(form.code)?.zone}</strong>
               </span>
-            </span>
-            <div className="pjm-form-section-line" />
-          </div>
-          <div className="pjm-frow">
-            <div className="pjm-fg">
-              <label>
-                User Pemberi <span className="pjm-req">*</span>
-              </label>
-              <SearchCombobox
-                options={userOptions}
-                value={form.giver_id}
-                onChange={(val) => setForm({ ...form, giver_id: val })}
-                placeholder="Pilih pemberi..."
-                renderLabel={(o) => o.label}
-                renderSub={(o) => o.sub}
-                hasError={!!errors.giver_id}
-              />
-              {errors.giver_id && (
-                <span className="pjm-ferr">{errors.giver_id}</span>
-              )}
-            </div>
-            <div className="pjm-fg">
-              <label>
-                User Penerima <span className="pjm-req">*</span>
-              </label>
-              <SearchCombobox
-                options={userOptions}
-                value={form.receiver_id}
-                onChange={(val) => setForm({ ...form, receiver_id: val })}
-                placeholder="Pilih penerima..."
-                renderLabel={(o) => o.label}
-                renderSub={(o) => o.sub}
-                hasError={!!errors.receiver_id}
-              />
-              {errors.receiver_id && (
-                <span className="pjm-ferr">{errors.receiver_id}</span>
-              )}
-            </div>
-          </div>
+            )}
+            {errors.code && <span style={S.ferr}>{errors.code}</span>}
+          </FHRow>
+        </div>
 
-          <div className="pjm-form-section">
-            <span
-              className="pjm-form-section-label"
-              style={{ color: "var(--slate-6)" }}
-            >
-              <span
-                style={{ display: "inline-flex", alignItems: "center", gap: 4 }}
-              >
-                {stepNum(4, false)} Waktu & Lokasi
-              </span>
-            </span>
-            <div className="pjm-form-section-line" />
-          </div>
-          <div className="pjm-frow">
-            <div className="pjm-fg">
-              <label>Waktu Serah Terima</label>
-              <input
-                type="datetime-local"
-                value={form.borrow_date}
-                className="pjm-input-ro"
-                readOnly
-              />
-            </div>
-            <div className="pjm-fg">
-              <label>
-                Jatuh Tempo <span className="pjm-req">*</span>
-              </label>
-              <input
-                type="date"
-                value={form.due_date}
-                onChange={(e) => setForm({ ...form, due_date: e.target.value })}
-              />
-            </div>
-          </div>
-          <div className="pjm-frow">
-            <div className="pjm-fg">
-              <label>Dari Lokasi</label>
-              <input
-                value={form.from_zone}
-                readOnly
-                className="pjm-input-ro"
-                placeholder="Dari aset"
-              />
-            </div>
-            <div className="pjm-fg">
-              <label>
-                Dibawa Ke <span className="pjm-req">*</span>
-              </label>
-              <select
-                value={form.to_zone}
-                onChange={(e) => setForm({ ...form, to_zone: e.target.value })}
-                className={errors.to_zone ? "pjm-err-input" : ""}
-              >
-                <option value="">-- Pilih Tujuan --</option>
-                {mockSubzona.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
-              {errors.to_zone && (
-                <span className="pjm-ferr">{errors.to_zone}</span>
-              )}
-            </div>
-          </div>
-          <div className="pjm-fg">
-            <label>Keperluan / Catatan</label>
-            <input
-              value={form.reason}
-              onChange={(e) => setForm({ ...form, reason: e.target.value })}
-              placeholder="Cth: Dipinjam untuk operasional proyek"
-            />
-          </div>
-
-          <div className="pjm-form-section">
-            <span
-              className="pjm-form-section-label"
-              style={{ color: "var(--slate-6)" }}
-            >
-              <span
-                style={{ display: "inline-flex", alignItems: "center", gap: 4 }}
-              >
-                {stepNum(5, false)} Kondisi & BAST
-              </span>
-            </span>
-            <div className="pjm-form-section-line" />
-          </div>
-          <div className="pjm-fg">
-            <label>Kondisi Aset Saat Keluar</label>
-            <div className="pjm-chips">
+        {/* ── Section 3: Kondisi & Lampiran ── */}
+        <div style={sectionHeaderStyle}>
+          <SectionTitle n={3} label="Kondisi & Lampiran" active={true} />
+        </div>
+        <div style={S.formSection}>
+          <FHRow label="Kondisi Aset Saat Keluar">
+            <div style={S.chips}>
               {Object.entries(conditionConfig).map(([val, cfg]) => (
                 <button
                   key={val}
                   type="button"
-                  className={`pjm-chip ${form.condition === val ? "pjm-chip--on" : ""}`}
-                  style={
-                    form.condition === val
+                  style={{
+                    ...S.chip,
+                    ...(form.condition === val
                       ? {
                           background: cfg.bg,
                           color: cfg.color,
                           borderColor: cfg.color,
                         }
-                      : {}
-                  }
+                      : {}),
+                  }}
                   onClick={() => setForm({ ...form, condition: val })}
                 >
                   {cfg.label}
                 </button>
               ))}
             </div>
+          </FHRow>
+          <div style={{ marginTop: 8 }}>
+            <PdfUpload
+              value={form.attachmentFile}
+              onChange={(f) => setForm({ ...form, attachmentFile: f })}
+            />
           </div>
-          <PdfUpload
-            value={form.attachmentFile}
-            onChange={(f) => setForm({ ...form, attachmentFile: f })}
-          />
-          {!form.attachmentFile && (
-            <div className="pjm-bast-note">
-              <span className="pjm-bast-note-icon">✨</span>
-              <div>
-                <strong>Tidak punya file BAST?</strong> Klik Generate BAST untuk
-                membuat dokumen otomatis.
-              </div>
-            </div>
-          )}
         </div>
-        <div className="pjm-modal-footer">
-          <button className="pjm-btn pjm-btn-ghost" onClick={onClose}>
+
+        {/* ── Section 4: Pihak yang Terlibat ── */}
+        <div style={sectionHeaderStyle}>
+          <SectionTitle
+            n={4}
+            label="Pihak yang Terlibat"
+            active={!!form.code}
+          />
+        </div>
+        <div style={S.formSection}>
+          <FHRow label="User Pemberi" required>
+            <SearchCombobox
+              options={userOptions}
+              value={form.giver_id}
+              onChange={(val) => setForm({ ...form, giver_id: val })}
+              placeholder="Pilih pemberi..."
+              renderLabel={(o) => o.label}
+              renderSub={(o) => o.sub}
+              hasError={!!errors.giver_id}
+            />
+            {errors.giver_id && <span style={S.ferr}>{errors.giver_id}</span>}
+          </FHRow>
+          <FHRow label="User Penerima" required last>
+            <SearchCombobox
+              options={userOptions}
+              value={form.receiver_id}
+              onChange={(val) => setForm({ ...form, receiver_id: val })}
+              placeholder="Pilih penerima..."
+              renderLabel={(o) => o.label}
+              renderSub={(o) => o.sub}
+              hasError={!!errors.receiver_id}
+            />
+            {errors.receiver_id && (
+              <span style={S.ferr}>{errors.receiver_id}</span>
+            )}
+          </FHRow>
+        </div>
+
+        {/* ── Section 5: Waktu & Lokasi ── */}
+        <div style={sectionHeaderStyle}>
+          <SectionTitle n={5} label="Waktu & Lokasi" active={true} />
+        </div>
+        <div style={S.formSection}>
+          <FHRow label="Waktu Serah Terima">
+            <input
+              type="datetime-local"
+              value={form.borrow_date}
+              readOnly
+              style={{ ...S.finput, ...S.finputRo }}
+            />
+          </FHRow>
+          <FHRow label="Jatuh Tempo" required>
+            <input
+              type="date"
+              value={form.due_date}
+              onChange={(e) => setForm({ ...form, due_date: e.target.value })}
+              style={S.finput}
+            />
+          </FHRow>
+          <FHRow label="Dari Lokasi">
+            <input
+              value={form.from_zone}
+              readOnly
+              style={{ ...S.finput, ...S.finputRo }}
+              placeholder="Dari aset"
+            />
+          </FHRow>
+          <FHRow label="Dibawa Ke" required>
+            <select
+              value={form.to_zone}
+              onChange={(e) => setForm({ ...form, to_zone: e.target.value })}
+              style={{
+                ...S.finput,
+                ...(errors.to_zone ? { borderColor: "#dc2626" } : {}),
+              }}
+            >
+              <option value="">-- Pilih Tujuan --</option>
+              {mockSubzona.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+            {errors.to_zone && <span style={S.ferr}>{errors.to_zone}</span>}
+          </FHRow>
+          <FHRow label="Keperluan / Catatan" last>
+            <input
+              value={form.reason}
+              onChange={(e) => setForm({ ...form, reason: e.target.value })}
+              placeholder="Cth: Dipinjam untuk operasional proyek"
+              style={S.finput}
+            />
+          </FHRow>
+        </div>
+
+        <div style={S.btnRow}>
+          <button style={S.btnGhost} onClick={onBack}>
             Batal
           </button>
           {!form.attachmentFile && (
-            <button
-              className="pjm-btn pjm-btn-purple"
-              onClick={handleGenerateBAST}
-            >
+            <button style={S.btnPurple} onClick={handleGenerateBAST}>
               <Icon.Printer /> Generate BAST
             </button>
           )}
-          <button className="pjm-btn pjm-btn-blue" onClick={handleSave}>
-            <Icon.Check /> Simpan
+          <button style={S.btnBlue} onClick={handleSave}>
+            <Icon.Check /> {isEdit ? "Simpan Perubahan" : "Simpan"}
           </button>
         </div>
       </div>
@@ -2442,11 +3551,12 @@ function BorrowFormModal({ borrow, onClose, onSave }) {
   );
 }
 
-// ─── RETURN FORM ──────────────────────────────────────────────
-function ReturnFormModal({ borrow, onClose, onSave }) {
+// ─── PAGE: RETURN FORM ────────────────────────────────────────
+function ReturnFormPage({ borrow, onBack, onSave }) {
   if (!borrow) return null;
   const giver = getUser(borrow.giver_id);
   const receiver = getUser(borrow.receiver_id);
+  const pekerjaan = getPekerjaan(borrow.pekerjaan_kode);
   const [form, setForm] = useState({
     return_date: new Date().toISOString().slice(0, 16),
     return_condition: "GOOD",
@@ -2474,7 +3584,7 @@ function ReturnFormModal({ borrow, onClose, onSave }) {
       return_notes: form.return_notes,
       attachment: form.attachmentFile?.name || null,
     });
-    onClose();
+    onBack();
   };
 
   const handleGenerateBAST = () =>
@@ -2491,163 +3601,207 @@ function ReturnFormModal({ borrow, onClose, onSave }) {
     );
 
   return (
-    <div className="pjm-overlay" onClick={onClose}>
+    <div>
       <div
-        className="pjm-modal pjm-modal--form"
-        onClick={(e) => e.stopPropagation()}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          marginBottom: "1rem",
+        }}
       >
-        <div className="pjm-modal-header pjm-mh--green">
-          <h2>
-            <span className="pjm-mh-ico pjm-mh-ico--green">
+        <button style={S.backBtn} onClick={onBack}>
+          <Icon.ArrowLeft /> Batal
+        </button>
+        <span style={{ fontSize: ".75rem", color: "#94a3b8" }}>
+          / Catat Pengembalian
+        </span>
+      </div>
+      <div style={S.page}>
+        <div style={{ ...S.pageHeader, borderTop: "3px solid #16a34a" }}>
+          <div style={S.pageTitle}>
+            <span
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: 7,
+                background: "#dcfce7",
+                color: "#16a34a",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               <Icon.Undo />
             </span>
-            Catat Pengembalian
-          </h2>
-          <button className="pjm-modal-close" onClick={onClose}>
-            <Icon.Times />
-          </button>
+            Catat Pengembalian Aset
+          </div>
         </div>
-        <div className="pjm-modal-body">
-          {borrow.pekerjaan_kode &&
-            (() => {
-              const pkj = getPekerjaan(borrow.pekerjaan_kode);
-              return pkj ? (
-                <div className="pjm-pkj-info-box">
-                  <span
-                    style={{
-                      color: "#0891b2",
-                      display: "flex",
-                      marginTop: 2,
-                      flexShrink: 0,
-                    }}
-                  >
-                    <Icon.Briefcase />
-                  </span>
-                  <div>
-                    <div className="pjm-pkj-info-lbl">Pekerjaan</div>
-                    <div className="pjm-pkj-info-name">{pkj.nama}</div>
-                    <div className="pjm-pkj-info-meta">
-                      {pkj.no_anggaran} · {pkj.jenis}
-                    </div>
-                  </div>
-                </div>
-              ) : null;
-            })()}
-          <div className="pjm-ret-info-card">
-            <div className="pjm-ric-row">
-              <span className="pjm-ric-lbl">Aset</span>
-              <span>
-                <code className="pjm-ctag">{borrow.code}</code> {borrow.name}
+        {pekerjaan && (
+          <div
+            style={{
+              padding: "1rem 1.25rem",
+              borderBottom: "1px solid #f1f5f9",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "flex-start",
+                gap: ".5rem",
+                padding: ".6rem .9rem",
+                background: "#ecfeff",
+                border: "1px solid #a5f3fc",
+                borderRadius: 9,
+              }}
+            >
+              <span style={{ color: "#0891b2", display: "flex", marginTop: 2 }}>
+                <Icon.Briefcase />
               </span>
-            </div>
-            <div className="pjm-ric-row">
-              <span className="pjm-ric-lbl">Dikembalikan oleh</span>
-              <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                <span
+              <div>
+                <div
                   style={{
-                    width: 20,
-                    height: 20,
-                    borderRadius: "50%",
+                    fontSize: ".65rem",
+                    fontWeight: 800,
+                    color: "#0891b2",
+                    textTransform: "uppercase",
+                    letterSpacing: ".04em",
+                  }}
+                >
+                  Pekerjaan
+                </div>
+                <div style={S.pkjInfoName}>{pekerjaan.nama}</div>
+                <div style={S.pkjInfoMeta}>
+                  {pekerjaan.no_anggaran} · {pekerjaan.jenis}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        <div
+          style={{ padding: "1rem 1.25rem", borderBottom: "1px solid #f1f5f9" }}
+        >
+          <div style={S.sectionLabel}>Informasi Peminjaman</div>
+          <div
+            style={{
+              background: "#f8fafc",
+              border: "1px solid #e2e8f0",
+              borderRadius: 9,
+              padding: ".75rem 1rem",
+            }}
+          >
+            <HRow label="Aset">
+              <code style={S.code}>{borrow.code}</code>
+              <span style={{ fontSize: ".78rem" }}>{borrow.name}</span>
+            </HRow>
+            <HRow label="Dikembalikan oleh">
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <div
+                  style={{
+                    ...S.avatar,
                     background: "#dbeafe",
                     color: "#2563eb",
-                    fontSize: ".65rem",
-                    fontWeight: 700,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
                   }}
                 >
                   {receiver.name.charAt(0)}
+                </div>
+                <span style={{ fontWeight: 600, fontSize: ".78rem" }}>
+                  {receiver.name}
                 </span>
-                <strong>{receiver.name}</strong>
-              </span>
-            </div>
-            <div className="pjm-ric-row">
-              <span className="pjm-ric-lbl">Dikembalikan ke</span>
-              <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                <span
+              </div>
+            </HRow>
+            <HRow label="Dikembalikan ke">
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <div
                   style={{
-                    width: 20,
-                    height: 20,
-                    borderRadius: "50%",
+                    ...S.avatar,
                     background: "#fef3c7",
                     color: "#d97706",
-                    fontSize: ".65rem",
-                    fontWeight: 700,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
                   }}
                 >
                   {giver.name.charAt(0)}
+                </div>
+                <span
+                  style={{
+                    fontWeight: 600,
+                    color: "#16a34a",
+                    fontSize: ".78rem",
+                  }}
+                >
+                  {giver.name}
                 </span>
-                <span className="pjm-text-green">{giver.name}</span>
+              </div>
+            </HRow>
+            <HRow label="Dipinjam sejak" last>
+              <span style={{ fontSize: ".78rem", color: "#64748b" }}>
+                {fmtDate(borrow.borrow_date)}
               </span>
-            </div>
+            </HRow>
           </div>
-          <div className="pjm-fg">
-            <label>Kondisi Saat Dikembalikan</label>
-            <div className="pjm-chips">
+        </div>
+        <div style={S.formSection}>
+          <FHRow label="Kondisi Dikembalikan">
+            <div style={S.chips}>
               {Object.entries(conditionConfig).map(([val, cfg]) => (
                 <button
                   key={val}
                   type="button"
-                  className={`pjm-chip ${form.return_condition === val ? "pjm-chip--on" : ""}`}
-                  style={
-                    form.return_condition === val
+                  style={{
+                    ...S.chip,
+                    ...(form.return_condition === val
                       ? {
                           background: cfg.bg,
                           color: cfg.color,
                           borderColor: cfg.color,
                         }
-                      : {}
-                  }
+                      : {}),
+                  }}
                   onClick={() => setForm({ ...form, return_condition: val })}
                 >
                   {cfg.label}
                 </button>
               ))}
             </div>
-          </div>
-          <div className="pjm-fg">
-            <label>Catatan Pengembalian</label>
+          </FHRow>
+          <FHRow label="Tanggal Pengembalian">
+            <input
+              type="datetime-local"
+              value={form.return_date}
+              onChange={(e) =>
+                setForm({ ...form, return_date: e.target.value })
+              }
+              style={S.finput}
+            />
+          </FHRow>
+          <FHRow label="Catatan Pengembalian" last>
             <textarea
               value={form.return_notes}
               onChange={(e) =>
                 setForm({ ...form, return_notes: e.target.value })
               }
-              rows={2}
+              rows={3}
               placeholder="Kondisi, kerusakan, atau catatan lainnya..."
+              style={{ ...S.finput, resize: "vertical" }}
+            />
+          </FHRow>
+          <div style={{ marginTop: 8 }}>
+            <PdfUpload
+              value={form.attachmentFile}
+              onChange={(f) => setForm({ ...form, attachmentFile: f })}
             />
           </div>
-          <PdfUpload
-            value={form.attachmentFile}
-            onChange={(f) => setForm({ ...form, attachmentFile: f })}
-          />
-          {!form.attachmentFile && (
-            <div className="pjm-bast-note">
-              <span className="pjm-bast-note-icon">✨</span>
-              <div>
-                <strong>Generate BAST Pengembalian</strong> — Klik tombol di
-                bawah untuk membuat dokumen otomatis.
-              </div>
-            </div>
-          )}
         </div>
-        <div className="pjm-modal-footer">
-          <button className="pjm-btn pjm-btn-ghost" onClick={onClose}>
+        <div style={S.btnRow}>
+          <button style={S.btnGhost} onClick={onBack}>
             Batal
           </button>
           {!form.attachmentFile && (
-            <button
-              className="pjm-btn pjm-btn-purple"
-              onClick={handleGenerateBAST}
-            >
+            <button style={S.btnPurple} onClick={handleGenerateBAST}>
               <Icon.Printer /> Generate BAST
             </button>
           )}
-          <button className="pjm-btn pjm-btn-green" onClick={handleSave}>
-            <Icon.Undo /> Konfirmasi
+          <button style={S.btnGreen} onClick={handleSave}>
+            <Icon.Undo /> Konfirmasi Pengembalian
           </button>
         </div>
       </div>
@@ -2655,448 +3809,52 @@ function ReturnFormModal({ borrow, onClose, onSave }) {
   );
 }
 
-// ─── DETAIL MODAL ─────────────────────────────────────────────
-function DetailModal({
-  item,
-  itemType,
-  onClose,
-  onEdit,
-  onReturn,
-  onViewHistory,
-  borrows,
-  returns,
-}) {
-  if (!item) return null;
-  const isBorrow = itemType === "borrow";
-  const giver = getUser(item.giver_id);
-  const receiver = getUser(item.receiver_id);
-  const cond =
-    conditionConfig[isBorrow ? item.condition : item.return_condition];
-  const overdue = isBorrow && isOverdue(item.due_date);
-  const cat = assetCategories[getCategory(item.code)];
-  const histCount = [
-    ...borrows.filter((b) => b.code === item.code),
-    ...returns.filter((r) => r.code === item.code),
-  ].length;
-  const pekerjaan = getPekerjaan(item.pekerjaan_kode);
-
-  const uAvatar = (name, bg, color) => (
-    <span
-      style={{
-        width: 20,
-        height: 20,
-        borderRadius: "50%",
-        background: bg,
-        color,
-        fontSize: ".62rem",
-        fontWeight: 700,
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        flexShrink: 0,
-      }}
-    >
-      {name.charAt(0)}
-    </span>
-  );
-
-  return (
-    <div className="pjm-overlay" onClick={onClose}>
-      <div className="pjm-modal" onClick={(e) => e.stopPropagation()}>
-        <div
-          className={`pjm-modal-header ${isBorrow ? "pjm-mh--blue" : "pjm-mh--green"}`}
-        >
-          <h2>
-            <span
-              className={`pjm-mh-ico ${isBorrow ? "" : "pjm-mh-ico--green"}`}
-            >
-              {isBorrow ? <Icon.Exchange /> : <Icon.CheckCircle />}
-            </span>
-            {isBorrow ? "Detail Serah Terima" : "Detail Pengembalian"}
-          </h2>
-          <button className="pjm-modal-close" onClick={onClose}>
-            <Icon.Times />
-          </button>
-        </div>
-        <div className="pjm-modal-body">
-          {pekerjaan && (
-            <div className="pjm-pkj-info-box">
-              <span
-                style={{
-                  color: "#0891b2",
-                  display: "flex",
-                  marginTop: 2,
-                  flexShrink: 0,
-                }}
-              >
-                <Icon.Briefcase />
-              </span>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div className="pjm-pkj-info-lbl">Pekerjaan / Anggaran</div>
-                <div className="pjm-pkj-info-name">{pekerjaan.nama}</div>
-                <div className="pjm-pkj-info-meta">
-                  {pekerjaan.no_anggaran} · {pekerjaan.jenis}
-                </div>
-              </div>
-            </div>
-          )}
-          <div className="pjm-detail-banner">
-            <div
-              className="pjm-db-cat"
-              style={{ background: cat.bg, color: cat.color }}
-            >
-              {cat.icon}
-            </div>
-            <div className="pjm-db-info">
-              <code className="pjm-ctag">{item.code}</code>
-              <div className="pjm-db-name">{item.name}</div>
-              {overdue && <span className="pjm-overdue-pill">⚠ Terlambat</span>}
-            </div>
-          </div>
-          <div className="pjm-detail-grid">
-            <div className="pjm-dgi">
-              <span className="pjm-dgi-lbl">Tgl Serah Terima</span>
-              <span className="pjm-dgi-val">{fmtDT(item.borrow_date)}</span>
-            </div>
-            {isBorrow ? (
-              <div className="pjm-dgi">
-                <span className="pjm-dgi-lbl">Jatuh Tempo</span>
-                <span
-                  className={`pjm-dgi-val ${overdue ? "pjm-text-danger" : ""}`}
-                >
-                  {fmtDate(item.due_date)}
-                </span>
-              </div>
-            ) : (
-              <div className="pjm-dgi">
-                <span className="pjm-dgi-lbl">Tgl Dikembalikan</span>
-                <span className="pjm-dgi-val pjm-text-green">
-                  {fmtDT(item.return_date)}
-                </span>
-              </div>
-            )}
-            <div className="pjm-dgi">
-              <span className="pjm-dgi-lbl">User Pemberi</span>
-              <span
-                className="pjm-dgi-val"
-                style={{ display: "flex", alignItems: "center", gap: 5 }}
-              >
-                {uAvatar(giver.name, "#fef3c7", "#d97706")} {giver.name}{" "}
-                <span className="pjm-text-muted" style={{ fontSize: ".72rem" }}>
-                  · {giver.branch}
-                </span>
-              </span>
-            </div>
-            <div className="pjm-dgi">
-              <span className="pjm-dgi-lbl">User Penerima</span>
-              <span
-                className="pjm-dgi-val"
-                style={{ display: "flex", alignItems: "center", gap: 5 }}
-              >
-                {uAvatar(receiver.name, "#dbeafe", "#2563eb")} {receiver.name}{" "}
-                <span className="pjm-text-muted" style={{ fontSize: ".72rem" }}>
-                  · {receiver.branch}
-                </span>
-              </span>
-            </div>
-            <div className="pjm-dgi">
-              <span className="pjm-dgi-lbl">Kondisi</span>
-              <span
-                className="pjm-cond-sm"
-                style={{ background: cond?.bg, color: cond?.color }}
-              >
-                {cond?.label}
-              </span>
-            </div>
-            <div className="pjm-dgi">
-              <span className="pjm-dgi-lbl">Lokasi</span>
-              <span className="pjm-dgi-val">
-                {item.from_zone} →{" "}
-                <span className="pjm-text-blue">{item.to_zone}</span>
-              </span>
-            </div>
-            {item.reason && (
-              <div className="pjm-dgi pjm-dgi--full">
-                <span className="pjm-dgi-lbl">Alasan</span>
-                <span className="pjm-dgi-val">{item.reason}</span>
-              </div>
-            )}
-            {(isBorrow ? item.notes : item.return_notes) && (
-              <div className="pjm-dgi pjm-dgi--full">
-                <span className="pjm-dgi-lbl">Catatan</span>
-                <span className="pjm-dgi-val">
-                  {isBorrow ? item.notes : item.return_notes}
-                </span>
-              </div>
-            )}
-            {item.attachment && (
-              <div className="pjm-dgi pjm-dgi--full">
-                <span className="pjm-dgi-lbl">Lampiran</span>
-                <span className="pjm-attach-sm">
-                  <Icon.Paperclip />
-                  {item.attachment}
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-        <div className="pjm-modal-footer">
-          <button className="pjm-btn pjm-btn-ghost" onClick={onClose}>
-            Tutup
-          </button>
-          <button
-            className="pjm-btn pjm-btn-ghost"
-            style={{ color: "#7c3aed", borderColor: "#c4b5fd" }}
-            onClick={() => {
-              onViewHistory(item);
-              onClose();
-            }}
-          >
-            <Icon.History /> Riwayat ({histCount})
-          </button>
-          <button
-            className="pjm-btn pjm-btn-purple"
-            onClick={() => generateBAST(item, isBorrow ? "borrow" : "return")}
-          >
-            <Icon.Printer /> BAST
-          </button>
-          {isBorrow && (
-            <button
-              className="pjm-btn pjm-btn-ghost"
-              onClick={() => {
-                onEdit(item);
-                onClose();
-              }}
-            >
-              <Icon.Edit /> Edit
-            </button>
-          )}
-          {isBorrow && (
-            <button
-              className="pjm-btn pjm-btn-green"
-              onClick={() => {
-                onReturn(item);
-                onClose();
-              }}
-            >
-              <Icon.Undo /> Catat Kembali
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── DELETE CONFIRM ────────────────────────────────────────────
-function DeleteModal({ item, onClose, onConfirm }) {
+// ─── PAGE: DELETE CONFIRM ─────────────────────────────────────
+function DeletePage({ item, onBack, onConfirm }) {
   if (!item) return null;
   return (
-    <div className="pjm-overlay" onClick={onClose}>
+    <div>
       <div
-        className="pjm-modal pjm-modal--sm"
-        onClick={(e) => e.stopPropagation()}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          marginBottom: "1rem",
+        }}
       >
-        <div
-          className="pjm-modal-body"
-          style={{ alignItems: "center", textAlign: "center", paddingTop: 28 }}
-        >
-          <div className="pjm-del-ico">
+        <button style={S.backBtn} onClick={onBack}>
+          <Icon.ArrowLeft /> Batal
+        </button>
+        <span style={{ fontSize: ".75rem", color: "#94a3b8" }}>
+          / Hapus Serah Terima
+        </span>
+      </div>
+      <div style={{ ...S.page, maxWidth: 480 }}>
+        <div style={S.deleteBox}>
+          <div style={S.deleteIco}>
             <Icon.Trash />
           </div>
-          <h3 className="pjm-del-title">Hapus Serah Terima?</h3>
-          <p className="pjm-del-desc">
-            Data serah terima <strong>{item.code}</strong> akan dihapus
-            permanen.
+          <h3 style={S.deleteTitle}>Hapus Serah Terima?</h3>
+          <p style={S.deleteDesc}>
+            Data serah terima <strong>{item.code}</strong> — {item.name} akan
+            dihapus secara permanen dan tidak dapat dikembalikan.
           </p>
         </div>
-        <div className="pjm-modal-footer" style={{ justifyContent: "center" }}>
-          <button className="pjm-btn pjm-btn-ghost" onClick={onClose}>
+        <div style={{ ...S.btnRow, justifyContent: "center" }}>
+          <button style={S.btnGhost} onClick={onBack}>
             Batal
           </button>
           <button
-            className="pjm-btn pjm-btn-red"
+            style={S.btnRed}
             onClick={() => {
               onConfirm(item.id);
-              onClose();
+              onBack();
             }}
           >
-            <Icon.Trash /> Hapus
+            <Icon.Trash /> Hapus Permanen
           </button>
         </div>
       </div>
-    </div>
-  );
-}
-
-// ─── CATEGORY GROUP ────────────────────────────────────────────
-function CategoryGroup({
-  catKey,
-  items,
-  onView,
-  onEdit,
-  onReturn,
-  onDelete,
-  onViewHistory,
-}) {
-  const [open, setOpen] = useState(true);
-  const [activeDropdown, setActiveDropdown] = useState(null);
-  const cat = assetCategories[catKey];
-  const overdueCount = items.filter((b) => isOverdue(b.due_date)).length;
-
-  return (
-    <div className="pjm-cat-group">
-      <button className="pjm-cat-hdr" onClick={() => setOpen(!open)}>
-        <div className="pjm-cat-left">
-          <span
-            className="pjm-cat-ico"
-            style={{ background: cat.bg, color: cat.color }}
-          >
-            {cat.icon}
-          </span>
-          <span className="pjm-cat-lbl">{cat.label}</span>
-          <span className="pjm-cat-cnt">{items.length}</span>
-          {overdueCount > 0 && (
-            <span className="pjm-overdue-pill">⚠ {overdueCount} terlambat</span>
-          )}
-        </div>
-        <span className="pjm-cat-chev">
-          {open ? <Icon.ChevronUp /> : <Icon.ChevronDown />}
-        </span>
-      </button>
-      {open && (
-        <div className="pjm-cat-body">
-          <table className="pjm-table pjm-table--borrow">
-            <thead>
-              <tr>
-                <th>Aset</th>
-                <th>Lokasi / Tujuan</th>
-                <th>Penerima</th>
-                <th>Jatuh Tempo</th>
-                <th style={{ textAlign: "center" }}>Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((b) => {
-                const over = isOverdue(b.due_date);
-                const receiver = getUser(b.receiver_id);
-                return (
-                  <tr
-                    key={b.id}
-                    className={over ? "pjm-row--over" : ""}
-                    onClick={() => onView(b)}
-                    style={{ cursor: "pointer" }}
-                  >
-                    <td>
-                      <code className="pjm-ctag">{b.code}</code>
-                      <div
-                        className="pjm-asub"
-                        style={{
-                          fontSize: ".76rem",
-                          fontWeight: 600,
-                          color: "var(--slate)",
-                        }}
-                      >
-                        {b.name}
-                      </div>
-                    </td>
-                    <td>
-                      <span className="pjm-loc-t">{b.to_zone}</span>
-                    </td>
-                    <td>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "6px",
-                        }}
-                      >
-                        <div
-                          className="pjm-user-mini-av"
-                          style={{
-                            background: "#dbeafe",
-                            color: "#2563eb",
-                            width: 22,
-                            height: 22,
-                            fontSize: ".65rem",
-                          }}
-                        >
-                          {receiver.name.charAt(0)}
-                        </div>
-                        <div
-                          style={{
-                            fontSize: ".74rem",
-                            fontWeight: 600,
-                            color: "var(--slate)",
-                          }}
-                        >
-                          {receiver.name}
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <span
-                        className={`pjm-due ${over ? "pjm-due--over" : ""}`}
-                        style={{ fontSize: ".74rem", fontWeight: 600 }}
-                      >
-                        {over && <Icon.Clock />}
-                        {fmtDateShort(b.due_date)}
-                      </span>
-                    </td>
-                    <td
-                      onClick={(e) => e.stopPropagation()}
-                      style={{ display: "flex", justifyContent: "center" }}
-                    >
-                      <ActionDropdown
-                        id={b.id}
-                        activeId={activeDropdown}
-                        setActiveId={setActiveDropdown}
-                        items={[
-                          {
-                            icon: <Icon.Eye />,
-                            label: "Lihat Detail",
-                            onClick: () => onView(b),
-                          },
-                          {
-                            icon: <Icon.Edit />,
-                            label: "Edit",
-                            onClick: () => onEdit(b),
-                          },
-                          {
-                            icon: <Icon.Undo />,
-                            label: "Catat Pengembalian",
-                            className: "dd-ret",
-                            onClick: () => onReturn(b),
-                          },
-                          {
-                            icon: <Icon.Printer />,
-                            label: "Generate BAST",
-                            className: "dd-bast",
-                            onClick: () => generateBAST(b, "borrow"),
-                          },
-                          {
-                            icon: <Icon.History />,
-                            label: "Riwayat Aset",
-                            className: "dd-hist",
-                            onClick: () => onViewHistory(b),
-                          },
-                          { type: "divider" },
-                          {
-                            icon: <Icon.Trash />,
-                            label: "Hapus",
-                            className: "dd-del",
-                            onClick: () => onDelete(b),
-                          },
-                        ]}
-                      />
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
     </div>
   );
 }
@@ -3109,9 +3867,8 @@ export default function Peminjaman() {
   const [search, setSearch] = useState("");
   const [filterUser, setFilterUser] = useState("semua");
   const [filterPekerjaan, setFilterPekerjaan] = useState("semua");
-  const [modal, setModal] = useState(null);
-  const [historyModal, setHistoryModal] = useState(null);
-  const [activeReturnDropdown, setActiveReturnDropdown] = useState(null);
+  const [nav, setNav] = useState(null);
+  const [openCats, setOpenCats] = useState({});
 
   const activeBorrows = borrows.filter((b) => !b.is_returned);
   const filteredBorrows = activeBorrows.filter((b) => {
@@ -3156,98 +3913,151 @@ export default function Peminjaman() {
     setReturns([ret, ...returns]);
   };
   const handleDelete = (id) => setBorrows(borrows.filter((b) => b.id !== id));
-  const handleViewHistory = (item) =>
-    setHistoryModal({ code: item.code, name: item.name });
+  const goBack = () => setNav(null);
+  const toggleCat = (catKey) =>
+    setOpenCats((o) => ({ ...o, [catKey]: !o[catKey] }));
+  const isCatOpen = (catKey) => openCats[catKey] !== false;
+
+  if (nav?.page === "borrow-detail")
+    return (
+      <div style={S.root}>
+        <BorrowDetailPage
+          item={nav.data}
+          borrows={borrows}
+          returns={returns}
+          onBack={goBack}
+          onEdit={(d) => setNav({ page: "borrow-form", data: d })}
+          onReturn={(d) => setNav({ page: "return-form", data: d })}
+          onViewHistory={(d) => setNav({ page: "history", data: d })}
+        />
+      </div>
+    );
+  if (nav?.page === "return-detail")
+    return (
+      <div style={S.root}>
+        <ReturnDetailPage
+          item={nav.data}
+          borrows={borrows}
+          returns={returns}
+          onBack={goBack}
+          onViewHistory={(d) => setNav({ page: "history", data: d })}
+        />
+      </div>
+    );
+  if (nav?.page === "history")
+    return (
+      <div style={S.root}>
+        <HistoryPage
+          assetCode={nav.data.code}
+          assetName={nav.data.name}
+          borrows={borrows}
+          returns={returns}
+          onBack={goBack}
+        />
+      </div>
+    );
+  if (nav?.page === "borrow-form")
+    return (
+      <div style={S.root}>
+        <BorrowFormPage
+          borrow={nav.data}
+          onBack={goBack}
+          onSave={handleSaveBorrow}
+        />
+      </div>
+    );
+  if (nav?.page === "return-form")
+    return (
+      <div style={S.root}>
+        <ReturnFormPage
+          borrow={nav.data}
+          onBack={goBack}
+          onSave={handleReturn}
+        />
+      </div>
+    );
+  if (nav?.page === "delete")
+    return (
+      <div style={S.root}>
+        <DeletePage item={nav.data} onBack={goBack} onConfirm={handleDelete} />
+      </div>
+    );
 
   return (
-    <div className="pjm-root">
-      <style>{styles}</style>
-
-      {/* HEADER */}
-      <div className="pjm-header">
+    <div style={S.root}>
+      <div style={S.header}>
         <div>
-          <h1 className="pjm-title">BAST Aset</h1>
-          <p className="pjm-subtitle">
+          <h1 style={S.title}>BAST Aset</h1>
+          <p style={S.subtitle}>
             Kelola pencatatan BAST aset IT — peminjaman dan pengembalian per
             kategori
           </p>
         </div>
         <button
-          className="pjm-btn pjm-btn-blue pjm-btn-lg"
-          onClick={() => setModal({ type: "borrow-form", data: null })}
+          style={{ ...S.btnBlue, padding: ".5rem 1.2rem", fontSize: ".84rem" }}
+          onClick={() => setNav({ page: "borrow-form", data: null })}
         >
           <Icon.Plus /> Catat Serah Terima
         </button>
       </div>
 
-      {/* STATS */}
-      <div className="pjm-stats">
-        <div className="pjm-stat-card">
+      <div style={S.statsGrid}>
+        {[
+          {
+            ico: <Icon.Exchange />,
+            n: activeBorrows.length,
+            l: "Sedang Dipinjam",
+            bg: "#dbeafe",
+            c: "#2563eb",
+          },
+          {
+            ico: <Icon.Clock />,
+            n: overdueCount,
+            l: "Terlambat Kembali",
+            bg: overdueCount > 0 ? "#fee2e2" : "#f1f5f9",
+            c: overdueCount > 0 ? "#dc2626" : "#94a3b8",
+            warn: overdueCount > 0,
+          },
+          {
+            ico: <Icon.CheckCircle />,
+            n: returns.length,
+            l: "Sudah Dikembalikan",
+            bg: "#dcfce7",
+            c: "#16a34a",
+          },
+          {
+            ico: <Icon.User />,
+            n: [...new Set(activeBorrows.map((b) => b.receiver_id))].length,
+            l: "Penerima Aktif",
+            bg: "#ede9fe",
+            c: "#7c3aed",
+          },
+        ].map((s, i) => (
           <div
-            className="pjm-stat-ico"
-            style={{ background: "#dbeafe", color: "#2563eb" }}
+            key={i}
+            style={{ ...S.statCard, ...(s.warn ? S.statCardWarn : {}) }}
           >
-            <Icon.Exchange />
-          </div>
-          <div>
-            <div className="pjm-stat-n">{activeBorrows.length}</div>
-            <div className="pjm-stat-l">Sedang Dipinjam</div>
-          </div>
-        </div>
-        <div
-          className={`pjm-stat-card ${overdueCount > 0 ? "pjm-stat-card--warn" : ""}`}
-        >
-          <div
-            className="pjm-stat-ico"
-            style={{
-              background: overdueCount > 0 ? "#fee2e2" : "#f1f5f9",
-              color: overdueCount > 0 ? "#dc2626" : "#94a3b8",
-            }}
-          >
-            <Icon.Clock />
-          </div>
-          <div>
-            <div
-              className="pjm-stat-n"
-              style={{ color: overdueCount > 0 ? "#dc2626" : undefined }}
-            >
-              {overdueCount}
+            <div style={{ ...S.statIco, background: s.bg, color: s.c }}>
+              {s.ico}
             </div>
-            <div className="pjm-stat-l">Terlambat Kembali</div>
-          </div>
-        </div>
-        <div className="pjm-stat-card">
-          <div
-            className="pjm-stat-ico"
-            style={{ background: "#dcfce7", color: "#16a34a" }}
-          >
-            <Icon.CheckCircle />
-          </div>
-          <div>
-            <div className="pjm-stat-n">{returns.length}</div>
-            <div className="pjm-stat-l">Sudah Dikembalikan</div>
-          </div>
-        </div>
-        <div className="pjm-stat-card">
-          <div
-            className="pjm-stat-ico"
-            style={{ background: "#ede9fe", color: "#7c3aed" }}
-          >
-            <Icon.User />
-          </div>
-          <div>
-            <div className="pjm-stat-n">
-              {[...new Set(activeBorrows.map((b) => b.receiver_id))].length}
+            <div>
+              <div
+                style={{ ...S.statN, ...(s.warn ? { color: "#dc2626" } : {}) }}
+              >
+                {s.n}
+              </div>
+              <div style={S.statL}>{s.l}</div>
             </div>
-            <div className="pjm-stat-l">Penerima Aktif</div>
           </div>
-        </div>
+        ))}
       </div>
 
-      {/* TABS */}
-      <div className="pjm-tab-sw">
+      <div style={S.tabSw}>
         <button
-          className={`pjm-tsb ${activeTab === "borrow" ? "pjm-tsb--blue" : ""}`}
+          style={{
+            ...S.tabBtn,
+            ...(activeTab === "borrow" ? S.tabBtnBlue : {}),
+          }}
           onClick={() => {
             setActiveTab("borrow");
             setSearch("");
@@ -3255,28 +4065,35 @@ export default function Peminjaman() {
         >
           <Icon.Exchange /> Daftar Serah Terima
           <span
-            className={`pjm-tsbadge ${overdueCount > 0 && activeTab !== "borrow" ? "pjm-tsbadge--warn" : ""}`}
+            style={{
+              ...S.tabBadge,
+              ...(overdueCount > 0 && activeTab !== "borrow"
+                ? S.tabBadgeWarn
+                : {}),
+            }}
           >
             {activeBorrows.length}
           </span>
         </button>
         <button
-          className={`pjm-tsb ${activeTab === "return" ? "pjm-tsb--green" : ""}`}
+          style={{
+            ...S.tabBtn,
+            ...(activeTab === "return" ? S.tabBtnGreen : {}),
+          }}
           onClick={() => {
             setActiveTab("return");
             setSearch("");
           }}
         >
           <Icon.History /> Riwayat Pengembalian
-          <span className="pjm-tsbadge pjm-tsbadge--green">
+          <span style={{ ...S.tabBadge, ...S.tabBadgeGreen }}>
             {returns.length}
           </span>
         </button>
       </div>
 
-      {/* TOOLBAR */}
-      <div className="pjm-toolbar">
-        <div className="pjm-search-wrap">
+      <div style={S.toolbar}>
+        <div style={S.searchWrap}>
           <Icon.Search />
           <input
             placeholder={
@@ -3286,20 +4103,34 @@ export default function Peminjaman() {
             }
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            style={S.searchInput}
           />
           {search && (
-            <button className="pjm-search-clear" onClick={() => setSearch("")}>
+            <button
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                color: "#94a3b8",
+                padding: 0,
+                display: "flex",
+              }}
+              onClick={() => setSearch("")}
+            >
               <Icon.Times />
             </button>
           )}
         </div>
         {activeTab === "borrow" && (
           <>
-            <div className="pjm-filter-wrap">
-              <Icon.Briefcase />
+            <div style={S.filterWrap}>
+              <span style={{ color: "#94a3b8", display: "flex" }}>
+                <Icon.Briefcase />
+              </span>
               <select
                 value={filterPekerjaan}
                 onChange={(e) => setFilterPekerjaan(e.target.value)}
+                style={S.filterSelect}
               >
                 <option value="semua">Semua Pekerjaan</option>
                 {mockPekerjaan.map((p) => (
@@ -3309,11 +4140,14 @@ export default function Peminjaman() {
                 ))}
               </select>
             </div>
-            <div className="pjm-filter-wrap">
-              <Icon.User />
+            <div style={S.filterWrap}>
+              <span style={{ color: "#94a3b8", display: "flex" }}>
+                <Icon.User />
+              </span>
               <select
                 value={filterUser}
                 onChange={(e) => setFilterUser(e.target.value)}
+                style={S.filterSelect}
               >
                 <option value="semua">Semua Penerima</option>
                 {mockUsers.map((u) => (
@@ -3325,229 +4159,552 @@ export default function Peminjaman() {
             </div>
           </>
         )}
-        <div className="pjm-count-badge">
+        <div style={S.countBadge}>
           {activeTab === "borrow"
             ? `${filteredBorrows.length} aset`
             : `${filteredReturns.length} pengembalian`}
         </div>
       </div>
 
-      {/* BORROW TAB */}
       {activeTab === "borrow" && (
-        <div>
+        <div
+          style={{ display: "flex", flexDirection: "column", gap: ".65rem" }}
+        >
           {Object.keys(groupedBorrows).length === 0 ? (
-            <div className="pjm-empty">
-              <div className="pjm-empty-ico pjm-empty-ico--blue">
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: ".75rem",
+                padding: "3rem 1rem",
+                background: "#fff",
+                borderRadius: 12,
+                border: "1px solid #e2e8f0",
+                color: "#94a3b8",
+                fontSize: ".85rem",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+              }}
+            >
+              <div
+                style={{
+                  width: 46,
+                  height: 46,
+                  borderRadius: 12,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: "#eff6ff",
+                  color: "#2563eb",
+                }}
+              >
                 <Icon.Exchange />
               </div>
               <p>Tidak ada aset yang sedang dipinjam</p>
             </div>
           ) : (
-            <div className="pjm-groups">
-              {Object.entries(groupedBorrows).map(([catKey, items]) => (
-                <CategoryGroup
-                  key={catKey}
-                  catKey={catKey}
-                  items={items}
-                  onView={(b) =>
-                    setModal({ type: "detail", data: b, itemType: "borrow" })
-                  }
-                  onEdit={(b) => setModal({ type: "borrow-form", data: b })}
-                  onReturn={(b) => setModal({ type: "return-form", data: b })}
-                  onDelete={(b) => setModal({ type: "delete", data: b })}
-                  onViewHistory={handleViewHistory}
-                />
-              ))}
-            </div>
+            Object.entries(groupedBorrows).map(([catKey, items]) => {
+              const cat = assetCategories[catKey];
+              const overdueInCat = items.filter((b) =>
+                isOverdue(b.due_date),
+              ).length;
+              const open = isCatOpen(catKey);
+              return (
+                <div key={catKey} style={S.page}>
+                  <button style={S.catHdr} onClick={() => toggleCat(catKey)}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: ".6rem",
+                      }}
+                    >
+                      <span
+                        style={{
+                          ...S.catIco,
+                          background: cat.bg,
+                          color: cat.color,
+                        }}
+                      >
+                        {cat.icon}
+                      </span>
+                      <span style={S.catLbl}>{cat.label}</span>
+                      <span style={S.catCnt}>{items.length}</span>
+                      {overdueInCat > 0 && (
+                        <span style={S.overduePill}>
+                          ⚠ {overdueInCat} terlambat
+                        </span>
+                      )}
+                    </div>
+                    <span style={{ color: "#94a3b8", display: "flex" }}>
+                      {open ? <Icon.ChevronUp /> : <Icon.ChevronDown />}
+                    </span>
+                  </button>
+                  {open && (
+                    <div style={{ overflowX: "auto" }}>
+                      <table style={S.table}>
+                        <thead>
+                          <tr
+                            style={{
+                              background: "#f8fafc",
+                              borderBottom: "1px solid #e2e8f0",
+                            }}
+                          >
+                            {[
+                              "Aset",
+                              "Pekerjaan",
+                              "Dari → Ke",
+                              "Penerima",
+                              "Jatuh Tempo",
+                              "Kondisi",
+                            ].map((h) => (
+                              <th key={h} style={S.th}>
+                                {h}
+                              </th>
+                            ))}
+                            <th style={{ ...S.th, textAlign: "center" }}>
+                              Aksi
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {items.map((b) => {
+                            const over = isOverdue(b.due_date);
+                            const receiver = getUser(b.receiver_id);
+                            const cond = conditionConfig[b.condition];
+                            const pkj = getPekerjaan(b.pekerjaan_kode);
+                            return (
+                              <tr
+                                key={b.id}
+                                style={{ ...S.tr, ...(over ? S.trOver : {}) }}
+                                onClick={() =>
+                                  setNav({ page: "borrow-detail", data: b })
+                                }
+                              >
+                                <td style={S.td}>
+                                  <code style={S.code}>{b.code}</code>
+                                  <div style={S.assetName}>{b.name}</div>
+                                </td>
+                                <td style={S.td}>
+                                  {pkj ? (
+                                    <div>
+                                      <span style={S.pkjBadge}>
+                                        {pkj.no_anggaran}
+                                      </span>
+                                      <div
+                                        style={{
+                                          fontSize: ".67rem",
+                                          color: "#64748b",
+                                          marginTop: 2,
+                                          maxWidth: 160,
+                                          overflow: "hidden",
+                                          textOverflow: "ellipsis",
+                                          whiteSpace: "nowrap",
+                                        }}
+                                      >
+                                        {pkj.nama.slice(0, 50)}…
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <span style={S.muted}>—</span>
+                                  )}
+                                </td>
+                                <td style={S.td}>
+                                  <div style={S.locFlow}>
+                                    <span
+                                      style={{
+                                        fontSize: ".72rem",
+                                        color: "#64748b",
+                                      }}
+                                    >
+                                      {b.from_zone}
+                                    </span>
+                                    <span
+                                      style={{
+                                        color: "#94a3b8",
+                                        display: "flex",
+                                      }}
+                                    >
+                                      <Icon.ArrowRight />
+                                    </span>
+                                    <span
+                                      style={{
+                                        fontSize: ".72rem",
+                                        color: "#2563eb",
+                                        fontWeight: 600,
+                                      }}
+                                    >
+                                      {b.to_zone}
+                                    </span>
+                                  </div>
+                                </td>
+                                <td style={S.td}>
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: 6,
+                                    }}
+                                  >
+                                    <div
+                                      style={{
+                                        ...S.avatar,
+                                        background: "#dbeafe",
+                                        color: "#2563eb",
+                                      }}
+                                    >
+                                      {receiver.name.charAt(0)}
+                                    </div>
+                                    <div>
+                                      <div
+                                        style={{
+                                          fontSize: ".74rem",
+                                          fontWeight: 600,
+                                          color: "#1e293b",
+                                        }}
+                                      >
+                                        {receiver.name}
+                                      </div>
+                                      <div style={S.muted}>
+                                        {receiver.branch}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td style={S.td}>
+                                  <span
+                                    style={{
+                                      fontSize: ".73rem",
+                                      fontWeight: 600,
+                                      color: over ? "#dc2626" : "#64748b",
+                                      display: "inline-flex",
+                                      alignItems: "center",
+                                      gap: 3,
+                                      whiteSpace: "nowrap",
+                                    }}
+                                  >
+                                    {over && <Icon.Clock />}
+                                    {fmtDateShort(b.due_date)}
+                                  </span>
+                                </td>
+                                <td style={S.td}>
+                                  {cond && (
+                                    <span
+                                      style={{
+                                        ...S.pill,
+                                        background: cond.bg,
+                                        color: cond.color,
+                                      }}
+                                    >
+                                      {cond.label}
+                                    </span>
+                                  )}
+                                </td>
+                                <td
+                                  style={{ ...S.td, textAlign: "center" }}
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      gap: 2,
+                                    }}
+                                  >
+                                    <button
+                                      style={{ ...S.iconBtn, color: "#2563eb" }}
+                                      title="Detail"
+                                      onClick={() =>
+                                        setNav({
+                                          page: "borrow-detail",
+                                          data: b,
+                                        })
+                                      }
+                                    >
+                                      <Icon.Eye />
+                                    </button>
+                                    <button
+                                      style={{ ...S.iconBtn, color: "#64748b" }}
+                                      title="Edit"
+                                      onClick={() =>
+                                        setNav({ page: "borrow-form", data: b })
+                                      }
+                                    >
+                                      <Icon.Edit />
+                                    </button>
+                                    <button
+                                      style={{ ...S.iconBtn, color: "#16a34a" }}
+                                      title="Catat Kembali"
+                                      onClick={() =>
+                                        setNav({ page: "return-form", data: b })
+                                      }
+                                    >
+                                      <Icon.Undo />
+                                    </button>
+                                    <button
+                                      style={{ ...S.iconBtn, color: "#7c3aed" }}
+                                      title="BAST"
+                                      onClick={() => generateBAST(b, "borrow")}
+                                    >
+                                      <Icon.Printer />
+                                    </button>
+                                    <button
+                                      style={{ ...S.iconBtn, color: "#7c3aed" }}
+                                      title="Riwayat"
+                                      onClick={() =>
+                                        setNav({ page: "history", data: b })
+                                      }
+                                    >
+                                      <Icon.History />
+                                    </button>
+                                    <button
+                                      style={{ ...S.iconBtn, color: "#dc2626" }}
+                                      title="Hapus"
+                                      onClick={() =>
+                                        setNav({ page: "delete", data: b })
+                                      }
+                                    >
+                                      <Icon.Trash />
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              );
+            })
           )}
         </div>
       )}
 
-      {/* RETURN TAB */}
       {activeTab === "return" && (
         <div>
           {filteredReturns.length === 0 ? (
-            <div className="pjm-empty">
-              <div className="pjm-empty-ico pjm-empty-ico--green">
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: ".75rem",
+                padding: "3rem 1rem",
+                background: "#fff",
+                borderRadius: 12,
+                border: "1px solid #e2e8f0",
+                color: "#94a3b8",
+                fontSize: ".85rem",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+              }}
+            >
+              <div
+                style={{
+                  width: 46,
+                  height: 46,
+                  borderRadius: 12,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: "#dcfce7",
+                  color: "#16a34a",
+                }}
+              >
                 <Icon.CheckCircle />
               </div>
               <p>Belum ada riwayat pengembalian</p>
             </div>
           ) : (
-            <div className="pjm-table-wrap">
-              <table className="pjm-table pjm-table--ret">
-                <thead>
-                  <tr>
-                    <th>Aset</th>
-                    <th>Dikembalikan Oleh</th>
-                    <th>Tgl Kembali</th>
-                    <th>Kondisi</th>
-                    <th style={{ textAlign: "center" }}>Aksi</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredReturns.map((r) => {
-                    const cond = conditionConfig[r.return_condition];
-                    const returner = getUser(r.giver_id);
-                    return (
-                      <tr
-                        key={r.id}
-                        onClick={() =>
-                          setModal({
-                            type: "detail",
-                            data: r,
-                            itemType: "return",
-                          })
-                        }
-                        style={{ cursor: "pointer" }}
-                      >
-                        <td>
-                          <code className="pjm-ctag">{r.code}</code>
-                          <div
-                            className="pjm-asub"
+            <div style={S.page}>
+              <div style={{ overflowX: "auto" }}>
+                <table style={S.table}>
+                  <thead>
+                    <tr style={{ ...S.thead, ...S.theadGreen }}>
+                      {[
+                        "Aset",
+                        "Pekerjaan",
+                        "Dari → Ke",
+                        "Dikembalikan Oleh",
+                        "Tgl Kembali",
+                        "Kondisi",
+                      ].map((h) => (
+                        <th key={h} style={S.th}>
+                          {h}
+                        </th>
+                      ))}
+                      <th style={{ ...S.th, textAlign: "center" }}>Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredReturns.map((r) => {
+                      const cond = conditionConfig[r.return_condition];
+                      const returner = getUser(r.giver_id);
+                      const pkj = getPekerjaan(r.pekerjaan_kode);
+                      return (
+                        <tr
+                          key={r.id}
+                          style={S.tr}
+                          onClick={() =>
+                            setNav({ page: "return-detail", data: r })
+                          }
+                        >
+                          <td style={S.td}>
+                            <code style={S.code}>{r.code}</code>
+                            <div style={S.assetName}>{r.name}</div>
+                          </td>
+                          <td style={S.td}>
+                            {pkj ? (
+                              <div>
+                                <span style={S.pkjBadge}>
+                                  {pkj.no_anggaran}
+                                </span>
+                                <div
+                                  style={{
+                                    fontSize: ".67rem",
+                                    color: "#64748b",
+                                    marginTop: 2,
+                                    maxWidth: 160,
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    whiteSpace: "nowrap",
+                                  }}
+                                >
+                                  {pkj.nama.slice(0, 50)}…
+                                </div>
+                              </div>
+                            ) : (
+                              <span style={S.muted}>—</span>
+                            )}
+                          </td>
+                          <td style={S.td}>
+                            <div style={S.locFlow}>
+                              <span
+                                style={{ fontSize: ".72rem", color: "#64748b" }}
+                              >
+                                {r.from_zone}
+                              </span>
+                              <span
+                                style={{ color: "#94a3b8", display: "flex" }}
+                              >
+                                <Icon.ArrowRight />
+                              </span>
+                              <span
+                                style={{
+                                  fontSize: ".72rem",
+                                  color: "#16a34a",
+                                  fontWeight: 600,
+                                }}
+                              >
+                                {r.to_zone}
+                              </span>
+                            </div>
+                          </td>
+                          <td style={S.td}>
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 6,
+                              }}
+                            >
+                              <div
+                                style={{
+                                  ...S.avatar,
+                                  background: "#dcfce7",
+                                  color: "#16a34a",
+                                }}
+                              >
+                                {returner.name.charAt(0)}
+                              </div>
+                              <div>
+                                <div
+                                  style={{
+                                    fontSize: ".74rem",
+                                    fontWeight: 600,
+                                    color: "#1e293b",
+                                  }}
+                                >
+                                  {returner.name}
+                                </div>
+                                <div style={S.muted}>{returner.branch}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td
                             style={{
-                              fontSize: ".76rem",
+                              ...S.td,
+                              fontSize: ".74rem",
+                              color: "#16a34a",
                               fontWeight: 600,
-                              color: "var(--slate)",
+                              whiteSpace: "nowrap",
                             }}
                           >
-                            {r.name}
-                          </div>
-                        </td>
-                        <td>
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "6px",
-                            }}
+                            {fmtDateShort(r.return_date)}
+                          </td>
+                          <td style={S.td}>
+                            {cond && (
+                              <span
+                                style={{
+                                  ...S.pill,
+                                  background: cond.bg,
+                                  color: cond.color,
+                                }}
+                              >
+                                {cond.label}
+                              </span>
+                            )}
+                          </td>
+                          <td
+                            style={{ ...S.td, textAlign: "center" }}
+                            onClick={(e) => e.stopPropagation()}
                           >
                             <div
-                              className="pjm-user-mini-av"
                               style={{
-                                background: "#dcfce7",
-                                color: "#16a34a",
-                                width: 22,
-                                height: 22,
-                                fontSize: ".65rem",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                gap: 2,
                               }}
                             >
-                              {returner.name.charAt(0)}
+                              <button
+                                style={{ ...S.iconBtn, color: "#16a34a" }}
+                                title="Detail"
+                                onClick={() =>
+                                  setNav({ page: "return-detail", data: r })
+                                }
+                              >
+                                <Icon.Eye />
+                              </button>
+                              <button
+                                style={{ ...S.iconBtn, color: "#7c3aed" }}
+                                title="BAST"
+                                onClick={() => generateBAST(r, "return")}
+                              >
+                                <Icon.Printer />
+                              </button>
+                              <button
+                                style={{ ...S.iconBtn, color: "#7c3aed" }}
+                                title="Riwayat"
+                                onClick={() =>
+                                  setNav({ page: "history", data: r })
+                                }
+                              >
+                                <Icon.History />
+                              </button>
                             </div>
-                            <div
-                              style={{
-                                fontSize: ".74rem",
-                                fontWeight: 600,
-                                color: "var(--slate)",
-                              }}
-                            >
-                              {returner.name}
-                            </div>
-                          </div>
-                        </td>
-                        <td
-                          className="pjm-td-date pjm-td-date--green"
-                          style={{ fontSize: ".74rem" }}
-                        >
-                          {fmtDateShort(r.return_date)}
-                        </td>
-                        <td>
-                          <span
-                            className="pjm-cond-sm"
-                            style={{
-                              background: cond?.bg,
-                              color: cond?.color,
-                            }}
-                          >
-                            {cond?.label}
-                          </span>
-                        </td>
-                        <td
-                          onClick={(e) => e.stopPropagation()}
-                          style={{ display: "flex", justifyContent: "center" }}
-                        >
-                          <ActionDropdown
-                            id={r.id}
-                            activeId={activeReturnDropdown}
-                            setActiveId={setActiveReturnDropdown}
-                            items={[
-                              {
-                                icon: <Icon.Eye />,
-                                label: "Lihat Detail",
-                                onClick: () =>
-                                  setModal({
-                                    type: "detail",
-                                    data: r,
-                                    itemType: "return",
-                                  }),
-                              },
-                              {
-                                icon: <Icon.Printer />,
-                                label: "Generate BAST",
-                                className: "dd-bast",
-                                onClick: () => generateBAST(r, "return"),
-                              },
-                              {
-                                icon: <Icon.History />,
-                                label: "Riwayat Aset",
-                                className: "dd-hist",
-                                onClick: () => handleViewHistory(r),
-                              },
-                            ]}
-                          />
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </div>
-      )}
-
-      {/* MODALS */}
-      {modal?.type === "borrow-form" && (
-        <BorrowFormModal
-          borrow={modal.data}
-          onClose={() => setModal(null)}
-          onSave={handleSaveBorrow}
-        />
-      )}
-      {modal?.type === "return-form" && (
-        <ReturnFormModal
-          borrow={modal.data}
-          onClose={() => setModal(null)}
-          onSave={handleReturn}
-        />
-      )}
-      {modal?.type === "detail" && (
-        <DetailModal
-          item={modal.data}
-          itemType={modal.itemType}
-          onClose={() => setModal(null)}
-          onEdit={(b) => setModal({ type: "borrow-form", data: b })}
-          onReturn={(b) => setModal({ type: "return-form", data: b })}
-          onViewHistory={handleViewHistory}
-          borrows={borrows}
-          returns={returns}
-        />
-      )}
-      {modal?.type === "delete" && (
-        <DeleteModal
-          item={modal.data}
-          onClose={() => setModal(null)}
-          onConfirm={handleDelete}
-        />
-      )}
-      {historyModal && (
-        <AssetHistoryModal
-          assetCode={historyModal.code}
-          assetName={historyModal.name}
-          borrows={borrows}
-          returns={returns}
-          onClose={() => setHistoryModal(null)}
-        />
       )}
     </div>
   );
