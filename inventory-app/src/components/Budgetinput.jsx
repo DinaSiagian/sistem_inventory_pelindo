@@ -59,6 +59,7 @@ const INIT_CAPEX_FORM = [
   { id: "CAP-F-6", kd_master: "5900100000", nm_master: "Beban Investasi", nm_anggaran: "Pengembangan Sistem Manajemen Aset Pelindo (RKAP Lanjutan)", kd_capex: "2540012", thn_rkap_awal: 2026, thn_rkap_akhir: 2027, thn_anggaran: 2026, nilai_kad: 0, nilai_rkap: 0, anggaran_tahunan: [], pekerjaan: [], history_anggaran: [] },
 ];
 
+// Opsi tahun yang selalu mencakup 2021 hingga P+1 (Tahun Berjalan + 1)
 const yearOpts = (() => { const a = []; for (let y = CURRENT_YEAR + 1; y >= 2021; y--) a.push(y); return a; })();
 
 // ── CSS ────────────────────────────────────────────────────────
@@ -711,7 +712,7 @@ function CapexDetailPage({ capex, onBack, setCapexList, toast_ }) {
   );
 }
 
-// ── CAPEX INPUT ANGGARAN PAGE (LEGACY) ────────────────────────
+// ── CAPEX INPUT ANGGARAN PAGE ──────────────────────────────────
 function CapexInputAnggaranPage({ capex, onBack, onSave }) {
   const [thnRkapAwal, setThnRkapAwal] = useState(capex.thn_rkap_awal || CURRENT_YEAR);
   const [thnRkapAkhir, setThnRkapAkhir] = useState(capex.thn_rkap_akhir || CURRENT_YEAR);
@@ -740,6 +741,7 @@ function CapexInputAnggaranPage({ capex, onBack, onSave }) {
   };
 
   const history = capex.history_anggaran || [];
+  const historyTotal = history.reduce((sum, h) => sum + (h.nilai_rkap || 0), 0);
 
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:20 }}>
@@ -789,10 +791,20 @@ function CapexInputAnggaranPage({ capex, onBack, onSave }) {
           <button style={{ ...S.btn, background:"#2563eb", opacity: nilaiRkap?1:0.5, padding:"9px 20px", borderRadius:8 }} disabled={!nilaiRkap} onClick={handleSimpan}><Save size={15} /> Simpan Entri Anggaran</button>
         </div>
       </div>
+
       <div style={{ background:"white", border:"1px solid #e2e8f0", borderRadius:10, overflow:"hidden" }}>
-        <div style={{ padding:"14px 18px", borderBottom:"1px solid #f1f5f9", background:"#f8fafc", display:"flex", alignItems:"center", gap:8 }}>
-          <History size={16} style={{ color:"#2563eb" }} /><span style={{ fontSize:"0.85rem", fontWeight:700, color:"#374151" }}>Riwayat Entri Anggaran</span>
-          <span style={{ fontSize:"0.72rem", color:"#64748b", background:"#e2e8f0", padding:"1px 7px", borderRadius:99, fontWeight:600 }}>{history.length} entri</span>
+        <div style={{ padding:"14px 18px", borderBottom:"1px solid #f1f5f9", background:"#f8fafc", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+            <History size={16} style={{ color:"#2563eb" }} />
+            <span style={{ fontSize:"0.85rem", fontWeight:700, color:"#374151" }}>Riwayat Entri Anggaran</span>
+            <span style={{ fontSize:"0.72rem", color:"#64748b", background:"#e2e8f0", padding:"1px 7px", borderRadius:99, fontWeight:600 }}>{history.length} entri</span>
+          </div>
+          {history.length > 0 && (
+            <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+              <span style={{ fontSize:"0.72rem", fontWeight:700, color:"#64748b", textTransform:"uppercase", letterSpacing:"0.4px" }}>Total RKAP:</span>
+              <span style={{ fontSize:"0.88rem", fontWeight:800, color:"#2563eb" }}>{fmt(historyTotal)}</span>
+            </div>
+          )}
         </div>
         {history.length === 0 ? (
           <div style={{ padding:"32px 24px", textAlign:"center", color:"#94a3b8", fontSize:"0.85rem", fontStyle:"italic" }}>Belum ada riwayat entri anggaran.</div>
@@ -824,6 +836,7 @@ function OpexModule({ masterList, setMasterList }) {
   const [filterThnTo, setFilterThnTo] = useState("");
   const [filterNama, setFilterNama] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [kpiYear, setKpiYear] = useState("");
   const PAGE_SIZE = 5;
 
   const toast_ = (msg) => { setToast(msg); setTimeout(() => setToast(null), 2800); };
@@ -861,8 +874,8 @@ function OpexModule({ masterList, setMasterList }) {
     if (filterNama && filterNama !== "SEMUA" && !namaOptions.find(o => o.nama === filterNama)) setFilterNama("");
   }, [namaOptions]);
 
+  // Data Tabel: Difilter berdasarkan pencarian nama & tahun master
   const filteredMasters = useMemo(() => {
-    setCurrentPage(1);
     if (!filterNama) return [];
     return masters.filter(m => {
       if (filterThnFrom && m.thn_anggaran < parseInt(filterThnFrom)) return false;
@@ -872,14 +885,28 @@ function OpexModule({ masterList, setMasterList }) {
     });
   }, [masters, filterThnFrom, filterThnTo, filterNama]);
 
-  const kpiBase = useMemo(() => filterNama ? filteredMasters : masters.filter(m => {
-    if (filterThnFrom && m.thn_anggaran < parseInt(filterThnFrom)) return false;
-    if (filterThnTo && m.thn_anggaran > parseInt(filterThnTo)) return false;
-    return true;
-  }), [masters, filterThnFrom, filterThnTo, filterNama, filteredMasters]);
+  // Base Anggaran: TIDAK lagi dipengaruhi combo box kpiYear agar Total Anggaran tidak menjadi 0
+  const kpiBase = useMemo(() => {
+    return filterNama ? filteredMasters : masters.filter(m => {
+      if (filterThnFrom && m.thn_anggaran < parseInt(filterThnFrom)) return false;
+      if (filterThnTo && m.thn_anggaran > parseInt(filterThnTo)) return false;
+      return true;
+    });
+  }, [masters, filterThnFrom, filterThnTo, filterNama, filteredMasters]);
+
+  // Total Realisasi: Filter sesuai kpiYear HANYA untuk nilai realisasinya
+  const kpiRealisasi = useMemo(() => {
+    return kpiBase.reduce((s, m) => {
+      const rows = kpiYear
+        ? (m.realisasi_tahunan||[]).filter(r => r.thn === parseInt(kpiYear))
+        : (m.realisasi_tahunan||[]);
+      return s + rows.reduce((ss, r) => ss + (r.realisasi_murni||0) + (r.realisasi_bymhd||0), 0);
+    }, 0);
+  }, [kpiBase, kpiYear]);
 
   const totalAnggaran = kpiBase.reduce((s, m) => s + (m.nilai_anggaran||0), 0);
-  const totalRealisasi = kpiBase.reduce((s, m) => s + (m.realisasi_tahunan||[]).reduce((ss, r) => ss + (r.realisasi_murni||0) + (r.realisasi_bymhd||0), 0), 0);
+  const totalRealisasiAll = kpiBase.reduce((s, m) => s + (m.realisasi_tahunan||[]).reduce((ss, r) => ss + (r.realisasi_murni||0) + (r.realisasi_bymhd||0), 0), 0);
+
   const totalPages = Math.ceil(filteredMasters.length / PAGE_SIZE);
   const paginatedWithIdx = filteredMasters.slice((currentPage-1)*PAGE_SIZE, currentPage*PAGE_SIZE).map(m => ({ m, globalIdx: filteredMasters.findIndex(x => x.id===m.id) }));
 
@@ -957,22 +984,39 @@ function OpexModule({ masterList, setMasterList }) {
 
       {!detailMaster && (<>
 
-      {/* KPI Cards */}
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:14 }}>
-        {[
-          { label: filterNama&&filterNama!=="SEMUA" ? "Total Anggaran (dipilih)" : "Total Anggaran", val: fmt(totalAnggaran), color:"#2563eb" },
-          { label: filterNama&&filterNama!=="SEMUA" ? "Total Realisasi (dipilih)" : "Total Realisasi", val: fmt(totalRealisasi), color:"#d97706" },
-          { label:"Sisa Anggaran", val: fmt(totalAnggaran-totalRealisasi), color: totalRealisasi>totalAnggaran?"#dc2626":"#16a34a" },
-          { label:"Total Pos Master", val: `${masters.length} item`, color:"#475569" },
-        ].map(item => (
-          <div key={item.label} style={{ background:"white", border:"1px solid #e2e8f0", borderRadius:10, padding:"12px 16px" }}>
-            <div style={{ fontSize:"0.68rem", fontWeight:700, color:"#94a3b8", textTransform:"uppercase", letterSpacing:"0.5px", marginBottom:6 }}>{item.label}</div>
-            <div style={{ fontSize:"1rem", fontWeight:800, color:item.color }}>{item.val}</div>
+      <div style={{ background:"white", border:"1px solid #e2e8f0", borderRadius:10, overflow:"hidden" }}>
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"10px 16px", borderBottom:"1px solid #f1f5f9", background:"#f8fafc" }}>
+          <span style={{ fontSize:"0.8rem", fontWeight:700, color:"#374151" }}>Ringkasan Anggaran</span>
+          <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+            <span style={{ fontSize:"0.75rem", color:"#64748b", whiteSpace:"nowrap" }}>Tahun:</span>
+            <select
+              style={{ padding:"4px 8px", border:"1px solid #cbd5e1", borderRadius:6, fontSize:"0.78rem", color: kpiYear?"#1d4ed8":"#475569", fontWeight: kpiYear?700:400, background: kpiYear?"#eff6ff":"white", outline:"none", cursor:"pointer" }}
+              value={kpiYear}
+              onChange={e => setKpiYear(e.target.value)}
+            >
+              <option value="">Semua</option>
+              {yearOpts.map(y => <option key={y} value={y}>{y}</option>)}
+            </select>
+            {kpiYear && (
+              <button style={{ ...S.abtn, padding:"3px 6px", color:"#ef4444", borderColor:"#fecaca", background:"#fef2f2", gap:3, fontSize:"0.72rem", fontWeight:700 }} onClick={() => setKpiYear("")}><X size={11} /></button>
+            )}
           </div>
-        ))}
+        </div>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:0 }}>
+          {[
+            { label: "Total Anggaran", val: fmt(totalAnggaran), color:"#2563eb", bg:"#eff6ff", border:"#bfdbfe" },
+            { label: kpiYear ? `Realisasi ${kpiYear}` : "Total Realisasi", val: fmt(kpiRealisasi), color:"#d97706", bg:"#fffbeb", border:"#fde68a" },
+            { label: "Sisa Anggaran", val: fmt(totalAnggaran - totalRealisasiAll), color: totalRealisasiAll>totalAnggaran?"#dc2626":"#16a34a", bg: totalRealisasiAll>totalAnggaran?"#fef2f2":"#f0fdf4", border: totalRealisasiAll>totalAnggaran?"#fecaca":"#bbf7d0" },
+            { label: "Total Pos Master", val: `${kpiBase.length} pos`, color:"#475569", bg:"#f8fafc", border:"#e2e8f0" },
+          ].map((item, i) => (
+            <div key={item.label} style={{ padding:"12px 16px", borderRight: i < 3 ? "1px solid #f1f5f9" : "none" }}>
+              <div style={{ fontSize:"0.68rem", fontWeight:700, color:"#94a3b8", textTransform:"uppercase", letterSpacing:"0.5px", marginBottom:4 }}>{item.label}</div>
+              <div style={{ fontSize:"1rem", fontWeight:800, color:item.color }}>{item.val}</div>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* Master List + Filter */}
       <div style={{ background:"white", border:"1px solid #e2e8f0", borderRadius:10, overflow:"hidden" }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"14px 18px", borderBottom:"1px solid #f1f5f9" }}>
           <div style={{ display:"flex", alignItems:"center", gap:8 }}>
@@ -995,7 +1039,7 @@ function OpexModule({ masterList, setMasterList }) {
               {[{ label:"Dari", val:filterThnFrom, set:setFilterThnFrom }, { label:"s/d", val:filterThnTo, set:setFilterThnTo }].map((f, i) => (
                 <React.Fragment key={f.label}>
                   {i > 0 && <span style={{ fontSize:"0.78rem", color:"#94a3b8" }}>—</span>}
-                  <select style={{ ...S.inp, width:110, padding:"6px 10px", fontSize:"0.8rem", background: f.val?"#eff6ff":"white", border: f.val?"1px solid #bfdbfe":"1px solid #cbd5e1", color: f.val?"#1d4ed8":"#475569", fontWeight: f.val?600:400 }} value={f.val} onChange={e => f.set(e.target.value)}>
+                  <select style={{ ...S.inp, width:110, padding:"6px 10px", fontSize:"0.8rem", background: f.val?"#eff6ff":"white", border: f.val?"1px solid #bfdbfe":"1px solid #cbd5e1", color: f.val?"#1d4ed8":"#475569", fontWeight: f.val?600:400 }} value={f.val} onChange={e => { f.set(e.target.value); setCurrentPage(1); }}>
                     <option value="">Semua</option>
                     {yearOpts.map(y => <option key={y} value={y}>{y}</option>)}
                   </select>
@@ -1022,7 +1066,7 @@ function OpexModule({ masterList, setMasterList }) {
             </div>
             {(filterThnFrom||filterThnTo) && (
               <button style={{ ...S.abtn, padding:"4px 8px", color:"#ef4444", borderColor:"#fecaca", background:"#fef2f2", gap:4, fontSize:"0.72rem", fontWeight:700 }}
-                onClick={() => { setFilterThnFrom(""); setFilterThnTo(""); setFilterNama(""); }}>
+                onClick={() => { setFilterThnFrom(""); setFilterThnTo(""); setFilterNama(""); setCurrentPage(1); }}>
                 <X size={12} /> Reset
               </button>
             )}
@@ -1037,7 +1081,6 @@ function OpexModule({ masterList, setMasterList }) {
         )}
       </div>
 
-      {/* Results Table */}
       {filterNama && (
         filteredMasters.length === 0 ? (
           <div style={{ background:"white", border:"1px solid #e2e8f0", borderRadius:10, padding:"48px 24px", textAlign:"center", color:"#94a3b8", fontSize:"0.88rem" }}>
@@ -1302,7 +1345,6 @@ function CapexModule({ capexList, setCapexList }) {
       </div>
 
       <div style={{ background:"white", border:"1px solid #e2e8f0", borderRadius:10, overflow:"hidden" }}>
-        {/* PERUBAHAN: header + filter bar digabung, hapus div filter kosong terpisah */}
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"10px 20px", borderBottom:"1px solid #f1f5f9", background:"#f8fafc" }}>
           <div style={{ display:"flex", alignItems:"center", gap:8 }}>
             <Layers size={17} style={{ color:"#2563eb" }} />
@@ -1418,7 +1460,6 @@ export default function App() {
     <div style={{ minHeight:"100vh", background:"#f8fafc" }}>
       <style>{CSS_BM}</style>
       <style>{`*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif!important;}body{-webkit-font-smoothing:antialiased;}`}</style>
-      {/* PERUBAHAN: padding atas diperkecil dari 0.5rem → 0 */}
       <div style={{ padding:"0 2rem 2rem", maxWidth:1400, margin:"0 auto" }}>{children}</div>
     </div>
   );
