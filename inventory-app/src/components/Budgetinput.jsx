@@ -59,7 +59,6 @@ const INIT_CAPEX_FORM = [
   { id: "CAP-F-6", kd_master: "5900100000", nm_master: "Beban Investasi", nm_anggaran: "Pengembangan Sistem Manajemen Aset Pelindo (RKAP Lanjutan)", kd_capex: "2540012", thn_rkap_awal: 2026, thn_rkap_akhir: 2027, thn_anggaran: 2026, nilai_kad: 0, nilai_rkap: 0, anggaran_tahunan: [], pekerjaan: [], history_anggaran: [] },
 ];
 
-// Opsi tahun yang selalu mencakup 2021 hingga P+1 (Tahun Berjalan + 1)
 const yearOpts = (() => { const a = []; for (let y = CURRENT_YEAR + 1; y >= 2021; y--) a.push(y); return a; })();
 
 // ── CSS ────────────────────────────────────────────────────────
@@ -824,6 +823,43 @@ function CapexInputAnggaranPage({ capex, onBack, onSave }) {
   );
 }
 
+// ── OPEX MASTER FORM MODAL (extracted to module level) ─────────
+function OpexMasterFormModal({ title, form, setForm, onSave, onClose }) {
+  return (
+    <div style={S.ovs} onClick={onClose}>
+      <div style={{ background:"white", borderRadius:12, padding:28, maxWidth:620, width:"100%", boxShadow:"0 10px 25px rgba(0,0,0,.1)" }} onClick={e => e.stopPropagation()}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
+          <h3 style={{ fontWeight:700, fontSize:"1rem" }}>{title}</h3>
+          <button style={{ background:"transparent", border:"none", cursor:"pointer", color:"#64748b" }} onClick={onClose}><X size={20} /></button>
+        </div>
+        <div style={{ border:"1px solid #f1f5f9", borderRadius:8, overflow:"hidden", marginBottom:16 }}>
+          {[
+            { label:"Nama Anggaran", key:"nama", required:true, placeholder:"Contoh: Beban Pemeliharaan Software" },
+            { label:"Kode Anggaran", key:"kd", placeholder:"Contoh: 5030905000" },
+          ].map(f => (
+            <ModalFormRow key={f.key} label={f.label} required={f.required}>
+              <input style={S.inp} placeholder={f.placeholder} value={form[f.key]} onChange={e => setForm(fm => ({ ...fm, [f.key]: e.target.value }))} />
+            </ModalFormRow>
+          ))}
+          <ModalFormRow label="Tahun Anggaran" required>
+            <select style={S.inp} value={form.thn_anggaran} onChange={e => setForm(fm => ({ ...fm, thn_anggaran: e.target.value }))}>{yearOpts.map(y => <option key={y} value={y}>{y}</option>)}</select>
+          </ModalFormRow>
+          <ModalFormRow label="Nilai Anggaran (Rp)" required noBorder>
+            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+              <input type="number" className="no-spinners" style={{ ...S.inp, flex:1 }} placeholder="0" value={form.nilai_anggaran} onChange={e => setForm(fm => ({ ...fm, nilai_anggaran: e.target.value }))} />
+              {parseFloat(form.nilai_anggaran) > 0 && <span style={{ fontSize:"0.75rem", color:"#64748b", whiteSpace:"nowrap" }}>≈ {fmt(form.nilai_anggaran)}</span>}
+            </div>
+          </ModalFormRow>
+        </div>
+        <div style={{ display:"flex", gap:10, justifyContent:"flex-end" }}>
+          <button style={S.btnOut} onClick={onClose}>Batal</button>
+          <button style={{ ...S.btn, background:"#16a34a", opacity: form.nama&&form.nilai_anggaran?1:0.5 }} disabled={!form.nama||!form.nilai_anggaran} onClick={onSave}><Plus size={14} /> {title.includes("Edit") ? "Simpan Perubahan" : "Tambahkan"}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── OPEX MODULE ────────────────────────────────────────────────
 function OpexModule({ masterList, setMasterList }) {
   const [masters, setMasters] = useState(INIT_OPEX_MASTERS);
@@ -874,7 +910,6 @@ function OpexModule({ masterList, setMasterList }) {
     if (filterNama && filterNama !== "SEMUA" && !namaOptions.find(o => o.nama === filterNama)) setFilterNama("");
   }, [namaOptions]);
 
-  // Data Tabel: Difilter berdasarkan pencarian nama & tahun master
   const filteredMasters = useMemo(() => {
     if (!filterNama) return [];
     return masters.filter(m => {
@@ -885,7 +920,6 @@ function OpexModule({ masterList, setMasterList }) {
     });
   }, [masters, filterThnFrom, filterThnTo, filterNama]);
 
-  // Base Anggaran: TIDAK lagi dipengaruhi combo box kpiYear agar Total Anggaran tidak menjadi 0
   const kpiBase = useMemo(() => {
     return filterNama ? filteredMasters : masters.filter(m => {
       if (filterThnFrom && m.thn_anggaran < parseInt(filterThnFrom)) return false;
@@ -894,7 +928,6 @@ function OpexModule({ masterList, setMasterList }) {
     });
   }, [masters, filterThnFrom, filterThnTo, filterNama, filteredMasters]);
 
-  // Total Realisasi: Filter sesuai kpiYear HANYA untuk nilai realisasinya
   const kpiRealisasi = useMemo(() => {
     return kpiBase.reduce((s, m) => {
       const rows = kpiYear
@@ -910,46 +943,28 @@ function OpexModule({ masterList, setMasterList }) {
   const totalPages = Math.ceil(filteredMasters.length / PAGE_SIZE);
   const paginatedWithIdx = filteredMasters.slice((currentPage-1)*PAGE_SIZE, currentPage*PAGE_SIZE).map(m => ({ m, globalIdx: filteredMasters.findIndex(x => x.id===m.id) }));
 
-  const MasterFormModal = ({ title, form, setForm, onSave, onClose }) => (
-    <div style={S.ovs} onClick={onClose}>
-      <div style={{ background:"white", borderRadius:12, padding:28, maxWidth:620, width:"100%", boxShadow:"0 10px 25px rgba(0,0,0,.1)" }} onClick={e => e.stopPropagation()}>
-        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
-          <h3 style={{ fontWeight:700, fontSize:"1rem" }}>{title}</h3>
-          <button style={{ background:"transparent", border:"none", cursor:"pointer", color:"#64748b" }} onClick={onClose}><X size={20} /></button>
-        </div>
-        <div style={{ border:"1px solid #f1f5f9", borderRadius:8, overflow:"hidden", marginBottom:16 }}>
-          {[
-            { label:"Nama Anggaran", key:"nama", required:true, placeholder:"Contoh: Beban Pemeliharaan Software" },
-            { label:"Kode Anggaran", key:"kd", placeholder:"Contoh: 5030905000" },
-          ].map(f => (
-            <ModalFormRow key={f.key} label={f.label} required={f.required}>
-              <input style={S.inp} placeholder={f.placeholder} value={form[f.key]} onChange={e => setForm(fm => ({ ...fm, [f.key]: e.target.value }))} />
-            </ModalFormRow>
-          ))}
-          <ModalFormRow label="Tahun Anggaran" required>
-            <select style={S.inp} value={form.thn_anggaran} onChange={e => setForm(fm => ({ ...fm, thn_anggaran: e.target.value }))}>{yearOpts.map(y => <option key={y} value={y}>{y}</option>)}</select>
-          </ModalFormRow>
-          <ModalFormRow label="Nilai Anggaran (Rp)" required noBorder>
-            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-              <input type="number" className="no-spinners" style={{ ...S.inp, flex:1 }} placeholder="0" value={form.nilai_anggaran} onChange={e => setForm(fm => ({ ...fm, nilai_anggaran: e.target.value }))} />
-              {parseFloat(form.nilai_anggaran) > 0 && <span style={{ fontSize:"0.75rem", color:"#64748b", whiteSpace:"nowrap" }}>≈ {fmt(form.nilai_anggaran)}</span>}
-            </div>
-          </ModalFormRow>
-        </div>
-        <div style={{ display:"flex", gap:10, justifyContent:"flex-end" }}>
-          <button style={S.btnOut} onClick={onClose}>Batal</button>
-          <button style={{ ...S.btn, background:"#16a34a", opacity: form.nama&&form.nilai_anggaran?1:0.5 }} disabled={!form.nama||!form.nilai_anggaran} onClick={onSave}><Plus size={14} /> {title.includes("Edit") ? "Simpan Perubahan" : "Tambahkan"}</button>
-        </div>
-      </div>
-    </div>
-  );
-
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
       {toast && <ToastMsg msg={toast} onDone={() => setToast(null)} />}
       {confirm && <ConfirmBox msg={confirm.msg} onConfirm={confirm.onConfirm} onCancel={() => setConfirm(null)} />}
-      {showAddMaster && <MasterFormModal title="Tambah Anggaran Master OPEX" form={addForm} setForm={setAddForm} onSave={handleAddMaster} onClose={() => setShowAddMaster(false)} />}
-      {editModalMaster && <MasterFormModal title="Edit Anggaran Master" form={editForm} setForm={setEditForm} onSave={handleSaveEditMaster} onClose={() => setEditModalMaster(null)} />}
+      {showAddMaster && (
+        <OpexMasterFormModal
+          title="Tambah Anggaran Master OPEX"
+          form={addForm}
+          setForm={setAddForm}
+          onSave={handleAddMaster}
+          onClose={() => setShowAddMaster(false)}
+        />
+      )}
+      {editModalMaster && (
+        <OpexMasterFormModal
+          title="Edit Anggaran Master"
+          form={editForm}
+          setForm={setEditForm}
+          onSave={handleSaveEditMaster}
+          onClose={() => setEditModalMaster(null)}
+        />
+      )}
 
       {detailMaster && (() => {
         const latest = masters.find(m => m.id === detailMaster.id) || detailMaster;
@@ -1150,89 +1165,9 @@ function OpexModule({ masterList, setMasterList }) {
   );
 }
 
-// ── CAPEX MODULE ───────────────────────────────────────────────
-function CapexModule({ capexList, setCapexList }) {
-  const [toast, setToast] = useState(null);
-  const [confirm, setConfirm] = useState(null);
-  const [editTarget, setEditTarget] = useState(null);
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [inputAnggaranCapex, setInputAnggaranCapex] = useState(null);
-  const [detailCapex, setDetailCapex] = useState(null);
-  const [editAnggaran, setEditAnggaran] = useState(null);
-  const [filterCapexTahun, setFilterCapexTahun] = useState("");
-
-  const toast_ = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
-  const emptyNew = { nm_anggaran:"", kd_capex:"", thn_rkap_awal: CURRENT_YEAR-1, thn_rkap_akhir: CURRENT_YEAR-1, thn_anggaran: CURRENT_YEAR-1, nilai_kad:"", nilai_rkap:"" };
-  const [newCapex, setNewCapex] = useState(emptyNew);
-
-  const handleAddCapex = useCallback(() => {
-    if (!newCapex.nm_anggaran) return;
-    setCapexList(p => [...p, { id:uid(), kd_master:"5900100000", nm_master:"Beban Investasi", nm_anggaran:newCapex.nm_anggaran, kd_capex:newCapex.kd_capex, thn_rkap_awal:parseInt(newCapex.thn_rkap_awal), thn_rkap_akhir:parseInt(newCapex.thn_rkap_akhir), thn_anggaran:parseInt(newCapex.thn_anggaran), nilai_kad:parseFloat(newCapex.nilai_kad)||0, nilai_rkap:parseFloat(newCapex.nilai_rkap)||0, anggaran_tahunan:[], pekerjaan:[], history_anggaran:[] }]);
-    toast_("Data CAPEX baru ditambahkan."); setShowAddForm(false); setNewCapex(emptyNew);
-  }, [newCapex, setCapexList, toast_]);
-
-  const saveEditCapex = useCallback(() => {
-    if (!editTarget) return;
-    setCapexList(p => p.map(c => c.id===editTarget.id ? { ...c, nm_anggaran:editTarget.nm_anggaran, kd_capex:editTarget.kd_capex, thn_rkap_awal:parseInt(editTarget.thn_rkap_awal), thn_rkap_akhir:parseInt(editTarget.thn_rkap_akhir), thn_anggaran:parseInt(editTarget.thn_anggaran), nilai_kad:parseFloat(editTarget.nilai_kad)||0, nilai_rkap:parseFloat(editTarget.nilai_rkap)||0 } : c));
-    setEditTarget(null); toast_("Perubahan disimpan.");
-  }, [editTarget, setCapexList, toast_]);
-
-  const handleDeleteCapex = useCallback((id) => setConfirm({ msg:"Hapus data CAPEX ini beserta seluruh data di dalamnya?", onConfirm: () => {
-    setCapexList(p => p.filter(c => c.id!==id)); setConfirm(null); toast_("Data CAPEX dihapus.");
-  }}), [setCapexList, toast_]);
-
-  const handleSaveEntriAnggaran = useCallback((capexId, entry, nilaiKad, nilaiRkap) => {
-    const anggaran_item = {
-      id: entry.id,
-      thn_rkap_awal: entry.thn_rkap_awal,
-      thn_rkap_akhir: entry.thn_rkap_akhir,
-      nilai_kad: entry.nilai_kad,
-      thn: entry.thn_anggaran,
-      nilai_anggaran: nilaiRkap,
-      history: [{ tgl: entry.tgl, tipe: "entri_baru", nilai: nilaiRkap, user: "System" }]
-    };
-    setCapexList(p => p.map(c => c.id!==capexId ? c : { 
-      ...c, 
-      nilai_kad: nilaiKad, 
-      nilai_rkap: nilaiRkap, 
-      anggaran_tahunan: [...(c.anggaran_tahunan||[]), anggaran_item],
-      history_anggaran: [...(c.history_anggaran||[]), entry] 
-    }));
-    toast_("Entri anggaran berhasil disimpan.");
-    setInputAnggaranCapex(prev => prev?.id===capexId ? { 
-      ...prev, 
-      nilai_kad: nilaiKad, 
-      nilai_rkap: nilaiRkap, 
-      anggaran_tahunan: [...(prev.anggaran_tahunan||[]), anggaran_item],
-      history_anggaran: [...(prev.history_anggaran||[]), entry] 
-    } : prev);
-  }, [setCapexList, toast_]);
-
-  const handleCloseAddForm = useCallback(() => setShowAddForm(false), []);
-  const handleCloseEditForm = useCallback(() => setEditTarget(null), []);
-
-  const handleSaveEditAnggaran = useCallback((capexId, anggaranId, updatedData) => {
-    setCapexList(p => p.map(c => c.id!==capexId ? c : { 
-      ...c, 
-      thn_rkap_awal: updatedData.thn_rkap_awal,
-      thn_rkap_akhir: updatedData.thn_rkap_akhir,
-      nilai_kad: updatedData.nilai_kad,
-      anggaran_tahunan: (c.anggaran_tahunan||[]).map(a => a.id===anggaranId ? { ...a, thn: updatedData.thn, nilai_anggaran: updatedData.nilai_anggaran } : a)
-    }));
-    toast_("Perubahan anggaran berhasil disimpan.");
-    setEditAnggaran(null);
-  }, [setCapexList, toast_]);
-
-  if (detailCapex) {
-    const latest = capexList.find(c => c.id===detailCapex.id) || detailCapex;
-    return <div style={{ display:"flex", flexDirection:"column", gap:16 }}>{toast && <ToastMsg msg={toast} onDone={() => setToast(null)} />}<CapexDetailPage capex={latest} onBack={() => setDetailCapex(null)} setCapexList={setCapexList} toast_={toast_} /></div>;
-  }
-  if (inputAnggaranCapex) {
-    const latest = capexList.find(c => c.id===inputAnggaranCapex.id) || inputAnggaranCapex;
-    return <div style={{ display:"flex", flexDirection:"column", gap:16 }}>{toast && <ToastMsg msg={toast} onDone={() => setToast(null)} />}<CapexInputAnggaranPage capex={latest} onBack={() => setInputAnggaranCapex(null)} onSave={handleSaveEntriAnggaran} /></div>;
-  }
-
-  const CapexFormModal = React.memo(({ title, data, setData, onSave, onClose }) => (
+// ── CAPEX FORM MODAL (extracted to module level) ───────────────
+const CapexFormModal = React.memo(function CapexFormModal({ title, data, setData, onSave, onClose }) {
+  return (
     <div style={S.ovs} onClick={onClose}>
       <div style={{ background:"white", borderRadius:12, width:"100%", maxWidth:600, maxHeight:"90vh", overflowY:"auto", boxShadow:"0 10px 25px rgba(0,0,0,.1)" }} onClick={e => e.stopPropagation()}>
         <div style={{ padding:"16px 20px", borderBottom:"1px solid #e2e8f0", display:"flex", justifyContent:"space-between", alignItems:"center", background:"#f8fafc" }}>
@@ -1271,74 +1206,178 @@ function CapexModule({ capexList, setCapexList }) {
         </div>
       </div>
     </div>
-  ));
+  );
+});
 
-  const EditAnggaranModal = ({ capexId, anggaran, onSave, onClose }) => {
-    const [thnRkapAwal, setThnRkapAwal] = useState(String(anggaran.thn_rkap_awal || ""));
-    const [thnRkapAkhir, setThnRkapAkhir] = useState(String(anggaran.thn_rkap_akhir || ""));
-    const [nilaiKad, setNilaiKad] = useState(String(anggaran.nilai_kad || ""));
-    const [thnAnggaran, setThnAnggaran] = useState(String(anggaran.thn || ""));
-    const [nilaiRkap, setNilaiRkap] = useState(String(anggaran.nilai_anggaran || ""));
-    
-    const handleSave = () => {
-      if (!thnRkapAwal.trim() || !thnRkapAkhir.trim() || !thnAnggaran.trim() || !nilaiRkap.trim()) {
-        return alert("Semua field harus diisi!");
-      }
-      const awal = parseInt(thnRkapAwal), akhir = parseInt(thnRkapAkhir);
-      if (awal > akhir) return alert("RKAP Awal tidak boleh lebih besar dari RKAP Akhir!");
-      onSave(capexId, anggaran.id, {
-        thn_rkap_awal: awal,
-        thn_rkap_akhir: akhir,
-        nilai_kad: parseFloat(nilaiKad) || 0,
-        thn: parseInt(thnAnggaran),
-        nilai_anggaran: parseFloat(nilaiRkap) || 0
-      });
-    };
+// ── CAPEX EDIT ANGGARAN MODAL (extracted to module level) ──────
+function CapexEditAnggaranModal({ capexId, anggaran, onSave, onClose }) {
+  const [thnRkapAwal, setThnRkapAwal] = useState(String(anggaran.thn_rkap_awal || ""));
+  const [thnRkapAkhir, setThnRkapAkhir] = useState(String(anggaran.thn_rkap_akhir || ""));
+  const [nilaiKad, setNilaiKad] = useState(String(anggaran.nilai_kad || ""));
+  const [thnAnggaran, setThnAnggaran] = useState(String(anggaran.thn || ""));
+  const [nilaiRkap, setNilaiRkap] = useState(String(anggaran.nilai_anggaran || ""));
 
-    return (
-      <div style={S.ovs} onClick={onClose}>
-        <div style={{ background:"white", borderRadius:12, width:"100%", maxWidth:600, maxHeight:"90vh", overflowY:"auto", boxShadow:"0 10px 25px rgba(0,0,0,.1)" }} onClick={e => e.stopPropagation()}>
-          <div style={{ padding:"16px 20px", borderBottom:"1px solid #e2e8f0", display:"flex", justifyContent:"space-between", alignItems:"center", background:"#f8fafc" }}>
-            <h3 style={{ fontWeight:700, fontSize:"1rem", color:"#1e293b" }}>Edit Data Anggaran</h3>
-            <button style={{ background:"transparent", border:"none", cursor:"pointer", color:"#64748b" }} onClick={onClose}><X size={20} /></button>
+  const handleSave = () => {
+    if (!thnRkapAwal.trim() || !thnRkapAkhir.trim() || !thnAnggaran.trim() || !nilaiRkap.trim()) {
+      return alert("Semua field harus diisi!");
+    }
+    const awal = parseInt(thnRkapAwal), akhir = parseInt(thnRkapAkhir);
+    if (awal > akhir) return alert("RKAP Awal tidak boleh lebih besar dari RKAP Akhir!");
+    onSave(capexId, anggaran.id, {
+      thn_rkap_awal: awal,
+      thn_rkap_akhir: akhir,
+      nilai_kad: parseFloat(nilaiKad) || 0,
+      thn: parseInt(thnAnggaran),
+      nilai_anggaran: parseFloat(nilaiRkap) || 0
+    });
+  };
+
+  return (
+    <div style={S.ovs} onClick={onClose}>
+      <div style={{ background:"white", borderRadius:12, width:"100%", maxWidth:600, maxHeight:"90vh", overflowY:"auto", boxShadow:"0 10px 25px rgba(0,0,0,.1)" }} onClick={e => e.stopPropagation()}>
+        <div style={{ padding:"16px 20px", borderBottom:"1px solid #e2e8f0", display:"flex", justifyContent:"space-between", alignItems:"center", background:"#f8fafc" }}>
+          <h3 style={{ fontWeight:700, fontSize:"1rem", color:"#1e293b" }}>Edit Data Anggaran</h3>
+          <button style={{ background:"transparent", border:"none", cursor:"pointer", color:"#64748b" }} onClick={onClose}><X size={20} /></button>
+        </div>
+        <ModalFormRow label="Tahun RKAP Awal">
+          <input type="number" className="no-spinners" style={{ ...S.inp, maxWidth:160 }} placeholder="Contoh: 2026" value={thnRkapAwal} onChange={e => setThnRkapAwal(e.target.value)} autoFocus />
+        </ModalFormRow>
+        <ModalFormRow label="Tahun RKAP Akhir">
+          <input type="number" className="no-spinners" style={{ ...S.inp, maxWidth:160 }} placeholder="Contoh: 2027" value={thnRkapAkhir} onChange={e => setThnRkapAkhir(e.target.value)} />
+        </ModalFormRow>
+        <ModalFormRow label="Nilai KAD (Rp)">
+          <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+            <input type="number" className="no-spinners" style={{ ...S.inp, maxWidth:280, flex:1 }} placeholder="0" value={nilaiKad} onChange={e => setNilaiKad(e.target.value)} />
+            {parseFloat(nilaiKad) > 0 && <span style={{ fontSize:"0.78rem", color:"#64748b", whiteSpace:"nowrap", fontWeight:600 }}>≈ {fmt(nilaiKad)}</span>}
           </div>
-          <ModalFormRow label="Tahun RKAP Awal">
-            <input type="number" className="no-spinners" style={{ ...S.inp, maxWidth:160 }} placeholder="Contoh: 2026" value={thnRkapAwal} onChange={e => setThnRkapAwal(e.target.value)} autoFocus />
-          </ModalFormRow>
-          <ModalFormRow label="Tahun RKAP Akhir">
-            <input type="number" className="no-spinners" style={{ ...S.inp, maxWidth:160 }} placeholder="Contoh: 2027" value={thnRkapAkhir} onChange={e => setThnRkapAkhir(e.target.value)} />
-          </ModalFormRow>
-          <ModalFormRow label="Nilai KAD (Rp)">
-            <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-              <input type="number" className="no-spinners" style={{ ...S.inp, maxWidth:280, flex:1 }} placeholder="0" value={nilaiKad} onChange={e => setNilaiKad(e.target.value)} />
-              {parseFloat(nilaiKad) > 0 && <span style={{ fontSize:"0.78rem", color:"#64748b", whiteSpace:"nowrap", fontWeight:600 }}>≈ {fmt(nilaiKad)}</span>}
-            </div>
-          </ModalFormRow>
-          <ModalFormRow label="Tahun Anggaran">
-            <input type="number" className="no-spinners" style={{ ...S.inp, maxWidth:160 }} placeholder="Contoh: 2026" value={thnAnggaran} onChange={e => setThnAnggaran(e.target.value)} />
-          </ModalFormRow>
-          <ModalFormRow label="Nilai RKAP (Rp)" noBorder>
-            <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-              <input type="number" className="no-spinners" style={{ ...S.inp, maxWidth:280, flex:1 }} placeholder="0" value={nilaiRkap} onChange={e => setNilaiRkap(e.target.value)} />
-              {parseFloat(nilaiRkap) > 0 && <span style={{ fontSize:"0.78rem", color:"#64748b", whiteSpace:"nowrap", fontWeight:600 }}>≈ {fmt(nilaiRkap)}</span>}
-            </div>
-          </ModalFormRow>
-          <div style={{ padding:"14px 20px", borderTop:"1px solid #e2e8f0", background:"#f8fafc", display:"flex", justifyContent:"flex-end", gap:10 }}>
-            <button style={S.btnOut} onClick={onClose}>Batal</button>
-            <button style={{ ...S.btn, background:"#d97706" }} onClick={handleSave}><Save size={14}/> Simpan Perubahan</button>
+        </ModalFormRow>
+        <ModalFormRow label="Tahun Anggaran">
+          <input type="number" className="no-spinners" style={{ ...S.inp, maxWidth:160 }} placeholder="Contoh: 2026" value={thnAnggaran} onChange={e => setThnAnggaran(e.target.value)} />
+        </ModalFormRow>
+        <ModalFormRow label="Nilai RKAP (Rp)" noBorder>
+          <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+            <input type="number" className="no-spinners" style={{ ...S.inp, maxWidth:280, flex:1 }} placeholder="0" value={nilaiRkap} onChange={e => setNilaiRkap(e.target.value)} />
+            {parseFloat(nilaiRkap) > 0 && <span style={{ fontSize:"0.78rem", color:"#64748b", whiteSpace:"nowrap", fontWeight:600 }}>≈ {fmt(nilaiRkap)}</span>}
           </div>
+        </ModalFormRow>
+        <div style={{ padding:"14px 20px", borderTop:"1px solid #e2e8f0", background:"#f8fafc", display:"flex", justifyContent:"flex-end", gap:10 }}>
+          <button style={S.btnOut} onClick={onClose}>Batal</button>
+          <button style={{ ...S.btn, background:"#d97706" }} onClick={handleSave}><Save size={14}/> Simpan Perubahan</button>
         </div>
       </div>
-    );
-  };
+    </div>
+  );
+}
+
+// ── CAPEX MODULE ───────────────────────────────────────────────
+function CapexModule({ capexList, setCapexList }) {
+  const [toast, setToast] = useState(null);
+  const [confirm, setConfirm] = useState(null);
+  const [editTarget, setEditTarget] = useState(null);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [inputAnggaranCapex, setInputAnggaranCapex] = useState(null);
+  const [detailCapex, setDetailCapex] = useState(null);
+  const [editAnggaran, setEditAnggaran] = useState(null);
+  const [filterCapexTahun, setFilterCapexTahun] = useState("");
+
+  const toast_ = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
+  const emptyNew = { nm_anggaran:"", kd_capex:"", thn_rkap_awal: CURRENT_YEAR-1, thn_rkap_akhir: CURRENT_YEAR-1, thn_anggaran: CURRENT_YEAR-1, nilai_kad:"", nilai_rkap:"" };
+  const [newCapex, setNewCapex] = useState(emptyNew);
+
+  const handleAddCapex = useCallback(() => {
+    if (!newCapex.nm_anggaran) return;
+    setCapexList(p => [...p, { id:uid(), kd_master:"5900100000", nm_master:"Beban Investasi", nm_anggaran:newCapex.nm_anggaran, kd_capex:newCapex.kd_capex, thn_rkap_awal:parseInt(newCapex.thn_rkap_awal), thn_rkap_akhir:parseInt(newCapex.thn_rkap_akhir), thn_anggaran:parseInt(newCapex.thn_anggaran), nilai_kad:parseFloat(newCapex.nilai_kad)||0, nilai_rkap:parseFloat(newCapex.nilai_rkap)||0, anggaran_tahunan:[], pekerjaan:[], history_anggaran:[] }]);
+    toast_("Data CAPEX baru ditambahkan."); setShowAddForm(false); setNewCapex(emptyNew);
+  }, [newCapex, setCapexList]);
+
+  const saveEditCapex = useCallback(() => {
+    if (!editTarget) return;
+    setCapexList(p => p.map(c => c.id===editTarget.id ? { ...c, nm_anggaran:editTarget.nm_anggaran, kd_capex:editTarget.kd_capex, thn_rkap_awal:parseInt(editTarget.thn_rkap_awal), thn_rkap_akhir:parseInt(editTarget.thn_rkap_akhir), thn_anggaran:parseInt(editTarget.thn_anggaran), nilai_kad:parseFloat(editTarget.nilai_kad)||0, nilai_rkap:parseFloat(editTarget.nilai_rkap)||0 } : c));
+    setEditTarget(null); toast_("Perubahan disimpan.");
+  }, [editTarget, setCapexList]);
+
+  const handleDeleteCapex = useCallback((id) => setConfirm({ msg:"Hapus data CAPEX ini beserta seluruh data di dalamnya?", onConfirm: () => {
+    setCapexList(p => p.filter(c => c.id!==id)); setConfirm(null); toast_("Data CAPEX dihapus.");
+  }}), [setCapexList]);
+
+  const handleSaveEntriAnggaran = useCallback((capexId, entry, nilaiKad, nilaiRkap) => {
+    const anggaran_item = {
+      id: entry.id,
+      thn_rkap_awal: entry.thn_rkap_awal,
+      thn_rkap_akhir: entry.thn_rkap_akhir,
+      nilai_kad: entry.nilai_kad,
+      thn: entry.thn_anggaran,
+      nilai_anggaran: nilaiRkap,
+      history: [{ tgl: entry.tgl, tipe: "entri_baru", nilai: nilaiRkap, user: "System" }]
+    };
+    setCapexList(p => p.map(c => c.id!==capexId ? c : {
+      ...c,
+      nilai_kad: nilaiKad,
+      nilai_rkap: nilaiRkap,
+      anggaran_tahunan: [...(c.anggaran_tahunan||[]), anggaran_item],
+      history_anggaran: [...(c.history_anggaran||[]), entry]
+    }));
+    toast_("Entri anggaran berhasil disimpan.");
+    setInputAnggaranCapex(prev => prev?.id===capexId ? {
+      ...prev,
+      nilai_kad: nilaiKad,
+      nilai_rkap: nilaiRkap,
+      anggaran_tahunan: [...(prev.anggaran_tahunan||[]), anggaran_item],
+      history_anggaran: [...(prev.history_anggaran||[]), entry]
+    } : prev);
+  }, [setCapexList]);
+
+  const handleSaveEditAnggaran = useCallback((capexId, anggaranId, updatedData) => {
+    setCapexList(p => p.map(c => c.id!==capexId ? c : {
+      ...c,
+      thn_rkap_awal: updatedData.thn_rkap_awal,
+      thn_rkap_akhir: updatedData.thn_rkap_akhir,
+      nilai_kad: updatedData.nilai_kad,
+      anggaran_tahunan: (c.anggaran_tahunan||[]).map(a => a.id===anggaranId ? { ...a, thn: updatedData.thn, nilai_anggaran: updatedData.nilai_anggaran } : a)
+    }));
+    toast_("Perubahan anggaran berhasil disimpan.");
+    setEditAnggaran(null);
+  }, [setCapexList]);
+
+  if (detailCapex) {
+    const latest = capexList.find(c => c.id===detailCapex.id) || detailCapex;
+    return <div style={{ display:"flex", flexDirection:"column", gap:16 }}>{toast && <ToastMsg msg={toast} onDone={() => setToast(null)} />}<CapexDetailPage capex={latest} onBack={() => setDetailCapex(null)} setCapexList={setCapexList} toast_={toast_} /></div>;
+  }
+  if (inputAnggaranCapex) {
+    const latest = capexList.find(c => c.id===inputAnggaranCapex.id) || inputAnggaranCapex;
+    return <div style={{ display:"flex", flexDirection:"column", gap:16 }}>{toast && <ToastMsg msg={toast} onDone={() => setToast(null)} />}<CapexInputAnggaranPage capex={latest} onBack={() => setInputAnggaranCapex(null)} onSave={handleSaveEntriAnggaran} /></div>;
+  }
 
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
       {toast && <ToastMsg msg={toast} onDone={() => setToast(null)} />}
       {confirm && <ConfirmBox msg={confirm.msg} onConfirm={confirm.onConfirm} onCancel={() => setConfirm(null)} />}
-      {showAddForm && <CapexFormModal title="Tambah Anggaran CAPEX Baru" data={newCapex} setData={setNewCapex} onSave={handleAddCapex} onClose={handleCloseAddForm} />}
-      {editTarget && <CapexFormModal title="Edit Anggaran CAPEX" data={editTarget} setData={setEditTarget} onSave={saveEditCapex} onClose={handleCloseEditForm} />}
-      {editAnggaran && <EditAnggaranModal capexId={editAnggaran.capexId} anggaran={editAnggaran.anggaran} onSave={handleSaveEditAnggaran} onClose={() => setEditAnggaran(null)} />}
+      {showAddForm && (
+        <CapexFormModal
+          title="Tambah Anggaran CAPEX Baru"
+          data={newCapex}
+          setData={setNewCapex}
+          onSave={handleAddCapex}
+          onClose={() => setShowAddForm(false)}
+        />
+      )}
+      {editTarget && (
+        <CapexFormModal
+          title="Edit Anggaran CAPEX"
+          data={editTarget}
+          setData={setEditTarget}
+          onSave={saveEditCapex}
+          onClose={() => setEditTarget(null)}
+        />
+      )}
+      {editAnggaran && (
+        <CapexEditAnggaranModal
+          capexId={editAnggaran.capexId}
+          anggaran={editAnggaran.anggaran}
+          onSave={handleSaveEditAnggaran}
+          onClose={() => setEditAnggaran(null)}
+        />
+      )}
 
       <div style={{ background:"white", border:"1px solid #e2e8f0", borderRadius:10, padding:"16px 20px", display:"flex", alignItems:"center", gap:14 }}>
         <div style={{ width:40, height:40, background:"#eff6ff", borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center" }}><Database size={20} style={{ color:"#2563eb" }} /></div>
