@@ -36,42 +36,42 @@ const ENTITAS_DATA = {
   PTP: {
     label: "PT Pelabuhan Indonesia",
     cabang: {
-      BTN: { label: "Banten",         divisi: DIVISI_PLACEHOLDER },
+      BTN: { label: "Banten", divisi: DIVISI_PLACEHOLDER },
       TPN: { label: "Tanjung Pandan", divisi: DIVISI_PLACEHOLDER },
-      TBR: { label: "Teluk Bayur",    divisi: DIVISI_PLACEHOLDER },
-      BKL: { label: "Bengkulu",       divisi: DIVISI_PLACEHOLDER },
-      PTK: { label: "Pontianak",      divisi: DIVISI_PLACEHOLDER },
-      TJP: { label: "Tanjung Priok",  divisi: DIVISI_PLACEHOLDER },
-      CRB: { label: "Cirebon",        divisi: DIVISI_PLACEHOLDER },
-      PJG: { label: "Panjang",        divisi: DIVISI_PLACEHOLDER },
-      PLB: { label: "Palembang",      divisi: DIVISI_PLACEHOLDER },
-      JMB: { label: "Jambi",          divisi: DIVISI_PLACEHOLDER },
+      TBR: { label: "Teluk Bayur", divisi: DIVISI_PLACEHOLDER },
+      BKL: { label: "Bengkulu", divisi: DIVISI_PLACEHOLDER },
+      PTK: { label: "Pontianak", divisi: DIVISI_PLACEHOLDER },
+      TJP: { label: "Tanjung Priok", divisi: DIVISI_PLACEHOLDER },
+      CRB: { label: "Cirebon", divisi: DIVISI_PLACEHOLDER },
+      PJG: { label: "Panjang", divisi: DIVISI_PLACEHOLDER },
+      PLB: { label: "Palembang", divisi: DIVISI_PLACEHOLDER },
+      JMB: { label: "Jambi", divisi: DIVISI_PLACEHOLDER },
     },
   },
   SPMT: {
     label: "Pelindo Multi Terminal",
     cabang: {
-      BLW: { label: "Belawan",       divisi: DIVISI_PLACEHOLDER },
-      GRK: { label: "Gresik",        divisi: DIVISI_PLACEHOLDER },
-      LBR: { label: "Lembar Badas",  divisi: DIVISI_PLACEHOLDER },
+      BLW: { label: "Belawan", divisi: DIVISI_PLACEHOLDER },
+      GRK: { label: "Gresik", divisi: DIVISI_PLACEHOLDER },
+      LBR: { label: "Lembar Badas", divisi: DIVISI_PLACEHOLDER },
       TJI: { label: "Tanjung Intan", divisi: DIVISI_PLACEHOLDER },
-      DMI: { label: "Dumai",         divisi: DIVISI_PLACEHOLDER },
-      SBG: { label: "Sibolga",       divisi: DIVISI_PLACEHOLDER },
-      JNR: { label: "Janirah",       divisi: DIVISI_PLACEHOLDER },
-      BGD: { label: "Bagendang",     divisi: DIVISI_PLACEHOLDER },
-      MLH: { label: "Malahayati",    divisi: DIVISI_PLACEHOLDER },
-      LHK: { label: "Lhokseumawe",  divisi: DIVISI_PLACEHOLDER },
-      TJE: { label: "Tanjung Emas",  divisi: DIVISI_PLACEHOLDER },
-      BLP: { label: "Balikpapan",    divisi: DIVISI_PLACEHOLDER },
-      BDS: { label: "Bima Badas",    divisi: DIVISI_PLACEHOLDER },
-      GRG: { label: "Garongkong",    divisi: DIVISI_PLACEHOLDER },
-      BMH: { label: "Bumihajo",      divisi: DIVISI_PLACEHOLDER },
-      MLB: { label: "Meulaboh",      divisi: DIVISI_PLACEHOLDER },
+      DMI: { label: "Dumai", divisi: DIVISI_PLACEHOLDER },
+      SBG: { label: "Sibolga", divisi: DIVISI_PLACEHOLDER },
+      JNR: { label: "Janirah", divisi: DIVISI_PLACEHOLDER },
+      BGD: { label: "Bagendang", divisi: DIVISI_PLACEHOLDER },
+      MLH: { label: "Malahayati", divisi: DIVISI_PLACEHOLDER },
+      LHK: { label: "Lhokseumawe", divisi: DIVISI_PLACEHOLDER },
+      TJE: { label: "Tanjung Emas", divisi: DIVISI_PLACEHOLDER },
+      BLP: { label: "Balikpapan", divisi: DIVISI_PLACEHOLDER },
+      BDS: { label: "Bima Badas", divisi: DIVISI_PLACEHOLDER },
+      GRG: { label: "Garongkong", divisi: DIVISI_PLACEHOLDER },
+      BMH: { label: "Bumihajo", divisi: DIVISI_PLACEHOLDER },
+      MLB: { label: "Meulaboh", divisi: DIVISI_PLACEHOLDER },
       TJW: { label: "Tanjung Wangi", divisi: DIVISI_PLACEHOLDER },
-      MKS: { label: "Makassar",      divisi: DIVISI_PLACEHOLDER },
-      BJM: { label: "Trisaki",       divisi: DIVISI_PLACEHOLDER },
-      PRP: { label: "Parepare",      divisi: DIVISI_PLACEHOLDER },
-      KLS: { label: "Kuala Langsa",  divisi: DIVISI_PLACEHOLDER },
+      MKS: { label: "Makassar", divisi: DIVISI_PLACEHOLDER },
+      BJM: { label: "Trisaki", divisi: DIVISI_PLACEHOLDER },
+      PRP: { label: "Parepare", divisi: DIVISI_PLACEHOLDER },
+      KLS: { label: "Kuala Langsa", divisi: DIVISI_PLACEHOLDER },
     },
   },
   IKT: {
@@ -159,7 +159,7 @@ const Auth = () => {
   // ── Cascading options ─────────────────────────────────────────
   const cabangOptions = registerData.entitas
     ? Object.entries(ENTITAS_DATA[registerData.entitas].cabang).map(
-        ([code, val]) => ({ code, label: val.label })
+        ([code, val]) => ({ code, label: val.label }),
       )
     : [];
 
@@ -210,7 +210,7 @@ const Auth = () => {
       const passwordInput = e.target.password.value;
 
       const found = DUMMY_USERS.find(
-        (u) => u.email === emailInput && u.password === passwordInput
+        (u) => u.email === emailInput && u.password === passwordInput,
       );
 
       if (!found) {
@@ -232,7 +232,7 @@ const Auth = () => {
       }
       // TODO: kirim ke backend MySQL
       alert(
-        `Registrasi berhasil!\nAkun untuk ${registerData.nama} (${registerData.role}) telah dibuat.\nSilakan login.`
+        `Registrasi berhasil!\nAkun untuk ${registerData.nama} (${registerData.role}) telah dibuat.\nSilakan login.`,
       );
       setIsLogin(true);
       setLoginError("");
@@ -280,7 +280,10 @@ const Auth = () => {
                         </div>
                       </div>
 
-                      <button type="submit" className="auth-button fp-submit-btn">
+                      <button
+                        type="submit"
+                        className="auth-button fp-submit-btn"
+                      >
                         Kirim Instruksi Reset
                       </button>
                     </form>
@@ -335,7 +338,10 @@ const Auth = () => {
                             placeholder="Nama Lengkap"
                             value={registerData.nama}
                             onChange={(e) =>
-                              setRegisterData({ ...registerData, nama: e.target.value })
+                              setRegisterData({
+                                ...registerData,
+                                nama: e.target.value,
+                              })
                             }
                             required
                           />
@@ -353,7 +359,10 @@ const Auth = () => {
                               placeholder="NIP"
                               value={registerData.nip}
                               onChange={(e) =>
-                                setRegisterData({ ...registerData, nip: e.target.value })
+                                setRegisterData({
+                                  ...registerData,
+                                  nip: e.target.value,
+                                })
                               }
                               required
                             />
@@ -368,7 +377,10 @@ const Auth = () => {
                               placeholder="Username"
                               value={registerData.username}
                               onChange={(e) =>
-                                setRegisterData({ ...registerData, username: e.target.value })
+                                setRegisterData({
+                                  ...registerData,
+                                  username: e.target.value,
+                                })
                               }
                               required
                             />
@@ -386,7 +398,10 @@ const Auth = () => {
                             placeholder="08xxxxxxxxxx"
                             value={registerData.telepon}
                             onChange={(e) =>
-                              setRegisterData({ ...registerData, telepon: e.target.value })
+                              setRegisterData({
+                                ...registerData,
+                                telepon: e.target.value,
+                              })
                             }
                             required
                           />
@@ -401,11 +416,16 @@ const Auth = () => {
                           <select
                             value={registerData.role}
                             onChange={(e) =>
-                              setRegisterData({ ...registerData, role: e.target.value })
+                              setRegisterData({
+                                ...registerData,
+                                role: e.target.value,
+                              })
                             }
                             required
                           >
-                            <option value="" disabled>Pilih Role</option>
+                            <option value="" disabled>
+                              Pilih Role
+                            </option>
                             <option value="admin">Admin</option>
                             <option value="user">User / Pegawai</option>
                           </select>
@@ -422,7 +442,9 @@ const Auth = () => {
                             onChange={handleEntitasChange}
                             required
                           >
-                            <option value="" disabled>Pilih Entitas</option>
+                            <option value="" disabled>
+                              Pilih Entitas
+                            </option>
                             {Object.entries(ENTITAS_DATA).map(([code, val]) => (
                               <option key={code} value={code}>
                                 {val.label}
@@ -465,7 +487,10 @@ const Auth = () => {
                           <select
                             value={registerData.divisi}
                             onChange={(e) =>
-                              setRegisterData({ ...registerData, divisi: e.target.value })
+                              setRegisterData({
+                                ...registerData,
+                                divisi: e.target.value,
+                              })
                             }
                             required
                             disabled={!registerData.cabang}
@@ -525,7 +550,10 @@ const Auth = () => {
                           placeholder="Ulangi password"
                           value={registerData.konfirmasi}
                           onChange={(e) =>
-                            setRegisterData({ ...registerData, konfirmasi: e.target.value })
+                            setRegisterData({
+                              ...registerData,
+                              konfirmasi: e.target.value,
+                            })
                           }
                           required
                         />
