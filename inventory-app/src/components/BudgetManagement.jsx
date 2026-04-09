@@ -66,8 +66,9 @@ const I = {
   table:
     "M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18",
   eye: "M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z",
-  fileExcel:
-    "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM14 2v6h6M8 13l2.5 4M13.5 13 11 17M8 17l2.5-4M13.5 17 11 13",
+  trendUp: "M23 6l-9.5 9.5-5-5L1 18M17 6h6v6",
+  wallet:
+    "M21 12V7H5a2 2 0 0 1 0-4h14v4M3 5v14a2 2 0 0 0 2 2h16v-5M3 5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2M21 12a2 2 0 0 1 0 4h-4a2 2 0 0 1 0-4h4z",
 };
 
 const fmt = (n) =>
@@ -88,10 +89,13 @@ const newId = () =>
   `id-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 
 function pctColor(p) {
-  if (p >= 100) return "#ef4444";
-  if (p >= 80) return "#f59e0b";
-  if (p >= 50) return "#3b82f6";
-  return "#22c55e";
+  return p >= 100
+    ? "#ef4444"
+    : p >= 80
+      ? "#f59e0b"
+      : p >= 50
+        ? "#3b82f6"
+        : "#22c55e";
 }
 function pctMeta(p) {
   if (p >= 100)
@@ -162,7 +166,6 @@ const SN_DB = {
   "CSC-TBK-CSW-001": "SPMT-TBK-DTC-PKR-01",
   "FGT-KPT-FWL-001": "SPMT-KPT-DTC-PKR-02",
 };
-
 const BUDGET_MASTERS = [
   {
     kd_anggaran_master: "5030905000",
@@ -196,41 +199,32 @@ const BUDGET_MASTERS = [
   },
 ];
 
-const CAPEX_BUDGETS = [
+const mkAssets = () => [
   {
-    kode: "2440013",
-    nama: "Penyiapan Infrastruktur IT Kantor Pusat & Branch",
-    thnAnggaran: 2024,
+    id: newId(),
+    asset_code: "SPMT-KPT-DTC-SRV-01",
+    serial_number: "DELL-KPT-SRV-001",
+    name: "Server Rack Kantor Pusat — Rack 1",
+    brand: "Dell",
+    model: "PowerEdge R750",
+    category: "Server",
+    location: "Kantor Pusat",
+    procurement_date: "2024-09-10",
+    acquisition_value: 450000000,
+    image: null,
   },
   {
-    kode: "2440014",
-    nama: "Penyediaan Network di Branch SPMT",
-    thnAnggaran: 2024,
-  },
-  {
-    kode: "2440015",
-    nama: "Implementasi dan Standarisasi IT Infrastruktur",
-    thnAnggaran: 2024,
-  },
-  {
-    kode: "2440020",
-    nama: "Revisi Capex (Pemeliharaan Infrastruktur)",
-    thnAnggaran: 2024,
-  },
-  {
-    kode: "2540011",
-    nama: "Penyediaan Kebutuhan Perangkat Jaringan, SIEM & Gate System",
-    thnAnggaran: 2025,
-  },
-  {
-    kode: "2540012",
-    nama: "Penyediaan Kebutuhan Transformasi dan Digitalisasi Terminal",
-    thnAnggaran: 2025,
-  },
-  {
-    kode: "2540013",
-    nama: "Pengadaan Perangkat End User Computing (EUC)",
-    thnAnggaran: 2025,
+    id: newId(),
+    asset_code: "SPMT-KPT-DTC-SRV-02",
+    serial_number: "DELL-KPT-SRV-002",
+    name: "Server Rack Kantor Pusat — Rack 2",
+    brand: "Dell",
+    model: "PowerEdge R750",
+    category: "Server",
+    location: "Kantor Pusat",
+    procurement_date: "2024-09-10",
+    acquisition_value: 450000000,
+    image: null,
   },
 ];
 
@@ -258,34 +252,7 @@ const INIT_CAPEX = [
         no_sp3: "",
         tgl_sp3: "2024-09-06",
         tgl_bamk: "2024-09-06",
-        assets: [
-          {
-            id: newId(),
-            asset_code: "SPMT-KPT-DTC-SRV-01",
-            serial_number: "DELL-KPT-SRV-001",
-            name: "Server Rack Kantor Pusat — Rack 1",
-            brand: "Dell",
-            model: "PowerEdge R750",
-            category: "Server",
-            location: "Kantor Pusat",
-            procurement_date: "2024-09-10",
-            acquisition_value: 450000000,
-            image: null,
-          },
-          {
-            id: newId(),
-            asset_code: "SPMT-KPT-DTC-SRV-02",
-            serial_number: "DELL-KPT-SRV-002",
-            name: "Server Rack Kantor Pusat — Rack 2",
-            brand: "Dell",
-            model: "PowerEdge R750",
-            category: "Server",
-            location: "Kantor Pusat",
-            procurement_date: "2024-09-10",
-            acquisition_value: 450000000,
-            image: null,
-          },
-        ],
+        assets: mkAssets(),
       },
     ],
   },
@@ -586,133 +553,55 @@ const INIT_OPEX = [
   },
 ];
 
-// ══════════════════════════════════════════════════════════════════
-// EXPORT EXCEL HELPER
-// ══════════════════════════════════════════════════════════════════
 function exportAssetsToExcel(assets, projectName, contractNo) {
-  const rows = [
-    [
-      "No",
-      "Nama Aset",
-      "Merek",
-      "Model",
-      "Kode Aset",
-      "Serial Number",
-      "Kategori",
-      "Lokasi",
-      "Tgl. Pengadaan",
-      "Nilai Perolehan (IDR)",
-    ],
-  ];
-  assets.forEach((a, i) => {
-    rows.push([
-      i + 1,
-      a.name || "",
-      a.brand || "",
-      a.model || "",
-      a.asset_code || "",
-      a.serial_number || "",
-      a.category || "",
-      a.location || "",
-      a.procurement_date
-        ? new Date(a.procurement_date).toLocaleDateString("id-ID")
-        : "",
-      a.acquisition_value || 0,
-    ]);
-  });
-  const totalRow = [
-    "",
-    "TOTAL",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    assets.reduce((s, a) => s + (a.acquisition_value || 0), 0),
-  ];
-  rows.push(totalRow);
-
-  let csv = "";
-  rows.forEach((row) => {
-    csv +=
-      row
-        .map((cell) => {
-          const s = String(cell).replace(/"/g, '""');
-          return s.includes(",") || s.includes("\n") || s.includes('"')
-            ? `"${s}"`
-            : s;
-        })
-        .join(",") + "\r\n";
-  });
-
-  // Build an actual Excel XML (SpreadsheetML) for better compatibility
   const esc = (s) =>
     String(s)
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;");
-  const colWidths = [6, 35, 18, 22, 24, 22, 14, 20, 16, 24];
-  let xml = `<?xml version="1.0" encoding="UTF-8"?>
-<?mso-application progid="Excel.Sheet"?>
-<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
- xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
- xmlns:x="urn:schemas-microsoft-com:office:excel">
-<Styles>
-  <Style ss:ID="header"><Font ss:Bold="1"/><Interior ss:Color="#2563EB" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style>
-  <Style ss:ID="total"><Font ss:Bold="1"/><Interior ss:Color="#EFF6FF" ss:Pattern="Solid"/></Style>
-  <Style ss:ID="num"><NumberFormat ss:Format="#,##0"/></Style>
-  <Style ss:ID="numtotal"><NumberFormat ss:Format="#,##0"/><Font ss:Bold="1"/><Interior ss:Color="#EFF6FF" ss:Pattern="Solid"/></Style>
-  <Style ss:ID="info"><Interior ss:Color="#F0F9FF" ss:Pattern="Solid"/></Style>
-</Styles>
-<Worksheet ss:Name="Daftar Aset">
-<Table>
-${colWidths.map((w) => `<Column ss:Width="${w * 7}"/>`).join("\n")}
-<Row><Cell ss:MergeAcross="9" ss:StyleID="info"><Data ss:Type="String">Pekerjaan: ${esc(projectName)}</Data></Cell></Row>
-<Row><Cell ss:MergeAcross="9" ss:StyleID="info"><Data ss:Type="String">No. Kontrak: ${esc(contractNo || "—")}</Data></Cell></Row>
-<Row/>
-<Row>
-${rows[0].map((h) => `<Cell ss:StyleID="header"><Data ss:Type="String">${esc(h)}</Data></Cell>`).join("\n")}
-</Row>
-${rows
-  .slice(1, -1)
-  .map(
-    (row) => `<Row>
-${row
-  .map((cell, ci) => {
-    if (ci === 9)
-      return `<Cell ss:StyleID="num"><Data ss:Type="Number">${Number(cell) || 0}</Data></Cell>`;
-    if (ci === 0)
-      return `<Cell><Data ss:Type="Number">${Number(cell)}</Data></Cell>`;
-    return `<Cell><Data ss:Type="String">${esc(cell)}</Data></Cell>`;
-  })
-  .join("\n")}
-</Row>`,
-  )
-  .join("\n")}
-<Row>
-${totalRow
-  .map((cell, ci) => {
-    if (ci === 9)
-      return `<Cell ss:StyleID="numtotal"><Data ss:Type="Number">${Number(cell) || 0}</Data></Cell>`;
-    return `<Cell ss:StyleID="total"><Data ss:Type="String">${esc(cell)}</Data></Cell>`;
-  })
-  .join("\n")}
-</Row>
-</Table>
-</Worksheet>
-</Workbook>`;
-
+  const cols = [6, 35, 18, 22, 24, 22, 14, 20, 16, 24];
+  const headers = [
+    "No",
+    "Nama Aset",
+    "Merek",
+    "Model",
+    "Kode Aset",
+    "Serial Number",
+    "Kategori",
+    "Lokasi",
+    "Tgl. Pengadaan",
+    "Nilai Perolehan (IDR)",
+  ];
+  const rows = assets.map((a, i) => [
+    i + 1,
+    a.name || "",
+    a.brand || "",
+    a.model || "",
+    a.asset_code || "",
+    a.serial_number || "",
+    a.category || "",
+    a.location || "",
+    a.procurement_date
+      ? new Date(a.procurement_date).toLocaleDateString("id-ID")
+      : "",
+    a.acquisition_value || 0,
+  ]);
+  const total = assets.reduce((s, a) => s + (a.acquisition_value || 0), 0);
+  const totalRow = ["", "TOTAL", "", "", "", "", "", "", "", total];
+  const cellXml = (cell, ci, styleId) => {
+    const isNum = ci === 0 || ci === 9;
+    const sty = styleId || (ci === 9 ? "num" : "");
+    return `<Cell${sty ? ` ss:StyleID="${sty}"` : ""}><Data ss:Type="${isNum ? "Number" : "String"}">${isNum ? Number(cell) || 0 : esc(cell)}</Data></Cell>`;
+  };
+  const xml = `<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet" xmlns:x="urn:schemas-microsoft-com:office:excel"><Styles><Style ss:ID="header"><Font ss:Bold="1"/><Interior ss:Color="#2563EB" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style><Style ss:ID="total"><Font ss:Bold="1"/><Interior ss:Color="#EFF6FF" ss:Pattern="Solid"/></Style><Style ss:ID="num"><NumberFormat ss:Format="#,##0"/></Style><Style ss:ID="numtotal"><NumberFormat ss:Format="#,##0"/><Font ss:Bold="1"/><Interior ss:Color="#EFF6FF" ss:Pattern="Solid"/></Style><Style ss:ID="info"><Interior ss:Color="#F0F9FF" ss:Pattern="Solid"/></Style></Styles><Worksheet ss:Name="Daftar Aset"><Table>${cols.map((w) => `<Column ss:Width="${w * 7}"/>`).join("")}<Row><Cell ss:MergeAcross="9" ss:StyleID="info"><Data ss:Type="String">Pekerjaan: ${esc(projectName)}</Data></Cell></Row><Row><Cell ss:MergeAcross="9" ss:StyleID="info"><Data ss:Type="String">No. Kontrak: ${esc(contractNo || "—")}</Data></Cell></Row><Row/><Row>${headers.map((h) => `<Cell ss:StyleID="header"><Data ss:Type="String">${esc(h)}</Data></Cell>`).join("")}</Row>${rows.map((row) => `<Row>${row.map((cell, ci) => cellXml(cell, ci)).join("")}</Row>`).join("")}<Row>${totalRow.map((cell, ci) => cellXml(cell, ci, ci === 9 ? "numtotal" : "total")).join("")}</Row></Table></Worksheet></Workbook>`;
   const blob = new Blob([xml], {
     type: "application/vnd.ms-excel;charset=utf-8;",
   });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  const safeName = (contractNo || "aset").replace(/[/\\:*?"<>|]/g, "-");
-  a.download = `Daftar_Aset_${safeName}.xls`;
+  a.download = `Daftar_Aset_${(contractNo || "aset").replace(/[/\\:*?"<>|]/g, "-")}.xls`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -721,442 +610,303 @@ ${totalRow
 
 const CSS = `
 @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap");
-
 :root {
-  --blue: #2563eb; --blue-lt: #eff6ff; --blue-mid: #dbeafe;
-  --green: #16a34a; --green-lt: #f0fdf4; --green-mid: #dcfce7;
-  --amber: #d97706; --amber-lt: #fffbeb; 
-  --red: #dc2626; --red-lt: #fef2f2;
-  --ink: #111827; --ink2: #374151; --ink3: #6b7280; --ink4: #9ca3af;
-  --border: #e5e7eb; --border-lt: #f3f4f6;
-  --surf: #ffffff; --bg: #f9fafb;
-  --mono: "JetBrains Mono", "Courier New", monospace;
-  --r: 8px; --r-lg: 12px;
-  --sh: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
-  --sh-md: 0 4px 12px rgba(0,0,0,.08);
-  --sh-lg: 0 20px 48px rgba(0,0,0,.14);
+  --blue:#2563eb;--blue-lt:#eff6ff;--blue-mid:#dbeafe;
+  --green:#16a34a;--green-lt:#f0fdf4;--green-mid:#dcfce7;
+  --amber:#d97706;--amber-lt:#fffbeb;
+  --red:#dc2626;--red-lt:#fef2f2;
+  --ink:#111827;--ink2:#374151;--ink3:#6b7280;--ink4:#9ca3af;
+  --border:#e5e7eb;--border-lt:#f3f4f6;
+  --surf:#ffffff;--bg:#f9fafb;
+  --mono:"JetBrains Mono","Courier New",monospace;
+  --r:8px;--r-lg:12px;
+  --sh:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --sh-md:0 4px 12px rgba(0,0,0,.08);--sh-lg:0 20px 48px rgba(0,0,0,.14);
 }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:13px;-webkit-font-smoothing:antialiased;line-height:1.5}
+.root{padding:1.5rem 2rem;min-height:100vh;max-width:1400px;margin:0 auto}
+.hdr{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1.3rem;flex-wrap:wrap}
+.hdr h1{font-size:1.3rem;font-weight:800;letter-spacing:-.5px}
+.hdr p{font-size:.75rem;color:var(--ink4);margin-top:2px;font-weight:500}
+.hdr-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.type-tabs{display:flex;gap:2px;background:var(--surf);padding:3px;border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--sh)}
+.type-tab{display:flex;align-items:center;gap:6px;padding:5px 14px;border:none;background:transparent;border-radius:6px;font-family:inherit;font-size:.72rem;font-weight:600;color:var(--ink3);cursor:pointer;transition:all .15s}
+.type-tab:hover:not(.on){background:var(--bg);color:var(--ink2)}
+.type-tab.on{background:var(--blue);color:#fff;box-shadow:0 2px 6px rgba(37,99,235,0.2)}
+.type-tab.on.all{background:var(--ink);box-shadow:0 2px 6px rgba(15,23,42,0.2)}
+.kpi-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:24px}
+.kpi{background:var(--surf);border:1px solid var(--border);border-radius:var(--r-lg);padding:1.25rem;display:flex;gap:16px;align-items:center;box-shadow:var(--sh);transition:transform 0.2s}
+.kpi:hover{transform:translateY(-2px);box-shadow:var(--sh-md)}
+.kpi-ico{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.kpi.blue .kpi-ico{background:var(--blue-lt);color:var(--blue)}
+.kpi.amber .kpi-ico{background:var(--amber-lt);color:var(--amber)}
+.kpi.green .kpi-ico{background:var(--green-lt);color:var(--green)}
+.kpi-body{flex:1;min-width:0}
+.kpi-lbl{font-size:.7rem;color:var(--ink3);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.kpi-val{font-size:1.2rem;font-weight:800;color:var(--ink);line-height:1}
+.kpi-sub{font-size:.7rem;color:var(--ink4);margin-top:6px}
+.kpi-bar{height:4px;background:var(--border-lt);border-radius:99px;overflow:hidden;margin-top:8px}
+.kpi-bar-fill{height:100%;border-radius:99px;transition:width .6s ease}
+.toolbar{display:flex;align-items:center;gap:9px;margin-bottom:14px;flex-wrap:wrap}
+.flt-box,.srch{display:flex;align-items:center;gap:8px;background:var(--surf);border:1px solid var(--border);border-radius:var(--r);padding:7px 11px;box-shadow:var(--sh);transition:border-color .2s}
+.flt-box:focus-within,.srch:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.flt-box svg,.srch svg{color:var(--ink4);flex-shrink:0}
+.flt-select,.srch input{border:none;background:transparent;font-family:inherit;font-size:.8rem;color:var(--ink);outline:none}
+.flt-select{cursor:pointer;font-weight:500}
+.srch{flex:1;max-width:360px}
+.srch input{flex:1}
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+.opex-toolbar{display:flex;align-items:center;gap:11px;margin-bottom:14px;flex-wrap:wrap}
+.opex-flt-box{display:flex;align-items:center;gap:8px;background:var(--surf);border:1px solid var(--border);border-radius:var(--r);padding:7px 11px;box-shadow:var(--sh);transition:border-color .2s}
+.opex-flt-box:focus-within{border-color:var(--green);box-shadow:0 0 0 3px rgba(22,163,74,.1)}
+.opex-flt-box svg{color:var(--ink4);flex-shrink:0}
+.opex-flt-select{border:none;background:transparent;font-family:inherit;font-size:.78rem;color:var(--ink);outline:none;cursor:pointer;font-weight:500}
+.opex-srch{display:flex;align-items:center;gap:8px;background:var(--surf);border:1px solid var(--border);border-radius:var(--r);padding:7px 11px;box-shadow:var(--sh);flex:1;max-width:300px;transition:border-color .2s}
+.opex-srch:focus-within{border-color:var(--green);box-shadow:0 0 0 3px rgba(22,163,74,.1)}
+.opex-srch svg{color:var(--ink4);flex-shrink:0}
+.opex-srch input{border:none;background:transparent;font-family:inherit;font-size:.78rem;color:var(--ink);outline:none;flex:1}
+.opex-filter-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:var(--green-lt);border:1px solid var(--green-mid);border-radius:99px;font-size:0.7rem;font-weight:700;color:var(--green)}
+.opex-filter-badge button{background:none;border:none;cursor:pointer;color:var(--green);display:flex;align-items:center;padding:0;transition:color .15s}
+.opex-filter-badge button:hover{color:var(--red)}
+.section-label{display:flex;align-items:center;gap:11px;margin:1.2rem 0 0.8rem}
+.section-label-line{flex:1;height:1px;background:var(--border)}
+.section-label-pill{display:flex;align-items:center;gap:6px;padding:3px 11px;border-radius:99px;font-size:.72rem;font-weight:700;border:1px solid transparent}
+.section-label-pill.capex{background:var(--blue-lt);color:var(--blue);border-color:var(--blue-mid)}
+.section-label-pill.opex{background:var(--green-lt);color:var(--green);border-color:var(--green-mid)}
+.section-count{font-size:.72rem;color:var(--ink4);font-weight:500}
+.card-list{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+.empty{background:var(--surf);border:1.5px dashed var(--border);border-radius:var(--r-lg);text-align:center;padding:2.5rem;color:var(--ink4);font-size:.82rem;font-weight:500}
+.jcard{background:var(--surf);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh);transition:transform .15s,box-shadow .15s}
+.jcard:hover{transform:translateY(-1px);box-shadow:var(--sh-md)}
+.jcard.open-cap{border-color:var(--blue-mid)}.jcard.open-opx{border-color:var(--green-mid)}
+.jcard-inner{display:flex}
+.jcard-accent{width:3px;flex-shrink:0}
+.jcard-accent.cap{background:var(--blue)}.jcard-accent.opx{background:var(--green)}
+.jcard-content{flex:1;min-width:0}
+.jcard-top{display:grid;grid-template-columns:2.2fr 1.3fr 2.5fr auto;align-items:center;gap:15px;padding:13px 18px;cursor:pointer;transition:background .15s}
+.jcard-top:hover{background:var(--bg)}
+.jcard.open-cap .jcard-top{background:#f8faff}.jcard.open-opx .jcard-top{background:#f7fef9}
+.jc-info{display:flex;flex-direction:column;gap:4px;min-width:0}
+.jc-tags{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.badge{font-size:0.65rem;font-weight:800;padding:2px 6px;border-radius:4px;text-transform:uppercase;letter-spacing:0.5px}
+.badge.capex{background:var(--blue-lt);color:var(--blue)}.badge.opex{background:var(--green-lt);color:var(--green)}
+.code-tag{font-family:var(--mono);font-size:0.7rem;color:var(--ink3);background:var(--border-lt);border:1px solid var(--border);padding:1px 6px;border-radius:4px}
+.yr-tag{font-size:0.7rem;font-weight:600;color:var(--ink3);background:var(--border-lt);border:1px solid var(--border);padding:1px 6px;border-radius:4px}
+.jc-title{font-size:0.85rem;font-weight:700;color:var(--ink);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.jc-meta{display:flex;flex-direction:column;gap:4px;font-size:0.75rem;color:var(--ink3);font-weight:500}
+.jc-meta span{display:flex;align-items:center;gap:6px}
+.jc-fin{display:flex;align-items:center;justify-content:flex-end;gap:20px}
+.amt-blk{display:flex;flex-direction:column;gap:2px;text-align:right}
+.amt-lbl{font-size:0.65rem;color:var(--ink4);font-weight:600;text-transform:uppercase;letter-spacing:0.5px}
+.amt-val{font-size:0.9rem;font-weight:800}
+.amt-val.blue{color:var(--blue)}.amt-val.amber{color:var(--amber)}.amt-val.red{color:var(--red)}.amt-val.green{color:var(--green)}
+.fin-div{width:1px;height:28px;background:var(--border)}
+.jc-actions{display:flex;align-items:center;gap:16px;justify-content:flex-end}
+.ring-wrap{display:flex;align-items:center;gap:8px}
+.ring{position:relative;width:36px;height:36px;display:flex;align-items:center;justify-content:center}
+.ring svg{position:absolute;top:0;left:0;transform:rotate(-90deg);width:100%;height:100%}
+.ring-lbl{font-size:0.7rem;font-weight:800;color:var(--ink);z-index:1}
+.status-pill{font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:99px;border:1px solid transparent}
+.act-btns{display:flex;gap:4px}
+.abtn{display:inline-flex;align-items:center;gap:4px;padding:6px 10px;border-radius:6px;border:1px solid var(--border);font-family:inherit;font-size:0.75rem;font-weight:600;cursor:pointer;transition:all .15s;background:var(--surf);color:var(--ink3)}
+.abtn:hover{background:var(--bg);border-color:#cbd5e1;color:var(--ink2)}
+.abtn.blue{background:var(--blue-lt);border-color:var(--blue-mid);color:var(--blue)}
+.abtn.blue:hover{background:var(--blue-mid);color:#1d4ed8}
+.abtn.green{background:var(--green-lt);border-color:var(--green-mid);color:var(--green)}
+.abtn.green:hover{background:var(--green-mid);color:#15803d}
+.abtn.excel{background:#f0fdf4;border-color:#bbf7d0;color:#166534}
+.abtn.excel:hover{background:#dcfce7;color:#14532d}
+.abtn.del{padding:6px 8px}
+.abtn.del:hover{background:var(--red-lt);border-color:#fca5a5;color:var(--red)}
+.chev{color:var(--ink4);padding:4px;border-radius:50%;display:flex;transition:background 0.15s}
+.jcard-top:hover .chev{background:var(--border);color:var(--ink2)}
+.jcard-detail{padding:20px;background:var(--bg);border-top:1px dashed var(--border);animation:slideDown .15s ease-out}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.d-panel{background:var(--surf);border:1px solid var(--border);border-radius:var(--r);padding:16px;box-shadow:var(--sh)}
+.d-title{font-size:0.75rem;font-weight:800;color:var(--ink2);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border-lt);padding-bottom:8px;text-transform:uppercase;letter-spacing:0.5px}
+.d-rows{display:flex;flex-direction:column;gap:6px}
+.d-row{display:flex;justify-content:space-between;align-items:flex-start;font-size:0.8rem}
+.d-row .lbl{color:var(--ink4);font-weight:500}.d-row .val{color:var(--ink);font-weight:600;text-align:right}
+.d-row code{font-family:var(--mono);font-size:0.75rem;color:var(--blue);background:var(--blue-lt);padding:2px 6px;border-radius:4px}
+.d-empty{font-size:0.8rem;color:var(--ink4);text-align:center;padding:16px;background:var(--bg);border-radius:8px;border:1px dashed var(--border)}
+.inline-link{font-size:0.75rem;font-weight:700;color:var(--blue);background:none;border:none;cursor:pointer;padding:0;display:inline-flex;align-items:center;gap:4px;transition:color .15s}
+.inline-link:hover{color:#1e40af;text-decoration:underline}
+.ai-list,.ri-list{display:flex;flex-direction:column;gap:6px}
+.ai-item,.ri-item{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--surf);border:1px solid var(--border);border-radius:8px;box-shadow:var(--sh)}
+.ai-info,.ri-info{display:flex;align-items:center;gap:10px}
+.a-code,.r-id{font-family:var(--mono);font-size:0.7rem;font-weight:700;padding:2px 6px;border-radius:4px;white-space:nowrap}
+.a-code{background:var(--blue-lt);color:var(--blue)}.r-id{background:var(--amber-lt);color:var(--amber)}
+.a-name,.r-ket{font-size:0.8rem;font-weight:700;color:var(--ink);margin-bottom:2px}
+.a-loc,.r-date{font-size:0.7rem;color:var(--ink4);display:flex;align-items:center;gap:4px;font-weight:500}
+.a-val{font-size:0.85rem;font-weight:800;color:var(--blue)}.r-val{font-size:0.85rem;font-weight:800;color:var(--amber)}
+.panel-total{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:8px;margin-top:6px}
+.panel-total.blue{background:var(--blue-lt);border:1px solid var(--blue-mid);color:var(--blue)}
+.panel-total.amber{background:var(--amber-lt);border:1px solid #fde68a;color:var(--amber)}
+.panel-total span{font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:0.5px}
+.panel-total strong{font-size:0.95rem;font-weight:800}
+.overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);display:flex;align-items:center;justify-content:center;z-index:900;backdrop-filter:blur(2px);padding:20px;animation:fadeOvl .15s ease}
+.mbox{background:var(--surf);border-radius:var(--r-lg);width:100%;max-width:600px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--sh-lg);animation:modalUp .2s cubic-bezier(.16,1,.3,1)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-family:inherit;font-size:0.8rem;font-weight:700;cursor:pointer;border:none;transition:all .15s;white-space:nowrap}
+.btn-outline{background:var(--surf);border:1px solid var(--border);color:var(--ink2)}
+.btn-outline:hover{background:var(--bg);border-color:#cbd5e1}
+.btn-prim{background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.2)}
+.btn-prim:hover{background:#1d4ed8}
+.btn-green{background:var(--green);color:#fff;box-shadow:0 2px 8px rgba(22,163,74,.2)}
+.btn-green:hover{background:#15803d}
+.btn-excel{background:#166534;color:#fff;box-shadow:0 2px 8px rgba(22,101,52,.25)}
+.btn-excel:hover{background:#14532d}
+.pagination-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 4px;margin-bottom:24px;flex-wrap:wrap;gap:8px}
+.pagination-info{font-size:0.75rem;color:var(--ink4);font-weight:500}
+.pagination-controls{display:flex;align-items:center;gap:4px}
+.pg-btn{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;border:1px solid var(--border);background:var(--surf);color:var(--ink3);font-family:inherit;font-size:0.75rem;font-weight:600;cursor:pointer;transition:all .15s}
+.pg-btn:hover:not(:disabled):not(.active){background:var(--bg);border-color:#cbd5e1;color:var(--ink2)}
+.pg-btn.active{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 2px 6px rgba(37,99,235,.2)}
+.pg-btn:disabled{opacity:0.4;cursor:not-allowed}
+.asset-page{animation:fadeUp .15s ease-out}
+.asset-page-hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.asset-page-hdr-left{display:flex;align-items:center;gap:16px}
+.asset-page-hdr-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.asset-ctx-banner{background:var(--surf);border:1px solid var(--border);border-left:4px solid var(--blue);border-radius:var(--r-lg);padding:14px 20px;margin-bottom:20px;display:flex;gap:32px;flex-wrap:wrap;box-shadow:var(--sh)}
+.asset-ctx-banner.opex-theme{border-left-color:var(--green)}
+.asset-ctx-item{display:flex;flex-direction:column;gap:3px}
+.asset-ctx-item span{font-size:0.65rem;font-weight:800;text-transform:uppercase;color:var(--ink4);letter-spacing:0.5px}
+.asset-ctx-item strong{font-size:0.88rem;font-weight:700;color:var(--ink)}
+.asset-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.asset-toolbar-left,.asset-toolbar-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.at-filter{display:flex;align-items:center;gap:8px;background:var(--surf);border:1px solid var(--border);border-radius:var(--r);padding:7px 12px;box-shadow:var(--sh);transition:border-color .2s}
+.at-filter:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.at-filter svg{color:var(--ink4);flex-shrink:0}
+.at-filter input,.at-filter select{border:none;background:transparent;font-family:inherit;font-size:0.78rem;color:var(--ink);outline:none;font-weight:500}
+.at-filter select{cursor:pointer;min-width:130px}.at-filter input{min-width:220px}
+.asset-table-wrap{background:var(--surf);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--sh);overflow:hidden}
+.asset-table{width:100%;border-collapse:collapse;font-size:0.8rem}
+.asset-table thead tr{background:var(--bg);border-bottom:2px solid var(--border)}
+.asset-table thead th{padding:11px 14px;text-align:left;font-size:0.68rem;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:var(--ink3);white-space:nowrap;border-right:1px solid var(--border-lt)}
+.asset-table thead th:last-child{border-right:none}
+.asset-table thead th.th-no{width:44px;text-align:center}
+.asset-table thead th.th-actions{width:80px;text-align:center}
+.asset-table tbody tr{border-bottom:1px solid var(--border-lt);transition:background .12s}
+.asset-table tbody tr:last-child{border-bottom:none}
+.asset-table tbody tr:hover{background:#f8faff}
+.asset-table.opex-table tbody tr:hover{background:#f7fef9}
+.asset-table tbody td{padding:11px 14px;vertical-align:middle;border-right:1px solid var(--border-lt)}
+.asset-table tbody td:last-child{border-right:none}
+.td-no{text-align:center;font-size:0.7rem;font-weight:700;color:var(--ink4);background:var(--bg)}
+.td-asset-name{display:flex;align-items:center;gap:10px}
+.td-thumb{width:36px;height:36px;border-radius:6px;overflow:hidden;border:1px solid var(--border);flex-shrink:0;background:var(--bg);display:flex;align-items:center;justify-content:center}
+.td-thumb img{width:100%;height:100%;object-fit:cover}
+.td-thumb-empty{color:var(--ink4)}
+.td-name-block{display:flex;flex-direction:column;gap:3px}
+.td-name-text{font-size:0.82rem;font-weight:700;color:var(--ink);line-height:1.3}
+.td-name-sub{font-size:0.7rem;color:var(--ink4);font-weight:500}
+.td-code{font-family:var(--mono);font-size:0.72rem;font-weight:700;background:var(--blue-lt);color:var(--blue);padding:3px 8px;border-radius:5px;white-space:nowrap;display:inline-block}
+.td-sn{font-family:var(--mono);font-size:0.7rem;color:var(--ink3);font-weight:600}
+.cat-pill{display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;font-size:0.65rem;font-weight:800;white-space:nowrap}
+.cat-pill.Server{background:#ede9fe;color:#6d28d9}.cat-pill.Network{background:#dbeafe;color:#1d4ed8}
+.cat-pill.Security{background:#fef3c7;color:#b45309}.cat-pill.default{background:var(--border-lt);color:var(--ink3)}
+.td-loc{display:flex;align-items:center;gap:5px;font-size:0.78rem;color:var(--ink2);font-weight:500}
+.td-date{font-size:0.78rem;color:var(--ink3);font-weight:500}
+.td-value{font-size:0.85rem;font-weight:800;color:var(--blue);white-space:nowrap}
+.td-actions{text-align:center}
+.td-act-row{display:flex;align-items:center;justify-content:center;gap:4px}
+.asset-table tfoot tr{background:var(--blue-lt);border-top:2px solid var(--blue-mid)}
+.asset-table tfoot td{padding:10px 14px;font-size:0.78rem;font-weight:700;color:var(--blue)}
+.asset-table tfoot .tfoot-total{font-size:0.9rem;font-weight:800}
+.asset-table.opex-table tfoot tr{background:var(--green-lt);border-top-color:var(--green-mid)}
+.asset-table.opex-table tfoot td{color:var(--green)}
+.table-empty-row td{text-align:center;padding:48px 24px !important;color:var(--ink4)}
+.table-empty-inner{display:flex;flex-direction:column;align-items:center;gap:10px}
+.subpage{animation:fadeUp .15s ease-out;max-width:880px;margin:0 auto}
+.subpage-hdr{display:flex;align-items:center;gap:15px;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.subpage-hdr h2{font-size:1.18rem;font-weight:800;flex:1;letter-spacing:-0.5px}
+.ctx-card{background:var(--surf);border:1px solid var(--border);border-left:4px solid var(--blue);border-radius:var(--r-lg);padding:15px 18px;margin-bottom:20px;display:flex;gap:22px;flex-wrap:wrap;box-shadow:var(--sh)}
+.ctx-item{display:flex;flex-direction:column;gap:4px}
+.ctx-item span{font-size:0.65rem;font-weight:800;text-transform:uppercase;color:var(--ink4);letter-spacing:0.5px}
+.ctx-item strong{font-size:0.9rem;font-weight:700;color:var(--ink)}
+.sec-card{background:var(--surf);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--sh);overflow:hidden;margin-bottom:14px}
+.sec-card-hdr{display:flex;align-items:center;gap:11px;padding:12px 18px;background:var(--bg);border-bottom:1px solid var(--border)}
+.sec-card-hdr h3{font-size:0.88rem;font-weight:800;color:var(--ink)}
+.sec-card-body{padding:16px}
+.hfld{display:flex;align-items:flex-start;gap:0;border-bottom:1px solid var(--border-lt);padding:8px 0}
+.hfld:last-child{border-bottom:none}
+.hfld-label{width:180px;min-width:180px;font-size:0.72rem;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:0.5px;padding-top:8px;padding-right:14px;flex-shrink:0;line-height:1.3}
+.hfld-label .req,.aefld-label .req,.mhfld-lbl .req{color:var(--red);margin-left:2px}
+.hfld-input{flex:1}
+.hfld input,.hfld textarea,.hfld select{width:100%;padding:8px 11px;border:1px solid #cbd5e1;border-radius:7px;font-family:inherit;font-size:0.82rem;color:var(--ink);outline:none;transition:all .15s;background:var(--surf);font-weight:500}
+.hfld input:focus,.hfld textarea:focus,.hfld select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.hfld textarea{resize:vertical;min-height:64px}
+.hfld select{cursor:pointer}
+.hfld-hint{font-size:0.68rem;color:var(--ink4);margin-top:3px}
+.aefld{display:flex;align-items:flex-start;gap:0;border-bottom:1px solid var(--border-lt);padding:8px 0}
+.aefld:last-child{border-bottom:none}
+.aefld-label{width:180px;min-width:180px;font-size:0.72rem;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:0.4px;padding-top:9px;padding-right:14px;flex-shrink:0;line-height:1.4}
+.aefld-input{flex:1}
+.aefld input,.aefld select{width:100%;padding:8px 11px;border:1px solid #cbd5e1;border-radius:7px;font-family:inherit;font-size:0.83rem;color:var(--ink);outline:none;transition:all .15s;background:var(--surf);font-weight:500}
+.aefld input:focus,.aefld select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.aefld-hint{font-size:0.68rem;color:var(--ink4);margin-top:3px}
+.edit-footer{background:var(--surf);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;box-shadow:var(--sh-md);margin-top:20px;position:sticky;bottom:24px;z-index:10}
+.acard{background:var(--surf);border:1px solid var(--border);border-left:5px solid var(--blue);border-radius:var(--r-lg);overflow:hidden;margin-bottom:24px;box-shadow:0 4px 16px rgba(0,0,0,0.03);transition:box-shadow 0.2s}
+.acard:hover{box-shadow:0 8px 24px rgba(0,0,0,0.06)}
+.acard-hdr{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--bg);border-bottom:1px solid var(--border)}
+.acard-body{padding:24px}
+.asset-number-badge{background:var(--ink);color:#fff;font-size:0.7rem;font-weight:800;padding:4px 10px;border-radius:6px;letter-spacing:0.5px}
+.acard-image-section{display:flex;align-items:flex-start;gap:20px;margin-bottom:20px;border-bottom:1px dashed var(--border);padding-bottom:20px}
+.acard-image-box{width:120px;height:120px;border-radius:8px;border:1.5px dashed #cbd5e1;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;overflow:hidden;cursor:pointer;transition:all .15s}
+.acard-image-box:hover{border-color:var(--blue);background:var(--blue-lt)}
+.acard-image-preview-container{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.acard-image-preview{max-width:100%;max-height:100%;object-fit:contain}
+.acard-image-upload-trigger{color:var(--ink4);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-size:0.7rem;font-weight:600;text-align:center}
+.acard-image-upload-trigger:hover{color:var(--blue)}
+.abtn.clear{padding:4px 8px;background:rgba(255,255,255,.8);color:var(--ink2);border:1px solid var(--border);border-radius:6px;font-size:0.65rem;position:absolute;top:6px;right:6px;z-index:2}
+.abtn.clear:hover{background:#fff;color:var(--red);border-color:#fca5a5}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--ink);color:#fff;padding:12px 20px;border-radius:12px;font-size:0.85rem;font-weight:600;box-shadow:var(--sh-lg);display:flex;align-items:center;gap:8px;z-index:9999;animation:toastIn .2s ease}
+.cbox{background:var(--surf);border-radius:16px;padding:24px;max-width:320px;width:100%;box-shadow:var(--sh-lg);display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center;animation:modalUp .2s ease}
 
-body {
-  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
-  background: var(--bg);
-  color: var(--ink);
-  font-size: 13px;
-  -webkit-font-smoothing: antialiased;
-  line-height: 1.5;
-}
+/* ══ TAMBAH PAGE — REVISED ══ */
+.tambah-page{animation:fadeUp .15s ease-out;max-width:820px;margin:0 auto}
+.tambah-page-hdr{display:flex;align-items:center;gap:15px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.tambah-page-hdr-ico{width:40px;height:40px;border-radius:11px;background:var(--blue-lt);color:var(--blue);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tambah-page-hdr-text h2{font-size:1.15rem;font-weight:800;letter-spacing:-0.5px;color:var(--ink)}
+.tambah-page-hdr-text p{font-size:0.75rem;color:var(--ink4);margin-top:1px;font-weight:500}
+.tambah-sec{background:var(--surf);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--sh);overflow:hidden;margin-bottom:12px}
+.tambah-sec-hdr{display:flex;align-items:center;gap:9px;padding:9px 15px;background:var(--border-lt);border-bottom:1px solid var(--border);font-size:0.70rem;font-weight:800;color:var(--ink2);text-transform:uppercase;letter-spacing:0.5px}
+.tambah-sec-body{padding:3px 15px 6px}
 
-.root { padding: 2rem 2.5rem; min-height: 100vh; max-width: 1400px; margin: 0 auto; }
+/* ── Horizontal field layout (revised) ── */
+.tambah-fld{display:flex;align-items:center;padding:6px 0;gap:0;border-bottom:1px solid var(--border-lt)}
+.tambah-fld:last-child{border-bottom:none}
+.tambah-fld-lbl{width:170px;min-width:170px;font-size:.70rem;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:0.4px;padding-right:13px;flex-shrink:0;line-height:1.3}
+.tambah-fld-lbl .req{color:var(--red);margin-left:2px}
+.tambah-fld-inp{flex:1}
+.tambah-fld input,.tambah-fld textarea,.tambah-fld select{width:100%;padding:6px 10px;border:1px solid #cbd5e1;border-radius:7px;font-family:inherit;font-size:0.81rem;color:var(--ink);outline:none;transition:all .15s;background:var(--surf);font-weight:500}
+.tambah-fld input:focus,.tambah-fld textarea:focus,.tambah-fld select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.tambah-fld textarea{resize:vertical;min-height:56px}
+.tambah-fld select{cursor:pointer}
+.tambah-fld-hint{font-size:.66rem;color:var(--ink4);margin-top:2px}
+.tambah-2col{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 
-.hdr { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
-.hdr h1 { font-size: 1.4rem; font-weight: 800; letter-spacing: -.5px; color: var(--ink); }
-.hdr p { font-size: .8rem; color: var(--ink4); margin-top: 4px; font-weight: 500; }
-.hdr-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+/* ── Anggaran info: horizontal row of items ── */
+.anggaran-info-bar{display:flex;align-items:center;gap:0;background:var(--blue-lt);border:1px solid var(--blue-mid);border-radius:7px;overflow:hidden;flex-shrink:0}
+.anggaran-info-bar .ai-item-s{display:flex;flex-direction:column;gap:0px;padding:5px 12px;border-right:1px solid var(--blue-mid);white-space:nowrap}
+.anggaran-info-bar .ai-item-s:last-child{border-right:none}
+.anggaran-info-bar .ai-lbl-s{font-size:0.58rem;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:#60a5fa}
+.anggaran-info-bar .ai-val-s{font-size:0.76rem;font-weight:700;color:var(--ink)}
+.anggaran-info-bar .ai-val-s.sisa-ok{color:var(--green)}
+.anggaran-info-bar .ai-val-s.sisa-warn{color:var(--amber)}
+.anggaran-info-bar .ai-val-s.sisa-over{color:var(--red)}
 
-.yr-row { display: flex; background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); padding: 4px; gap: 2px; box-shadow: var(--sh); }
-.yr-btn { padding: 6px 14px; border-radius: 6px; border: none; cursor: pointer; font-family: inherit; font-size: .75rem; font-weight: 600; background: transparent; color: var(--ink3); transition: all .15s; }
-.yr-btn:hover:not(.on) { background: var(--bg); color: var(--ink2); }
-.yr-btn.on { background: var(--blue); color: #fff; font-weight: 700; box-shadow: 0 2px 6px rgba(37,99,235,0.2); }
+/* ── OPEX Modal: inline value preview (right of input) ── */
+.opex-inline-preview{display:inline-flex;align-items:center;padding:6px 11px;background:var(--green-lt);border:1px solid var(--green-mid);border-radius:7px;font-size:0.78rem;font-weight:700;color:var(--green);white-space:nowrap;flex-shrink:0;min-width:fit-content}
 
-.type-tabs { display: flex; gap: 2px; background: var(--surf); padding: 4px; border-radius: var(--r); border: 1px solid var(--border); box-shadow: var(--sh); }
-.type-tab { display: flex; align-items: center; gap: 6px; padding: 6px 16px; border: none; background: transparent; border-radius: 6px; font-family: inherit; font-size: .75rem; font-weight: 600; color: var(--ink3); cursor: pointer; transition: all .15s; }
-.type-tab:hover:not(.on) { background: var(--bg); color: var(--ink2); }
-.type-tab.on { background: var(--blue); color: #fff; box-shadow: 0 2px 6px rgba(37,99,235,0.2); }
-.type-tab.on.all { background: var(--ink); box-shadow: 0 2px 6px rgba(15,23,42,0.2); }
-
-.kpi-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 24px; }
-.kpi { background: var(--surf); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 1.25rem; display: flex; gap: 16px; align-items: center; box-shadow: var(--sh); transition: transform 0.2s; }
-.kpi:hover { transform: translateY(-2px); box-shadow: var(--sh-md); }
-.kpi-ico { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.kpi.blue .kpi-ico { background: var(--blue-lt); color: var(--blue); }
-.kpi.amber .kpi-ico { background: var(--amber-lt); color: var(--amber); }
-.kpi.green .kpi-ico { background: var(--green-lt); color: var(--green); }
-.kpi-body { flex: 1; min-width: 0; }
-.kpi-lbl { font-size: .7rem; color: var(--ink3); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
-.kpi-val { font-size: 1.2rem; font-weight: 800; color: var(--ink); line-height: 1; }
-.kpi-sub { font-size: .7rem; color: var(--ink4); margin-top: 6px; }
-.kpi-bar { height: 4px; background: var(--border-lt); border-radius: 99px; overflow: hidden; margin-top: 8px; }
-.kpi-bar-fill { height: 100%; border-radius: 99px; transition: width .6s ease; }
-
-.toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
-.flt-box, .srch { display: flex; align-items: center; gap: 8px; background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); padding: 8px 12px; box-shadow: var(--sh); transition: border-color .2s; }
-.flt-box:focus-within, .srch:focus-within { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
-.flt-box svg, .srch svg { color: var(--ink4); flex-shrink: 0; }
-.flt-select, .srch input { border: none; background: transparent; font-family: inherit; font-size: .8rem; color: var(--ink); outline: none; }
-.flt-select { cursor: pointer; min-width: 180px; font-weight: 500; }
-.srch { flex: 1; max-width: 380px; }
-.srch input { flex: 1; }
-
-.opex-toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
-.opex-flt-box { display: flex; align-items: center; gap: 8px; background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); padding: 8px 12px; box-shadow: var(--sh); transition: border-color .2s; }
-.opex-flt-box:focus-within { border-color: var(--green); box-shadow: 0 0 0 3px rgba(22,163,74,.1); }
-.opex-flt-box svg { color: var(--ink4); flex-shrink: 0; }
-.opex-flt-select { border: none; background: transparent; font-family: inherit; font-size: .8rem; color: var(--ink); outline: none; cursor: pointer; font-weight: 500; min-width: 300px; }
-.opex-srch { display: flex; align-items: center; gap: 8px; background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); padding: 8px 12px; box-shadow: var(--sh); flex: 1; max-width: 340px; transition: border-color .2s; }
-.opex-srch:focus-within { border-color: var(--green); box-shadow: 0 0 0 3px rgba(22,163,74,.1); }
-.opex-srch svg { color: var(--ink4); flex-shrink: 0; }
-.opex-srch input { border: none; background: transparent; font-family: inherit; font-size: .8rem; color: var(--ink); outline: none; flex: 1; }
-.opex-filter-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: var(--green-lt); border: 1px solid var(--green-mid); border-radius: 99px; font-size: 0.7rem; font-weight: 700; color: var(--green); }
-.opex-filter-badge button { background: none; border: none; cursor: pointer; color: var(--green); display: flex; align-items: center; padding: 0; transition: color .15s; }
-.opex-filter-badge button:hover { color: var(--red); }
-
-.section-label { display: flex; align-items: center; gap: 12px; margin: 1.5rem 0 1rem; }
-.section-label-line { flex: 1; height: 1px; background: var(--border); }
-.section-label-pill { display: flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 99px; font-size: .75rem; font-weight: 700; border: 1px solid transparent; }
-.section-label-pill.capex { background: var(--blue-lt); color: var(--blue); border-color: var(--blue-mid); }
-.section-label-pill.opex { background: var(--green-lt); color: var(--green); border-color: var(--green-mid); }
-.section-count { font-size: .75rem; color: var(--ink4); font-weight: 500; }
-
-.card-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
-.empty { background: var(--surf); border: 1.5px dashed var(--border); border-radius: var(--r-lg); text-align: center; padding: 3rem; color: var(--ink4); font-size: .85rem; font-weight: 500; }
-
-.jcard { background: var(--surf); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; box-shadow: var(--sh); transition: transform .15s, box-shadow .15s; }
-.jcard:hover { transform: translateY(-1px); box-shadow: var(--sh-md); }
-.jcard.open-cap { border-color: var(--blue-mid); }
-.jcard.open-opx { border-color: var(--green-mid); }
-
-.jcard-inner { display: flex; }
-.jcard-accent { width: 3px; flex-shrink: 0; }
-.jcard-accent.cap { background: var(--blue); }
-.jcard-accent.opx { background: var(--green); }
-.jcard-content { flex: 1; min-width: 0; }
-
-.jcard-top { display: grid; grid-template-columns: 2.2fr 1.3fr 2.5fr auto; align-items: center; gap: 16px; padding: 14px 20px; cursor: pointer; transition: background .15s; }
-.jcard-top:hover { background: var(--bg); }
-.jcard.open-cap .jcard-top { background: #f8faff; }
-.jcard.open-opx .jcard-top { background: #f7fef9; }
-
-.jc-info { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.jc-tags { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.badge { font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
-.badge.capex { background: var(--blue-lt); color: var(--blue); }
-.badge.opex { background: var(--green-lt); color: var(--green); }
-.code-tag { font-family: var(--mono); font-size: 0.7rem; color: var(--ink3); background: var(--border-lt); border: 1px solid var(--border); padding: 1px 6px; border-radius: 4px; }
-.yr-tag { font-size: 0.7rem; font-weight: 600; color: var(--ink3); background: var(--border-lt); border: 1px solid var(--border); padding: 1px 6px; border-radius: 4px; }
-.jc-title { font-size: 0.85rem; font-weight: 700; color: var(--ink); line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-
-.jc-meta { display: flex; flex-direction: column; gap: 4px; font-size: 0.75rem; color: var(--ink3); font-weight: 500; }
-.jc-meta span { display: flex; align-items: center; gap: 6px; }
-
-.jc-fin { display: flex; align-items: center; justify-content: flex-end; gap: 20px; }
-.amt-blk { display: flex; flex-direction: column; gap: 2px; text-align: right; }
-.amt-lbl { font-size: 0.65rem; color: var(--ink4); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-.amt-val { font-size: 0.9rem; font-weight: 800; }
-.amt-val.blue { color: var(--blue); }
-.amt-val.amber { color: var(--amber); }
-.amt-val.red { color: var(--red); }
-.amt-val.green { color: var(--green); }
-.fin-div { width: 1px; height: 28px; background: var(--border); }
-
-.jc-actions { display: flex; align-items: center; gap: 16px; justify-content: flex-end; }
-.ring-wrap { display: flex; align-items: center; gap: 8px; }
-.ring { position: relative; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; }
-.ring svg { position: absolute; top: 0; left: 0; transform: rotate(-90deg); width: 100%; height: 100%; }
-.ring-lbl { font-size: 0.7rem; font-weight: 800; color: var(--ink); z-index: 1; }
-.status-pill { font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border-radius: 99px; border: 1px solid transparent; }
-
-.act-btns { display: flex; gap: 4px; }
-.abtn { display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border); font-family: inherit; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all .15s; background: var(--surf); color: var(--ink3); }
-.abtn:hover { background: var(--bg); border-color: #cbd5e1; color: var(--ink2); }
-.abtn.blue { background: var(--blue-lt); border-color: var(--blue-mid); color: var(--blue); }
-.abtn.blue:hover { background: var(--blue-mid); color: #1d4ed8; }
-.abtn.green { background: var(--green-lt); border-color: var(--green-mid); color: var(--green); }
-.abtn.green:hover { background: var(--green-mid); color: #15803d; }
-.abtn.excel { background: #f0fdf4; border-color: #bbf7d0; color: #166534; }
-.abtn.excel:hover { background: #dcfce7; color: #14532d; }
-.abtn.del { padding: 6px 8px; }
-.abtn.del:hover { background: var(--red-lt); border-color: #fca5a5; color: var(--red); }
-.chev { color: var(--ink4); padding: 4px; border-radius: 50%; display: flex; transition: background 0.15s; }
-.jcard-top:hover .chev { background: var(--border); color: var(--ink2); }
-
-.jcard-detail { padding: 20px; background: var(--bg); border-top: 1px dashed var(--border); animation: slideDown .15s ease-out; }
-.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-.d-panel { background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); padding: 16px; box-shadow: var(--sh); }
-.d-title { font-size: 0.75rem; font-weight: 800; color: var(--ink2); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-lt); padding-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;}
-.d-rows { display: flex; flex-direction: column; gap: 6px; }
-.d-row { display: flex; justify-content: space-between; align-items: flex-start; font-size: 0.8rem; }
-.d-row .lbl { color: var(--ink4); font-weight: 500; }
-.d-row .val { color: var(--ink); font-weight: 600; text-align: right; }
-.d-row code { font-family: var(--mono); font-size: 0.75rem; color: var(--blue); background: var(--blue-lt); padding: 2px 6px; border-radius: 4px; }
-.d-empty { font-size: 0.8rem; color: var(--ink4); text-align: center; padding: 16px; background: var(--bg); border-radius: 8px; border: 1px dashed var(--border); }
-.inline-link { font-size: 0.75rem; font-weight: 700; color: var(--blue); background: none; border: none; cursor: pointer; padding: 0; display: inline-flex; align-items: center; gap: 4px; transition: color .15s; }
-.inline-link:hover { color: #1e40af; text-decoration: underline; }
-
-.ai-list, .ri-list { display: flex; flex-direction: column; gap: 6px; }
-.ai-item, .ri-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: var(--surf); border: 1px solid var(--border); border-radius: 8px; box-shadow: var(--sh); }
-.ai-info, .ri-info { display: flex; align-items: center; gap: 10px; }
-.a-code, .r-id { font-family: var(--mono); font-size: 0.7rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; white-space: nowrap; }
-.a-code { background: var(--blue-lt); color: var(--blue); }
-.r-id { background: var(--amber-lt); color: var(--amber); }
-.a-name, .r-ket { font-size: 0.8rem; font-weight: 700; color: var(--ink); margin-bottom: 2px; }
-.a-loc, .r-date { font-size: 0.7rem; color: var(--ink4); display: flex; align-items: center; gap: 4px; font-weight: 500; }
-.a-val { font-size: 0.85rem; font-weight: 800; color: var(--blue); }
-.r-val { font-size: 0.85rem; font-weight: 800; color: var(--amber); }
-
-.panel-total { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-radius: 8px; margin-top: 6px; }
-.panel-total.blue { background: var(--blue-lt); border: 1px solid var(--blue-mid); color: var(--blue); }
-.panel-total.amber { background: var(--amber-lt); border: 1px solid #fde68a; color: var(--amber); }
-.panel-total span { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-.panel-total strong { font-size: 0.95rem; font-weight: 800; }
-
-.overlay { position: fixed; inset: 0; background: rgba(15,23,42,.5); display: flex; align-items: center; justify-content: center; z-index: 900; backdrop-filter: blur(2px); padding: 20px; animation: fadeOvl .15s ease; }
-.mbox { background: var(--surf); border-radius: var(--r-lg); width: 100%; max-width: 600px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: var(--sh-lg); animation: modalUp .2s cubic-bezier(.16,1,.3,1); }
-.mbox.wide { max-width: 720px; }
-.mhd { display: flex; align-items: flex-start; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-.mhd-left { display: flex; align-items: center; gap: 12px; }
-.m-ico { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
-.m-ico.blue { background: var(--blue-lt); color: var(--blue); }
-.m-ico.green { background: var(--green-lt); color: var(--green); }
-.m-ico.amber { background: var(--amber-lt); color: var(--amber); }
-.mhd h3 { font-size: 0.95rem; font-weight: 800; color: var(--ink); }
-.mhd p { font-size: 0.75rem; color: var(--ink4); font-weight: 500; }
-.m-close { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border); background: var(--border-lt); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--ink2); transition: all .15s; flex-shrink: 0; }
-.m-close:hover { background: var(--red-lt); border-color: #fca5a5; color: var(--red); }
-.mbody { padding: 20px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; flex: 1; }
-.mfoot { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 16px 20px; border-top: 1px solid var(--border); flex-shrink: 0; background: var(--bg); }
-
-.btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 8px; font-family: inherit; font-size: 0.8rem; font-weight: 700; cursor: pointer; border: none; transition: all .15s; white-space: nowrap; }
-.btn-outline { background: var(--surf); border: 1px solid var(--border); color: var(--ink2); }
-.btn-outline:hover { background: var(--bg); border-color: #cbd5e1; }
-.btn-prim { background: var(--blue); color: #fff; box-shadow: 0 2px 8px rgba(37,99,235,.2); }
-.btn-prim:hover { background: #1d4ed8; }
-.btn-green { background: var(--green); color: #fff; box-shadow: 0 2px 8px rgba(22,163,74,.2); }
-.btn-green:hover { background: #15803d; }
-.btn-excel { background: #166534; color: #fff; box-shadow: 0 2px 8px rgba(22,101,52,.25); }
-.btn-excel:hover { background: #14532d; }
-
-.pagination-bar { display: flex; align-items: center; justify-content: space-between; padding: 10px 4px; margin-bottom: 24px; flex-wrap: wrap; gap: 8px; }
-.pagination-info { font-size: 0.75rem; color: var(--ink4); font-weight: 500; }
-.pagination-controls { display: flex; align-items: center; gap: 4px; }
-.pg-btn { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 6px; border: 1px solid var(--border); background: var(--surf); color: var(--ink3); font-family: inherit; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all .15s; }
-.pg-btn:hover:not(:disabled):not(.active) { background: var(--bg); border-color: #cbd5e1; color: var(--ink2); }
-.pg-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; box-shadow: 0 2px 6px rgba(37,99,235,.2); }
-.pg-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-.asset-page { animation: fadeUp .15s ease-out; }
-.asset-page-hdr { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
-.asset-page-hdr-left { display: flex; align-items: center; gap: 16px; }
-.asset-page-hdr-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-
-.asset-ctx-banner { background: var(--surf); border: 1px solid var(--border); border-left: 4px solid var(--blue); border-radius: var(--r-lg); padding: 14px 20px; margin-bottom: 20px; display: flex; gap: 32px; flex-wrap: wrap; box-shadow: var(--sh); }
-.asset-ctx-banner.opex-theme { border-left-color: var(--green); }
-.asset-ctx-item { display: flex; flex-direction: column; gap: 3px; }
-.asset-ctx-item span { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: var(--ink4); letter-spacing: 0.5px; }
-.asset-ctx-item strong { font-size: 0.88rem; font-weight: 700; color: var(--ink); }
-
-.asset-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
-.asset-toolbar-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.asset-toolbar-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-
-.at-filter { display: flex; align-items: center; gap: 8px; background: var(--surf); border: 1px solid var(--border); border-radius: var(--r); padding: 7px 12px; box-shadow: var(--sh); transition: border-color .2s; }
-.at-filter:focus-within { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
-.at-filter svg { color: var(--ink4); flex-shrink: 0; }
-.at-filter input, .at-filter select { border: none; background: transparent; font-family: inherit; font-size: 0.78rem; color: var(--ink); outline: none; font-weight: 500; }
-.at-filter select { cursor: pointer; min-width: 130px; }
-.at-filter input { min-width: 220px; }
-
-.asset-table-wrap { background: var(--surf); border: 1px solid var(--border); border-radius: var(--r-lg); box-shadow: var(--sh); overflow: hidden; }
-.asset-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
-.asset-table thead tr { background: var(--bg); border-bottom: 2px solid var(--border); }
-.asset-table thead th { padding: 11px 14px; text-align: left; font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: var(--ink3); white-space: nowrap; border-right: 1px solid var(--border-lt); }
-.asset-table thead th:last-child { border-right: none; }
-.asset-table thead th.th-no { width: 44px; text-align: center; }
-.asset-table thead th.th-actions { width: 80px; text-align: center; }
-
-.asset-table tbody tr { border-bottom: 1px solid var(--border-lt); transition: background .12s; }
-.asset-table tbody tr:last-child { border-bottom: none; }
-.asset-table tbody tr:hover { background: #f8faff; }
-.asset-table.opex-table tbody tr:hover { background: #f7fef9; }
-
-.asset-table tbody td { padding: 11px 14px; vertical-align: middle; border-right: 1px solid var(--border-lt); }
-.asset-table tbody td:last-child { border-right: none; }
-
-.td-no { text-align: center; font-size: 0.7rem; font-weight: 700; color: var(--ink4); background: var(--bg); }
-.td-asset-name { display: flex; align-items: center; gap: 10px; }
-.td-thumb { width: 36px; height: 36px; border-radius: 6px; overflow: hidden; border: 1px solid var(--border); flex-shrink: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; }
-.td-thumb img { width: 100%; height: 100%; object-fit: cover; }
-.td-thumb-empty { color: var(--ink4); }
-.td-name-block { display: flex; flex-direction: column; gap: 3px; }
-.td-name-text { font-size: 0.82rem; font-weight: 700; color: var(--ink); line-height: 1.3; }
-.td-name-sub { font-size: 0.7rem; color: var(--ink4); font-weight: 500; }
-
-.td-code { font-family: var(--mono); font-size: 0.72rem; font-weight: 700; background: var(--blue-lt); color: var(--blue); padding: 3px 8px; border-radius: 5px; white-space: nowrap; display: inline-block; }
-.td-sn { font-family: var(--mono); font-size: 0.7rem; color: var(--ink3); font-weight: 600; }
-
-.cat-pill { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 800; white-space: nowrap; }
-.cat-pill.Server { background: #ede9fe; color: #6d28d9; }
-.cat-pill.Network { background: #dbeafe; color: #1d4ed8; }
-.cat-pill.Security { background: #fef3c7; color: #b45309; }
-.cat-pill.default { background: var(--border-lt); color: var(--ink3); }
-
-.td-loc { display: flex; align-items: center; gap: 5px; font-size: 0.78rem; color: var(--ink2); font-weight: 500; }
-.td-date { font-size: 0.78rem; color: var(--ink3); font-weight: 500; }
-.td-value { font-size: 0.85rem; font-weight: 800; color: var(--blue); white-space: nowrap; }
-
-.td-actions { text-align: center; }
-.td-act-row { display: flex; align-items: center; justify-content: center; gap: 4px; }
-
-.asset-table tfoot tr { background: var(--blue-lt); border-top: 2px solid var(--blue-mid); }
-.asset-table tfoot td { padding: 10px 14px; font-size: 0.78rem; font-weight: 700; color: var(--blue); }
-.asset-table tfoot .tfoot-total { font-size: 0.9rem; font-weight: 800; }
-
-.asset-table.opex-table tfoot tr { background: var(--green-lt); border-top-color: var(--green-mid); }
-.asset-table.opex-table tfoot td { color: var(--green); }
-
-.table-empty-row td { text-align: center; padding: 48px 24px !important; color: var(--ink4); }
-.table-empty-inner { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-
-.asset-summary-bar { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; background: var(--bg); border-top: 1px solid var(--border); flex-wrap: wrap; gap: 12px; }
-.asset-summary-stat { display: flex; align-items: center; gap: 8px; }
-.asset-summary-stat span { font-size: 0.75rem; color: var(--ink4); font-weight: 500; }
-.asset-summary-stat strong { font-size: 0.85rem; font-weight: 800; color: var(--ink); }
-
-.subpage { animation: fadeUp .15s ease-out; max-width: 900px; margin: 0 auto; }
-.subpage-hdr { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
-.subpage-hdr h2 { font-size: 1.25rem; font-weight: 800; flex: 1; letter-spacing: -0.5px; }
-.ctx-card { background: var(--surf); border: 1px solid var(--border); border-left: 4px solid var(--blue); border-radius: var(--r-lg); padding: 16px 20px; margin-bottom: 24px; display: flex; gap: 24px; flex-wrap: wrap; box-shadow: var(--sh); }
-.ctx-item { display: flex; flex-direction: column; gap: 4px; }
-.ctx-item span { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: var(--ink4); letter-spacing: 0.5px; }
-.ctx-item strong { font-size: 0.9rem; font-weight: 700; color: var(--ink); }
-
-.sec-card { background: var(--surf); border: 1px solid var(--border); border-radius: var(--r-lg); box-shadow: var(--sh); overflow: hidden; margin-bottom: 20px; }
-.sec-card-hdr { display: flex; align-items: center; gap: 12px; padding: 14px 20px; background: var(--bg); border-bottom: 1px solid var(--border); }
-.sec-card-hdr h3 { font-size: 0.9rem; font-weight: 800; color: var(--ink); }
-.sec-card-body { padding: 20px; }
-
-/* ── HORIZONTAL FORM FIELDS ── */
-.hfld { display: flex; align-items: flex-start; gap: 0; border-bottom: 1px solid var(--border-lt); padding: 10px 0; }
-.hfld:last-child { border-bottom: none; }
-.hfld-label { width: 200px; min-width: 200px; font-size: 0.75rem; font-weight: 700; color: var(--ink3); text-transform: uppercase; letter-spacing: 0.5px; padding-top: 10px; padding-right: 16px; flex-shrink: 0; line-height: 1.4; }
-.hfld-label .req { color: var(--red); margin-left: 2px; }
-.hfld-input { flex: 1; }
-.hfld input, .hfld textarea, .hfld select { width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 0.85rem; color: var(--ink); outline: none; transition: all .15s; background: var(--surf); font-weight: 500; }
-.hfld input:focus, .hfld textarea:focus, .hfld select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
-.hfld textarea { resize: vertical; min-height: 72px; }
-.hfld select { cursor: pointer; }
-.hfld-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 24px; }
-.hfld-row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0 16px; }
-.hfld-hint { font-size: 0.7rem; color: var(--ink4); margin-top: 4px; }
-
-/* ── ASSET ENTRY HORIZONTAL FIELDS ── */
-.aefld {
-  display: flex;
-  align-items: flex-start;
-  gap: 0;
-  border-bottom: 1px solid var(--border-lt);
-  padding: 8px 0;
-}
-.aefld:last-child { border-bottom: none; }
-.aefld-label {
-  width: 180px;
-  min-width: 180px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--ink3);
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  padding-top: 9px;
-  padding-right: 14px;
-  flex-shrink: 0;
-  line-height: 1.4;
-}
-.aefld-label .req { color: var(--red); margin-left: 2px; }
-.aefld-input { flex: 1; }
-.aefld input, .aefld select { width: 100%; padding: 8px 11px; border: 1px solid #cbd5e1; border-radius: 7px; font-family: inherit; font-size: 0.83rem; color: var(--ink); outline: none; transition: all .15s; background: var(--surf); font-weight: 500; }
-.aefld input:focus, .aefld select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
-.aefld-hint { font-size: 0.68rem; color: var(--ink4); margin-top: 3px; }
-
-/* Legacy edit-grid kept for backward compat */
-.edit-grid { display: grid; gap: 16px; }
-.g3 { grid-template-columns: repeat(3,1fr); }
-.g2 { grid-template-columns: repeat(2,1fr); }
-.g1 { grid-template-columns: 1fr; }
-.edit-fld { display: flex; flex-direction: column; gap: 6px; }
-.edit-fld label { font-size: 0.7rem; font-weight: 700; color: var(--ink3); text-transform: uppercase; letter-spacing: 0.5px;}
-.edit-fld input, .edit-fld textarea, .edit-fld select { padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 0.85rem; color: var(--ink); outline: none; transition: all .15s; background: var(--surf); font-weight: 500; }
-.edit-fld input:focus, .edit-fld textarea:focus, .edit-fld select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
-
-.edit-footer { background: var(--surf); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; box-shadow: var(--sh-md); margin-top: 24px; position: sticky; bottom: 24px; z-index: 10; }
-
-.acard { background: var(--surf); border: 1px solid var(--border); border-left: 5px solid var(--blue); border-radius: var(--r-lg); overflow: hidden; margin-bottom: 24px; box-shadow: 0 4px 16px rgba(0,0,0,0.03); transition: box-shadow 0.2s; }
-.acard:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
-.acard-hdr { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--bg); border-bottom: 1px solid var(--border); }
-.acard-body { padding: 24px; }
-.asset-number-badge { background: var(--ink); color: #fff; font-size: 0.7rem; font-weight: 800; padding: 4px 10px; border-radius: 6px; letter-spacing: 0.5px; }
-
-.acard-image-section { display: flex; align-items: flex-start; gap: 20px; margin-bottom: 20px; border-bottom: 1px dashed var(--border); padding-bottom: 20px; }
-.acard-image-box { width: 120px; height: 120px; border-radius: 8px; border: 1.5px dashed #cbd5e1; background: var(--bg); display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; overflow: hidden; cursor: pointer; transition: all .15s; }
-.acard-image-box:hover { border-color: var(--blue); background: var(--blue-lt); }
-.acard-image-preview-container { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.acard-image-preview { max-width: 100%; max-height: 100%; object-fit: contain; }
-.acard-image-upload-trigger { color: var(--ink4); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; font-size: 0.7rem; font-weight: 600; text-align: center; }
-.acard-image-upload-trigger:hover { color: var(--blue); }
-.abtn.clear { padding: 4px 8px; background: rgba(255,255,255,.8); color: var(--ink2); border: 1px solid var(--border); border-radius: 6px; font-size: 0.65rem; position: absolute; top: 6px; right: 6px; z-index: 2; }
-.abtn.clear:hover { background: #fff; color: var(--red); border-color: #fca5a5; }
-
-.toast { position: fixed; bottom: 24px; right: 24px; background: var(--ink); color: #fff; padding: 12px 20px; border-radius: 12px; font-size: 0.85rem; font-weight: 600; box-shadow: var(--sh-lg); display: flex; align-items: center; gap: 8px; z-index: 9999; animation: toastIn .2s ease; }
-.cbox { background: var(--surf); border-radius: 16px; padding: 24px; max-width: 320px; width: 100%; box-shadow: var(--sh-lg); display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; animation: modalUp .2s ease; }
-
-/* ── MODAL TAMBAH PEKERJAAN ── */
-.add-modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.55); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(3px); padding: 20px; animation: fadeOvl .15s ease; }
-.add-modal-box { background: var(--surf); border-radius: 16px; width: 100%; max-width: 680px; max-height: 92vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: var(--sh-lg); animation: modalUp .22s cubic-bezier(.16,1,.3,1); }
-.add-modal-hdr { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid var(--border); flex-shrink: 0; background: var(--bg); }
-.add-modal-hdr-left { display: flex; align-items: center; gap: 12px; }
-.add-modal-ico { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
-.add-modal-ico.blue { background: var(--blue-lt); color: var(--blue); }
-.add-modal-ico.green { background: var(--green-lt); color: var(--green); }
-.add-modal-hdr h3 { font-size: 1rem; font-weight: 800; color: var(--ink); margin: 0; }
-.add-modal-hdr p { font-size: 0.75rem; color: var(--ink4); font-weight: 500; margin: 2px 0 0; }
-
-.add-modal-body { flex: 1; overflow-y: auto; padding: 0; }
-.add-modal-section { border-bottom: 1px solid var(--border); }
-.add-modal-section-hdr { display: flex; align-items: center; gap: 10px; padding: 12px 24px; background: var(--border-lt); font-size: 0.72rem; font-weight: 800; color: var(--ink2); text-transform: uppercase; letter-spacing: 0.6px; border-bottom: 1px solid var(--border); }
-.add-modal-section-body { padding: 4px 24px 8px; }
-
-.mhfld { display: flex; align-items: flex-start; padding: 9px 0; gap: 0; border-bottom: 1px solid var(--border-lt); }
-.mhfld:last-child { border-bottom: none; }
-.mhfld-lbl { width: 190px; min-width: 190px; font-size: 0.72rem; font-weight: 700; color: var(--ink3); text-transform: uppercase; letter-spacing: 0.4px; padding-top: 10px; padding-right: 12px; flex-shrink: 0; line-height: 1.4; }
-.mhfld-lbl .req { color: var(--red); margin-left: 2px; }
-.mhfld-inp { flex: 1; }
-.mhfld input, .mhfld textarea, .mhfld select { width: 100%; padding: 8px 11px; border: 1px solid #cbd5e1; border-radius: 7px; font-family: inherit; font-size: 0.83rem; color: var(--ink); outline: none; transition: all .15s; background: var(--surf); font-weight: 500; }
-.mhfld input:focus, .mhfld textarea:focus, .mhfld select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
-.mhfld.green input:focus, .mhfld.green textarea:focus, .mhfld.green select:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(22,163,74,.1); }
-.mhfld textarea { resize: vertical; min-height: 64px; }
-.mhfld select { cursor: pointer; }
-.mhfld-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-
-.add-modal-foot { display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding: 14px 24px; border-top: 1px solid var(--border); flex-shrink: 0; background: var(--bg); }
-.req-note { font-size: 0.7rem; color: var(--ink4); padding: 8px 24px 4px; font-style: italic; }
-
-@keyframes slideDown { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes fadeOvl { from { opacity: 0; } to { opacity: 1; } }
-@keyframes modalUp { from { opacity: 0; transform: translateY(10px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
-@keyframes toastIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-
-@media(max-width:1024px) {
-  .jcard-top { grid-template-columns: 1fr; gap: 12px; }
-  .jc-fin { justify-content: flex-start; }
-  .jc-actions { justify-content: flex-start; flex-wrap: wrap; }
-  .fin-div { display: none; }
-  .asset-table { font-size: 0.75rem; }
-  .asset-table thead th, .asset-table tbody td { padding: 9px 10px; }
-}
-@media(max-width:900px) {
-  .root { padding: 24px 20px 80px; }
-  .hdr { flex-direction: column; align-items: stretch; }
-  .kpi-strip { grid-template-columns: 1fr; }
-  .detail-grid { grid-template-columns: 1fr; }
-  .g3 { grid-template-columns: 1fr; }
-  .g2 { grid-template-columns: 1fr; }
-  .ctx-card { grid-template-columns: 1fr 1fr; }
-  .opex-flt-select { min-width: 200px; }
-  .mhfld-lbl { width: 140px; min-width: 140px; }
-  .hfld-label { width: 160px; min-width: 160px; }
-  .aefld-label { width: 140px; min-width: 140px; }
-}
+.req-note-small{font-size:0.7rem;color:var(--ink4);padding:0 0 10px;font-style:italic}
+@keyframes slideDown{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeOvl{from{opacity:0}to{opacity:1}}
+@keyframes modalUp{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes toastIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:1024px){.jcard-top{grid-template-columns:1fr;gap:12px}.jc-fin{justify-content:flex-start}.jc-actions{justify-content:flex-start;flex-wrap:wrap}.fin-div{display:none}.asset-table{font-size:0.75rem}.asset-table thead th,.asset-table tbody td{padding:9px 10px}}
+@media(max-width:900px){.root{padding:24px 20px 80px}.hdr{flex-direction:column;align-items:stretch}.kpi-strip{grid-template-columns:1fr}.detail-grid{grid-template-columns:1fr}.ctx-card{grid-template-columns:1fr 1fr}.opex-flt-select{min-width:200px}.tambah-fld-lbl{width:140px;min-width:140px}.hfld-label{width:160px;min-width:160px}.aefld-label{width:140px;min-width:140px}}
 `;
 
 const PAGE_SIZE = 5;
@@ -1168,11 +918,9 @@ function Pagination({ total, page, onPage, label }) {
   const end = Math.min(page * PAGE_SIZE, total);
   const pages = [];
   for (let i = 1; i <= totalPages; i++) {
-    if (i === 1 || i === totalPages || (i >= page - 1 && i <= page + 1)) {
+    if (i === 1 || i === totalPages || (i >= page - 1 && i <= page + 1))
       pages.push(i);
-    } else if (pages[pages.length - 1] !== "...") {
-      pages.push("...");
-    }
+    else if (pages[pages.length - 1] !== "...") pages.push("...");
   }
   return (
     <div className="pagination-bar">
@@ -1190,7 +938,7 @@ function Pagination({ total, page, onPage, label }) {
         {pages.map((p, i) =>
           p === "..." ? (
             <span
-              key={`ellipsis-${i}`}
+              key={`e${i}`}
               style={{
                 padding: "0 4px",
                 color: "var(--ink4)",
@@ -1211,7 +959,7 @@ function Pagination({ total, page, onPage, label }) {
         )}
         <button
           className="pg-btn"
-          disabled={page === totalPages}
+          disabled={page === Math.ceil(total / PAGE_SIZE)}
           onClick={() => onPage(page + 1)}
         >
           <Icon d={I.chevRight} size={13} />
@@ -1282,14 +1030,7 @@ function Confirm({ msg, onConfirm, onCancel }) {
 }
 
 function CatPill({ cat }) {
-  const cls =
-    cat === "Server"
-      ? "Server"
-      : cat === "Network"
-        ? "Network"
-        : cat === "Security"
-          ? "Security"
-          : "default";
+  const cls = ["Server", "Network", "Security"].includes(cat) ? cat : "default";
   return <span className={`cat-pill ${cls}`}>{cat || "—"}</span>;
 }
 
@@ -1339,10 +1080,56 @@ function PctRing({ pct }) {
   );
 }
 
-// ══════════════════════════════════════════════════════════════════
-// FIX 1: MODAL TAMBAH CAPEX — Tgl BAMK dipindah ke bawah Tgl SP3
-// ══════════════════════════════════════════════════════════════════
-function TambahCapexModal({ capexData, onClose, onSave }) {
+function HFld({ label, req, children }) {
+  return (
+    <div className="hfld">
+      <div className="hfld-label">
+        {label}
+        {req && <span className="req">*</span>}
+      </div>
+      <div className="hfld-input">{children}</div>
+    </div>
+  );
+}
+function AEFld({ label, req, children }) {
+  return (
+    <div className="aefld">
+      <div className="aefld-label">
+        {label}
+        {req && <span className="req">*</span>}
+      </div>
+      <div className="aefld-input">{children}</div>
+    </div>
+  );
+}
+
+/* ══ TFld — horizontal compact layout (REVISED) ══ */
+function TFld({ label, req, children }) {
+  return (
+    <div className="tambah-fld">
+      <div className="tambah-fld-lbl">
+        {label}
+        {req && <span className="req">*</span>}
+      </div>
+      <div className="tambah-fld-inp">{children}</div>
+    </div>
+  );
+}
+
+function MHFld({ label, req, green, children }) {
+  return (
+    <div className={`tambah-fld${green ? " green" : ""}`}>
+      <div className="tambah-fld-lbl">
+        {label}
+        {req && <span className="req">*</span>}
+      </div>
+      <div className="tambah-fld-inp">{children}</div>
+    </div>
+  );
+}
+
+// ══════ TAMBAH CAPEX PAGE — REVISED ══════
+function TambahCapexPage({ capexData, onBack, onSave }) {
   const [form, setForm] = useState({
     anggaranId: capexData[0]?.id || "",
     nm_pekerjaan: "",
@@ -1358,11 +1145,22 @@ function TambahCapexModal({ capexData, onClose, onSave }) {
     tgl_bamk: "",
   });
   const up = (k, v) => setForm((f) => ({ ...f, [k]: v }));
-  const anggaranPilihan = capexData.find((a) => a.id === form.anggaranId);
+  const ang = capexData.find((a) => a.id === form.anggaranId);
+  const totalKontrakAng = useMemo(() => {
+    if (!ang) return 0;
+    return (ang.projects || []).reduce((s, p) => s + (p.nilai_kontrak || 0), 0);
+  }, [ang]);
+  const sisaAnggaran = ang ? ang.pagu - totalKontrakAng : 0;
+  const sisaClass =
+    sisaAnggaran > 0
+      ? "sisa-ok"
+      : sisaAnggaran === 0
+        ? "sisa-warn"
+        : "sisa-over";
 
   const handleSave = () => {
     if (!form.nm_pekerjaan || !form.anggaranId) return;
-    const newProj = {
+    onSave(form.anggaranId, {
       id: `PKJ-${Date.now()}`,
       nm_pekerjaan: form.nm_pekerjaan,
       nilai_rab: parseFloat(form.nilai_rab) || 0,
@@ -1376,290 +1174,216 @@ function TambahCapexModal({ capexData, onClose, onSave }) {
       tgl_sp3: form.tgl_sp3,
       tgl_bamk: form.tgl_bamk,
       assets: [],
-    };
-    onSave(form.anggaranId, newProj);
+    });
   };
 
   return (
-    <div className="add-modal-overlay" onClick={onClose}>
-      <div className="add-modal-box" onClick={(e) => e.stopPropagation()}>
-        <div className="add-modal-hdr">
-          <div className="add-modal-hdr-left">
-            <div className="add-modal-ico blue">
-              <Icon d={I.briefcase} size={18} />
-            </div>
-            <div>
-              <h3>Tambah Pekerjaan CAPEX</h3>
-              <p>Isi semua informasi pekerjaan baru di bawah ini</p>
-            </div>
-          </div>
-          <button className="m-close" onClick={onClose}>
-            <Icon d={I.x} size={14} />
-          </button>
+    <div className="tambah-page">
+      <div className="tambah-page-hdr">
+        <button className="btn btn-outline" onClick={onBack}>
+          <Icon d={I.arrowLeft} size={12} /> Kembali
+        </button>
+        <div className="tambah-page-hdr-ico">
+          <Icon d={I.briefcase} size={20} />
         </div>
-
-        <div className="add-modal-body">
-          <p className="req-note">
-            Kolom bertanda <span style={{ color: "var(--red)" }}>*</span> wajib
-            diisi
-          </p>
-
-          <div className="add-modal-section">
-            <div className="add-modal-section-hdr">
-              <Icon d={I.database} size={13} /> Pos Anggaran CAPEX
-            </div>
-            <div className="add-modal-section-body">
-              <div className="mhfld">
-                <div className="mhfld-lbl">
-                  Pos Anggaran<span className="req">*</span>
-                </div>
-                <div className="mhfld-inp">
-                  <select
-                    value={form.anggaranId}
-                    onChange={(e) => up("anggaranId", e.target.value)}
-                  >
-                    <option value="">— Pilih Pos Anggaran —</option>
-                    {capexData.map((a) => (
-                      <option key={a.id} value={a.id}>
-                        [{a.kode}] {a.thnAnggaran} —{" "}
-                        {a.nama.length > 50
-                          ? a.nama.substring(0, 50) + "..."
-                          : a.nama}
-                      </option>
-                    ))}
-                  </select>
-                  {anggaranPilihan && (
-                    <div
-                      style={{
-                        marginTop: 6,
-                        padding: "8px 10px",
-                        background: "var(--blue-lt)",
-                        borderRadius: 6,
-                        border: "1px solid var(--blue-mid)",
-                        fontSize: "0.75rem",
-                      }}
-                    >
-                      <div
-                        style={{ display: "flex", gap: 20, flexWrap: "wrap" }}
-                      >
-                        <span>
-                          <b style={{ color: "var(--ink3)" }}>Kode:</b>{" "}
-                          <code
-                            style={{
-                              fontFamily: "var(--mono)",
-                              color: "var(--blue)",
-                            }}
-                          >
-                            {anggaranPilihan.kode}
-                          </code>
-                        </span>
-                        <span>
-                          <b style={{ color: "var(--ink3)" }}>Tahun:</b>{" "}
-                          {anggaranPilihan.thnAnggaran}
-                        </span>
-                        {anggaranPilihan.pagu > 0 && (
-                          <span>
-                            <b style={{ color: "var(--ink3)" }}>Pagu:</b>{" "}
-                            <b style={{ color: "var(--blue)" }}>
-                              {fmt(anggaranPilihan.pagu)}
-                            </b>
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="add-modal-section">
-            <div className="add-modal-section-hdr">
-              <Icon d={I.fileText} size={13} /> Informasi Pekerjaan
-            </div>
-            <div className="add-modal-section-body">
-              <div className="mhfld">
-                <div className="mhfld-lbl">
-                  Nama Pekerjaan<span className="req">*</span>
-                </div>
-                <div className="mhfld-inp">
-                  <textarea
-                    placeholder="Deskripsi lengkap nama pekerjaan..."
-                    value={form.nm_pekerjaan}
-                    onChange={(e) => up("nm_pekerjaan", e.target.value)}
-                    rows={3}
-                  />
-                </div>
-              </div>
-              <div className="mhfld">
-                <div className="mhfld-lbl">Nilai RAB (IDR)</div>
-                <div className="mhfld-inp">
-                  <div className="mhfld-2col">
-                    <input
-                      type="number"
-                      placeholder="0"
-                      value={form.nilai_rab}
-                      onChange={(e) => up("nilai_rab", e.target.value)}
-                    />
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        justifyContent: "center",
-                      }}
-                    >
-                      {form.nilai_rab > 0 && (
-                        <span
-                          style={{
-                            fontSize: "0.75rem",
-                            color: "var(--ink3)",
-                            fontWeight: 600,
-                          }}
-                        >
-                          {fmt(parseFloat(form.nilai_rab) || 0)}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="mhfld">
-                <div className="mhfld-lbl">Nilai Kontrak (IDR)</div>
-                <div className="mhfld-inp">
-                  <div className="mhfld-2col">
-                    <input
-                      type="number"
-                      placeholder="0"
-                      value={form.nilai_kontrak}
-                      onChange={(e) => up("nilai_kontrak", e.target.value)}
-                    />
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        justifyContent: "center",
-                      }}
-                    >
-                      {form.nilai_kontrak > 0 && (
-                        <span
-                          style={{
-                            fontSize: "0.75rem",
-                            color: "var(--red)",
-                            fontWeight: 600,
-                          }}
-                        >
-                          {fmt(parseFloat(form.nilai_kontrak) || 0)}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="mhfld">
-                <div className="mhfld-lbl">Durasi Kontrak</div>
-                <div className="mhfld-inp">
-                  <div className="mhfld-2col">
-                    <input
-                      type="number"
-                      placeholder="Jumlah hari"
-                      value={form.durasi_kontrak}
-                      onChange={(e) => up("durasi_kontrak", e.target.value)}
-                    />
-                    <div style={{ display: "flex", alignItems: "center" }}>
-                      <span
-                        style={{ fontSize: "0.78rem", color: "var(--ink3)" }}
-                      >
-                        hari kerja
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="add-modal-section">
-            <div className="add-modal-section-hdr">
-              <Icon d={I.tag} size={13} /> Referensi Dokumen
-            </div>
-            <div className="add-modal-section-body">
-              <div className="mhfld">
-                <div className="mhfld-lbl">No. PR</div>
-                <div className="mhfld-inp">
-                  <input
-                    placeholder="cth. 8260001121"
-                    value={form.no_pr}
-                    onChange={(e) => up("no_pr", e.target.value)}
-                  />
-                </div>
-              </div>
-              <div className="mhfld">
-                <div className="mhfld-lbl">No. PO</div>
-                <div className="mhfld-inp">
-                  <input
-                    placeholder="cth. 6440000839"
-                    value={form.no_po}
-                    onChange={(e) => up("no_po", e.target.value)}
-                  />
-                </div>
-              </div>
-              <div className="mhfld">
-                <div className="mhfld-lbl">No. Kontrak</div>
-                <div className="mhfld-inp">
-                  <input
-                    placeholder="cth. SI.01/10/9/2/PPTI/TEKI/PLMT-24"
-                    value={form.no_kontrak}
-                    onChange={(e) => up("no_kontrak", e.target.value)}
-                  />
-                </div>
-              </div>
-              <div className="mhfld">
-                <div className="mhfld-lbl">Tanggal Kontrak</div>
-                <div className="mhfld-inp">
-                  <input
-                    type="date"
-                    value={form.tgl_kontrak}
-                    onChange={(e) => up("tgl_kontrak", e.target.value)}
-                  />
-                </div>
-              </div>
-              <div className="mhfld">
-                <div className="mhfld-lbl">No. SP3</div>
-                <div className="mhfld-inp">
-                  <input
-                    placeholder="Nomor SP3"
-                    value={form.no_sp3}
-                    onChange={(e) => up("no_sp3", e.target.value)}
-                  />
-                </div>
-              </div>
-              {/* ── FIX 1: Tgl SP3 dan Tgl BAMK vertikal (tidak sejajar) ── */}
-              <div className="mhfld">
-                <div className="mhfld-lbl">Tanggal SP3</div>
-                <div className="mhfld-inp">
-                  <input
-                    type="date"
-                    value={form.tgl_sp3}
-                    onChange={(e) => up("tgl_sp3", e.target.value)}
-                  />
-                </div>
-              </div>
-              <div className="mhfld">
-                <div className="mhfld-lbl">Tanggal BAMK</div>
-                <div className="mhfld-inp">
-                  <input
-                    type="date"
-                    value={form.tgl_bamk}
-                    onChange={(e) => up("tgl_bamk", e.target.value)}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
+        <div className="tambah-page-hdr-text">
+          <h2>Tambah Pekerjaan CAPEX</h2>
+          <p>Isi semua informasi pekerjaan baru di bawah ini</p>
         </div>
+      </div>
+      <p className="req-note-small">
+        Kolom bertanda <span style={{ color: "var(--red)" }}>*</span> wajib
+        diisi
+      </p>
 
-        <div className="add-modal-foot">
-          <button className="btn btn-outline" onClick={onClose}>
+      {/* ── Pos Anggaran ── */}
+      <div className="tambah-sec">
+        <div className="tambah-sec-hdr">
+          <Icon d={I.database} size={13} /> Pos Anggaran CAPEX
+        </div>
+        <div className="tambah-sec-body">
+          <TFld label="Pos Anggaran" req>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <select
+                value={form.anggaranId}
+                onChange={(e) => up("anggaranId", e.target.value)}
+                style={{ flex: 1 }}
+              >
+                <option value="">— Pilih Pos Anggaran —</option>
+                {capexData.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    [{a.kode}] {a.thnAnggaran} —{" "}
+                    {a.nama.length > 50
+                      ? a.nama.substring(0, 50) + "..."
+                      : a.nama}
+                  </option>
+                ))}
+              </select>
+              {/* Anggaran info: horizontal inline strip */}
+              {ang && (
+                <div className="anggaran-info-bar">
+                  <div className="ai-item-s">
+                    <span className="ai-lbl-s">Sisa Anggaran</span>
+                    <span className={`ai-val-s ${sisaClass}`}>
+                      {fmt(Math.abs(sisaAnggaran))}
+                      {sisaAnggaran < 0 ? " (melebihi)" : ""}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </TFld>
+        </div>
+      </div>
+
+      {/* ── Informasi Pekerjaan ── */}
+      <div className="tambah-sec">
+        <div className="tambah-sec-hdr">
+          <Icon d={I.fileText} size={13} /> Informasi Pekerjaan
+        </div>
+        <div className="tambah-sec-body">
+          <TFld label="Nama Pekerjaan" req>
+            <textarea
+              placeholder="Deskripsi lengkap nama pekerjaan..."
+              value={form.nm_pekerjaan}
+              onChange={(e) => up("nm_pekerjaan", e.target.value)}
+              rows={2}
+            />
+          </TFld>
+          <TFld label="Nilai RAB (IDR)">
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <input
+                type="number"
+                placeholder="0"
+                value={form.nilai_rab}
+                onChange={(e) => up("nilai_rab", e.target.value)}
+                style={{ flex: 1 }}
+              />
+              {form.nilai_rab > 0 && (
+                <span
+                  style={{
+                    fontSize: "0.75rem",
+                    color: "var(--ink3)",
+                    fontWeight: 600,
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {fmt(parseFloat(form.nilai_rab) || 0)}
+                </span>
+              )}
+            </div>
+          </TFld>
+          <TFld label="Nilai Kontrak (IDR)">
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <input
+                type="number"
+                placeholder="0"
+                value={form.nilai_kontrak}
+                onChange={(e) => up("nilai_kontrak", e.target.value)}
+                style={{ flex: 1 }}
+              />
+              {form.nilai_kontrak > 0 && (
+                <span
+                  style={{
+                    fontSize: "0.75rem",
+                    color: "var(--red)",
+                    fontWeight: 600,
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {fmt(parseFloat(form.nilai_kontrak) || 0)}
+                </span>
+              )}
+            </div>
+          </TFld>
+          <TFld label="Durasi Kontrak">
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <input
+                type="number"
+                placeholder="Jumlah hari"
+                value={form.durasi_kontrak}
+                onChange={(e) => up("durasi_kontrak", e.target.value)}
+                style={{ flex: 1 }}
+              />
+              <span
+                style={{
+                  fontSize: "0.75rem",
+                  color: "var(--ink3)",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                hari kerja
+              </span>
+            </div>
+          </TFld>
+        </div>
+      </div>
+
+      {/* ── Referensi Dokumen ── */}
+      <div className="tambah-sec">
+        <div className="tambah-sec-hdr">
+          <Icon d={I.tag} size={13} /> Referensi Dokumen
+        </div>
+        <div className="tambah-sec-body">
+          {[
+            ["No. PR", "no_pr", "cth. 8260001121"],
+            ["No. PO", "no_po", "cth. 6440000839"],
+            [
+              "No. Kontrak",
+              "no_kontrak",
+              "cth. SI.01/10/9/2/PPTI/TEKI/PLMT-24",
+            ],
+            ["No. SP3", "no_sp3", "Nomor SP3"],
+          ].map(([lbl, key, ph]) => (
+            <TFld key={key} label={lbl}>
+              <input
+                placeholder={ph}
+                value={form[key]}
+                onChange={(e) => up(key, e.target.value)}
+              />
+            </TFld>
+          ))}
+          <TFld label="Tanggal Kontrak">
+            <input
+              type="date"
+              value={form.tgl_kontrak}
+              onChange={(e) => up("tgl_kontrak", e.target.value)}
+            />
+          </TFld>
+          <TFld label="Tanggal SP3">
+            <input
+              type="date"
+              value={form.tgl_sp3}
+              onChange={(e) => up("tgl_sp3", e.target.value)}
+            />
+          </TFld>
+          <TFld label="Tanggal BAMK">
+            <input
+              type="date"
+              value={form.tgl_bamk}
+              onChange={(e) => up("tgl_bamk", e.target.value)}
+            />
+          </TFld>
+        </div>
+      </div>
+
+      <div className="edit-footer">
+        <div>
+          <span style={{ fontSize: "0.75rem", color: "var(--ink3)" }}>
+            Pekerjaan akan disimpan ke pos anggaran terpilih
+          </span>
+          <strong
+            style={{
+              fontSize: "0.82rem",
+              display: "block",
+              color: "var(--ink)",
+            }}
+          >
+            {ang ? ang.nama : "—"}
+          </strong>
+        </div>
+        <div style={{ display: "flex", gap: 12 }}>
+          <button className="btn btn-outline" onClick={onBack}>
             Batal
           </button>
           <button
@@ -1668,6 +1392,7 @@ function TambahCapexModal({ capexData, onClose, onSave }) {
               opacity: !form.nm_pekerjaan || !form.anggaranId ? 0.5 : 1,
             }}
             onClick={handleSave}
+            disabled={!form.nm_pekerjaan || !form.anggaranId}
           >
             <Icon d={I.save} size={13} /> Simpan Pekerjaan
           </button>
@@ -1677,6 +1402,7 @@ function TambahCapexModal({ capexData, onClose, onSave }) {
   );
 }
 
+// ══════ MODAL: TAMBAH OPEX ══════
 function TambahOpexModal({ onClose, onSave }) {
   const currentYear = new Date().getFullYear();
   const [form, setForm] = useState({
@@ -1706,154 +1432,144 @@ function TambahOpexModal({ onClose, onSave }) {
       transaksi: [],
     });
   };
+
+  const nilaiPreview = parseFloat(form.nilai_anggaran_tahunan) || 0;
+
   return (
-    <div className="add-modal-overlay" onClick={onClose}>
-      <div className="add-modal-box" onClick={(e) => e.stopPropagation()}>
-        <div className="add-modal-hdr">
-          <div className="add-modal-hdr-left">
-            <div className="add-modal-ico green">
+    <div className="overlay" onClick={onClose}>
+      <div
+        style={{
+          background: "var(--surf)",
+          borderRadius: "var(--r-lg)",
+          width: "100%",
+          maxWidth: 580,
+          maxHeight: "90vh",
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+          boxShadow: "var(--sh-lg)",
+          animation: "modalUp .2s cubic-bezier(.16,1,.3,1)",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "16px 24px",
+            borderBottom: "1px solid var(--border)",
+            background: "var(--bg)",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div
+              style={{
+                width: 38,
+                height: 38,
+                borderRadius: 10,
+                background: "var(--green-lt)",
+                color: "var(--green)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               <Icon d={I.monitor} size={18} />
             </div>
             <div>
-              <h3>Tambah Pos Anggaran OPEX</h3>
-              <p>Isi informasi pos anggaran OPEX baru</p>
+              <h3 style={{ fontSize: "1rem", fontWeight: 800 }}>
+                Tambah Pos Anggaran OPEX
+              </h3>
+              <p
+                style={{
+                  fontSize: "0.75rem",
+                  color: "var(--ink4)",
+                  fontWeight: 500,
+                  marginTop: 2,
+                }}
+              >
+                Isi informasi pos anggaran OPEX baru
+              </p>
             </div>
           </div>
-          <button className="m-close" onClick={onClose}>
+          <button
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: 6,
+              border: "1px solid var(--border)",
+              background: "var(--border-lt)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              color: "var(--ink2)",
+            }}
+            onClick={onClose}
+          >
             <Icon d={I.x} size={14} />
           </button>
         </div>
-        <div className="add-modal-body">
-          <p className="req-note">
-            Kolom bertanda <span style={{ color: "var(--red)" }}>*</span> wajib
-            diisi
-          </p>
-          <div className="add-modal-section">
-            <div
-              className="add-modal-section-hdr"
-              style={{ color: "var(--green)" }}
+        <div style={{ flex: 1, overflowY: "auto", padding: "16px 24px" }}>
+          <HFld label="Kode Master Anggaran">
+            <select
+              value={form.kd_anggaran_master}
+              onChange={(e) => handleMaster(e.target.value)}
+              style={{ borderColor: "var(--green)" }}
             >
-              <Icon d={I.database} size={13} /> Informasi Pos Anggaran
+              <option value="">— Pilih Kode Master (Opsional) —</option>
+              {BUDGET_MASTERS.map((m) => (
+                <option key={m.kd_anggaran_master} value={m.kd_anggaran_master}>
+                  {m.kd_anggaran_master} — {m.nm_anggaran_master}
+                </option>
+              ))}
+            </select>
+          </HFld>
+          <HFld label="Nama Pos Anggaran" req>
+            <input
+              placeholder="Nama pos anggaran OPEX..."
+              value={form.nama}
+              onChange={(e) => up("nama", e.target.value)}
+            />
+          </HFld>
+          <HFld label="Tahun Anggaran" req>
+            <input
+              type="number"
+              placeholder="cth. 2026"
+              value={form.thn_anggaran}
+              onChange={(e) => up("thn_anggaran", e.target.value)}
+              min="2020"
+              max="2030"
+            />
+          </HFld>
+          {/* ── FIX: Nilai Anggaran Tahunan — preview inline to the right ── */}
+          <HFld label="Nilai Anggaran Tahunan (IDR)">
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <input
+                type="number"
+                placeholder="0"
+                value={form.nilai_anggaran_tahunan}
+                onChange={(e) => up("nilai_anggaran_tahunan", e.target.value)}
+                style={{ flex: 1 }}
+              />
+              {nilaiPreview > 0 && (
+                <span className="opex-inline-preview">{fmt(nilaiPreview)}</span>
+              )}
             </div>
-            <div className="add-modal-section-body">
-              <div className="mhfld green">
-                <div className="mhfld-lbl">Kode Master Anggaran</div>
-                <div className="mhfld-inp">
-                  <select
-                    value={form.kd_anggaran_master}
-                    onChange={(e) => handleMaster(e.target.value)}
-                  >
-                    <option value="">— Pilih Kode Master (Opsional) —</option>
-                    {BUDGET_MASTERS.map((m) => (
-                      <option
-                        key={m.kd_anggaran_master}
-                        value={m.kd_anggaran_master}
-                      >
-                        {m.kd_anggaran_master} — {m.nm_anggaran_master}
-                      </option>
-                    ))}
-                  </select>
-                  {form.kd_anggaran_master && (
-                    <div
-                      style={{
-                        marginTop: 6,
-                        padding: "6px 10px",
-                        background: "var(--green-lt)",
-                        borderRadius: 6,
-                        border: "1px solid var(--green-mid)",
-                        fontSize: "0.74rem",
-                      }}
-                    >
-                      <span style={{ color: "var(--ink3)" }}>
-                        Kode terpilih:{" "}
-                      </span>
-                      <code
-                        style={{
-                          fontFamily: "var(--mono)",
-                          color: "var(--green)",
-                          fontWeight: 700,
-                        }}
-                      >
-                        {form.kd_anggaran_master}
-                      </code>
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className="mhfld green">
-                <div className="mhfld-lbl">
-                  Nama Pos Anggaran<span className="req">*</span>
-                </div>
-                <div className="mhfld-inp">
-                  <input
-                    placeholder="Nama pos anggaran OPEX..."
-                    value={form.nama}
-                    onChange={(e) => up("nama", e.target.value)}
-                  />
-                </div>
-              </div>
-              <div className="mhfld green">
-                <div className="mhfld-lbl">
-                  Tahun Anggaran<span className="req">*</span>
-                </div>
-                <div className="mhfld-inp">
-                  <div className="mhfld-2col">
-                    <input
-                      type="number"
-                      placeholder="cth. 2026"
-                      value={form.thn_anggaran}
-                      onChange={(e) => up("thn_anggaran", e.target.value)}
-                      min="2020"
-                      max="2030"
-                    />
-                    <div style={{ display: "flex", alignItems: "center" }}>
-                      <span
-                        style={{ fontSize: "0.75rem", color: "var(--ink4)" }}
-                      >
-                        Tahun anggaran berlaku
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="mhfld green">
-                <div className="mhfld-lbl">Nilai Anggaran Tahunan (IDR)</div>
-                <div className="mhfld-inp">
-                  <div className="mhfld-2col">
-                    <input
-                      type="number"
-                      placeholder="0"
-                      value={form.nilai_anggaran_tahunan}
-                      onChange={(e) =>
-                        up("nilai_anggaran_tahunan", e.target.value)
-                      }
-                    />
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        justifyContent: "center",
-                      }}
-                    >
-                      {form.nilai_anggaran_tahunan > 0 && (
-                        <span
-                          style={{
-                            fontSize: "0.75rem",
-                            color: "var(--green)",
-                            fontWeight: 700,
-                          }}
-                        >
-                          {fmt(parseFloat(form.nilai_anggaran_tahunan) || 0)}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          </HFld>
         </div>
-        <div className="add-modal-foot">
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-end",
+            gap: 10,
+            padding: "14px 24px",
+            borderTop: "1px solid var(--border)",
+            background: "var(--bg)",
+          }}
+        >
           <button className="btn btn-outline" onClick={onClose}>
             Batal
           </button>
@@ -1870,9 +1586,7 @@ function TambahOpexModal({ onClose, onSave }) {
   );
 }
 
-// ══════════════════════════════════════════════════════════════════
-// FIX 3: ASSET TABLE PAGE — tambah tombol Export Excel
-// ══════════════════════════════════════════════════════════════════
+// ══════ ASSET TABLE PAGE ══════
 function AssetTablePage({
   project,
   anggaran,
@@ -1919,7 +1633,6 @@ function AssetTablePage({
       }),
     [assets, catFilter, locFilter, searchQ],
   );
-
   const totalFiltered = filtered.reduce(
     (s, a) => s + (a.acquisition_value || 0),
     0,
@@ -1929,28 +1642,6 @@ function AssetTablePage({
     project.nilai_kontrak > 0
       ? Math.round((totalAll / project.nilai_kontrak) * 100)
       : 0;
-
-  const deleteAsset = (id) =>
-    setConfirm({
-      msg: "Hapus aset ini dari daftar pekerjaan?",
-      onConfirm: () => {
-        onSaveAssets(
-          project.id,
-          assets.filter((a) => a.id !== id),
-        );
-        showToast("Aset dihapus");
-        setConfirm(null);
-      },
-    });
-
-  const handleExport = () => {
-    if (filtered.length === 0) {
-      showToast("Tidak ada data untuk diekspor");
-      return;
-    }
-    exportAssetsToExcel(filtered, project.nm_pekerjaan, project.no_kontrak);
-    showToast(`${filtered.length} aset berhasil diekspor ke Excel`);
-  };
 
   return (
     <div className="asset-page">
@@ -1985,8 +1676,21 @@ function AssetTablePage({
           </div>
         </div>
         <div className="asset-page-hdr-right">
-          {/* ── FIX 3: Tombol Export Excel ── */}
-          <button className="btn btn-excel" onClick={handleExport}>
+          <button
+            className="btn btn-excel"
+            onClick={() => {
+              if (!filtered.length) {
+                showToast("Tidak ada data untuk diekspor");
+                return;
+              }
+              exportAssetsToExcel(
+                filtered,
+                project.nm_pekerjaan,
+                project.no_kontrak,
+              );
+              showToast(`${filtered.length} aset berhasil diekspor ke Excel`);
+            }}
+          >
             <Icon d={I.download} size={13} /> Export Excel
           </button>
           <button className="btn btn-prim" onClick={onEntryNew}>
@@ -1995,35 +1699,36 @@ function AssetTablePage({
         </div>
       </div>
       <div className="asset-ctx-banner">
-        <div className="asset-ctx-item">
-          <span>Pekerjaan</span>
-          <strong style={{ maxWidth: 260 }}>
-            {project.nm_pekerjaan?.substring(0, 48)}
-            {project.nm_pekerjaan?.length > 48 ? "…" : ""}
-          </strong>
-        </div>
-        <div className="asset-ctx-item">
-          <span>No. Kontrak</span>
-          <strong>
-            <code style={{ fontFamily: "var(--mono)", fontSize: "0.82rem" }}>
-              {project.no_kontrak || "—"}
-            </code>
-          </strong>
-        </div>
-        <div className="asset-ctx-item">
-          <span>Nilai Kontrak</span>
-          <strong style={{ color: "var(--red)" }}>
-            {project.nilai_kontrak > 0 ? fmt(project.nilai_kontrak) : "—"}
-          </strong>
-        </div>
-        <div className="asset-ctx-item">
-          <span>Total Nilai Aset</span>
-          <strong style={{ color: "var(--blue)" }}>{fmt(totalAll)}</strong>
-        </div>
-        <div className="asset-ctx-item">
-          <span>Serapan Aset</span>
-          <strong style={{ color: pctColor(pct) }}>{pct}%</strong>
-        </div>
+        {[
+          [
+            "Pekerjaan",
+            project.nm_pekerjaan?.substring(0, 48) +
+              (project.nm_pekerjaan?.length > 48 ? "…" : ""),
+          ],
+          ["No. Kontrak", project.no_kontrak || "—"],
+          [
+            "Nilai Kontrak",
+            project.nilai_kontrak > 0 ? fmt(project.nilai_kontrak) : "—",
+            "var(--red)",
+          ],
+          ["Total Nilai Aset", fmt(totalAll), "var(--blue)"],
+          ["Serapan Aset", `${pct}%`, pctColor(pct)],
+        ].map(([lbl, val, color]) => (
+          <div key={lbl} className="asset-ctx-item">
+            <span>{lbl}</span>
+            <strong style={color ? { color } : {}}>
+              {lbl === "No. Kontrak" ? (
+                <code
+                  style={{ fontFamily: "var(--mono)", fontSize: "0.82rem" }}
+                >
+                  {val}
+                </code>
+              ) : (
+                val
+              )}
+            </strong>
+          </div>
+        ))}
       </div>
       <div className="asset-toolbar">
         <div className="asset-toolbar-left">
@@ -2164,7 +1869,19 @@ function AssetTablePage({
                     <div className="td-act-row">
                       <button
                         className="abtn del"
-                        onClick={() => deleteAsset(a.id)}
+                        onClick={() =>
+                          setConfirm({
+                            msg: "Hapus aset ini dari daftar pekerjaan?",
+                            onConfirm: () => {
+                              onSaveAssets(
+                                project.id,
+                                assets.filter((x) => x.id !== a.id),
+                              );
+                              showToast("Aset dihapus");
+                              setConfirm(null);
+                            },
+                          })
+                        }
                       >
                         <Icon d={I.trash} size={11} />
                       </button>
@@ -2188,7 +1905,7 @@ function AssetTablePage({
                   Total {filtered.length} aset
                 </td>
                 <td className="tfoot-total">{fmt(totalFiltered)}</td>
-                <td></td>
+                <td />
               </tr>
             </tfoot>
           )}
@@ -2205,6 +1922,7 @@ function AssetTablePage({
   );
 }
 
+// ══════ REALISASI TABLE PAGE ══════
 function RealisasiTablePage({
   ang,
   onBack,
@@ -2217,23 +1935,18 @@ function RealisasiTablePage({
   const transactions = ang.transaksi || [];
   const filtered = useMemo(
     () =>
-      transactions.filter((t) => {
-        if (searchQ) {
-          const q = searchQ.toLowerCase();
-          return (
-            t.keterangan?.toLowerCase().includes(q) ||
-            t.no_invoice?.toLowerCase().includes(q)
-          );
-        }
-        return true;
-      }),
+      transactions.filter(
+        (t) =>
+          !searchQ ||
+          t.keterangan?.toLowerCase().includes(searchQ.toLowerCase()) ||
+          t.no_invoice?.toLowerCase().includes(searchQ.toLowerCase()),
+      ),
     [transactions, searchQ],
   );
   const totalFiltered = filtered.reduce((s, t) => s + (t.jumlah || 0), 0);
   const totalAll = transactions.reduce((s, t) => s + (t.jumlah || 0), 0);
   const pagu = ang.nilai_anggaran_tahunan || 0;
   const sisa = pagu - totalAll;
-  const pct = pagu > 0 ? Math.round((totalAll / pagu) * 100) : 0;
 
   return (
     <div className="asset-page">
@@ -2272,34 +1985,32 @@ function RealisasiTablePage({
         </div>
       </div>
       <div className="asset-ctx-banner opex-theme">
-        <div className="asset-ctx-item">
-          <span>Pos Anggaran</span>
-          <strong>{ang.nama?.substring(0, 48)}</strong>
-        </div>
-        <div className="asset-ctx-item">
-          <span>Kode Master</span>
-          <strong>
-            <code style={{ fontFamily: "var(--mono)", fontSize: "0.82rem" }}>
-              {ang.kd_anggaran_master || "—"}
-            </code>
-          </strong>
-        </div>
-        <div className="asset-ctx-item">
-          <span>Pagu Anggaran</span>
-          <strong style={{ color: "var(--blue)" }}>
-            {pagu > 0 ? fmt(pagu) : "—"}
-          </strong>
-        </div>
-        <div className="asset-ctx-item">
-          <span>Total Realisasi</span>
-          <strong style={{ color: "var(--amber)" }}>{fmt(totalAll)}</strong>
-        </div>
-        <div className="asset-ctx-item">
-          <span>Sisa Anggaran</span>
-          <strong style={{ color: sisa >= 0 ? "var(--green)" : "var(--red)" }}>
-            {fmt(Math.abs(sisa))} {sisa < 0 && "(melebihi)"}
-          </strong>
-        </div>
+        {[
+          ["Pos Anggaran", ang.nama?.substring(0, 48)],
+          ["Kode Master", ang.kd_anggaran_master || "—", null, true],
+          ["Pagu Anggaran", pagu > 0 ? fmt(pagu) : "—", "var(--blue)"],
+          ["Total Realisasi", fmt(totalAll), "var(--amber)"],
+          [
+            "Sisa Anggaran",
+            `${fmt(Math.abs(sisa))}${sisa < 0 ? " (melebihi)" : ""}`,
+            sisa >= 0 ? "var(--green)" : "var(--red)",
+          ],
+        ].map(([lbl, val, color, mono]) => (
+          <div key={lbl} className="asset-ctx-item">
+            <span>{lbl}</span>
+            <strong style={color ? { color } : {}}>
+              {mono ? (
+                <code
+                  style={{ fontFamily: "var(--mono)", fontSize: "0.82rem" }}
+                >
+                  {val}
+                </code>
+              ) : (
+                val
+              )}
+            </strong>
+          </div>
+        ))}
       </div>
       <div className="asset-toolbar">
         <div className="asset-toolbar-left">
@@ -2417,7 +2128,7 @@ function RealisasiTablePage({
                   Total {filtered.length} transaksi
                 </td>
                 <td className="tfoot-total">{fmt(totalFiltered)}</td>
-                <td></td>
+                <td />
               </tr>
             </tfoot>
           )}
@@ -2427,6 +2138,7 @@ function RealisasiTablePage({
   );
 }
 
+// ══════ CAPEX CARD ══════
 function CapexCard({ proj, onEdit, onAssetTable, onAssetEntry, onDelete }) {
   const [open, setOpen] = useState(false);
   const assets = proj.assets || [];
@@ -2464,13 +2176,13 @@ function CapexCard({ proj, onEdit, onAssetTable, onAssetEntry, onDelete }) {
             </div>
             <div className="jc-fin">
               <div className="amt-blk">
-                <span className="amt-lbl">Nilai Kontrak</span>
-                <span className="amt-val red">{fmt(proj.nilai_kontrak)}</span>
+                <span className="amt-lbl">Nilai Anggaran</span>
+                <span className="amt-val blue">{fmt(assetTotal)}</span>
               </div>
               <div className="fin-div" />
               <div className="amt-blk">
-                <span className="amt-lbl">Aset Tercatat</span>
-                <span className="amt-val blue">{fmt(assetTotal)}</span>
+                <span className="amt-lbl">Nilai Kontrak</span>
+                <span className="amt-val red">{fmt(proj.nilai_kontrak)}</span>
               </div>
             </div>
             <div className="jc-actions">
@@ -2501,60 +2213,32 @@ function CapexCard({ proj, onEdit, onAssetTable, onAssetEntry, onDelete }) {
                 <div className="d-panel">
                   <div className="d-title">Informasi Kontrak</div>
                   <div className="d-rows">
-                    {proj.no_kontrak && (
-                      <div className="d-row">
-                        <span className="lbl">No. Kontrak</span>
-                        <span className="val">
-                          <code>{proj.no_kontrak}</code>
-                        </span>
-                      </div>
-                    )}
-                    {proj.no_po && (
-                      <div className="d-row">
-                        <span className="lbl">No. PO</span>
-                        <span className="val">
-                          <code>{proj.no_po}</code>
-                        </span>
-                      </div>
-                    )}
-                    {proj.no_pr && (
-                      <div className="d-row">
-                        <span className="lbl">No. PR</span>
-                        <span className="val">
-                          <code>{proj.no_pr}</code>
-                        </span>
-                      </div>
-                    )}
-                    {proj.tgl_kontrak && (
-                      <div className="d-row">
-                        <span className="lbl">Tgl. Kontrak</span>
-                        <span className="val">{fmtDate(proj.tgl_kontrak)}</span>
-                      </div>
-                    )}
-                    {proj.durasi_kontrak > 0 && (
-                      <div className="d-row">
-                        <span className="lbl">Durasi</span>
-                        <span className="val">{proj.durasi_kontrak} hari</span>
-                      </div>
-                    )}
-                    {proj.tgl_sp3 && (
-                      <div className="d-row">
-                        <span className="lbl">Tgl. SP3</span>
-                        <span className="val">{fmtDate(proj.tgl_sp3)}</span>
-                      </div>
-                    )}
-                    {proj.tgl_bamk && (
-                      <div className="d-row">
-                        <span className="lbl">BAMK</span>
-                        <span className="val">{fmtDate(proj.tgl_bamk)}</span>
-                      </div>
-                    )}
-                    {proj.nilai_rab > 0 && (
-                      <div className="d-row">
-                        <span className="lbl">Nilai RAB</span>
-                        <span className="val">{fmt(proj.nilai_rab)}</span>
-                      </div>
-                    )}
+                    {[
+                      ["No. Kontrak", proj.no_kontrak, true],
+                      ["No. PO", proj.no_po, true],
+                      ["No. PR", proj.no_pr, true],
+                      ["Tgl. Kontrak", fmtDate(proj.tgl_kontrak)],
+                      proj.durasi_kontrak > 0 && [
+                        "Durasi",
+                        `${proj.durasi_kontrak} hari`,
+                      ],
+                      ["Tgl. SP3", fmtDate(proj.tgl_sp3)],
+                      ["BAMK", fmtDate(proj.tgl_bamk)],
+                      proj.nilai_rab > 0 && ["Nilai RAB", fmt(proj.nilai_rab)],
+                    ]
+                      .filter(Boolean)
+                      .map(
+                        ([lbl, val, isCode]) =>
+                          val &&
+                          val !== "—" && (
+                            <div key={lbl} className="d-row">
+                              <span className="lbl">{lbl}</span>
+                              <span className="val">
+                                {isCode ? <code>{val}</code> : val}
+                              </span>
+                            </div>
+                          ),
+                      )}
                   </div>
                 </div>
                 <div className="d-panel">
@@ -2625,6 +2309,7 @@ function CapexCard({ proj, onEdit, onAssetTable, onAssetEntry, onDelete }) {
   );
 }
 
+// ══════ OPEX CARD ══════
 function OpexCard({
   ang,
   onSaveOpex,
@@ -2732,34 +2417,26 @@ function OpexCard({
                 <div className="d-panel">
                   <div className="d-title">Ringkasan Dana</div>
                   <div className="d-rows">
-                    <div className="d-row">
-                      <span className="lbl">Kode Master</span>
-                      <span className="val">
-                        <code>{ang.kd_anggaran_master}</code>
-                      </span>
-                    </div>
-                    <div className="d-row">
-                      <span className="lbl">Tahun Anggaran</span>
-                      <span className="val">{ang.thn_anggaran}</span>
-                    </div>
-                    <div className="d-row">
-                      <span className="lbl">Total Anggaran (Pagu)</span>
-                      <span className="val blue">{fmt(pagu)}</span>
-                    </div>
-                    <div className="d-row">
-                      <span className="lbl">Total Realisasi</span>
-                      <span className="val amber">{fmt(totalReal)}</span>
-                    </div>
-                    <div className="d-row">
-                      <span className="lbl">Sisa Anggaran</span>
-                      <span className={`val ${sisa >= 0 ? "green" : "red"}`}>
-                        {fmt(Math.abs(sisa))} {sisa < 0 && "(melebihi)"}
-                      </span>
-                    </div>
-                    <div className="d-row">
-                      <span className="lbl">Persentase Serapan</span>
-                      <span className="val">{pct}%</span>
-                    </div>
+                    {[
+                      ["Kode Master", ang.kd_anggaran_master, true],
+                      ["Tahun Anggaran", ang.thn_anggaran],
+                      ["Total Anggaran (Pagu)", fmt(pagu), false, "blue"],
+                      ["Total Realisasi", fmt(totalReal), false, "amber"],
+                      [
+                        "Sisa Anggaran",
+                        `${fmt(Math.abs(sisa))}${sisa < 0 ? " (melebihi)" : ""}`,
+                        false,
+                        sisa >= 0 ? "green" : "red",
+                      ],
+                      ["Persentase Serapan", `${pct}%`],
+                    ].map(([lbl, val, isCode, valClass]) => (
+                      <div key={lbl} className="d-row">
+                        <span className="lbl">{lbl}</span>
+                        <span className={`val ${valClass || ""}`}>
+                          {isCode ? <code>{val}</code> : val}
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 </div>
                 <div className="d-panel">
@@ -2825,6 +2502,7 @@ function OpexCard({
   );
 }
 
+// ══════ EDIT OPEX INLINE ══════
 function EditOpexInline({ ang, onSave, onCancel }) {
   const [form, setForm] = useState({
     kd_anggaran_master: ang.kd_anggaran_master || "",
@@ -2847,7 +2525,6 @@ function EditOpexInline({ ang, onSave, onCancel }) {
         background: "var(--green-lt)",
         borderTop: "1px solid var(--green-mid)",
         borderBottom: "1px solid var(--green-mid)",
-        padding: "0",
       }}
     >
       <div
@@ -2880,54 +2557,40 @@ function EditOpexInline({ ang, onSave, onCancel }) {
         </button>
       </div>
       <div style={{ padding: "4px 20px 8px" }}>
-        <div className="mhfld green">
-          <div className="mhfld-lbl">Kode Anggaran Master</div>
-          <div className="mhfld-inp">
-            <select
-              value={form.kd_anggaran_master}
-              onChange={(e) => handleMaster(e.target.value)}
-            >
-              <option value="">— Pilih —</option>
-              {BUDGET_MASTERS.map((m) => (
-                <option key={m.kd_anggaran_master} value={m.kd_anggaran_master}>
-                  {m.kd_anggaran_master} — {m.nm_anggaran_master}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-        <div className="mhfld green">
-          <div className="mhfld-lbl">Nama Pos Anggaran</div>
-          <div className="mhfld-inp">
-            <input
-              value={form.nama}
-              onChange={(e) => up("nama", e.target.value)}
-            />
-          </div>
-        </div>
-        <div className="mhfld green">
-          <div className="mhfld-lbl">Tahun Anggaran</div>
-          <div className="mhfld-inp">
-            <div className="mhfld-2col">
-              <input
-                type="number"
-                value={form.thn_anggaran}
-                onChange={(e) => up("thn_anggaran", e.target.value)}
-              />
-              <input
-                type="number"
-                placeholder="Nilai Anggaran Tahunan (IDR)"
-                value={form.nilai_anggaran_tahunan || ""}
-                onChange={(e) => up("nilai_anggaran_tahunan", e.target.value)}
-              />
-            </div>
-            <div
-              style={{ fontSize: "0.7rem", color: "var(--ink4)", marginTop: 3 }}
-            >
-              Kolom kedua: Nilai Anggaran Tahunan (IDR)
-            </div>
-          </div>
-        </div>
+        <MHFld label="Kode Anggaran Master" green>
+          <select
+            value={form.kd_anggaran_master}
+            onChange={(e) => handleMaster(e.target.value)}
+          >
+            <option value="">— Pilih —</option>
+            {BUDGET_MASTERS.map((m) => (
+              <option key={m.kd_anggaran_master} value={m.kd_anggaran_master}>
+                {m.kd_anggaran_master} — {m.nm_anggaran_master}
+              </option>
+            ))}
+          </select>
+        </MHFld>
+        <MHFld label="Nama Pos Anggaran" green>
+          <input
+            value={form.nama}
+            onChange={(e) => up("nama", e.target.value)}
+          />
+        </MHFld>
+        <MHFld label="Tahun Anggaran" green>
+          <input
+            type="number"
+            value={form.thn_anggaran}
+            onChange={(e) => up("thn_anggaran", e.target.value)}
+          />
+        </MHFld>
+        <MHFld label="Nilai Anggaran Tahunan (IDR)" green>
+          <input
+            type="number"
+            placeholder="Nilai Anggaran Tahunan (IDR)"
+            value={form.nilai_anggaran_tahunan || ""}
+            onChange={(e) => up("nilai_anggaran_tahunan", e.target.value)}
+          />
+        </MHFld>
       </div>
       <div
         style={{
@@ -2956,6 +2619,7 @@ function EditOpexInline({ ang, onSave, onCancel }) {
   );
 }
 
+// ══════ EDIT PROJECT PAGE ══════
 function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
   const [form, setForm] = useState({ ...project });
   const up = (k, v) => setForm((f) => ({ ...f, [k]: v }));
@@ -2969,6 +2633,7 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
     showToast("Pekerjaan berhasil diperbarui");
     onBack();
   };
+
   return (
     <div className="subpage">
       <div className="subpage-hdr">
@@ -2980,20 +2645,16 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
         </div>
       </div>
       <div className="ctx-card">
-        <div className="ctx-item">
-          <span>Anggaran</span>
-          <strong>{anggaran?.nama || "—"}</strong>
-        </div>
-        <div className="ctx-item">
-          <span>Kode</span>
-          <strong>
-            <code>{anggaran?.kode}</code>
-          </strong>
-        </div>
-        <div className="ctx-item">
-          <span>Tahun</span>
-          <strong>{anggaran?.thnAnggaran}</strong>
-        </div>
+        {[
+          ["Anggaran", anggaran?.nama || "—"],
+          ["Kode", anggaran?.kode, true],
+          ["Tahun", anggaran?.thnAnggaran],
+        ].map(([lbl, val, isCode]) => (
+          <div key={lbl} className="ctx-item">
+            <span>{lbl}</span>
+            <strong>{isCode ? <code>{val}</code> : val}</strong>
+          </div>
+        ))}
         {anggaran?.pagu > 0 && (
           <div className="ctx-item">
             <span>Pagu</span>
@@ -3008,60 +2669,55 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
           <h3>Informasi Pekerjaan</h3>
         </div>
         <div className="sec-card-body">
-          <div className="hfld">
-            <div className="hfld-label">
-              Nama Pekerjaan<span className="req">*</span>
-            </div>
-            <div className="hfld-input">
-              <textarea
-                rows="2"
-                value={form.nm_pekerjaan || ""}
-                onChange={(e) => up("nm_pekerjaan", e.target.value)}
-              />
-            </div>
-          </div>
-          <div className="hfld">
-            <div className="hfld-label">Nilai RAB (IDR)</div>
-            <div className="hfld-input">
+          <HFld label="Nama Pekerjaan" req>
+            <textarea
+              rows="2"
+              value={form.nm_pekerjaan || ""}
+              onChange={(e) => up("nm_pekerjaan", e.target.value)}
+            />
+          </HFld>
+          <HFld label="Nilai RAB (IDR)">
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <input
                 type="number"
                 value={form.nilai_rab || ""}
                 onChange={(e) => up("nilai_rab", e.target.value)}
+                style={{ flex: 1 }}
               />
               {form.nilai_rab > 0 && (
-                <div className="hfld-hint">
+                <span className="hfld-hint" style={{ whiteSpace: "nowrap" }}>
                   {fmt(parseFloat(form.nilai_rab))}
-                </div>
+                </span>
               )}
             </div>
-          </div>
-          <div className="hfld">
-            <div className="hfld-label">Nilai Kontrak (IDR)</div>
-            <div className="hfld-input">
+          </HFld>
+          <HFld label="Nilai Kontrak (IDR)">
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <input
                 type="number"
                 value={form.nilai_kontrak || ""}
                 onChange={(e) => up("nilai_kontrak", e.target.value)}
+                style={{ flex: 1 }}
               />
               {form.nilai_kontrak > 0 && (
-                <div className="hfld-hint" style={{ color: "var(--red)" }}>
+                <span
+                  className="hfld-hint"
+                  style={{ color: "var(--red)", whiteSpace: "nowrap" }}
+                >
                   {fmt(parseFloat(form.nilai_kontrak))}
-                </div>
+                </span>
               )}
             </div>
-          </div>
-          <div className="hfld" style={{ borderBottom: "none" }}>
-            <div className="hfld-label">Durasi Kontrak</div>
-            <div className="hfld-input">
-              <input
-                type="number"
-                value={form.durasi_kontrak || ""}
-                onChange={(e) => up("durasi_kontrak", e.target.value)}
-                placeholder="Jumlah hari"
-              />
-              <div className="hfld-hint">hari kerja</div>
-            </div>
-          </div>
+          </HFld>
+          <HFld label="Durasi Kontrak">
+            <input
+              type="number"
+              value={form.durasi_kontrak || ""}
+              onChange={(e) => up("durasi_kontrak", e.target.value)}
+              placeholder="Jumlah hari"
+            />
+            <div className="hfld-hint">hari kerja</div>
+          </HFld>
         </div>
       </div>
       <div className="sec-card">
@@ -3069,72 +2725,29 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
           <h3>Referensi Dokumen</h3>
         </div>
         <div className="sec-card-body">
-          <div className="hfld">
-            <div className="hfld-label">No. PR</div>
-            <div className="hfld-input">
+          {[
+            ["No. PR", "no_pr"],
+            ["No. PO", "no_po"],
+            ["No. Kontrak", "no_kontrak"],
+            ["No. SP3", "no_sp3"],
+            ["Tgl. Kontrak", "tgl_kontrak", true],
+            ["Tgl. SP3", "tgl_sp3", true],
+          ].map(([lbl, key, isDate]) => (
+            <HFld key={key} label={lbl}>
               <input
-                value={form.no_pr || ""}
-                onChange={(e) => up("no_pr", e.target.value)}
+                type={isDate ? "date" : "text"}
+                value={form[key] || ""}
+                onChange={(e) => up(key, e.target.value)}
               />
-            </div>
-          </div>
-          <div className="hfld">
-            <div className="hfld-label">No. PO</div>
-            <div className="hfld-input">
-              <input
-                value={form.no_po || ""}
-                onChange={(e) => up("no_po", e.target.value)}
-              />
-            </div>
-          </div>
-          <div className="hfld">
-            <div className="hfld-label">No. Kontrak</div>
-            <div className="hfld-input">
-              <input
-                value={form.no_kontrak || ""}
-                onChange={(e) => up("no_kontrak", e.target.value)}
-              />
-            </div>
-          </div>
-          <div className="hfld">
-            <div className="hfld-label">Tgl. Kontrak</div>
-            <div className="hfld-input">
-              <input
-                type="date"
-                value={form.tgl_kontrak || ""}
-                onChange={(e) => up("tgl_kontrak", e.target.value)}
-              />
-            </div>
-          </div>
-          <div className="hfld">
-            <div className="hfld-label">No. SP3</div>
-            <div className="hfld-input">
-              <input
-                value={form.no_sp3 || ""}
-                onChange={(e) => up("no_sp3", e.target.value)}
-              />
-            </div>
-          </div>
-          <div className="hfld">
-            <div className="hfld-label">Tgl. SP3</div>
-            <div className="hfld-input">
-              <input
-                type="date"
-                value={form.tgl_sp3 || ""}
-                onChange={(e) => up("tgl_sp3", e.target.value)}
-              />
-            </div>
-          </div>
-          <div className="hfld" style={{ borderBottom: "none" }}>
-            <div className="hfld-label">Tgl. BAMK</div>
-            <div className="hfld-input">
-              <input
-                type="date"
-                value={form.tgl_bamk || ""}
-                onChange={(e) => up("tgl_bamk", e.target.value)}
-              />
-            </div>
-          </div>
+            </HFld>
+          ))}
+          <HFld label="Tgl. BAMK">
+            <input
+              type="date"
+              value={form.tgl_bamk || ""}
+              onChange={(e) => up("tgl_bamk", e.target.value)}
+            />
+          </HFld>
         </div>
       </div>
       <div className="edit-footer">
@@ -3159,17 +2772,36 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
   );
 }
 
-// ══════════════════════════════════════════════════════════════════
-// FIX 2: ASSET ENTRY PAGE — form input aset jadi horizontal
-// ══════════════════════════════════════════════════════════════════
+// ══════ ASSET ENTRY PAGE ══════
 function AssetEntryPage({ project, anggaran, onBack, onSave, showToast }) {
-  const [assets, setAssets] = useState(
-    (project.assets || []).map((a) => ({
+  const [assets, setAssets] = useState(() => {
+    const mapped = (project.assets || []).map((a) => ({
       ...a,
       _af: false,
       image: a.image || null,
-    })),
-  );
+    }));
+
+    // Jika belum ada aset, langsung tampilkan form input baru
+    if (mapped.length === 0) {
+      mapped.push({
+        id: newId(),
+        asset_code: "",
+        serial_number: "",
+        name: "",
+        brand: "",
+        model: "",
+        category: "",
+        location: "",
+        procurement_date: "",
+        acquisition_value: "",
+        image: null,
+        _new: true,
+        _af: false,
+      });
+    }
+
+    return mapped;
+  });
   const [confirm, setConfirm] = useState(null);
   const fileInputRef = useRef(null);
   const [activeAssetId, setActiveAssetId] = useState(null);
@@ -3197,21 +2829,17 @@ function AssetEntryPage({ project, anggaran, onBack, onSave, showToast }) {
     setAssets((p) => p.map((a) => (a.id === id ? { ...a, [k]: v } : a)));
   const remove = (id) => setAssets((p) => p.filter((a) => a.id !== id));
 
-  const handleFileRead = (id, file) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = (e) => {
-      upd(id, "image", e.target.result);
-    };
-  };
   const triggerImageUpload = (id) => {
     setActiveAssetId(id);
     fileInputRef.current.click();
   };
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    if (file && file.type.startsWith("image/") && activeAssetId)
-      handleFileRead(activeAssetId, file);
+    if (file && file.type.startsWith("image/") && activeAssetId) {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (ev) => upd(activeAssetId, "image", ev.target.result);
+    }
     setActiveAssetId(null);
     e.target.value = null;
   };
@@ -3258,6 +2886,65 @@ function AssetEntryPage({ project, anggaran, onBack, onSave, showToast }) {
     onBack();
   };
 
+  const assetFields = [
+    [
+      "Kode Aset",
+      "asset_code",
+      "cth. SPMT-KPT-DTC-SRV-01",
+      true,
+      "Ketik kode untuk auto-fill data aset",
+      (id, v) => tryAF(id, "asset_code", v),
+    ],
+    [
+      "Serial Number",
+      "serial_number",
+      "cth. DELL-KPT-SRV-001",
+      false,
+      null,
+      (id, v) => tryAF(id, "serial_number", v),
+    ],
+    [
+      "Nama Aset",
+      "name",
+      "Nama lengkap aset",
+      true,
+      null,
+      (id, v) => upd(id, "name", v),
+    ],
+    [
+      "Merek",
+      "brand",
+      "cth. Dell, Cisco, HP",
+      false,
+      null,
+      (id, v) => upd(id, "brand", v),
+    ],
+    [
+      "Model / Tipe",
+      "model",
+      "cth. PowerEdge R750",
+      false,
+      null,
+      (id, v) => upd(id, "model", v),
+    ],
+    [
+      "Kategori",
+      "category",
+      "cth. Server, Network, Security",
+      false,
+      null,
+      (id, v) => upd(id, "category", v),
+    ],
+    [
+      "Lokasi",
+      "location",
+      "cth. Kantor Pusat, Malahayati",
+      false,
+      null,
+      (id, v) => upd(id, "location", v),
+    ],
+  ];
+
   return (
     <div className="subpage">
       <input
@@ -3269,7 +2956,7 @@ function AssetEntryPage({ project, anggaran, onBack, onSave, showToast }) {
       />
       <div className="subpage-hdr">
         <button className="btn btn-outline" onClick={onBack}>
-          <Icon d={I.arrowLeft} size={12} /> Kembali
+          <Icon d={I.arrowLeft} size={14} /> Kembali
         </button>
         <div style={{ flex: 1 }}>
           <h2>Kelola Aset Pekerjaan</h2>
@@ -3366,7 +3053,6 @@ function AssetEntryPage({ project, anggaran, onBack, onSave, showToast }) {
             </button>
           </div>
           <div className="acard-body">
-            {/* Foto aset */}
             <div className="acard-image-section">
               <div
                 className="acard-image-box"
@@ -3427,103 +3113,30 @@ function AssetEntryPage({ project, anggaran, onBack, onSave, showToast }) {
                 </p>
               </div>
             </div>
-
-            {/* ── FIX 2: Form input horizontal (label : input) ── */}
             <div style={{ display: "flex", flexDirection: "column" }}>
-              <div className="aefld">
-                <div className="aefld-label">
-                  Kode Aset<span className="req">*</span>
-                </div>
-                <div className="aefld-input">
+              {assetFields.map(([lbl, key, ph, req, hint, handler]) => (
+                <AEFld key={key} label={lbl} req={req}>
                   <input
-                    value={a.asset_code}
-                    onChange={(e) => tryAF(a.id, "asset_code", e.target.value)}
-                    placeholder="cth. SPMT-KPT-DTC-SRV-01"
+                    value={a[key] || ""}
+                    onChange={(e) => handler(a.id, e.target.value)}
+                    placeholder={ph}
                   />
-                  <div className="aefld-hint">
-                    Ketik kode untuk auto-fill data aset
-                  </div>
-                </div>
-              </div>
-              <div className="aefld">
-                <div className="aefld-label">Serial Number</div>
-                <div className="aefld-input">
-                  <input
-                    value={a.serial_number || ""}
-                    onChange={(e) =>
-                      tryAF(a.id, "serial_number", e.target.value)
-                    }
-                    placeholder="cth. DELL-KPT-SRV-001"
-                  />
-                </div>
-              </div>
-              <div className="aefld">
-                <div className="aefld-label">
-                  Nama Aset<span className="req">*</span>
-                </div>
-                <div className="aefld-input">
-                  <input
-                    value={a.name}
-                    onChange={(e) => upd(a.id, "name", e.target.value)}
-                    placeholder="Nama lengkap aset"
-                  />
-                </div>
-              </div>
-              <div className="aefld">
-                <div className="aefld-label">Merek</div>
-                <div className="aefld-input">
-                  <input
-                    value={a.brand || ""}
-                    onChange={(e) => upd(a.id, "brand", e.target.value)}
-                    placeholder="cth. Dell, Cisco, HP"
-                  />
-                </div>
-              </div>
-              <div className="aefld">
-                <div className="aefld-label">Model / Tipe</div>
-                <div className="aefld-input">
-                  <input
-                    value={a.model || ""}
-                    onChange={(e) => upd(a.id, "model", e.target.value)}
-                    placeholder="cth. PowerEdge R750"
-                  />
-                </div>
-              </div>
-              <div className="aefld">
-                <div className="aefld-label">Kategori</div>
-                <div className="aefld-input">
-                  <input
-                    value={a.category || ""}
-                    onChange={(e) => upd(a.id, "category", e.target.value)}
-                    placeholder="cth. Server, Network, Security"
-                  />
-                </div>
-              </div>
-              <div className="aefld">
-                <div className="aefld-label">Lokasi</div>
-                <div className="aefld-input">
-                  <input
-                    value={a.location || ""}
-                    onChange={(e) => upd(a.id, "location", e.target.value)}
-                    placeholder="cth. Kantor Pusat, Malahayati"
-                  />
-                </div>
-              </div>
-              <div className="aefld">
-                <div className="aefld-label">Tgl. Pengadaan</div>
-                <div className="aefld-input">
-                  <input
-                    type="date"
-                    value={a.procurement_date || ""}
-                    onChange={(e) =>
-                      upd(a.id, "procurement_date", e.target.value)
-                    }
-                  />
-                </div>
-              </div>
-              <div className="aefld" style={{ borderBottom: "none" }}>
-                <div className="aefld-label">Nilai Perolehan (IDR)</div>
-                <div className="aefld-input">
+                  {hint && <div className="aefld-hint">{hint}</div>}
+                </AEFld>
+              ))}
+              <AEFld label="Tgl. Pengadaan">
+                <input
+                  type="date"
+                  value={a.procurement_date || ""}
+                  onChange={(e) =>
+                    upd(a.id, "procurement_date", e.target.value)
+                  }
+                />
+              </AEFld>
+              <AEFld label="Nilai Perolehan (IDR)">
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                >
                   <input
                     type="number"
                     value={a.acquisition_value || ""}
@@ -3531,17 +3144,22 @@ function AssetEntryPage({ project, anggaran, onBack, onSave, showToast }) {
                       upd(a.id, "acquisition_value", e.target.value)
                     }
                     placeholder="0"
+                    style={{ flex: 1 }}
                   />
                   {parseFloat(a.acquisition_value) > 0 && (
-                    <div
+                    <span
                       className="aefld-hint"
-                      style={{ color: "var(--blue)", fontWeight: 600 }}
+                      style={{
+                        color: "var(--blue)",
+                        fontWeight: 600,
+                        whiteSpace: "nowrap",
+                      }}
                     >
                       {fmt(parseFloat(a.acquisition_value))}
-                    </div>
+                    </span>
                   )}
                 </div>
-              </div>
+              </AEFld>
             </div>
           </div>
         </div>
@@ -3577,6 +3195,7 @@ function AssetEntryPage({ project, anggaran, onBack, onSave, showToast }) {
   );
 }
 
+// ══════ REALISASI PAGE ══════
 function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
   const isEdit = !!editData;
   const [form, setForm] = useState(
@@ -3610,6 +3229,7 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
     showToast(isEdit ? "Realisasi diperbarui" : "Realisasi ditambahkan");
     onBack();
   };
+
   return (
     <div className="subpage">
       <div className="subpage-hdr">
@@ -3639,7 +3259,8 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
         <div className="ctx-item">
           <span>Sisa Setelah Input</span>
           <strong className={sisa >= 0 ? "green" : "red"}>
-            {fmt(Math.abs(sisa))} {sisa < 0 && "(melebihi)"}
+            {fmt(Math.abs(sisa))}
+            {sisa < 0 && " (melebihi)"}
           </strong>
         </div>
       </div>
@@ -3664,58 +3285,46 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
           </div>
         </div>
         <div className="sec-card-body">
-          <div className="hfld">
-            <div className="hfld-label">
-              Tanggal<span className="req">*</span>
-            </div>
-            <div className="hfld-input">
-              <input
-                type="date"
-                value={form.tanggal}
-                onChange={(e) => up("tanggal", e.target.value)}
-              />
-            </div>
-          </div>
-          <div className="hfld">
-            <div className="hfld-label">
-              Keterangan<span className="req">*</span>
-            </div>
-            <div className="hfld-input">
-              <input
-                value={form.keterangan}
-                onChange={(e) => up("keterangan", e.target.value)}
-                placeholder="Deskripsi realisasi..."
-              />
-            </div>
-          </div>
-          <div className="hfld">
-            <div className="hfld-label">No. Invoice</div>
-            <div className="hfld-input">
-              <input
-                value={form.no_invoice}
-                onChange={(e) => up("no_invoice", e.target.value)}
-                placeholder="cth. INV/2026/001"
-              />
-            </div>
-          </div>
-          <div className="hfld" style={{ borderBottom: "none" }}>
-            <div className="hfld-label">
-              Jumlah (IDR)<span className="req">*</span>
-            </div>
-            <div className="hfld-input">
+          <HFld label="Tanggal" req>
+            <input
+              type="date"
+              value={form.tanggal}
+              onChange={(e) => up("tanggal", e.target.value)}
+            />
+          </HFld>
+          <HFld label="Keterangan" req>
+            <input
+              value={form.keterangan}
+              onChange={(e) => up("keterangan", e.target.value)}
+              placeholder="Deskripsi realisasi..."
+            />
+          </HFld>
+          <HFld label="No. Invoice">
+            <input
+              value={form.no_invoice}
+              onChange={(e) => up("no_invoice", e.target.value)}
+              placeholder="cth. INV/2026/001"
+            />
+          </HFld>
+          <HFld label="Jumlah (IDR)" req>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <input
                 type="number"
                 value={form.jumlah}
                 onChange={(e) => up("jumlah", e.target.value)}
                 placeholder="0"
+                style={{ flex: 1 }}
               />
               {jumlah > 0 && (
-                <div className="hfld-hint" style={{ color: "var(--green)" }}>
+                <span
+                  className="hfld-hint"
+                  style={{ color: "var(--green)", whiteSpace: "nowrap" }}
+                >
                   {fmt(jumlah)}
-                </div>
+                </span>
               )}
             </div>
-          </div>
+          </HFld>
         </div>
       </div>
       <div className="edit-footer">
@@ -3749,9 +3358,7 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
   );
 }
 
-// ══════════════════════════════════════════════════════════════════
-// MAIN APP COMPONENT
-// ══════════════════════════════════════════════════════════════════
+// ══════ MAIN APP ══════
 export default function BudgetManagement() {
   const [typeFilter, setTypeFilter] = useState("all");
   const [tahun, setTahun] = useState("all");
@@ -3766,18 +3373,19 @@ export default function BudgetManagement() {
   const [opexData, setOpexData] = useState(INIT_OPEX);
   const [capexPage, setCapexPage] = useState(1);
   const [opexPage, setOpexPage] = useState(1);
-  const [showAddCapex, setShowAddCapex] = useState(false);
   const [showAddOpex, setShowAddOpex] = useState(false);
 
   const showToast = (msg) => setToast(msg);
-  const currentYear = new Date().getFullYear();
-  const yearOpts = [
-    "all",
-    String(currentYear - 3),
-    String(currentYear - 2),
-    String(currentYear - 1),
-    String(currentYear),
-  ];
+
+  const yearOpts = useMemo(() => {
+    const all = Array.from(
+      new Set([
+        ...capexData.map((a) => a.thnAnggaran),
+        ...opexData.map((a) => a.thn_anggaran),
+      ]),
+    ).sort();
+    return ["all", ...all.map(String)];
+  }, [capexData, opexData]);
 
   const allProjects = useMemo(
     () =>
@@ -3816,8 +3424,9 @@ export default function BudgetManagement() {
     const allKd = opexData
       .filter((a) => tahun === "all" || String(a.thn_anggaran) === tahun)
       .map((a) => a.kd_anggaran_master);
-    const unique = Array.from(new Set(allKd));
-    return BUDGET_MASTERS.filter((m) => unique.includes(m.kd_anggaran_master));
+    return BUDGET_MASTERS.filter((m) =>
+      Array.from(new Set(allKd)).includes(m.kd_anggaran_master),
+    );
   }, [opexData, tahun]);
 
   const angList = useMemo(() => {
@@ -3862,39 +3471,117 @@ export default function BudgetManagement() {
   }, [opexKdFilter, opexSearch]);
 
   const paginatedCapex = useMemo(() => {
-    const start = (capexPage - 1) * PAGE_SIZE;
-    return filteredProjects.slice(start, start + PAGE_SIZE);
+    const s = (capexPage - 1) * PAGE_SIZE;
+    return filteredProjects.slice(s, s + PAGE_SIZE);
   }, [filteredProjects, capexPage]);
   const paginatedOpex = useMemo(() => {
-    const start = (opexPage - 1) * PAGE_SIZE;
-    return filteredOpex.slice(start, start + PAGE_SIZE);
+    const s = (opexPage - 1) * PAGE_SIZE;
+    return filteredOpex.slice(s, s + PAGE_SIZE);
   }, [filteredOpex, opexPage]);
 
-  const stats = useMemo(() => {
-    const cb = allProjects.filter(
+  // ══════ DYNAMIC KPI STATS ══════
+  const kpiCards = useMemo(() => {
+    const capexFiltered = allProjects.filter(
       (p) => tahun === "all" || String(p._thn) === tahun,
     );
-    const paguCap = capexData
+    const opexFiltered = filteredOpex;
+
+    // CAPEX metrics
+    const capexCount = capexFiltered.length;
+    const capexKontrak = capexFiltered.reduce(
+      (s, p) => s + (p.nilai_kontrak || 0),
+      0,
+    );
+    const capexPagu = capexData
       .filter((a) => tahun === "all" || String(a.thnAnggaran) === tahun)
       .reduce((s, a) => s + (a.pagu || 0), 0);
-    const paguOpx = filteredOpex.reduce(
+    const capexAset = capexFiltered.reduce(
+      (s, p) =>
+        s +
+        (p.assets || []).reduce((as, a) => as + (a.acquisition_value || 0), 0),
+      0,
+    );
+
+    // OPEX metrics
+    const opexCount = opexFiltered.length;
+    const opexPagu = opexFiltered.reduce(
       (s, a) => s + (a.nilai_anggaran_tahunan || 0),
       0,
     );
-    const pagu =
-      typeFilter === "opex"
-        ? paguOpx
-        : typeFilter === "capex"
-          ? paguCap
-          : paguCap + paguOpx;
-    const kontrak = cb.reduce((s, p) => s + (p.nilai_kontrak || 0), 0);
-    const aset = cb.reduce(
-      (s, p) =>
-        s +
-        (p.assets || []).reduce((ss, a) => ss + (a.acquisition_value || 0), 0),
+    const opexRealisasi = opexFiltered.reduce(
+      (s, a) =>
+        s + (a.transaksi || []).reduce((ts, t) => ts + (t.jumlah || 0), 0),
       0,
     );
-    return { pagu, kontrak, aset, count: cb.length };
+    const opexSisa = opexPagu - opexRealisasi;
+
+    if (typeFilter === "capex") {
+      return [
+        {
+          cls: "blue",
+          icon: I.briefcase,
+          lbl: "Total Pekerjaan CAPEX",
+          val: capexCount,
+        },
+        {
+          cls: "amber",
+          icon: I.fileText,
+          lbl: "Total Nilai Kontrak",
+          val: fmt(capexKontrak),
+        },
+        {
+          cls: "green",
+          icon: I.package,
+          lbl: "Total Nilai Aset Tercatat",
+          val: fmt(capexAset),
+        },
+      ];
+    }
+
+    if (typeFilter === "opex") {
+      return [
+        {
+          cls: "blue",
+          icon: I.monitor,
+          lbl: "Total Pos Anggaran OPEX",
+          val: opexCount,
+        },
+        {
+          cls: "amber",
+          icon: I.trendUp,
+          lbl: "Total Realisasi",
+          val: fmt(opexRealisasi),
+        },
+        {
+          cls: "green",
+          icon: I.wallet,
+          lbl: "Total Pagu Anggaran",
+          val: fmt(opexPagu),
+        },
+      ];
+    }
+
+    // "all" — combined view
+    return [
+      {
+        cls: "blue",
+        icon: I.layers,
+        lbl: "Total Pekerjaan & Pos Anggaran",
+        val: capexCount + opexCount,
+      },
+      {
+        cls: "amber",
+        icon: I.fileText,
+        lbl: "Total Nilai Kontrak CAPEX",
+        val: fmt(capexKontrak),
+      },
+      {
+        cls: "green",
+        icon: I.wallet,
+        lbl: "Total Pagu Anggaran OPEX",
+        val: fmt(opexPagu),
+      },
+    ];
   }, [allProjects, filteredOpex, capexData, typeFilter, tahun]);
 
   const getAng = (id) => capexData.find((a) => a.id === id);
@@ -3957,179 +3644,160 @@ export default function BudgetManagement() {
     showToast("Pekerjaan dihapus");
   };
 
-  const handleAddCapex = (angId, newProj) => {
-    setCapexData((p) =>
-      p.map((ang) =>
-        ang.id === angId
-          ? { ...ang, projects: [...ang.projects, newProj] }
-          : ang,
-      ),
-    );
-    setShowAddCapex(false);
-    showToast("Pekerjaan CAPEX berhasil ditambahkan");
-  };
-  const handleAddOpex = (newOpex) => {
-    setOpexData((p) => [...p, newOpex]);
-    setShowAddOpex(false);
-    showToast("Pos anggaran OPEX berhasil ditambahkan");
-  };
+  const goAssetTable = (p) =>
+    setPage({
+      type: "assetTable",
+      projectId: p.id,
+      project: p,
+      anggaran: getAng(p._angId),
+    });
+  const goAssetEntry = (p, returnToTable = false) =>
+    setPage({
+      type: "asset",
+      projectId: p.id,
+      project: p,
+      anggaran: getAng(p._angId),
+      returnToTable,
+    });
 
-  // ── PAGE ROUTING ──
-  if (page?.type === "editProject") {
-    return (
-      <>
-        <style>{CSS}</style>
-        <div className="root">
-          {toast && <Toast msg={toast} onDone={() => setToast(null)} />}
-          <EditProjectPage
-            project={page.project}
-            anggaran={page.anggaran}
-            onBack={() => setPage(null)}
-            onSave={saveProject}
-            showToast={showToast}
-          />
-        </div>
-      </>
+  const sharedWrap = (children) => (
+    <>
+      <style>{CSS}</style>
+      <div className="root">
+        {toast && <Toast msg={toast} onDone={() => setToast(null)} />}
+        {children}
+      </div>
+    </>
+  );
+
+  if (page?.type === "editProject")
+    return sharedWrap(
+      <EditProjectPage
+        project={page.project}
+        anggaran={page.anggaran}
+        onBack={() => setPage(null)}
+        onSave={saveProject}
+        showToast={showToast}
+      />,
     );
-  }
+  if (page?.type === "tambahCapex")
+    return sharedWrap(
+      <TambahCapexPage
+        capexData={capexData}
+        onBack={() => setPage(null)}
+        onSave={(angId, proj) => {
+          setCapexData((p) =>
+            p.map((a) =>
+              a.id === angId ? { ...a, projects: [...a.projects, proj] } : a,
+            ),
+          );
+          setPage(null);
+          showToast("Pekerjaan CAPEX berhasil ditambahkan");
+        }}
+      />,
+    );
   if (page?.type === "assetTable") {
-    const latestProject = getLatestProject(page.projectId) || page.project;
-    return (
-      <>
-        <style>{CSS}</style>
-        <div className="root">
-          {toast && <Toast msg={toast} onDone={() => setToast(null)} />}
-          <AssetTablePage
-            project={latestProject}
-            anggaran={page.anggaran}
-            onBack={() => setPage(null)}
-            onEntryNew={() =>
-              setPage({
-                type: "asset",
-                projectId: page.projectId,
-                project: latestProject,
-                anggaran: page.anggaran,
-                returnToTable: true,
-              })
-            }
-            onSaveAssets={saveAssets}
-            showToast={showToast}
-          />
-        </div>
-      </>
+    const lp = getLatestProject(page.projectId) || page.project;
+    return sharedWrap(
+      <AssetTablePage
+        project={lp}
+        anggaran={page.anggaran}
+        onBack={() => setPage(null)}
+        onEntryNew={() => goAssetEntry(lp, true)}
+        onSaveAssets={saveAssets}
+        showToast={showToast}
+      />,
     );
   }
   if (page?.type === "asset") {
-    const latestProject = getLatestProject(page.projectId) || page.project;
-    return (
-      <>
-        <style>{CSS}</style>
-        <div className="root">
-          {toast && <Toast msg={toast} onDone={() => setToast(null)} />}
-          <AssetEntryPage
-            project={latestProject}
-            anggaran={page.anggaran}
-            onBack={() => {
-              if (page.returnToTable) {
-                setPage({
-                  type: "assetTable",
-                  projectId: page.projectId,
-                  project: latestProject,
-                  anggaran: page.anggaran,
-                });
-              } else {
-                setPage(null);
-              }
-            }}
-            onSave={(id, assets) => {
-              saveAssets(id, assets);
-            }}
-            showToast={showToast}
-          />
-        </div>
-      </>
+    const lp = getLatestProject(page.projectId) || page.project;
+    return sharedWrap(
+      <AssetEntryPage
+        project={lp}
+        anggaran={page.anggaran}
+        onBack={() =>
+          page.returnToTable
+            ? setPage({
+                type: "assetTable",
+                projectId: page.projectId,
+                project: lp,
+                anggaran: page.anggaran,
+              })
+            : setPage(null)
+        }
+        onSave={saveAssets}
+        showToast={showToast}
+      />,
     );
   }
   if (page?.type === "realisasiTable") {
     const angNow = opexData.find((a) => a.id === page.ang.id) || page.ang;
-    return (
+    return sharedWrap(
       <>
-        <style>{CSS}</style>
-        <div className="root">
-          {toast && <Toast msg={toast} onDone={() => setToast(null)} />}
-          <RealisasiTablePage
-            ang={angNow}
-            onBack={() => setPage(null)}
-            onEntryNew={() =>
-              setPage({
-                type: "realisasi",
-                ang: angNow,
-                editData: null,
-                returnToTable: true,
-              })
-            }
-            onEditRow={(t) =>
-              setPage({
-                type: "realisasi",
-                ang: angNow,
-                editData: t,
-                returnToTable: true,
-              })
-            }
-            onDeleteRow={(id) =>
-              setConfirm({
-                msg: "Hapus transaksi realisasi ini?",
-                onConfirm: () => {
-                  saveOpexTrx(
-                    angNow.id,
-                    angNow.transaksi.filter((trx) => trx.id !== id),
-                  );
-                  showToast("Transaksi dihapus");
-                  setConfirm(null);
-                },
-              })
-            }
-            showToast={showToast}
+        <RealisasiTablePage
+          ang={angNow}
+          onBack={() => setPage(null)}
+          onEntryNew={() =>
+            setPage({
+              type: "realisasi",
+              ang: angNow,
+              editData: null,
+              returnToTable: true,
+            })
+          }
+          onEditRow={(t) =>
+            setPage({
+              type: "realisasi",
+              ang: angNow,
+              editData: t,
+              returnToTable: true,
+            })
+          }
+          onDeleteRow={(id) =>
+            setConfirm({
+              msg: "Hapus transaksi realisasi ini?",
+              onConfirm: () => {
+                saveOpexTrx(
+                  angNow.id,
+                  angNow.transaksi.filter((trx) => trx.id !== id),
+                );
+                showToast("Transaksi dihapus");
+                setConfirm(null);
+              },
+            })
+          }
+          showToast={showToast}
+        />
+        {confirm && (
+          <Confirm
+            msg={confirm.msg}
+            onConfirm={confirm.onConfirm}
+            onCancel={() => setConfirm(null)}
           />
-          {confirm && (
-            <Confirm
-              msg={confirm.msg}
-              onConfirm={confirm.onConfirm}
-              onCancel={() => setConfirm(null)}
-            />
-          )}
-        </div>
-      </>
+        )}
+      </>,
     );
   }
   if (page?.type === "realisasi") {
     const angNow = opexData.find((a) => a.id === page.ang.id) || page.ang;
-    return (
-      <>
-        <style>{CSS}</style>
-        <div className="root">
-          {toast && <Toast msg={toast} onDone={() => setToast(null)} />}
-          <RealisasiPage
-            ang={angNow}
-            editData={page.editData}
-            onBack={() => {
-              if (page.returnToTable) {
-                setPage({ type: "realisasiTable", ang: angNow });
-              } else {
-                setPage(null);
-              }
-            }}
-            onSave={saveOpexTrx}
-            showToast={showToast}
-          />
-        </div>
-      </>
+    return sharedWrap(
+      <RealisasiPage
+        ang={angNow}
+        editData={page.editData}
+        onBack={() =>
+          page.returnToTable
+            ? setPage({ type: "realisasiTable", ang: angNow })
+            : setPage(null)
+        }
+        onSave={saveOpexTrx}
+        showToast={showToast}
+      />,
     );
   }
 
-  const showCapex = typeFilter !== "opex";
-  const showOpex = typeFilter !== "capex";
-  const showBoth = typeFilter === "all";
+  const showCapex = typeFilter !== "opex",
+    showOpex = typeFilter !== "capex",
+    showBoth = typeFilter === "all";
   const activeOpexFilter = BUDGET_MASTERS.find(
     (m) => m.kd_anggaran_master === opexKdFilter,
   );
@@ -4145,91 +3813,58 @@ export default function BudgetManagement() {
             <p>Monitoring CAPEX &amp; OPEX berdasarkan anggaran</p>
           </div>
           <div className="hdr-right">
-            <div className="yr-row">
-              {yearOpts.map((y) => (
+            <div className="type-tabs">
+              {[
+                ["all", "all", I.layers, "Semua"],
+                ["capex", "", I.briefcase, "CAPEX"],
+                ["opex", "", I.monitor, "OPEX"],
+              ].map(([val, cls, icon, lbl]) => (
                 <button
-                  key={y}
-                  className={`yr-btn ${tahun === y ? "on" : ""}`}
-                  onClick={() => setTahun(y)}
+                  key={val}
+                  className={`type-tab ${cls} ${typeFilter === val ? "on" : ""}`}
+                  onClick={() => setTypeFilter(val)}
                 >
-                  {y === "all" ? "Semua Tahun" : y}
+                  <Icon d={icon} size={14} /> {lbl}
                 </button>
               ))}
-            </div>
-            <div className="type-tabs">
-              <button
-                className={`type-tab all ${typeFilter === "all" ? "on" : ""}`}
-                onClick={() => setTypeFilter("all")}
-              >
-                <Icon d={I.layers} size={14} /> Semua
-              </button>
-              <button
-                className={`type-tab ${typeFilter === "capex" ? "on" : ""}`}
-                onClick={() => setTypeFilter("capex")}
-              >
-                <Icon d={I.briefcase} size={14} /> CAPEX
-              </button>
-              <button
-                className={`type-tab ${typeFilter === "opex" ? "on" : ""}`}
-                onClick={() => setTypeFilter("opex")}
-              >
-                <Icon d={I.monitor} size={14} /> OPEX
-              </button>
             </div>
           </div>
         </div>
 
+        {/* ══ DYNAMIC KPI STRIP ══ */}
         <div className="kpi-strip">
-          <div className="kpi blue">
-            <div className="kpi-ico">
-              <Icon d={I.briefcase} size={20} />
-            </div>
-            <div className="kpi-body">
-              <div className="kpi-lbl">Total Anggaran</div>
-              <div className="kpi-val">{fmt(stats.pagu)}</div>
-              <div className="kpi-sub">{stats.count} pekerjaan terdaftar</div>
-            </div>
-          </div>
-          <div className="kpi amber">
-            <div className="kpi-ico">
-              <Icon d={I.fileText} size={20} />
-            </div>
-            <div className="kpi-body">
-              <div className="kpi-lbl">Realisasi Kontrak</div>
-              <div className="kpi-val">{fmt(stats.kontrak)}</div>
-              <div className="kpi-bar">
-                <div
-                  className="kpi-bar-fill"
-                  style={{
-                    width: `${stats.pagu > 0 ? Math.min((stats.kontrak / stats.pagu) * 100, 100) : 0}%`,
-                    background: "var(--amber)",
-                  }}
-                />
+          {kpiCards.map(({ cls, icon, lbl, val }) => (
+            <div key={lbl} className={`kpi ${cls}`}>
+              <div className="kpi-ico">
+                <Icon d={icon} size={20} />
+              </div>
+              <div className="kpi-body">
+                <div className="kpi-lbl">{lbl}</div>
+                <div className="kpi-val">{val}</div>
               </div>
             </div>
-          </div>
-          <div className="kpi green">
-            <div className="kpi-ico">
-              <Icon d={I.package} size={20} />
-            </div>
-            <div className="kpi-body">
-              <div className="kpi-lbl">Nilai Aset Tercatat</div>
-              <div className="kpi-val">{fmt(stats.aset)}</div>
-              <div className="kpi-bar">
-                <div
-                  className="kpi-bar-fill"
-                  style={{
-                    width: `${stats.kontrak > 0 ? Math.min((stats.aset / stats.kontrak) * 100, 100) : 0}%`,
-                    background: "var(--green)",
-                  }}
-                />
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
 
         {showCapex && (
           <div className="toolbar">
+            <div className="flt-box">
+              <Icon d={I.calendar} size={14} />
+              <select
+                className="flt-select"
+                value={tahun}
+                onChange={(e) => setTahun(e.target.value)}
+              >
+                <option value="all">Semua Tahun</option>
+                {yearOpts
+                  .filter((y) => y !== "all")
+                  .map((y) => (
+                    <option key={y} value={y}>
+                      {y}
+                    </option>
+                  ))}
+              </select>
+            </div>
             <div className="flt-box">
               <Icon d={I.filter} size={14} />
               <select
@@ -4237,7 +3872,7 @@ export default function BudgetManagement() {
                 value={angFilter}
                 onChange={(e) => setAngFilter(e.target.value)}
               >
-                <option value="all">Semua Kategori Anggaran</option>
+                <option value="all">Semua Anggaran</option>
                 {angList.map((a) => (
                   <option key={a.id} value={a.id}>
                     {a.nama.length > 42
@@ -4250,17 +3885,16 @@ export default function BudgetManagement() {
             <div className="srch">
               <Icon d={I.search} size={14} />
               <input
-                placeholder="Cari berdasarkan nama pekerjaan atau nomor kontrak..."
+                placeholder="Cari nama pekerjaan atau nomor kontrak..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
             <button
               className="btn btn-prim"
-              style={{ marginLeft: "auto" }}
-              onClick={() => setShowAddCapex(true)}
+              onClick={() => setPage({ type: "tambahCapex" })}
             >
-              <Icon d={I.plus} size={14} /> Tambah Pekerjaan CAPEX
+              <Icon d={I.plus} size={14} /> Tambah Pekerjaan
             </button>
           </div>
         )}
@@ -4305,7 +3939,7 @@ export default function BudgetManagement() {
                 <div style={{ marginTop: 12 }}>
                   <button
                     className="btn btn-prim"
-                    onClick={() => setShowAddCapex(true)}
+                    onClick={() => setPage({ type: "tambahCapex" })}
                   >
                     <Icon d={I.plus} size={13} /> Tambah Pekerjaan CAPEX Pertama
                   </button>
@@ -4318,36 +3952,18 @@ export default function BudgetManagement() {
                     <CapexCard
                       key={proj.id}
                       proj={proj}
-                      onEdit={(p) => {
-                        const a = getAng(p._angId);
+                      onEdit={(p) =>
                         setPage({
                           type: "editProject",
                           project: p,
-                          anggaran: a,
-                        });
-                      }}
-                      onAssetTable={(p) => {
-                        const a = getAng(p._angId);
-                        setPage({
-                          type: "assetTable",
-                          projectId: p.id,
-                          project: p,
-                          anggaran: a,
-                        });
-                      }}
-                      onAssetEntry={(p) => {
-                        const a = getAng(p._angId);
-                        setPage({
-                          type: "asset",
-                          projectId: p.id,
-                          project: p,
-                          anggaran: a,
-                          returnToTable: false,
-                        });
-                      }}
+                          anggaran: getAng(p._angId),
+                        })
+                      }
+                      onAssetTable={goAssetTable}
+                      onAssetEntry={(p) => goAssetEntry(p, false)}
                       onDelete={(p) =>
                         setConfirm({
-                          msg: `Hapus pekerjaan ini beserta datanya?`,
+                          msg: "Hapus pekerjaan ini beserta datanya?",
                           onConfirm: () => {
                             deleteProject(p.id, p._angId);
                             setConfirm(null);
@@ -4404,6 +4020,24 @@ export default function BudgetManagement() {
             )}
             <div className="opex-toolbar">
               <div className="opex-flt-box">
+                <Icon d={I.calendar} size={14} />
+                <select
+                  className="opex-flt-select"
+                  value={tahun}
+                  onChange={(e) => setTahun(e.target.value)}
+                  style={{ minWidth: 140 }}
+                >
+                  <option value="all">Semua Tahun</option>
+                  {yearOpts
+                    .filter((y) => y !== "all")
+                    .map((y) => (
+                      <option key={y} value={y}>
+                        {y}
+                      </option>
+                    ))}
+                </select>
+              </div>
+              <div className="opex-flt-box">
                 <Icon d={I.hash} size={14} />
                 <select
                   className="opex-flt-select"
@@ -4414,26 +4048,21 @@ export default function BudgetManagement() {
                   }}
                 >
                   <option value="all">Semua Pos Anggaran</option>
-                  {BUDGET_MASTERS.map((m) => (
-                    <option
-                      key={m.kd_anggaran_master}
-                      value={m.kd_anggaran_master}
-                      disabled={
-                        !activeKdList.some(
-                          (a) => a.kd_anggaran_master === m.kd_anggaran_master,
-                        )
-                      }
-                      style={{
-                        color: activeKdList.some(
-                          (a) => a.kd_anggaran_master === m.kd_anggaran_master,
-                        )
-                          ? "inherit"
-                          : "#9ca3af",
-                      }}
-                    >
-                      {m.kd_anggaran_master} — {m.nm_anggaran_master}
-                    </option>
-                  ))}
+                  {BUDGET_MASTERS.map((m) => {
+                    const active = activeKdList.some(
+                      (a) => a.kd_anggaran_master === m.kd_anggaran_master,
+                    );
+                    return (
+                      <option
+                        key={m.kd_anggaran_master}
+                        value={m.kd_anggaran_master}
+                        disabled={!active}
+                        style={{ color: active ? "inherit" : "#9ca3af" }}
+                      >
+                        {m.kd_anggaran_master} — {m.nm_anggaran_master}
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
               <div className="opex-srch">
@@ -4526,17 +4155,14 @@ export default function BudgetManagement() {
           onCancel={() => setConfirm(null)}
         />
       )}
-      {showAddCapex && (
-        <TambahCapexModal
-          capexData={capexData}
-          onClose={() => setShowAddCapex(false)}
-          onSave={handleAddCapex}
-        />
-      )}
       {showAddOpex && (
         <TambahOpexModal
           onClose={() => setShowAddOpex(false)}
-          onSave={handleAddOpex}
+          onSave={(newOpex) => {
+            setOpexData((p) => [...p, newOpex]);
+            setShowAddOpex(false);
+            showToast("Pos anggaran OPEX berhasil ditambahkan");
+          }}
         />
       )}
     </>
