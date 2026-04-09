@@ -1245,19 +1245,26 @@ function CapexModule({ capexList, setCapexList }) {
         <ModalFormRow label="Kode CAPEX">
           <input style={{ ...S.inp, maxWidth:200 }} placeholder="Contoh: 2540013" value={data.kd_capex} onChange={e => setData(f => ({ ...f, kd_capex: e.target.value }))} />
         </ModalFormRow>
-        {[{ label:"Tahun RKAP Awal", key:"thn_rkap_awal" }, { label:"Tahun RKAP Akhir", key:"thn_rkap_akhir" }, { label:"Tahun Anggaran", key:"thn_anggaran" }].map(f => (
+        {[{ label:"Tahun RKAP Awal", key:"thn_rkap_awal" }, { label:"Tahun RKAP Akhir", key:"thn_rkap_akhir" }].map(f => (
           <ModalFormRow key={f.key} label={f.label}>
             <select style={{ ...S.inp, maxWidth:160 }} value={data[f.key]} onChange={e => setData(d => ({ ...d, [f.key]: e.target.value }))}>{yearOpts.map(y => <option key={y} value={y}>{y}</option>)}</select>
           </ModalFormRow>
         ))}
-        {[{ label:"Nilai KAD (Rp)", key:"nilai_kad" }, { label:"Nilai RKAP (Rp)", key:"nilai_rkap" }].map((f, i, arr) => (
-          <ModalFormRow key={f.key} label={f.label} noBorder={i===arr.length-1}>
-            <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-              <input type="number" className="no-spinners" style={{ ...S.inp, maxWidth:280, flex:1 }} placeholder="0" value={data[f.key]} onChange={e => setData(d => ({ ...d, [f.key]: e.target.value }))} />
-              {parseFloat(data[f.key]) > 0 && <span style={{ fontSize:"0.78rem", color:"#64748b", whiteSpace:"nowrap" }}>≈ {fmt(data[f.key])}</span>}
-            </div>
-          </ModalFormRow>
-        ))}
+        <ModalFormRow label="Nilai KAD (Rp)">
+          <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+            <input type="number" className="no-spinners" style={{ ...S.inp, maxWidth:280, flex:1 }} placeholder="0" value={data.nilai_kad} onChange={e => setData(d => ({ ...d, nilai_kad: e.target.value }))} />
+            {parseFloat(data.nilai_kad) > 0 && <span style={{ fontSize:"0.78rem", color:"#64748b", whiteSpace:"nowrap" }}>≈ {fmt(data.nilai_kad)}</span>}
+          </div>
+        </ModalFormRow>
+        <ModalFormRow label="Tahun Anggaran">
+          <select style={{ ...S.inp, maxWidth:160 }} value={data.thn_anggaran} onChange={e => setData(d => ({ ...d, thn_anggaran: e.target.value }))}>{yearOpts.map(y => <option key={y} value={y}>{y}</option>)}</select>
+        </ModalFormRow>
+        <ModalFormRow label="Nilai RKAP (Rp)" noBorder>
+          <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+            <input type="number" className="no-spinners" style={{ ...S.inp, maxWidth:280, flex:1 }} placeholder="0" value={data.nilai_rkap} onChange={e => setData(d => ({ ...d, nilai_rkap: e.target.value }))} />
+            {parseFloat(data.nilai_rkap) > 0 && <span style={{ fontSize:"0.78rem", color:"#64748b", whiteSpace:"nowrap" }}>≈ {fmt(data.nilai_rkap)}</span>}
+          </div>
+        </ModalFormRow>
         <div style={{ padding:"14px 20px", borderTop:"1px solid #e2e8f0", background:"#f8fafc", display:"flex", justifyContent:"flex-end", gap:10 }}>
           <button style={S.btnOut} onClick={onClose}>Batal</button>
           <button style={{ ...S.btn, background: title.includes("Edit")?"#d97706":"#2563eb", opacity: data.nm_anggaran?1:0.5 }} disabled={!data.nm_anggaran} onClick={onSave}>{title.includes("Edit") ? <><Save size={14}/> Simpan Perubahan</> : <><Plus size={14}/> Tambahkan</>}</button>
