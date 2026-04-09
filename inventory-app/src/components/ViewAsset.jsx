@@ -232,7 +232,6 @@ const ALL_PROJECTS = [
   })),
 ];
 
-// ── UNIFIED TAHUN LIST (CAPEX + OPEX) ────────────────────────────
 const ALL_TAHUN_LIST = [
   ...new Set([
     ...CAPEX_ANGGARAN.map((a) => a.thn_anggaran),
@@ -240,7 +239,6 @@ const ALL_TAHUN_LIST = [
   ]),
 ].sort();
 
-// ── GET ANGGARAN BY TAHUN (CAPEX + OPEX combined) ────────────────
 const getAnggaranByTahun = (thn) => {
   const capex = CAPEX_ANGGARAN.filter(
     (a) => String(a.thn_anggaran) === String(thn),
@@ -257,11 +255,6 @@ const getAnggaranByTahun = (thn) => {
   }));
   return [...capex, ...opex];
 };
-
-// ── CAPEX_TAHUN_LIST kept for backward compat ─────────────────────
-const CAPEX_TAHUN_LIST = [
-  ...new Set(CAPEX_ANGGARAN.map((a) => a.thn_anggaran)),
-].sort();
 
 const getProjectById = (id) =>
   ALL_PROJECTS.find((p) => String(p.id_pekerjaan) === String(id)) || null;
@@ -364,7 +357,6 @@ const MOCK_ALL_BORROWS = [
   },
 ];
 
-// Default placeholder images by category (Unsplash)
 const CATEGORY_IMAGES = {
   "IT Equipment":
     "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
@@ -949,7 +941,6 @@ const Icon = {
       height="14"
       viewBox="0 0 14 14"
       fill="none"
-      xmlns="http://www.w3.org/2000/svg"
       style={{ display: "block" }}
     >
       <line
@@ -1407,6 +1398,396 @@ const Icon = {
   ),
 };
 
+// ── REUSABLE MODERN TABLE COMPONENTS ─────────────────────────────
+const ModernTable = ({ children }) => (
+  <div
+    style={{
+      borderRadius: "12px",
+      border: "1px solid #e2e8f0",
+      overflow: "hidden",
+      marginBottom: "24px",
+      background: "#fff",
+    }}
+  >
+    <table
+      style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}
+    >
+      <tbody>{children}</tbody>
+    </table>
+  </div>
+);
+
+const TableRow = ({ label, required, children, alignTop }) => (
+  <tr style={{ borderBottom: "1px solid #f1f5f9" }}>
+    <td
+      style={{
+        width: "28%",
+        padding: "12px 16px",
+        background: "#f8fafc",
+        color: "#475569",
+        fontSize: "13.5px",
+        fontWeight: "600",
+        verticalAlign: alignTop ? "top" : "middle",
+        borderRight: "1px solid #f1f5f9",
+      }}
+    >
+      {label} {required && <span style={{ color: "#ef4444" }}>*</span>}
+    </td>
+    <td
+      style={{
+        padding: "12px 16px",
+        verticalAlign: alignTop ? "top" : "middle",
+        background: "#fff",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+          flexWrap: "wrap",
+        }}
+      >
+        {children}
+      </div>
+    </td>
+  </tr>
+);
+
+// ── SHARED STYLES FOR FORMS ──────────────────────────────────────
+const modernInputStyle = {
+  padding: "8px 12px",
+  borderRadius: "8px",
+  border: "1px solid #cbd5e1",
+  width: "100%",
+  fontSize: "13.5px",
+  outline: "none",
+  fontFamily: "var(--font)",
+  color: "#0f172a",
+  background: "#fff",
+  transition: "border-color 0.2s ease",
+};
+
+const modernSelectStyle = {
+  ...modernInputStyle,
+  appearance: "none",
+  background:
+    "#fff url(\"data:image/svg+xml;utf8,<svg fill='%2364748b' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>\") no-repeat right 10px center",
+  backgroundSize: "20px",
+  paddingRight: "36px",
+};
+
+// ── COMPONENT RIWAYAT PINJAM ──────────────────────────────────────
+function AssetHistoryTab({ assetCode, allBorrows }) {
+  const fmtDate = (d) =>
+    d
+      ? new Date(d).toLocaleDateString("id-ID", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        })
+      : "—";
+  const history = useMemo(
+    () =>
+      allBorrows
+        .filter((b) => b.code === assetCode)
+        .sort((a, b) => new Date(b.borrow_date) - new Date(a.borrow_date)),
+    [assetCode, allBorrows],
+  );
+
+  if (history.length === 0)
+    return (
+      <div
+        className="hist-empty"
+        style={{
+          padding: "40px 0",
+          border: "1px solid #e2e8f0",
+          borderRadius: "12px",
+        }}
+      >
+        <span className="hist-empty-ico">
+          <Icon.ClipboardEmpty />
+        </span>
+        <span className="hist-empty-title">Belum Ada Riwayat</span>
+        <span className="hist-empty-sub">
+          Aset ini belum pernah dipinjam sebelumnya.
+        </span>
+      </div>
+    );
+
+  return (
+    <div
+      className="hist-wrap"
+      style={{
+        border: "1px solid #e2e8f0",
+        borderRadius: "12px",
+        background: "#fff",
+        overflow: "hidden",
+      }}
+    >
+      <div
+        className="hist-summary-row"
+        style={{
+          borderBottom: "1px solid #e2e8f0",
+          padding: "16px",
+          background: "#f8fafc",
+        }}
+      >
+        <span className="hist-summary-pill hist-pill-total">
+          {history.length}x Transaksi
+        </span>
+        <span className="hist-summary-pill hist-pill-returned">
+          {history.filter((h) => h.is_returned).length}x Dikembalikan
+        </span>
+        {history.some((h) => !h.is_returned) && (
+          <span className="hist-summary-pill hist-pill-active">
+            1 Sedang Dipinjam
+          </span>
+        )}
+      </div>
+      <div className="hist-table-wrap">
+        <table
+          className="hist-table"
+          style={{
+            width: "100%",
+            textAlign: "left",
+            borderCollapse: "collapse",
+          }}
+        >
+          <thead style={{ background: "#f1f5f9" }}>
+            <tr>
+              <th
+                style={{
+                  padding: "12px 16px",
+                  fontSize: "13px",
+                  color: "#475569",
+                }}
+              >
+                #
+              </th>
+              <th
+                style={{
+                  padding: "12px 16px",
+                  fontSize: "13px",
+                  color: "#475569",
+                }}
+              >
+                Peminjam
+              </th>
+              <th
+                style={{
+                  padding: "12px 16px",
+                  fontSize: "13px",
+                  color: "#475569",
+                }}
+              >
+                Lokasi
+              </th>
+              <th
+                style={{
+                  padding: "12px 16px",
+                  fontSize: "13px",
+                  color: "#475569",
+                }}
+              >
+                Tgl Pinjam
+              </th>
+              <th
+                style={{
+                  padding: "12px 16px",
+                  fontSize: "13px",
+                  color: "#475569",
+                }}
+              >
+                Tgl Kembali
+              </th>
+              <th
+                style={{
+                  padding: "12px 16px",
+                  fontSize: "13px",
+                  color: "#475569",
+                }}
+              >
+                Kondisi
+              </th>
+              <th
+                style={{
+                  padding: "12px 16px",
+                  fontSize: "13px",
+                  color: "#475569",
+                }}
+              >
+                Status
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {history.map((h, idx) => {
+              const cond =
+                conditionConfig[
+                  h.is_returned ? h.return_condition : h.condition
+                ];
+              return (
+                <tr
+                  key={h.id}
+                  style={{
+                    borderBottom: "1px solid #f1f5f9",
+                    background: h.is_returned ? "#fff" : "#f0fdf4",
+                  }}
+                >
+                  <td
+                    style={{
+                      padding: "12px 16px",
+                      fontSize: "13.5px",
+                      fontWeight: "600",
+                      color: "#94a3b8",
+                    }}
+                  >
+                    {history.length - idx}
+                  </td>
+                  <td style={{ padding: "12px 16px" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: "32px",
+                          height: "32px",
+                          borderRadius: "50%",
+                          background: "#e2e8f0",
+                          color: "#475569",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontWeight: "bold",
+                          fontSize: "13px",
+                        }}
+                      >
+                        {h.performed_by_name.charAt(0)}
+                      </div>
+                      <div>
+                        <div
+                          style={{
+                            fontSize: "13.5px",
+                            fontWeight: "700",
+                            color: "#1e293b",
+                          }}
+                        >
+                          {h.performed_by_name}
+                        </div>
+                        <div style={{ fontSize: "12px", color: "#64748b" }}>
+                          {h.performed_by_branch}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td style={{ padding: "12px 16px", fontSize: "13px" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                      }}
+                    >
+                      <span style={{ color: "#475569", fontWeight: "500" }}>
+                        {h.from_zone}
+                      </span>
+                      <span style={{ color: "#cbd5e1" }}>
+                        <Icon.ArrowRight />
+                      </span>
+                      <span style={{ color: "#0f172a", fontWeight: "600" }}>
+                        {h.to_zone}
+                      </span>
+                    </div>
+                  </td>
+                  <td
+                    style={{
+                      padding: "12px 16px",
+                      fontSize: "13px",
+                      color: "#475569",
+                    }}
+                  >
+                    {fmtDate(h.borrow_date)}
+                  </td>
+                  <td style={{ padding: "12px 16px", fontSize: "13px" }}>
+                    {h.is_returned ? (
+                      <span style={{ color: "#16a34a", fontWeight: "600" }}>
+                        {fmtDate(h.return_date)}
+                      </span>
+                    ) : (
+                      <span
+                        style={{
+                          color: "#ef4444",
+                          fontWeight: "600",
+                          fontSize: "12px",
+                          padding: "2px 8px",
+                          background: "#fee2e2",
+                          borderRadius: "4px",
+                        }}
+                      >
+                        Belum kembali
+                      </span>
+                    )}
+                  </td>
+                  <td style={{ padding: "12px 16px" }}>
+                    {cond && (
+                      <span
+                        style={{
+                          background: cond.bg,
+                          color: cond.color,
+                          fontSize: "11px",
+                          fontWeight: "700",
+                          padding: "4px 8px",
+                          borderRadius: "6px",
+                        }}
+                      >
+                        {cond.label}
+                      </span>
+                    )}
+                  </td>
+                  <td style={{ padding: "12px 16px" }}>
+                    {h.is_returned ? (
+                      <span
+                        style={{
+                          background: "#f1f5f9",
+                          color: "#64748b",
+                          fontSize: "11px",
+                          fontWeight: "700",
+                          padding: "4px 8px",
+                          borderRadius: "6px",
+                        }}
+                      >
+                        Selesai
+                      </span>
+                    ) : (
+                      <span
+                        style={{
+                          background: "#dbeafe",
+                          color: "#2563eb",
+                          fontSize: "11px",
+                          fontWeight: "700",
+                          padding: "4px 8px",
+                          borderRadius: "6px",
+                        }}
+                      >
+                        Aktif
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 // ── PHOTO UPLOAD ──────────────────────────────────────────────────
 function PhotoUpload({ value, onChange }) {
   const [dragOver, setDragOver] = useState(false);
@@ -1438,7 +1819,7 @@ function PhotoUpload({ value, onChange }) {
       : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   if (value) {
     return (
-      <div className="photo-preview-wrap">
+      <div className="photo-preview-wrap" style={{ margin: 0 }}>
         <img src={value.dataUrl} alt="preview" className="photo-preview-img" />
         <div className="photo-preview-overlay">
           <button
@@ -1484,6 +1865,12 @@ function PhotoUpload({ value, onChange }) {
         handleFile(e.dataTransfer.files[0]);
       }}
       onClick={() => fileInputRef.current?.click()}
+      style={{
+        maxWidth: "400px",
+        margin: 0,
+        minHeight: "140px",
+        padding: "20px",
+      }}
     >
       <input
         ref={fileInputRef}
@@ -1509,250 +1896,6 @@ function PhotoUpload({ value, onChange }) {
   );
 }
 
-// ── BARCODE LABEL MODAL ───────────────────────────────────────────
-function BarcodeLabelModal({ asset, onClose, fmt, fmtDate }) {
-  const handlePrint = () => {
-    const w = window.open("", "_blank", "width=620,height=520");
-    w.document
-      .write(`<!DOCTYPE html><html><head><title>Label — ${asset.id}</title>
-<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Courier New',monospace;background:#f0f0f0;display:flex;justify-content:center;padding:30px}.label{width:360px;background:#fff;border:2.5px solid #111;border-radius:10px;padding:18px 20px;box-shadow:0 4px 20px rgba(0,0,0,.15)}.lh{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1.5px solid #111;padding-bottom:10px;margin-bottom:10px}.lbrand{font-size:16px;font-weight:900;letter-spacing:3px;color:#000}.lsub{font-size:8px;font-weight:700;color:#555;letter-spacing:1.5px;margin-top:2px}.lstatus{border:1.5px solid #000;border-radius:4px;padding:3px 8px;font-size:8px;font-weight:900;letter-spacing:1px;text-transform:uppercase}.lname{font-size:14px;font-weight:800;margin:8px 0 3px;color:#000;font-family:sans-serif}.lid{font-size:10px;font-weight:700;color:#444;letter-spacing:.5px;margin-bottom:10px}.lbar{text-align:center;border-top:1px dashed #ddd;border-bottom:1px dashed #ddd;padding:6px 0;margin:8px 0}.lmeta{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px;border-top:1px solid #eee;padding-top:8px}.mi label{display:block;font-size:7.5px;color:#888;text-transform:uppercase;letter-spacing:.4px;margin-bottom:1px}.mi span{font-size:9.5px;font-weight:700;color:#111}.lfoot{text-align:center;margin-top:10px;font-size:7px;color:#aaa;letter-spacing:.5px;border-top:1px dashed #ddd;padding-top:7px;text-transform:uppercase}@media print{body{background:#fff;padding:0}.label{box-shadow:none}}</style></head><body>
-<div class="label"><div class="lh"><div><div class="lbrand">PELINDO</div><div class="lsub">ASSET MANAGEMENT SYSTEM</div></div><span class="lstatus">${asset.status}</span></div>
-<div class="lname">${asset.name}</div><div class="lid">${asset.id}</div><div class="lbar" id="bw"></div>
-<div class="lmeta"><div class="mi"><label>Entitas</label><span>${asset.entitas || "—"}</span></div><div class="mi"><label>Cabang</label><span>${asset.branch}</span></div><div class="mi"><label>Zona · Subzona</label><span>${asset.zona} · ${asset.subzona}</span></div><div class="mi"><label>Kategori</label><span>${asset.category}</span></div><div class="mi"><label>ID Pekerjaan</label><span>${asset.id_pekerjaan || "—"}</span></div><div class="mi"><label>Tgl Pengadaan</label><span>${fmtDate(asset.procurementDate)}</span></div></div>
-<div class="lfoot">SCAN BARCODE UNTUK VERIFIKASI ASET · ${new Date().getFullYear()}</div></div>
-<script>(function(){const CH=' !"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\\\]^_\`abcdefghijklmnopqrstuvwxyz{|}~';const P=["11011001100","11001101100","11001100110","10010011000","10010001100","10001001100","10011001000","10011000100","10001100100","11001001000","11001000100","11000100100","10110011100","10011011100","10011001110","10111001100","10011101100","10011100110","11001110010","11001011100","11001001110","11011100100","11001110100","11101101110","11101001100","11100101100","11100100110","11101100100","11100110100","11100110010","11011011000","11011000110","11000110110","10100011000","10001011000","10001000110","10110001000","10001101000","10001100010","11010001000","11000101000","11000100010","10110111000","10110001110","10001101110","10111011000","10111000110","10001110110","11101110110","11010001110","11000101110","11011101000","11011100010","11011101110","11101011000","11101000110","11100010110","11101101000","11101100010","11100011010","11101111010","11001000010","11110001010","10100110000","10100001100","10010110000","10010000110","10000101100","10000100110","10110010000","10110000100","10011010000","10011000010","10000110100","10000110010","11000010010","11001010000","11110111010","11000010100","10001111010","10100111100","10010111100","10010011110","10111100100","10011110100","10011110010","11110100100","11110010100","11110010010","11110110110","11011110110","11110110110","10101111000","10100011110","10001011110","10111101000","10111100010","11110101000","11110100010","10111011110","10111101110","11101011110","11110101110","11010000100","11010010000","11010011100","1100011101011"];
-const t="${asset.id}";let c=[104],cs=104;for(let i=0;i<t.length;i++){const x=CH.indexOf(t[i]);if(x<0)continue;c.push(x);cs+=x*(i+1);}c.push(cs%103);c.push(106);
-const bars=c.map(x=>P[x]).join('')+'11';const cv=document.createElement('canvas');const bw=Math.max(1,Math.floor(320/bars.length));cv.width=bw*bars.length;cv.height=60;cv.style.width='100%';cv.style.height='auto';const ctx=cv.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,cv.width,cv.height);ctx.fillStyle='#000';for(let i=0;i<bars.length;i++){if(bars[i]==='1')ctx.fillRect(i*bw,0,bw,60);}document.getElementById('bw').appendChild(cv);setTimeout(()=>{window.print();},400);})();</script></body></html>`);
-    w.document.close();
-  };
-  const sc = (s) =>
-    s === "Tersedia"
-      ? "tersedia"
-      : s === "Dipinjam"
-        ? "dipinjam"
-        : "maintenance";
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div
-        className="modal-content barcode-modal"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="modal-header">
-          <h3>
-            <Icon.BarcodeModal /> Label Barcode Aset
-          </h3>
-          <button
-            onClick={onClose}
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: 8,
-              border: "1.5px solid #e2e8f0",
-              background: "#f8fafc",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#64748b",
-              flexShrink: 0,
-              lineHeight: 0,
-              fontSize: 0,
-            }}
-          >
-            <Icon.Times />
-          </button>
-        </div>
-        <div className="barcode-modal-body">
-          <div className="barcode-label-wrap">
-            <div className="barcode-label-card">
-              <div className="blc-header">
-                <div>
-                  <div className="blc-brand">PELINDO</div>
-                  <div className="blc-sub">ASSET MANAGEMENT SYSTEM</div>
-                </div>
-                <span className={`status-badge ${sc(asset.status)}`}>
-                  {asset.status}
-                </span>
-              </div>
-              <div className="blc-name">{asset.name}</div>
-              <div className="blc-id">{asset.id}</div>
-              <div className="blc-barcode">
-                <BarcodeCanvas value={asset.id} width={310} height={58} />
-              </div>
-              <div className="blc-meta">
-                <div className="blc-meta-item">
-                  <span className="blc-meta-lbl">Entitas</span>
-                  <span className="blc-meta-val">{asset.entitas || "—"}</span>
-                </div>
-                <div className="blc-meta-item">
-                  <span className="blc-meta-lbl">Cabang</span>
-                  <span className="blc-meta-val">{asset.branch}</span>
-                </div>
-                <div className="blc-meta-item">
-                  <span className="blc-meta-lbl">Zona · Subzona</span>
-                  <span className="blc-meta-val">
-                    {asset.zona} · {asset.subzona}
-                  </span>
-                </div>
-                <div className="blc-meta-item">
-                  <span className="blc-meta-lbl">Kategori</span>
-                  <span className="blc-meta-val">{asset.category}</span>
-                </div>
-              </div>
-              <div className="blc-footer">
-                SCAN BARCODE UNTUK VERIFIKASI ASET
-              </div>
-            </div>
-          </div>
-          <div className="barcode-hint-row">
-            <span className="barcode-hint-icon">
-              <Icon.QrCode />
-            </span>
-            <span>
-              Barcode Code128 — kompatibel dengan semua scanner industri standar
-            </span>
-          </div>
-          <button className="btn-print" onClick={handlePrint}>
-            <Icon.Print /> Cetak Label
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── HISTORY TAB ───────────────────────────────────────────────────
-function AssetHistoryTab({ assetCode, allBorrows }) {
-  const fmtDate = (d) =>
-    d
-      ? new Date(d).toLocaleDateString("id-ID", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-        })
-      : "—";
-  const history = useMemo(
-    () =>
-      allBorrows
-        .filter((b) => b.code === assetCode)
-        .sort((a, b) => new Date(b.borrow_date) - new Date(a.borrow_date)),
-    [assetCode, allBorrows],
-  );
-  if (history.length === 0)
-    return (
-      <div className="hist-empty">
-        <span className="hist-empty-ico">
-          <Icon.ClipboardEmpty />
-        </span>
-        <span className="hist-empty-title">Belum Ada Riwayat</span>
-        <span className="hist-empty-sub">
-          Aset ini belum pernah dipinjam sebelumnya.
-        </span>
-      </div>
-    );
-  return (
-    <div className="hist-wrap">
-      <div className="hist-summary-row">
-        <span className="hist-summary-pill hist-pill-total">
-          {history.length}x Transaksi
-        </span>
-        <span className="hist-summary-pill hist-pill-returned">
-          {history.filter((h) => h.is_returned).length}x Dikembalikan
-        </span>
-        {history.some((h) => !h.is_returned) && (
-          <span className="hist-summary-pill hist-pill-active">
-            1 Sedang Dipinjam
-          </span>
-        )}
-      </div>
-      <div className="hist-table-wrap">
-        <table className="hist-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Peminjam</th>
-              <th>Lokasi</th>
-              <th>Tgl Pinjam</th>
-              <th>Tgl Kembali</th>
-              <th>Kondisi</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {history.map((h, idx) => {
-              const cond =
-                conditionConfig[
-                  h.is_returned ? h.return_condition : h.condition
-                ];
-              return (
-                <tr
-                  key={h.id}
-                  className={!h.is_returned ? "hist-row-active" : ""}
-                >
-                  <td className="hist-num">{history.length - idx}</td>
-                  <td>
-                    <div className="hist-user">
-                      <div className="hist-avatar">
-                        {h.performed_by_name.charAt(0)}
-                      </div>
-                      <div>
-                        <div className="hist-uname">{h.performed_by_name}</div>
-                        <div className="hist-ubranch">
-                          {h.performed_by_branch}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <div className="hist-loc">
-                      <span className="hist-loc-from">{h.from_zone}</span>
-                      <span className="hist-loc-arr">
-                        <Icon.ArrowRight />
-                      </span>
-                      <span className="hist-loc-to">{h.to_zone}</span>
-                    </div>
-                  </td>
-                  <td className="hist-date">{fmtDate(h.borrow_date)}</td>
-                  <td className="hist-date">
-                    {h.is_returned ? (
-                      <span className="hist-date-ret">
-                        {fmtDate(h.return_date)}
-                      </span>
-                    ) : (
-                      <span className="hist-no-return">Belum kembali</span>
-                    )}
-                  </td>
-                  <td>
-                    {cond && (
-                      <span
-                        className="hist-cond"
-                        style={{ background: cond.bg, color: cond.color }}
-                      >
-                        {cond.label}
-                      </span>
-                    )}
-                  </td>
-                  <td>
-                    {h.is_returned ? (
-                      <span className="hist-badge hist-badge-done">
-                        Selesai
-                      </span>
-                    ) : (
-                      <span className="hist-badge hist-badge-active">
-                        Aktif
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
 // ── PROJECT BADGE ─────────────────────────────────────────────────
 function ProjectBadge({ id_pekerjaan }) {
   const project = getProjectById(id_pekerjaan);
@@ -1770,469 +1913,88 @@ function ProjectBadge({ id_pekerjaan }) {
   );
 }
 
-// ── EDIT SPECS SECTION — extracted for clarity ────────────────────
-// ✅ FIX: semua handler menggunakan functional update (p => ...) + .map()
-// sehingga React selalu mendapat state terbaru dan input bisa di-edit bebas
-function EditSpecsSection({ editSpecsData, setEditSpecsData }) {
-  // ── Template Specs handlers ──
-  const updateTemplateValue = (i, val) => {
-    setEditSpecsData((p) => ({
-      ...p,
-      specs: p.specs.map((s, idx) => (idx === i ? { ...s, value: val } : s)),
-    }));
-  };
-  const updateTemplateUnit = (i, val) => {
-    setEditSpecsData((p) => ({
-      ...p,
-      specs: p.specs.map((s, idx) =>
-        idx === i
-          ? {
-              ...s,
-              default_unit: val === "__custom__" ? "" : val,
-              _unitMode: val === "__custom__" ? "custom" : "pick",
-            }
-          : s,
-      ),
-    }));
-  };
-  const updateTemplateUnitText = (i, val) => {
-    setEditSpecsData((p) => ({
-      ...p,
-      specs: p.specs.map((s, idx) =>
-        idx === i ? { ...s, default_unit: val } : s,
-      ),
-    }));
-  };
-  const resetTemplateUnitMode = (i) => {
-    setEditSpecsData((p) => ({
-      ...p,
-      specs: p.specs.map((s, idx) =>
-        idx === i ? { ...s, _unitMode: "pick" } : s,
-      ),
-    }));
-  };
-
-  // ── Custom Specs handlers ──
-  const updateCustomLabel = (i, val) => {
-    setEditSpecsData((p) => ({
-      ...p,
-      customSpecs: p.customSpecs.map((s, idx) =>
-        idx === i ? { ...s, spec_label: val } : s,
-      ),
-    }));
-  };
-  const updateCustomValue = (i, val) => {
-    setEditSpecsData((p) => ({
-      ...p,
-      customSpecs: p.customSpecs.map((s, idx) =>
-        idx === i ? { ...s, value: val } : s,
-      ),
-    }));
-  };
-  const updateCustomUnit = (i, val) => {
-    setEditSpecsData((p) => ({
-      ...p,
-      customSpecs: p.customSpecs.map((s, idx) =>
-        idx === i
-          ? {
-              ...s,
-              default_unit: val === "__custom__" ? "" : val,
-              _unitMode: val === "__custom__" ? "custom" : "pick",
-            }
-          : s,
-      ),
-    }));
-  };
-  const updateCustomUnitText = (i, val) => {
-    setEditSpecsData((p) => ({
-      ...p,
-      customSpecs: p.customSpecs.map((s, idx) =>
-        idx === i ? { ...s, default_unit: val } : s,
-      ),
-    }));
-  };
-  const resetCustomUnitMode = (i) => {
-    setEditSpecsData((p) => ({
-      ...p,
-      customSpecs: p.customSpecs.map((s, idx) =>
-        idx === i ? { ...s, _unitMode: "pick" } : s,
-      ),
-    }));
-  };
-  const removeCustomSpec = (i) => {
-    setEditSpecsData((p) => ({
-      ...p,
-      customSpecs: p.customSpecs.filter((_, idx) => idx !== i),
-    }));
-  };
-  const addCustomSpec = () => {
-    setEditSpecsData((p) => ({
-      ...p,
-      customSpecs: [
-        ...p.customSpecs,
-        { spec_label: "", value: "", default_unit: "", _unitMode: "pick" },
-      ],
-    }));
-  };
-
-  const inputStyle = {
-    padding: "7px 10px",
-    border: "1.5px solid #e2e8f0",
-    borderRadius: 8,
-    fontSize: 13,
-    outline: "none",
-    background: "#fff",
-    width: "100%",
-    fontFamily: "var(--font)",
-    color: "#0f172a",
-  };
-  const selectStyle = (filled) => ({
-    padding: "7px 8px",
-    border: "1.5px solid #e2e8f0",
-    borderRadius: 8,
-    fontSize: 12,
-    fontWeight: 700,
-    color: filled ? "#0369a1" : "#94a3b8",
-    background: filled ? "#f0f9ff" : "#fff",
-    outline: "none",
-    width: "100%",
-    fontFamily: "var(--font)",
-  });
-
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-      {/* Edit template specs */}
-      {editSpecsData.specs.length > 0 && (
-        <div>
-          <p
-            style={{
-              fontSize: 11,
-              fontWeight: 800,
-              color: "#64748b",
-              textTransform: "uppercase",
-              letterSpacing: "0.6px",
-              marginBottom: 10,
-            }}
-          >
-            Template Spesifikasi
-          </p>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {editSpecsData.specs.map((sp, i) => (
-              <div
-                key={i}
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: 8,
-                  padding: "10px 12px",
-                  background: "#f8fafc",
-                  border: "1.5px solid #e2e8f0",
-                  borderRadius: 10,
-                }}
-              >
-                {/* Nilai */}
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 3 }}
-                >
-                  <span
-                    style={{
-                      fontSize: 10,
-                      fontWeight: 700,
-                      color: "#94a3b8",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    {sp.spec_label}
-                  </span>
-                  <input
-                    type="text"
-                    value={sp.value}
-                    onChange={(e) => updateTemplateValue(i, e.target.value)}
-                    placeholder="Isi nilai..."
-                    style={inputStyle}
-                  />
-                </div>
-                {/* Satuan */}
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 3 }}
-                >
-                  <span
-                    style={{
-                      fontSize: 10,
-                      fontWeight: 700,
-                      color: "#94a3b8",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    Satuan{" "}
-                    <span style={{ color: "#bfdbfe", fontWeight: 500 }}>
-                      (opsional)
-                    </span>
-                  </span>
-                  {sp._unitMode !== "custom" ? (
-                    <select
-                      value={sp.default_unit}
-                      onChange={(e) => updateTemplateUnit(i, e.target.value)}
-                      style={selectStyle(!!sp.default_unit)}
-                    >
-                      <option value="">— Tanpa Satuan —</option>
-                      {SPEC_UNIT_OPTIONS.map((g) => (
-                        <optgroup key={g.group} label={g.group}>
-                          {g.units.map((u) => (
-                            <option key={u} value={u}>
-                              {u}
-                            </option>
-                          ))}
-                        </optgroup>
-                      ))}
-                      <option value="__custom__">✏ Ketik satuan baru...</option>
-                    </select>
-                  ) : (
-                    <div style={{ display: "flex", gap: 4 }}>
-                      <input
-                        type="text"
-                        placeholder="Satuan baru..."
-                        value={sp.default_unit}
-                        onChange={(e) =>
-                          updateTemplateUnitText(i, e.target.value)
-                        }
-                        style={{
-                          ...inputStyle,
-                          flex: 1,
-                          borderColor: "var(--cyan)",
-                          background: "#f0f9ff",
-                          color: "#0369a1",
-                        }}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => resetTemplateUnitMode(i)}
-                        style={{
-                          padding: "0 8px",
-                          border: "1.5px solid #e2e8f0",
-                          borderRadius: 8,
-                          background: "#f1f5f9",
-                          fontSize: 11,
-                          cursor: "pointer",
-                          color: "#64748b",
-                          fontWeight: 700,
-                        }}
-                      >
-                        List
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Edit custom specs */}
-      <div>
-        <div
+// ── PAGE WRAPPER ──────────────────────────────────────────────────
+// Dipindahkan ke luar komponen utama agar tidak re-render/hilang fokus saat mengetik
+const PageWrapper = ({ title, onBack, children, actions }) => (
+  <div
+    className="view-asset-wrapper"
+    style={{ animation: "fadeIn 0.25s ease" }}
+  >
+    <div
+      className="view-header"
+      style={{
+        marginBottom: "16px",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        background: "#fff",
+        padding: "16px 24px",
+        borderRadius: "16px",
+        boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1)",
+        border: "1px solid #f1f5f9",
+      }}
+    >
+      <div
+        className="view-header-left"
+        style={{ display: "flex", alignItems: "center", gap: "20px" }}
+      >
+        <button
+          onClick={onBack}
           style={{
             display: "flex",
             alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 10,
+            gap: "8px",
+            padding: "8px 16px",
+            background: "#f8fafc",
+            border: "1px solid #e2e8f0",
+            borderRadius: "10px",
+            fontSize: "13px",
+            fontWeight: "700",
+            color: "#334155",
+            cursor: "pointer",
+            transition: "all 0.2s",
+            boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.background = "#f1f5f9";
+            e.currentTarget.style.borderColor = "#cbd5e1";
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.background = "#f8fafc";
+            e.currentTarget.style.borderColor = "#e2e8f0";
           }}
         >
-          <p
+          <Icon.ChevronLeft /> Kembali
+        </button>
+        <div>
+          <h1
+            className="view-title"
             style={{
-              fontSize: 11,
-              fontWeight: 800,
-              color: "#64748b",
-              textTransform: "uppercase",
-              letterSpacing: "0.6px",
               margin: 0,
+              fontSize: "20px",
+              fontWeight: "800",
+              color: "#0f172a",
             }}
           >
-            Spesifikasi Tambahan
-          </p>
-          <button
-            type="button"
-            onClick={addCustomSpec}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 5,
-              padding: "5px 12px",
-              borderRadius: 8,
-              border: "1.5px solid #bfdbfe",
-              background: "#eff6ff",
-              color: "#2563eb",
-              fontSize: 11,
-              fontWeight: 700,
-              cursor: "pointer",
-            }}
-          >
-            <Icon.Plus /> Tambah
-          </button>
+            {title}
+          </h1>
         </div>
-        {editSpecsData.customSpecs.length === 0 && (
-          <p
-            style={{
-              fontSize: 12,
-              color: "#94a3b8",
-              textAlign: "center",
-              padding: "16px 0",
-            }}
-          >
-            Belum ada spesifikasi tambahan.
-          </p>
-        )}
-        {editSpecsData.customSpecs.map((sp, i) => (
-          <div
-            key={i}
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr 1fr auto",
-              gap: 8,
-              padding: "10px 12px",
-              background: "#f8fafc",
-              border: "1.5px solid #e2e8f0",
-              borderRadius: 10,
-              marginBottom: 8,
-              alignItems: "end",
-            }}
-          >
-            {/* Nama Atribut */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-              <span
-                style={{
-                  fontSize: 10,
-                  fontWeight: 700,
-                  color: "#94a3b8",
-                  textTransform: "uppercase",
-                }}
-              >
-                Nama Atribut
-              </span>
-              <input
-                type="text"
-                placeholder="Contoh: Warna, Berat..."
-                value={sp.spec_label}
-                onChange={(e) => updateCustomLabel(i, e.target.value)}
-                style={inputStyle}
-              />
-            </div>
-            {/* Nilai */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-              <span
-                style={{
-                  fontSize: 10,
-                  fontWeight: 700,
-                  color: "#94a3b8",
-                  textTransform: "uppercase",
-                }}
-              >
-                Nilai
-              </span>
-              <input
-                type="text"
-                placeholder="Isi nilai..."
-                value={sp.value}
-                onChange={(e) => updateCustomValue(i, e.target.value)}
-                style={inputStyle}
-              />
-            </div>
-            {/* Satuan */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-              <span
-                style={{
-                  fontSize: 10,
-                  fontWeight: 700,
-                  color: "#94a3b8",
-                  textTransform: "uppercase",
-                }}
-              >
-                Satuan{" "}
-                <span style={{ color: "#bfdbfe", fontWeight: 500 }}>
-                  (opsional)
-                </span>
-              </span>
-              {sp._unitMode !== "custom" ? (
-                <select
-                  value={sp.default_unit}
-                  onChange={(e) => updateCustomUnit(i, e.target.value)}
-                  style={selectStyle(!!sp.default_unit)}
-                >
-                  <option value="">— Tanpa Satuan —</option>
-                  {SPEC_UNIT_OPTIONS.map((g) => (
-                    <optgroup key={g.group} label={g.group}>
-                      {g.units.map((u) => (
-                        <option key={u} value={u}>
-                          {u}
-                        </option>
-                      ))}
-                    </optgroup>
-                  ))}
-                  <option value="__custom__">✏ Ketik satuan baru...</option>
-                </select>
-              ) : (
-                <div style={{ display: "flex", gap: 4 }}>
-                  <input
-                    type="text"
-                    placeholder="Satuan baru..."
-                    value={sp.default_unit}
-                    onChange={(e) => updateCustomUnitText(i, e.target.value)}
-                    style={{
-                      ...inputStyle,
-                      flex: 1,
-                      borderColor: "var(--cyan)",
-                      background: "#f0f9ff",
-                      color: "#0369a1",
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => resetCustomUnitMode(i)}
-                    style={{
-                      padding: "0 8px",
-                      border: "1.5px solid #e2e8f0",
-                      borderRadius: 8,
-                      background: "#f1f5f9",
-                      fontSize: 11,
-                      cursor: "pointer",
-                      color: "#64748b",
-                      fontWeight: 700,
-                    }}
-                  >
-                    List
-                  </button>
-                </div>
-              )}
-            </div>
-            {/* Hapus */}
-            <button
-              type="button"
-              onClick={() => removeCustomSpec(i)}
-              style={{
-                width: 36,
-                height: 36,
-                border: "1.5px solid #fecaca",
-                borderRadius: 8,
-                background: "#fef2f2",
-                color: "#dc2626",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                lineHeight: 0,
-                fontSize: 0,
-                flexShrink: 0,
-              }}
-            >
-              <Icon.SmallTrash />
-            </button>
-          </div>
-        ))}
       </div>
+      {actions && <div style={{ display: "flex", gap: "12px" }}>{actions}</div>}
     </div>
-  );
-}
+    <div
+      style={{
+        background: "#fff",
+        borderRadius: "16px",
+        padding: "24px",
+        boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.05)",
+        border: "1px solid #e2e8f0",
+      }}
+    >
+      {children}
+    </div>
+  </div>
+);
 
 // ── MAIN COMPONENT ────────────────────────────────────────────────
 const ViewAsset = () => {
@@ -2402,122 +2164,20 @@ const ViewAsset = () => {
         { spec_label: "PoE Budget", value: "740", default_unit: "W" },
       ],
     },
-    {
-      id: "SPMT-DMI-LPG-JLN-01",
-      name: "Mitsubishi Fuso Truk",
-      category: "Kendaraan",
-      status: "Maintenance",
-      entitas: "Pelindo Multi Terminal",
-      branch: "Dumai",
-      zona: "LPG",
-      subzona: "JLN",
-      value: 620000000,
-      id_pekerjaan: "OPEX-5",
-      procurementDate: "2024-11-20",
-      photo: null,
-      specs: [
-        { spec_label: "Plat Nomor", value: "BM 8822 AB", default_unit: "" },
-        { spec_label: "Nomor Mesin", value: "4M50-0038872", default_unit: "" },
-        { spec_label: "Tahun Pembuatan", value: "2024", default_unit: "tahun" },
-        { spec_label: "Kapasitas Mesin", value: "4899", default_unit: "cc" },
-      ],
-      customSpecs: [
-        { spec_label: "Kapasitas Muatan", value: "8", default_unit: "ton" },
-      ],
-    },
-    {
-      id: "SPMT-BLW-LPG-DMG-02",
-      name: "RTG Crane ZPMC",
-      category: "Alat Berat",
-      status: "Tersedia",
-      entitas: "Pelindo Multi Terminal",
-      branch: "Belawan",
-      zona: "LPG",
-      subzona: "DMG",
-      value: 8500000000,
-      id_pekerjaan: 6,
-      procurementDate: "2023-04-10",
-      photo: null,
-      specs: [
-        {
-          spec_label: "Nomor Mesin",
-          value: "ZPMC-RTG-2023-007",
-          default_unit: "",
-        },
-        { spec_label: "Kapasitas Angkat", value: "41", default_unit: "ton" },
-        { spec_label: "Daya Mesin", value: "550", default_unit: "kW" },
-        { spec_label: "Tahun Pembuatan", value: "2023", default_unit: "tahun" },
-      ],
-      customSpecs: [
-        { spec_label: "Span", value: "23.47", default_unit: "m" },
-        { spec_label: "Tinggi Angkat", value: "18.2", default_unit: "m" },
-      ],
-    },
-    {
-      id: "PTP-JMB-GDG-DMG-01",
-      name: "Kursi Ergonomis Kantor",
-      category: "Furniture",
-      status: "Tersedia",
-      entitas: "PT Pelabuhan Indonesia",
-      branch: "Jambi",
-      zona: "GDG",
-      subzona: "DMG",
-      value: 3200000,
-      id_pekerjaan: "OPEX-3",
-      procurementDate: "2025-07-30",
-      photo: null,
-      specs: [
-        {
-          spec_label: "Bahan Material",
-          value: "Mesh Breathable + Busa HR40",
-          default_unit: "",
-        },
-        { spec_label: "Panjang", value: "65", default_unit: "cm" },
-        { spec_label: "Lebar", value: "65", default_unit: "cm" },
-        { spec_label: "Tinggi", value: "120", default_unit: "cm" },
-        { spec_label: "Warna Dominan", value: "Hitam", default_unit: "" },
-      ],
-      customSpecs: [
-        { spec_label: "Max Load", value: "120", default_unit: "kg" },
-      ],
-    },
-    {
-      id: "IKT-JKT-GDG-PKR-01",
-      name: "CCTV Dahua IPC-HDW2831T-AS",
-      category: "IT Equipment",
-      status: "Tersedia",
-      entitas: "Indonesia Kendaraan Terminal",
-      branch: "Jakarta",
-      zona: "GDG",
-      subzona: "PKR",
-      value: 12000000,
-      id_pekerjaan: 1,
-      procurementDate: "2026-01-28",
-      photo: null,
-      specs: [
-        { spec_label: "Resolusi", value: "8", default_unit: "MP" },
-        { spec_label: "Lensa", value: "2.8", default_unit: "mm" },
-        { spec_label: "Night Vision", value: "30", default_unit: "m" },
-        { spec_label: "IP Rating", value: "IP67", default_unit: "" },
-      ],
-      customSpecs: [],
-    },
   ]);
 
+  // Routing State
+  const [currentView, setCurrentView] = useState("list");
   const [viewMode, setViewMode] = useState("table");
-  const [showModal, setShowModal] = useState(false);
-  const [showDetailModal, setShowDetailModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [showBarcodeModal, setShowBarcodeModal] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState(null);
+
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [detailTab, setDetailTab] = useState("info");
+
   const [editPhoto, setEditPhoto] = useState(null);
   const [editData, setEditData] = useState({});
-  const [editSpecsMode, setEditSpecsMode] = useState(false);
   const [editSpecsData, setEditSpecsData] = useState({
     specs: [],
     customSpecs: [],
@@ -2794,17 +2454,17 @@ const ViewAsset = () => {
       customSpecs: customSpecs.map(({ _unitMode, ...s }) => s),
     };
     setAssets([newAsset, ...assets]);
-    setShowModal(false);
+    setCurrentView("list");
     resetForm();
   };
 
   const handleDelete = () => {
     setAssets(assets.filter((a) => a.id !== selectedAsset.id));
-    setShowDeleteConfirm(false);
+    setCurrentView("list");
     setSelectedAsset(null);
   };
 
-  const openEditModal = (asset) => {
+  const openEditPage = (asset) => {
     setSelectedAsset(asset);
     const existingProj = ALL_PROJECTS.find(
       (p) => String(p.id_pekerjaan) === String(asset.id_pekerjaan),
@@ -2826,8 +2486,16 @@ const ViewAsset = () => {
       kd_anggaran: existingProj?.kd_anggaran || "",
     });
     setEditPhoto(asset.photo || null);
-    setShowDetailModal(false);
-    setShowEditModal(true);
+
+    setEditSpecsData({
+      specs: (asset.specs || []).map((s) => ({ ...s, _unitMode: "pick" })),
+      customSpecs: (asset.customSpecs || []).map((s) => ({
+        ...s,
+        _unitMode: "pick",
+      })),
+    });
+
+    setCurrentView("edit");
   };
 
   const handleSaveEdit = () => {
@@ -2837,6 +2505,11 @@ const ViewAsset = () => {
         ? OPEX_ANGGARAN.find((o) => o.kd_anggaran === editData.kd_anggaran)
             ?.id_pekerjaan || null
         : null);
+    const cleanSpecs = editSpecsData.specs.map(({ _unitMode, ...s }) => s);
+    const cleanCustom = editSpecsData.customSpecs.map(
+      ({ _unitMode, ...s }) => s,
+    );
+
     const saveData = { ...editData, id_pekerjaan: resolvedId };
     const updated = assets.map((a) =>
       a.id === selectedAsset.id
@@ -2845,6 +2518,8 @@ const ViewAsset = () => {
             ...saveData,
             value: parseFloat(editData.value) || 0,
             photo: editPhoto,
+            specs: cleanSpecs,
+            customSpecs: cleanCustom,
           }
         : a,
     );
@@ -2854,29 +2529,10 @@ const ViewAsset = () => {
       ...saveData,
       value: parseFloat(editData.value) || 0,
       photo: editPhoto,
-    }));
-    setShowEditModal(false);
-  };
-
-  // ✅ FIX: handleSaveSpecs menggunakan editSpecsData langsung
-  const handleSaveSpecs = () => {
-    const cleanSpecs = editSpecsData.specs.map(({ _unitMode, ...s }) => s);
-    const cleanCustom = editSpecsData.customSpecs.map(
-      ({ _unitMode, ...s }) => s,
-    );
-    setAssets(
-      assets.map((x) =>
-        x.id === selectedAsset.id
-          ? { ...x, specs: cleanSpecs, customSpecs: cleanCustom }
-          : x,
-      ),
-    );
-    setSelectedAsset({
-      ...selectedAsset,
       specs: cleanSpecs,
       customSpecs: cleanCustom,
-    });
-    setEditSpecsMode(false);
+    }));
+    setCurrentView("list");
   };
 
   const handleExport = () => {
@@ -2919,31 +2575,58 @@ const ViewAsset = () => {
     link.click();
   };
 
-  const autoNomor = canGenerate
-    ? getNextNomor(
-        formData.entitasCode,
-        formData.branchCode,
-        formData.zonaCode,
-        formData.subzonaCode,
-      )
-    : null;
-  const codePreview = canGenerate
-    ? `${formData.entitasCode}-${formData.branchCode}-${formData.zonaCode}-${formData.subzonaCode}-${autoNomor}`
-    : null;
-  const missingFields = [
-    !formData.entitasCode && "Entitas",
-    !formData.branchCode && "Cabang",
-    !formData.zonaCode && "Zona",
-    !formData.subzonaCode && "Sub Zona",
-  ].filter(Boolean);
-  const filterAnggaranCapexEntry = filterAnggaran
-    ? CAPEX_ANGGARAN.find((a) => a.kd_anggaran === filterAnggaran)
-    : null;
+  const handlePrintBarcode = () => {
+    const asset = selectedAsset;
 
-  return (
-    <>
+    // Generate Base64 Barcode Image for reliable PDF printing
+    const canvas = document.createElement("canvas");
+    const bars = C128.encode(asset.id);
+    const width = 340;
+    const height = 64;
+    const bw = Math.max(1, Math.floor(width / bars.length));
+    canvas.width = bw * bars.length;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#000";
+    for (let i = 0; i < bars.length; i++) {
+      if (bars[i] === "1") ctx.fillRect(i * bw, 0, bw, height);
+    }
+    const base64Barcode = canvas.toDataURL("image/png");
+
+    const w = window.open("", "_blank", "width=620,height=520");
+    w.document
+      .write(`<!DOCTYPE html><html><head><title>Label — ${asset.id}</title>
+<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Courier New',monospace;background:#f0f0f0;display:flex;justify-content:center;padding:30px}.label{width:360px;background:#fff;border:2.5px solid #111;border-radius:10px;padding:18px 20px;box-shadow:0 4px 20px rgba(0,0,0,.15)}.lh{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1.5px solid #111;padding-bottom:10px;margin-bottom:10px}.lbrand{font-size:16px;font-weight:900;letter-spacing:3px;color:#000}.lsub{font-size:8px;font-weight:700;color:#555;letter-spacing:1.5px;margin-top:2px}.lstatus{border:1.5px solid #000;border-radius:4px;padding:3px 8px;font-size:8px;font-weight:900;letter-spacing:1px;text-transform:uppercase}.lname{font-size:14px;font-weight:800;margin:8px 0 3px;color:#000;font-family:sans-serif}.lid{font-size:10px;font-weight:700;color:#444;letter-spacing:.5px;margin-bottom:10px}.lbar{text-align:center;border-top:1px dashed #ddd;border-bottom:1px dashed #ddd;padding:6px 0;margin:8px 0}.lmeta{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px;border-top:1px solid #eee;padding-top:8px}.mi label{display:block;font-size:7.5px;color:#888;text-transform:uppercase;letter-spacing:.4px;margin-bottom:1px}.mi span{font-size:9.5px;font-weight:700;color:#111}.lfoot{text-align:center;margin-top:10px;font-size:7px;color:#aaa;letter-spacing:.5px;border-top:1px dashed #ddd;padding-top:7px;text-transform:uppercase}@media print{body{background:#fff;padding:0}.label{box-shadow:none}}</style></head><body>
+<div class="label"><div class="lh"><div><div class="lbrand">PELINDO</div><div class="lsub">ASSET MANAGEMENT SYSTEM</div></div><span class="lstatus">${asset.status}</span></div>
+<div class="lname">${asset.name}</div><div class="lid">${asset.id}</div>
+<div class="lbar"><img src="${base64Barcode}" style="width:100%;height:auto;image-rendering:pixelated;" /></div>
+<div class="lmeta"><div class="mi"><label>Entitas</label><span>${asset.entitas || "—"}</span></div><div class="mi"><label>Cabang</label><span>${asset.branch}</span></div><div class="mi"><label>Zona · Subzona</label><span>${asset.zona} · ${asset.subzona}</span></div><div class="mi"><label>Kategori</label><span>${asset.category}</span></div><div class="mi"><label>ID Pekerjaan</label><span>${asset.id_pekerjaan || "—"}</span></div><div class="mi"><label>Tgl Pengadaan</label><span>${fmtDate(asset.procurementDate)}</span></div></div>
+<div class="lfoot">SCAN BARCODE UNTUK VERIFIKASI ASET · ${new Date().getFullYear()}</div></div>
+<script>setTimeout(()=>{window.print();},500);</script></body></html>`);
+    w.document.close();
+  };
+
+  // ── RENDER LIST VIEW (TAMPILAN AWAL - TIDAK DIUBAH) ─────────────
+  const renderListView = () => {
+    const autoNomor = canGenerate
+      ? getNextNomor(
+          formData.entitasCode,
+          formData.branchCode,
+          formData.zonaCode,
+          formData.subzonaCode,
+        )
+      : null;
+    const codePreview = canGenerate
+      ? `${formData.entitasCode}-${formData.branchCode}-${formData.zonaCode}-${formData.subzonaCode}-${autoNomor}`
+      : null;
+    const filterAnggaranCapexEntry = filterAnggaran
+      ? CAPEX_ANGGARAN.find((a) => a.kd_anggaran === filterAnggaran)
+      : null;
+
+    return (
       <div className="view-asset-wrapper">
-        {/* HEADER */}
         <div className="view-header">
           <div className="view-header-left">
             <div className="view-header-icon">
@@ -2957,12 +2640,14 @@ const ViewAsset = () => {
               </p>
             </div>
           </div>
-          <button className="add-asset-btn" onClick={() => setShowModal(true)}>
+          <button
+            className="add-asset-btn"
+            onClick={() => setCurrentView("add")}
+          >
             <Icon.Plus /> Input Aset Baru
           </button>
         </div>
 
-        {/* KPI */}
         <div className="kpi-grid">
           {[
             {
@@ -3015,7 +2700,6 @@ const ViewAsset = () => {
           ))}
         </div>
 
-        {/* CONTROLS */}
         <div className="table-controls">
           <div className="search-box">
             <span className="search-icon">
@@ -3062,7 +2746,6 @@ const ViewAsset = () => {
           </div>
         </div>
 
-        {/* FILTER PANEL */}
         {showFilterPanel && (
           <div className="filter-panel">
             <div className="filter-panel-grid">
@@ -3217,7 +2900,6 @@ const ViewAsset = () => {
           </div>
         )}
 
-        {/* TABLE / GRID */}
         <div className="table-container">
           <div className="table-info-bar">
             <span>
@@ -3256,8 +2938,8 @@ const ViewAsset = () => {
                         className="asset-card"
                         onClick={() => {
                           setSelectedAsset(asset);
+                          setCurrentView("detail");
                           setDetailTab("info");
-                          setShowDetailModal(true);
                         }}
                       >
                         <div className="asset-card-img-wrap">
@@ -3332,7 +3014,7 @@ const ViewAsset = () => {
                               className="card-action-btn"
                               onClick={() => {
                                 setSelectedAsset(asset);
-                                setShowBarcodeModal(true);
+                                setCurrentView("barcode");
                               }}
                             >
                               <Icon.Barcode />
@@ -3341,7 +3023,7 @@ const ViewAsset = () => {
                               className="card-action-btn danger"
                               onClick={() => {
                                 setSelectedAsset(asset);
-                                setShowDeleteConfirm(true);
+                                setCurrentView("delete");
                               }}
                             >
                               <Icon.Trash />
@@ -3409,8 +3091,8 @@ const ViewAsset = () => {
                         className="asset-row"
                         onClick={() => {
                           setSelectedAsset(asset);
+                          setCurrentView("detail");
                           setDetailTab("info");
-                          setShowDetailModal(true);
                         }}
                       >
                         <td>
@@ -3451,8 +3133,7 @@ const ViewAsset = () => {
                         </td>
                         <td>
                           <div className="date-cell">
-                            <Icon.Calendar />
-                            {fmtDate(asset.procurementDate)}
+                            <Icon.Calendar /> {fmtDate(asset.procurementDate)}
                           </div>
                         </td>
                         <td>
@@ -3500,8 +3181,8 @@ const ViewAsset = () => {
                                 <button
                                   onClick={() => {
                                     setSelectedAsset(asset);
+                                    setCurrentView("detail");
                                     setDetailTab("info");
-                                    setShowDetailModal(true);
                                     setActiveDropdown(null);
                                   }}
                                 >
@@ -3511,8 +3192,8 @@ const ViewAsset = () => {
                                   className="action-history"
                                   onClick={() => {
                                     setSelectedAsset(asset);
+                                    setCurrentView("detail");
                                     setDetailTab("history");
-                                    setShowDetailModal(true);
                                     setActiveDropdown(null);
                                   }}
                                 >
@@ -3521,7 +3202,7 @@ const ViewAsset = () => {
                                 <button
                                   onClick={() => {
                                     setSelectedAsset(asset);
-                                    setShowBarcodeModal(true);
+                                    setCurrentView("barcode");
                                     setActiveDropdown(null);
                                   }}
                                 >
@@ -3530,7 +3211,7 @@ const ViewAsset = () => {
                                 <button
                                   onClick={() => {
                                     setActiveDropdown(null);
-                                    openEditModal(asset);
+                                    openEditPage(asset);
                                   }}
                                 >
                                   <Icon.Edit /> Edit Aset
@@ -3539,7 +3220,7 @@ const ViewAsset = () => {
                                   className="action-delete"
                                   onClick={() => {
                                     setSelectedAsset(asset);
-                                    setShowDeleteConfirm(true);
+                                    setCurrentView("delete");
                                     setActiveDropdown(null);
                                   }}
                                 >
@@ -3588,2739 +3269,2040 @@ const ViewAsset = () => {
             </div>
           )}
         </div>
+      </div>
+    );
+  };
 
-        {/* ── DETAIL MODAL ── */}
-        {showDetailModal &&
-          selectedAsset &&
-          (() => {
-            const a = selectedAsset;
-            const proj = getProjectById(a.id_pekerjaan);
-            const isOpexProj = proj?.jenis === "OPEX";
-            const catColors = {
-              "IT Equipment": {
-                bg: "#eff6ff",
-                color: "#2563eb",
-                dot: "#60a5fa",
-              },
-              "Alat Berat": { bg: "#fef3c7", color: "#d97706", dot: "#fbbf24" },
-              Kendaraan: { bg: "#f0fdf4", color: "#16a34a", dot: "#4ade80" },
-              Furniture: { bg: "#fdf4ff", color: "#9333ea", dot: "#c084fc" },
-            };
-            const cat = catColors[a.category] || {
-              bg: "#f1f5f9",
-              color: "#64748b",
-              dot: "#94a3b8",
-            };
-            const stColors = {
-              Tersedia: { bg: "#dcfce7", color: "#16a34a", dot: "#22c55e" },
-              Dipinjam: { bg: "#fef9c3", color: "#d97706", dot: "#fbbf24" },
-              Maintenance: { bg: "#fee2e2", color: "#dc2626", dot: "#ef4444" },
-            };
-            const st = stColors[a.status] || {
-              bg: "#f1f5f9",
-              color: "#64748b",
-              dot: "#94a3b8",
-            };
-            const catImg = {
-              "IT Equipment":
-                "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400&q=80",
-              "Alat Berat":
-                "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=400&q=80",
-              Kendaraan:
-                "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?w=400&q=80",
-              Furniture:
-                "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&q=80",
-            };
-            const imgSrc = a.photo?.dataUrl || catImg[a.category] || null;
-            const specPalettes = [
-              {
-                bg: "#eff6ff",
-                border: "#bfdbfe",
-                label: "#2563eb",
-                val: "#1e3a8a",
-              },
-              {
-                bg: "#f0fdf4",
-                border: "#bbf7d0",
-                label: "#16a34a",
-                val: "#14532d",
-              },
-              {
-                bg: "#fdf4ff",
-                border: "#e9d5ff",
-                label: "#9333ea",
-                val: "#581c87",
-              },
-              {
-                bg: "#fff7ed",
-                border: "#fed7aa",
-                label: "#ea580c",
-                val: "#7c2d12",
-              },
-              {
-                bg: "#fef2f2",
-                border: "#fecaca",
-                label: "#dc2626",
-                val: "#7f1d1d",
-              },
-              {
-                bg: "#f0f9ff",
-                border: "#bae6fd",
-                label: "#0284c7",
-                val: "#0c4a6e",
-              },
-              {
-                bg: "#fafaf9",
-                border: "#d6d3d1",
-                label: "#57534e",
-                val: "#1c1917",
-              },
-              {
-                bg: "#ecfdf5",
-                border: "#6ee7b7",
-                label: "#059669",
-                val: "#064e3b",
-              },
-            ];
-            const allSpecs = [...(a.specs || []), ...(a.customSpecs || [])];
-            const history = MOCK_ALL_BORROWS.filter(
-              (b) => b.code === a.id,
-            ).sort((x, y) => new Date(y.borrow_date) - new Date(x.borrow_date));
-            return (
-              <div
-                style={{
-                  position: "fixed",
-                  inset: 0,
-                  zIndex: 500,
-                  background: "rgba(10,15,35,0.72)",
-                  backdropFilter: "blur(8px)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  padding: 16,
-                  animation: "fadeIn .25s ease",
-                }}
-                onClick={() => {
-                  setShowDetailModal(false);
-                  setEditSpecsMode(false);
-                }}
+  // ── RENDER ADD PAGE ─────────────────────────────────────────────
+  const renderAddPage = () => {
+    return (
+      <PageWrapper
+        title="Input Data Aset Baru"
+        onBack={() => setCurrentView("list")}
+        actions={
+          <button className="btn-save" onClick={handleSave}>
+            <Icon.Save /> Simpan Aset Baru
+          </button>
+        }
+      >
+        <div style={{ maxWidth: "900px", margin: "0 auto" }}>
+          <h3
+            style={{
+              fontSize: "15px",
+              color: "#0f172a",
+              marginBottom: "10px",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            <Icon.Tag /> Informasi Utama
+          </h3>
+          <ModernTable>
+            <TableRow label="Nama Aset" required>
+              <input
+                type="text"
+                placeholder="Contoh: CCTV Hikvision BL 01"
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData((p) => ({ ...p, name: e.target.value }))
+                }
+                style={modernInputStyle}
+              />
+            </TableRow>
+            <TableRow label="Kategori" required>
+              <select
+                value={formData.category}
+                onChange={handleCategoryChange}
+                style={modernSelectStyle}
               >
-                <div
-                  style={{
-                    width: "100%",
-                    maxWidth: 740,
-                    maxHeight: "92vh",
-                    background: "#fff",
-                    borderRadius: 24,
-                    overflow: "hidden",
-                    display: "flex",
-                    flexDirection: "column",
-                    boxShadow:
-                      "0 0 0 1px rgba(0,0,0,0.06), 0 32px 80px rgba(0,0,0,0.28)",
-                  }}
-                  onClick={(e) => e.stopPropagation()}
+                <option value="">— Pilih Kategori —</option>
+                <option value="IT Equipment">IT Equipment</option>
+                <option value="Kendaraan">Kendaraan Operasional</option>
+                <option value="Alat Berat">Alat Berat (HMC/RTG)</option>
+                <option value="Furniture">Furniture</option>
+              </select>
+            </TableRow>
+            <TableRow label="Tanggal Pengadaan">
+              <input
+                type="date"
+                value={formData.procurementDate}
+                onChange={(e) =>
+                  setFormData((p) => ({
+                    ...p,
+                    procurementDate: e.target.value,
+                  }))
+                }
+                style={modernInputStyle}
+              />
+            </TableRow>
+            <TableRow label="Status">
+              <select
+                value={formData.status}
+                onChange={(e) =>
+                  setFormData((p) => ({ ...p, status: e.target.value }))
+                }
+                style={modernSelectStyle}
+              >
+                <option>Tersedia</option>
+                <option>Dipinjam</option>
+                <option>Maintenance</option>
+              </select>
+            </TableRow>
+            <TableRow label="Nilai Aset (IDR)">
+              <input
+                type="number"
+                placeholder="0"
+                value={formData.value}
+                onChange={(e) =>
+                  setFormData((p) => ({ ...p, value: e.target.value }))
+                }
+                style={modernInputStyle}
+              />
+            </TableRow>
+            <TableRow label="Tahun Anggaran" required>
+              <select
+                value={formData.thn_anggaran}
+                onChange={(e) =>
+                  setFormData((p) => ({
+                    ...p,
+                    thn_anggaran: e.target.value,
+                    kd_anggaran: "",
+                    id_pekerjaan: "",
+                  }))
+                }
+                style={modernSelectStyle}
+              >
+                <option value="">— Pilih Tahun —</option>
+                {ALL_TAHUN_LIST.map((t) => (
+                  <option key={t} value={String(t)}>
+                    {t}
+                  </option>
+                ))}
+              </select>
+            </TableRow>
+            {formData.thn_anggaran && (
+              <TableRow label="Nama Anggaran" required>
+                <select
+                  value={formData.kd_anggaran}
+                  onChange={(e) =>
+                    setFormData((p) => ({
+                      ...p,
+                      kd_anggaran: e.target.value,
+                      id_pekerjaan: "",
+                    }))
+                  }
+                  style={modernSelectStyle}
                 >
-                  {/* Hero */}
-                  <div
+                  <option value="">— Pilih Anggaran —</option>
+                  {getAnggaranByTahun(formData.thn_anggaran).filter(
+                    (a) => a.jenis === "CAPEX",
+                  ).length > 0 && (
+                    <optgroup label="CAPEX">
+                      {getAnggaranByTahun(formData.thn_anggaran)
+                        .filter((a) => a.jenis === "CAPEX")
+                        .map((a) => (
+                          <option key={a.kd_anggaran} value={a.kd_anggaran}>
+                            {a.nm_anggaran}
+                          </option>
+                        ))}
+                    </optgroup>
+                  )}
+                  {getAnggaranByTahun(formData.thn_anggaran).filter(
+                    (a) => a.jenis === "OPEX",
+                  ).length > 0 && (
+                    <optgroup label="OPEX">
+                      {getAnggaranByTahun(formData.thn_anggaran)
+                        .filter((a) => a.jenis === "OPEX")
+                        .map((a) => (
+                          <option key={a.kd_anggaran} value={a.kd_anggaran}>
+                            {a.nm_anggaran}
+                          </option>
+                        ))}
+                    </optgroup>
+                  )}
+                </select>
+              </TableRow>
+            )}
+            {formData.kd_anggaran &&
+              CAPEX_ANGGARAN.find(
+                (a) => a.kd_anggaran === formData.kd_anggaran,
+              ) && (
+                <TableRow label="Nama Pekerjaan" required>
+                  <select
+                    value={formData.id_pekerjaan}
+                    onChange={(e) =>
+                      setFormData((p) => ({
+                        ...p,
+                        id_pekerjaan: e.target.value,
+                      }))
+                    }
+                    style={modernSelectStyle}
+                  >
+                    <option value="">— Pilih Pekerjaan —</option>
+                    {CAPEX_ANGGARAN.find(
+                      (a) => a.kd_anggaran === formData.kd_anggaran,
+                    ).pekerjaan.map((p) => (
+                      <option
+                        key={p.id_pekerjaan}
+                        value={String(p.id_pekerjaan)}
+                      >
+                        {p.nm_pekerjaan}
+                      </option>
+                    ))}
+                  </select>
+                </TableRow>
+              )}
+          </ModernTable>
+
+          <h3
+            style={{
+              fontSize: "15px",
+              color: "#0f172a",
+              marginBottom: "10px",
+              marginTop: "24px",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            <Icon.PhotoSm /> Foto Aset
+          </h3>
+          <ModernTable>
+            <TableRow label="Upload Foto" alignTop>
+              <PhotoUpload value={formPhoto} onChange={setFormPhoto} />
+            </TableRow>
+          </ModernTable>
+
+          <h3
+            style={{
+              fontSize: "15px",
+              color: "#0f172a",
+              marginBottom: "10px",
+              marginTop: "24px",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            <Icon.Cogs /> Spesifikasi & Atribut Tambahan
+          </h3>
+          <ModernTable>
+            {!formData.category ? (
+              <tr>
+                <td
+                  colSpan="2"
+                  style={{
+                    padding: "16px",
+                    color: "#94a3b8",
+                    fontSize: "13.5px",
+                    textAlign: "center",
+                  }}
+                >
+                  Pilih kategori di atas untuk memuat form spesifikasi.
+                </td>
+              </tr>
+            ) : (
+              <>
+                {templateSpecs.map((spec, i) => (
+                  <TableRow label={spec.spec_label} key={i}>
+                    <input
+                      type={spec.input_type === "number" ? "number" : "text"}
+                      placeholder="Isi nilai..."
+                      value={spec.value}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setTemplateSpecs((prev) =>
+                          prev.map((s, idx) =>
+                            idx === i ? { ...s, value: val } : s,
+                          ),
+                        );
+                      }}
+                      style={{ ...modernInputStyle, flex: 2 }}
+                    />
+                    {spec._unitMode !== "custom" ? (
+                      <select
+                        value={spec.default_unit}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setTemplateSpecs((prev) =>
+                            prev.map((s, idx) =>
+                              idx === i
+                                ? {
+                                    ...s,
+                                    default_unit:
+                                      val === "__custom__" ? "" : val,
+                                    _unitMode:
+                                      val === "__custom__" ? "custom" : "pick",
+                                  }
+                                : s,
+                            ),
+                          );
+                        }}
+                        style={{
+                          ...modernSelectStyle,
+                          flex: 1,
+                          background: "#f8fafc",
+                        }}
+                      >
+                        <option value="">Satuan</option>
+                        {SPEC_UNIT_OPTIONS.map((g) => (
+                          <optgroup key={g.group} label={g.group}>
+                            {g.units.map((u) => (
+                              <option key={u} value={u}>
+                                {u}
+                              </option>
+                            ))}
+                          </optgroup>
+                        ))}
+                        <option value="__custom__">✏ Ketik baru...</option>
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        placeholder="Satuan..."
+                        value={spec.default_unit}
+                        autoFocus
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setTemplateSpecs((prev) =>
+                            prev.map((s, idx) =>
+                              idx === i ? { ...s, default_unit: val } : s,
+                            ),
+                          );
+                        }}
+                        onBlur={() => {
+                          if (!spec.default_unit)
+                            setTemplateSpecs((prev) =>
+                              prev.map((s, idx) =>
+                                idx === i ? { ...s, _unitMode: "pick" } : s,
+                              ),
+                            );
+                        }}
+                        style={{
+                          ...modernInputStyle,
+                          flex: 1,
+                          background: "#f0f9ff",
+                          borderColor: "#bae6fd",
+                        }}
+                      />
+                    )}
+                  </TableRow>
+                ))}
+
+                <tr>
+                  <td
+                    colSpan="2"
                     style={{
-                      position: "relative",
-                      padding: "28px 28px 24px",
-                      flexShrink: 0,
-                      background: `linear-gradient(160deg, ${cat.bg} 0%, #f0f4ff 100%)`,
+                      padding: "16px",
+                      background: "#f8fafc",
+                      borderTop: "1px solid #e2e8f0",
+                      borderBottom: "1px solid #f1f5f9",
                     }}
                   >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: "13.5px",
+                          fontWeight: "600",
+                          color: "#475569",
+                        }}
+                      >
+                        Atribut Tambahan (Opsional)
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setCustomSpecs([
+                            ...customSpecs,
+                            {
+                              spec_label: "",
+                              value: "",
+                              default_unit: "",
+                              input_type: "text",
+                              _unitMode: "pick",
+                            },
+                          ])
+                        }
+                        style={{
+                          padding: "6px 12px",
+                          borderRadius: "8px",
+                          background: "#eff6ff",
+                          color: "#2563eb",
+                          border: "1px solid #bfdbfe",
+                          fontSize: "12px",
+                          fontWeight: "bold",
+                          cursor: "pointer",
+                        }}
+                      >
+                        + Tambah Atribut
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                {customSpecs.map((spec, i) => (
+                  <TableRow
+                    key={`custom-${i}`}
+                    alignTop
+                    label={
+                      <input
+                        type="text"
+                        placeholder="Nama Atribut..."
+                        value={spec.spec_label}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setCustomSpecs((prev) =>
+                            prev.map((s, idx) =>
+                              idx === i ? { ...s, spec_label: val } : s,
+                            ),
+                          );
+                        }}
+                        style={{
+                          ...modernInputStyle,
+                          background: "#fff",
+                          border: "1px dashed #cbd5e1",
+                          padding: "6px 10px",
+                        }}
+                      />
+                    }
+                  >
+                    <input
+                      type="text"
+                      placeholder="Nilai..."
+                      value={spec.value}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setCustomSpecs((prev) =>
+                          prev.map((s, idx) =>
+                            idx === i ? { ...s, value: val } : s,
+                          ),
+                        );
+                      }}
+                      style={{ ...modernInputStyle, flex: 2 }}
+                    />
+
+                    {spec._unitMode !== "custom" ? (
+                      <select
+                        value={spec.default_unit}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setCustomSpecs((prev) =>
+                            prev.map((s, idx) =>
+                              idx === i
+                                ? {
+                                    ...s,
+                                    default_unit:
+                                      val === "__custom__" ? "" : val,
+                                    _unitMode:
+                                      val === "__custom__" ? "custom" : "pick",
+                                  }
+                                : s,
+                            ),
+                          );
+                        }}
+                        style={{
+                          ...modernSelectStyle,
+                          flex: 1,
+                          background: "#f8fafc",
+                        }}
+                      >
+                        <option value="">Satuan</option>
+                        {SPEC_UNIT_OPTIONS.map((g) => (
+                          <optgroup key={g.group} label={g.group}>
+                            {g.units.map((u) => (
+                              <option key={u} value={u}>
+                                {u}
+                              </option>
+                            ))}
+                          </optgroup>
+                        ))}
+                        <option value="__custom__">✏ Ketik baru...</option>
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        placeholder="Satuan..."
+                        value={spec.default_unit}
+                        autoFocus
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setCustomSpecs((prev) =>
+                            prev.map((s, idx) =>
+                              idx === i ? { ...s, default_unit: val } : s,
+                            ),
+                          );
+                        }}
+                        onBlur={() => {
+                          if (!spec.default_unit)
+                            setCustomSpecs((prev) =>
+                              prev.map((s, idx) =>
+                                idx === i ? { ...s, _unitMode: "pick" } : s,
+                              ),
+                            );
+                        }}
+                        style={{
+                          ...modernInputStyle,
+                          flex: 1,
+                          background: "#f0f9ff",
+                          borderColor: "#bae6fd",
+                        }}
+                      />
+                    )}
                     <button
+                      type="button"
                       onClick={() => {
-                        setShowDetailModal(false);
-                        setEditSpecsMode(false);
+                        const n = [...customSpecs];
+                        n.splice(i, 1);
+                        setCustomSpecs(n);
                       }}
                       style={{
-                        position: "absolute",
-                        top: 16,
-                        right: 16,
-                        width: 34,
-                        height: 34,
-                        borderRadius: 10,
-                        border: "1.5px solid rgba(0,0,0,0.12)",
-                        background: "rgba(255,255,255,0.95)",
+                        width: "34px",
+                        height: "34px",
+                        borderRadius: "8px",
+                        background: "#fef2f2",
+                        border: "1px solid #fecaca",
+                        color: "#dc2626",
                         cursor: "pointer",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        zIndex: 10,
-                        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                        lineHeight: 0,
-                        fontSize: 0,
-                        color: "#64748b",
+                        flexShrink: 0,
                       }}
                     >
-                      <Icon.Times />
+                      <Icon.Trash />
                     </button>
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: 22,
-                        alignItems: "flex-start",
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: 148,
-                          height: 116,
-                          flexShrink: 0,
-                          borderRadius: 16,
-                          overflow: "hidden",
-                          background: "rgba(255,255,255,0.7)",
-                          border: "2px solid rgba(255,255,255,0.9)",
-                          boxShadow: "0 4px 20px rgba(0,0,0,0.12)",
-                        }}
-                      >
-                        {imgSrc ? (
-                          <img
-                            src={imgSrc}
-                            alt={a.name}
-                            style={{
-                              width: "100%",
-                              height: "100%",
-                              objectFit: "cover",
-                            }}
-                            onError={(e) => {
-                              e.target.style.display = "none";
-                            }}
-                          />
-                        ) : (
-                          <div
-                            style={{
-                              width: "100%",
-                              height: "100%",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              background: "rgba(255,255,255,0.5)",
-                            }}
-                          >
-                            <Icon.Photo />
-                          </div>
-                        )}
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div
-                          style={{
-                            display: "flex",
-                            flexWrap: "wrap",
-                            gap: 6,
-                            marginBottom: 10,
-                          }}
-                        >
-                          <span
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 5,
-                              fontSize: 11,
-                              fontWeight: 800,
-                              color: "#fff",
-                              padding: "4px 11px",
-                              borderRadius: 7,
-                              background: cat.color,
-                              letterSpacing: "0.2px",
-                            }}
-                          >
-                            <Icon.Tag /> {a.category}
-                          </span>
-                          <span
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 5,
-                              fontSize: 11.5,
-                              fontWeight: 700,
-                              padding: "4px 11px",
-                              borderRadius: 99,
-                              background: st.bg,
-                              color: st.color,
-                            }}
-                          >
-                            <span
-                              style={{
-                                width: 6,
-                                height: 6,
-                                borderRadius: "50%",
-                                background: st.dot,
-                                display: "inline-block",
-                              }}
-                            />
-                            {a.status}
-                          </span>
-                        </div>
-                        <h2
-                          style={{
-                            fontSize: 21,
-                            fontWeight: 800,
-                            color: "#0f172a",
-                            lineHeight: 1.25,
-                            letterSpacing: "-0.3px",
-                            margin: 0,
-                          }}
-                        >
-                          {a.name}
-                        </h2>
-                        <p
-                          style={{
-                            fontSize: 13,
-                            color: "#64748b",
-                            marginTop: 3,
-                            fontWeight: 500,
-                          }}
-                        >
-                          {a.entitas}
-                        </p>
-                        <div
-                          style={{
-                            display: "flex",
-                            flexWrap: "wrap",
-                            gap: 12,
-                            marginTop: 10,
-                          }}
-                        >
-                          <span
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 5,
-                              fontSize: 12.5,
-                              color: "#64748b",
-                              fontWeight: 500,
-                            }}
-                          >
-                            <Icon.MapPin /> {a.branch} · {a.zona}/{a.subzona}
-                          </span>
-                          <span
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 5,
-                              fontSize: 12.5,
-                              color: "#64748b",
-                              fontWeight: 500,
-                            }}
-                          >
-                            <Icon.Calendar /> {fmtDate(a.procurementDate)}
-                          </span>
-                        </div>
-                        <div style={{ marginTop: 10 }}>
-                          <span
-                            style={{
-                              fontSize: 11,
-                              fontWeight: 700,
-                              padding: "3px 9px",
-                              borderRadius: 6,
-                              background: isOpexProj ? "#ede9fe" : "#dbeafe",
-                              color: isOpexProj ? "#7c3aed" : "#1d4ed8",
-                            }}
-                          >
-                            {isOpexProj ? "OPEX" : "CAPEX"}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  {/* Tabs */}
-                  <div
-                    style={{
-                      display: "flex",
-                      background: "#fff",
-                      flexShrink: 0,
-                      padding: "0 24px",
-                      boxShadow: "0 1px 0 0 #e2e8f0",
-                      position: "relative",
-                      zIndex: 1,
-                    }}
+                  </TableRow>
+                ))}
+              </>
+            )}
+          </ModernTable>
+
+          <h3
+            style={{
+              fontSize: "15px",
+              color: "#0f172a",
+              marginBottom: "10px",
+              marginTop: "24px",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            <Icon.MapPin /> Lokasi & Kode Aset
+          </h3>
+          <ModernTable>
+            <TableRow label="Entitas" required>
+              <select
+                value={formData.entitasCode}
+                onChange={handleEntitasChange}
+                style={modernSelectStyle}
+              >
+                <option value="">— Pilih Entitas —</option>
+                {ENTITAS_LIST.map((en) => (
+                  <option key={en.code} value={en.code}>
+                    {en.code} – {en.name}
+                  </option>
+                ))}
+              </select>
+            </TableRow>
+            <TableRow label="Cabang" required>
+              <select
+                value={formData.branchCode}
+                onChange={handleBranchChange}
+                disabled={!formData.entitasCode}
+                style={{
+                  ...modernSelectStyle,
+                  opacity: !formData.entitasCode ? 0.6 : 1,
+                }}
+              >
+                <option value="">— Pilih Cabang —</option>
+                {availableBranches.map((b) => (
+                  <option key={b.code} value={b.code}>
+                    {b.code} – {b.name}
+                  </option>
+                ))}
+              </select>
+            </TableRow>
+            <TableRow label="Zona" required>
+              <select
+                value={formData.zonaCode}
+                onChange={handleZonaChange}
+                style={modernSelectStyle}
+              >
+                <option value="">— Pilih Zona —</option>
+                {ZONA_LIST.map((z) => (
+                  <option key={z.code} value={z.code}>
+                    {z.code} – {z.name}
+                  </option>
+                ))}
+              </select>
+            </TableRow>
+            <TableRow label="Sub Zona" required>
+              <select
+                value={formData.subzonaCode}
+                onChange={handleSubzonaChange}
+                style={modernSelectStyle}
+              >
+                <option value="">— Pilih Sub Zona —</option>
+                {SUBZONA_LIST.map((s) => (
+                  <option key={s.code} value={s.code}>
+                    {s.code} – {s.name}
+                  </option>
+                ))}
+              </select>
+            </TableRow>
+            <TableRow label="Generate ID Aset">
+              <input
+                type="text"
+                readOnly
+                value={formData.assetId}
+                placeholder="Kode otomatis setelah klik generate"
+                style={{
+                  ...modernInputStyle,
+                  flex: 1,
+                  background: "#f8fafc",
+                  color: "#64748b",
+                  fontWeight: "bold",
+                  fontFamily: "monospace",
+                }}
+              />
+              <button
+                type="button"
+                onClick={handleGenerateCode}
+                disabled={!canGenerate}
+                style={{
+                  padding: "8px 16px",
+                  borderRadius: "8px",
+                  background: canGenerate ? "#2563eb" : "#cbd5e1",
+                  color: "#fff",
+                  fontWeight: "bold",
+                  border: "none",
+                  cursor: canGenerate ? "pointer" : "not-allowed",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                <Icon.Magic /> Generate Kode
+              </button>
+            </TableRow>
+          </ModernTable>
+        </div>
+      </PageWrapper>
+    );
+  };
+
+  // ── RENDER EDIT PAGE ────────────────────────────────────────────
+  const renderEditPage = () => {
+    return (
+      <PageWrapper
+        title="Edit Data Aset"
+        onBack={() => setCurrentView("list")}
+        actions={
+          <button className="btn-save" onClick={handleSaveEdit}>
+            <Icon.Save /> Simpan Perubahan
+          </button>
+        }
+      >
+        <div style={{ maxWidth: "900px", margin: "0 auto" }}>
+          <h3
+            style={{
+              fontSize: "15px",
+              color: "#0f172a",
+              marginBottom: "10px",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            <Icon.Tag /> Informasi Utama
+          </h3>
+          <ModernTable>
+            <TableRow label="ID Aset">
+              <span
+                style={{
+                  padding: "4px 10px",
+                  background: "#e2e8f0",
+                  borderRadius: "6px",
+                  fontFamily: "monospace",
+                  fontWeight: "bold",
+                  color: "#334155",
+                }}
+              >
+                {selectedAsset.id}
+              </span>
+              <span
+                style={{
+                  fontSize: "12px",
+                  color: "#94a3b8",
+                  marginLeft: "12px",
+                }}
+              >
+                (Kode Tidak dapat diubah)
+              </span>
+            </TableRow>
+            <TableRow label="Nama Aset" required>
+              <input
+                type="text"
+                value={editData.name || ""}
+                onChange={(e) =>
+                  setEditData((p) => ({ ...p, name: e.target.value }))
+                }
+                style={modernInputStyle}
+              />
+            </TableRow>
+            <TableRow label="Kategori" required>
+              <select
+                value={editData.category || ""}
+                onChange={(e) =>
+                  setEditData((p) => ({ ...p, category: e.target.value }))
+                }
+                style={modernSelectStyle}
+              >
+                <option value="">— Pilih Kategori —</option>
+                <option value="IT Equipment">IT Equipment</option>
+                <option value="Kendaraan">Kendaraan Operasional</option>
+                <option value="Alat Berat">Alat Berat (HMC/RTG)</option>
+                <option value="Furniture">Furniture</option>
+              </select>
+            </TableRow>
+            <TableRow label="Tanggal Pengadaan">
+              <input
+                type="date"
+                value={editData.procurementDate || ""}
+                onChange={(e) =>
+                  setEditData((p) => ({
+                    ...p,
+                    procurementDate: e.target.value,
+                  }))
+                }
+                style={modernInputStyle}
+              />
+            </TableRow>
+            <TableRow label="Status">
+              <select
+                value={editData.status || "Tersedia"}
+                onChange={(e) =>
+                  setEditData((p) => ({ ...p, status: e.target.value }))
+                }
+                style={modernSelectStyle}
+              >
+                <option>Tersedia</option>
+                <option>Dipinjam</option>
+                <option>Maintenance</option>
+              </select>
+            </TableRow>
+            <TableRow label="Nilai Aset (IDR)">
+              <input
+                type="number"
+                placeholder="0"
+                value={editData.value || ""}
+                onChange={(e) =>
+                  setEditData((p) => ({ ...p, value: e.target.value }))
+                }
+                style={modernInputStyle}
+              />
+            </TableRow>
+            <TableRow label="Tahun Anggaran" required>
+              <select
+                value={editData.thn_anggaran || ""}
+                onChange={(e) =>
+                  setEditData((p) => ({
+                    ...p,
+                    thn_anggaran: e.target.value,
+                    kd_anggaran: "",
+                    id_pekerjaan: "",
+                  }))
+                }
+                style={modernSelectStyle}
+              >
+                <option value="">— Pilih Tahun —</option>
+                {ALL_TAHUN_LIST.map((t) => (
+                  <option key={t} value={String(t)}>
+                    {t}
+                  </option>
+                ))}
+              </select>
+            </TableRow>
+            {editData.thn_anggaran && (
+              <TableRow label="Nama Anggaran" required>
+                <select
+                  value={editData.kd_anggaran || ""}
+                  onChange={(e) =>
+                    setEditData((p) => ({
+                      ...p,
+                      kd_anggaran: e.target.value,
+                      id_pekerjaan: "",
+                    }))
+                  }
+                  style={modernSelectStyle}
+                >
+                  <option value="">— Pilih Anggaran —</option>
+                  {getAnggaranByTahun(editData.thn_anggaran).filter(
+                    (a) => a.jenis === "CAPEX",
+                  ).length > 0 && (
+                    <optgroup label="CAPEX">
+                      {getAnggaranByTahun(editData.thn_anggaran)
+                        .filter((a) => a.jenis === "CAPEX")
+                        .map((a) => (
+                          <option key={a.kd_anggaran} value={a.kd_anggaran}>
+                            {a.nm_anggaran}
+                          </option>
+                        ))}
+                    </optgroup>
+                  )}
+                  {getAnggaranByTahun(editData.thn_anggaran).filter(
+                    (a) => a.jenis === "OPEX",
+                  ).length > 0 && (
+                    <optgroup label="OPEX">
+                      {getAnggaranByTahun(editData.thn_anggaran)
+                        .filter((a) => a.jenis === "OPEX")
+                        .map((a) => (
+                          <option key={a.kd_anggaran} value={a.kd_anggaran}>
+                            {a.nm_anggaran}
+                          </option>
+                        ))}
+                    </optgroup>
+                  )}
+                </select>
+              </TableRow>
+            )}
+            {editData.kd_anggaran &&
+              CAPEX_ANGGARAN.find(
+                (a) => a.kd_anggaran === editData.kd_anggaran,
+              ) && (
+                <TableRow label="Nama Pekerjaan" required>
+                  <select
+                    value={editData.id_pekerjaan || ""}
+                    onChange={(e) =>
+                      setEditData((p) => ({
+                        ...p,
+                        id_pekerjaan: e.target.value,
+                      }))
+                    }
+                    style={modernSelectStyle}
                   >
-                    {[
-                      {
-                        key: "info",
-                        label: "Informasi",
-                        icon: <Icon.InfoCircle />,
-                      },
-                      {
-                        key: "spec",
-                        label: `Spesifikasi (${allSpecs.length})`,
-                        icon: <Icon.Cogs />,
-                      },
-                      {
-                        key: "history",
-                        label: `Riwayat (${history.length})`,
-                        icon: <Icon.History />,
-                      },
-                    ].map((t) => (
-                      <button
-                        key={t.key}
-                        onClick={() => {
-                          setDetailTab(t.key);
-                          setEditSpecsMode(false);
-                        }}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 7,
-                          padding: "14px 18px",
-                          border: "none",
-                          background: "transparent",
-                          fontSize: 13.5,
-                          fontWeight: detailTab === t.key ? 700 : 600,
-                          color: detailTab === t.key ? "#1d4ed8" : "#94a3b8",
-                          cursor: "pointer",
-                          boxShadow:
-                            detailTab === t.key
-                              ? "inset 0 -2px 0 #2563eb"
-                              : "inset 0 -2px 0 transparent",
-                          transition: "all .18s ease",
-                          fontFamily: "inherit",
-                          letterSpacing: "0.1px",
-                        }}
+                    <option value="">— Pilih Pekerjaan —</option>
+                    {CAPEX_ANGGARAN.find(
+                      (a) => a.kd_anggaran === editData.kd_anggaran,
+                    ).pekerjaan.map((p) => (
+                      <option
+                        key={p.id_pekerjaan}
+                        value={String(p.id_pekerjaan)}
                       >
-                        {t.icon} {t.label}
-                      </button>
+                        {p.nm_pekerjaan}
+                      </option>
                     ))}
-                  </div>
-                  {/* Body */}
-                  <div
+                  </select>
+                </TableRow>
+              )}
+          </ModernTable>
+
+          <h3
+            style={{
+              fontSize: "15px",
+              color: "#0f172a",
+              marginBottom: "10px",
+              marginTop: "24px",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            <Icon.PhotoSm /> Foto Aset
+          </h3>
+          <ModernTable>
+            <TableRow label="Upload Foto" alignTop>
+              <PhotoUpload value={editPhoto} onChange={setEditPhoto} />
+            </TableRow>
+          </ModernTable>
+
+          <h3
+            style={{
+              fontSize: "15px",
+              color: "#0f172a",
+              marginBottom: "10px",
+              marginTop: "24px",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            <Icon.Cogs /> Spesifikasi & Atribut
+          </h3>
+          <ModernTable>
+            {editSpecsData.specs.map((spec, i) => (
+              <TableRow label={spec.spec_label} key={i}>
+                <input
+                  type="text"
+                  placeholder="Isi nilai..."
+                  value={spec.value}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setEditSpecsData((prev) => ({
+                      ...prev,
+                      specs: prev.specs.map((s, idx) =>
+                        idx === i ? { ...s, value: val } : s,
+                      ),
+                    }));
+                  }}
+                  style={{ ...modernInputStyle, flex: 2 }}
+                />
+                {spec._unitMode !== "custom" ? (
+                  <select
+                    value={spec.default_unit}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setEditSpecsData((prev) => ({
+                        ...prev,
+                        specs: prev.specs.map((s, idx) =>
+                          idx === i
+                            ? {
+                                ...s,
+                                default_unit: val === "__custom__" ? "" : val,
+                                _unitMode:
+                                  val === "__custom__" ? "custom" : "pick",
+                              }
+                            : s,
+                        ),
+                      }));
+                    }}
                     style={{
+                      ...modernSelectStyle,
                       flex: 1,
-                      overflowY: "auto",
-                      padding: 24,
                       background: "#f8fafc",
                     }}
                   >
-                    {/* INFO TAB */}
-                    {detailTab === "info" && (
-                      <div
-                        style={{
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: 14,
-                        }}
-                      >
-                        {[
-                          {
-                            title: "🪪 Identitas",
-                            rows: [
-                              {
-                                icon: (
-                                  <span
-                                    style={{
-                                      fontSize: 10,
-                                      fontWeight: 900,
-                                      color: "#2563eb",
-                                    }}
-                                  >
-                                    #
-                                  </span>
-                                ),
-                                bg: "#eff6ff",
-                                label: "ID Aset",
-                                val: (
-                                  <code
-                                    style={{
-                                      fontSize: 12,
-                                      fontWeight: 700,
-                                      color: "#334155",
-                                      fontFamily: "monospace",
-                                      background: "#f1f5f9",
-                                      padding: "3px 10px",
-                                      borderRadius: 6,
-                                    }}
-                                  >
-                                    {a.id}
-                                  </code>
-                                ),
-                              },
-                              {
-                                icon: <Icon.Tag />,
-                                bg: "#ecfdf5",
-                                label: "Nama Aset",
-                                val: (
-                                  <span
-                                    style={{
-                                      fontSize: 13.5,
-                                      fontWeight: 700,
-                                      color: "#0f172a",
-                                    }}
-                                  >
-                                    {a.name}
-                                  </span>
-                                ),
-                              },
-                              {
-                                icon: <Icon.Briefcase />,
-                                bg: "#f5f3ff",
-                                label: "Entitas",
-                                val: (
-                                  <span
-                                    style={{
-                                      fontSize: 13.5,
-                                      fontWeight: 700,
-                                      color: "#0f172a",
-                                    }}
-                                  >
-                                    {a.entitas}
-                                  </span>
-                                ),
-                                last: true,
-                              },
-                            ],
-                          },
-                          {
-                            title: "📍 Lokasi",
-                            rows: [
-                              {
-                                icon: <Icon.MapPin />,
-                                bg: "#fef2f2",
-                                label: "Branch",
-                                val: (
-                                  <span
-                                    style={{ fontSize: 13.5, fontWeight: 700 }}
-                                  >
-                                    {a.branch}
-                                  </span>
-                                ),
-                              },
-                              {
-                                icon: <Icon.Cogs />,
-                                bg: "#fff7ed",
-                                label: "Zona",
-                                val: (
-                                  <span
-                                    style={{ fontSize: 13.5, fontWeight: 700 }}
-                                  >
-                                    {a.zona}
-                                  </span>
-                                ),
-                              },
-                              {
-                                icon: <Icon.Cogs />,
-                                bg: "#fff7ed",
-                                label: "Sub Zona",
-                                val: (
-                                  <span
-                                    style={{ fontSize: 13.5, fontWeight: 700 }}
-                                  >
-                                    {a.subzona}
-                                  </span>
-                                ),
-                                last: true,
-                              },
-                            ],
-                          },
-                          {
-                            title: "📊 Anggaran & Nilai",
-                            rows: [
-                              {
-                                icon: <Icon.Briefcase />,
-                                bg: isOpexProj ? "#ede9fe" : "#dbeafe",
-                                label: "Tipe Anggaran",
-                                val: (
-                                  <span
-                                    style={{
-                                      fontSize: 12,
-                                      fontWeight: 700,
-                                      padding: "3px 9px",
-                                      borderRadius: 6,
-                                      background: isOpexProj
-                                        ? "#ede9fe"
-                                        : "#dbeafe",
-                                      color: isOpexProj ? "#7c3aed" : "#1d4ed8",
-                                    }}
-                                  >
-                                    {isOpexProj ? "OPEX" : "CAPEX"}
-                                  </span>
-                                ),
-                              },
-                              {
-                                icon: <Icon.Briefcase />,
-                                bg: "#f0f9ff",
-                                label: "Nama Pekerjaan",
-                                val: (
-                                  <span
-                                    style={{
-                                      fontSize: 12,
-                                      color: "#334155",
-                                      fontWeight: 500,
-                                    }}
-                                  >
-                                    {proj ? proj.nm_pekerjaan : "—"}
-                                  </span>
-                                ),
-                              },
-                              {
-                                icon: <Icon.Coins />,
-                                bg: "#f0fdf4",
-                                label: "Nilai Aset",
-                                val: (
-                                  <span
-                                    style={{
-                                      fontSize: 14,
-                                      fontWeight: 800,
-                                      color: "#16a34a",
-                                    }}
-                                  >
-                                    {fmt(a.value)}
-                                  </span>
-                                ),
-                              },
-                              {
-                                icon: <Icon.Calendar />,
-                                bg: "#f0f9ff",
-                                label: "Tgl Pengadaan",
-                                val: (
-                                  <span
-                                    style={{ fontSize: 13.5, fontWeight: 700 }}
-                                  >
-                                    {fmtDate(a.procurementDate)}
-                                  </span>
-                                ),
-                                last: true,
-                              },
-                            ],
-                          },
-                          {
-                            title: "🔖 Status",
-                            rows: [
-                              {
-                                icon: (
-                                  <span
-                                    style={{
-                                      width: 8,
-                                      height: 8,
-                                      borderRadius: "50%",
-                                      background: st.dot,
-                                      display: "inline-block",
-                                    }}
-                                  />
-                                ),
-                                bg: st.bg,
-                                label: "Status",
-                                val: (
-                                  <span
-                                    style={{
-                                      fontSize: 13,
-                                      fontWeight: 700,
-                                      padding: "4px 12px",
-                                      borderRadius: 99,
-                                      background: st.bg,
-                                      color: st.color,
-                                    }}
-                                  >
-                                    {a.status}
-                                  </span>
-                                ),
-                              },
-                              {
-                                icon: <Icon.Tag />,
-                                bg: cat.bg,
-                                label: "Kategori",
-                                val: (
-                                  <span
-                                    style={{
-                                      fontSize: 13,
-                                      fontWeight: 700,
-                                      padding: "4px 10px",
-                                      borderRadius: 8,
-                                      background: cat.bg,
-                                      color: cat.color,
-                                    }}
-                                  >
-                                    {a.category}
-                                  </span>
-                                ),
-                                last: true,
-                              },
-                            ],
-                          },
-                        ].map((sec) => (
-                          <div
-                            key={sec.title}
-                            style={{
-                              background: "#fff",
-                              border: "1.5px solid #f1f5f9",
-                              borderRadius: 16,
-                              overflow: "hidden",
-                            }}
-                          >
-                            <p
-                              style={{
-                                fontSize: 11.5,
-                                fontWeight: 800,
-                                color: "#64748b",
-                                textTransform: "uppercase",
-                                letterSpacing: "0.6px",
-                                padding: "12px 16px 10px",
-                                background: "#f8fafc",
-                                borderBottom: "1px solid #f1f5f9",
-                                margin: 0,
-                              }}
-                            >
-                              {sec.title}
-                            </p>
-                            {sec.rows.map((row, ri) => (
-                              <div
-                                key={ri}
-                                style={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "space-between",
-                                  padding: "13px 16px",
-                                  borderBottom: row.last
-                                    ? "none"
-                                    : "1px solid #f8fafc",
-                                  gap: 12,
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: 10,
-                                    flexShrink: 0,
-                                    minWidth: 150,
-                                  }}
-                                >
-                                  <div
-                                    style={{
-                                      width: 30,
-                                      height: 30,
-                                      borderRadius: 8,
-                                      background: row.bg,
-                                      display: "flex",
-                                      alignItems: "center",
-                                      justifyContent: "center",
-                                      flexShrink: 0,
-                                    }}
-                                  >
-                                    {row.icon}
-                                  </div>
-                                  <span
-                                    style={{
-                                      fontSize: 12.5,
-                                      fontWeight: 600,
-                                      color: "#64748b",
-                                      whiteSpace: "nowrap",
-                                    }}
-                                  >
-                                    {row.label}
-                                  </span>
-                                </div>
-                                <div
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "flex-end",
-                                    flex: 1,
-                                    textAlign: "right",
-                                  }}
-                                >
-                                  {row.val}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
+                    <option value="">Satuan</option>
+                    {SPEC_UNIT_OPTIONS.map((g) => (
+                      <optgroup key={g.group} label={g.group}>
+                        {g.units.map((u) => (
+                          <option key={u} value={u}>
+                            {u}
+                          </option>
                         ))}
-                      </div>
-                    )}
-
-                    {/* SPEC TAB */}
-                    {detailTab === "spec" && (
-                      <div>
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            marginBottom: 16,
-                          }}
-                        >
-                          <span
-                            style={{
-                              fontSize: 13,
-                              fontWeight: 700,
-                              color: "#334155",
-                            }}
-                          >
-                            Spesifikasi Teknis &amp; Tambahan
-                          </span>
-                          {!editSpecsMode ? (
-                            <button
-                              onClick={() => {
-                                setEditSpecsMode(true);
-                                // ✅ FIX: deep copy dengan spread agar tidak mutate state asli
-                                setEditSpecsData({
-                                  specs: (a.specs || []).map((s) => ({
-                                    ...s,
-                                    _unitMode: "pick",
-                                  })),
-                                  customSpecs: (a.customSpecs || []).map(
-                                    (s) => ({ ...s, _unitMode: "pick" }),
-                                  ),
-                                });
-                              }}
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 6,
-                                padding: "7px 14px",
-                                borderRadius: 10,
-                                border: "1.5px solid #bfdbfe",
-                                background: "#eff6ff",
-                                color: "#2563eb",
-                                fontSize: 12,
-                                fontWeight: 700,
-                                cursor: "pointer",
-                              }}
-                            >
-                              <Icon.Edit /> Edit Spesifikasi
-                            </button>
-                          ) : (
-                            <div style={{ display: "flex", gap: 8 }}>
-                              <button
-                                onClick={() => setEditSpecsMode(false)}
-                                style={{
-                                  padding: "7px 14px",
-                                  borderRadius: 10,
-                                  border: "1.5px solid #e2e8f0",
-                                  background: "#f1f5f9",
-                                  color: "#64748b",
-                                  fontSize: 12,
-                                  fontWeight: 700,
-                                  cursor: "pointer",
-                                }}
-                              >
-                                Batal
-                              </button>
-                              <button
-                                onClick={handleSaveSpecs}
-                                style={{
-                                  padding: "7px 14px",
-                                  borderRadius: 10,
-                                  border: "none",
-                                  background:
-                                    "linear-gradient(135deg,#2563eb,#1d4ed8)",
-                                  color: "#fff",
-                                  fontSize: 12,
-                                  fontWeight: 700,
-                                  cursor: "pointer",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 6,
-                                }}
-                              >
-                                <Icon.Save /> Simpan
-                              </button>
-                            </div>
-                          )}
-                        </div>
-
-                        {!editSpecsMode ? (
-                          <>
-                            {allSpecs.length === 0 ? (
-                              <div
-                                style={{
-                                  display: "flex",
-                                  flexDirection: "column",
-                                  alignItems: "center",
-                                  gap: 12,
-                                  padding: "56px 24px",
-                                  textAlign: "center",
-                                }}
-                              >
-                                <Icon.Cogs />
-                                <p style={{ fontSize: 13.5, color: "#94a3b8" }}>
-                                  Belum ada data spesifikasi
-                                </p>
-                              </div>
-                            ) : (
-                              <>
-                                {(a.specs || []).length > 0 && (
-                                  <>
-                                    <p
-                                      style={{
-                                        fontSize: 11,
-                                        fontWeight: 800,
-                                        color: "#64748b",
-                                        textTransform: "uppercase",
-                                        letterSpacing: "0.6px",
-                                        marginBottom: 10,
-                                      }}
-                                    >
-                                      Template Spesifikasi
-                                    </p>
-                                    <div
-                                      style={{
-                                        display: "grid",
-                                        gridTemplateColumns: "repeat(2,1fr)",
-                                        gap: 12,
-                                        marginBottom: 20,
-                                      }}
-                                    >
-                                      {(a.specs || []).map((sp, i) => {
-                                        const p =
-                                          specPalettes[i % specPalettes.length];
-                                        return (
-                                          <div
-                                            key={i}
-                                            style={{
-                                              borderRadius: 16,
-                                              padding: "18px 20px",
-                                              background: p.bg,
-                                              border: `1.5px solid ${p.border}`,
-                                              display: "flex",
-                                              flexDirection: "column",
-                                              gap: 8,
-                                            }}
-                                          >
-                                            <span
-                                              style={{
-                                                fontSize: 10.5,
-                                                fontWeight: 800,
-                                                textTransform: "uppercase",
-                                                letterSpacing: "0.8px",
-                                                color: p.label,
-                                              }}
-                                            >
-                                              {sp.spec_label}
-                                            </span>
-                                            <span
-                                              style={{
-                                                fontSize: 17,
-                                                fontWeight: 800,
-                                                letterSpacing: "-0.3px",
-                                                lineHeight: 1.2,
-                                                color: p.val,
-                                              }}
-                                            >
-                                              {sp.value}
-                                              {sp.default_unit ? (
-                                                <span
-                                                  style={{
-                                                    fontSize: 12,
-                                                    fontWeight: 600,
-                                                    marginLeft: 4,
-                                                    opacity: 0.7,
-                                                  }}
-                                                >
-                                                  {sp.default_unit}
-                                                </span>
-                                              ) : null}
-                                            </span>
-                                          </div>
-                                        );
-                                      })}
-                                    </div>
-                                  </>
-                                )}
-                                {(a.customSpecs || []).length > 0 && (
-                                  <>
-                                    <p
-                                      style={{
-                                        fontSize: 11,
-                                        fontWeight: 800,
-                                        color: "#64748b",
-                                        textTransform: "uppercase",
-                                        letterSpacing: "0.6px",
-                                        marginBottom: 10,
-                                      }}
-                                    >
-                                      Spesifikasi Tambahan
-                                    </p>
-                                    <div
-                                      style={{
-                                        display: "grid",
-                                        gridTemplateColumns: "repeat(2,1fr)",
-                                        gap: 12,
-                                      }}
-                                    >
-                                      {(a.customSpecs || []).map((sp, i) => {
-                                        const p =
-                                          specPalettes[
-                                            (i + (a.specs || []).length) %
-                                              specPalettes.length
-                                          ];
-                                        return (
-                                          <div
-                                            key={i}
-                                            style={{
-                                              borderRadius: 16,
-                                              padding: "18px 20px",
-                                              background: p.bg,
-                                              border: `1.5px dashed ${p.border}`,
-                                              display: "flex",
-                                              flexDirection: "column",
-                                              gap: 8,
-                                            }}
-                                          >
-                                            <span
-                                              style={{
-                                                fontSize: 10.5,
-                                                fontWeight: 800,
-                                                textTransform: "uppercase",
-                                                letterSpacing: "0.8px",
-                                                color: p.label,
-                                              }}
-                                            >
-                                              {sp.spec_label}
-                                            </span>
-                                            <span
-                                              style={{
-                                                fontSize: 17,
-                                                fontWeight: 800,
-                                                letterSpacing: "-0.3px",
-                                                lineHeight: 1.2,
-                                                color: p.val,
-                                              }}
-                                            >
-                                              {sp.value}
-                                              {sp.default_unit ? (
-                                                <span
-                                                  style={{
-                                                    fontSize: 12,
-                                                    fontWeight: 600,
-                                                    marginLeft: 4,
-                                                    opacity: 0.7,
-                                                  }}
-                                                >
-                                                  {sp.default_unit}
-                                                </span>
-                                              ) : null}
-                                            </span>
-                                          </div>
-                                        );
-                                      })}
-                                    </div>
-                                  </>
-                                )}
-                              </>
-                            )}
-                          </>
-                        ) : (
-                          // ✅ FIX: render EditSpecsSection sebagai komponen terpisah
-                          // dengan props editSpecsData dan setEditSpecsData
-                          <EditSpecsSection
-                            editSpecsData={editSpecsData}
-                            setEditSpecsData={setEditSpecsData}
-                          />
-                        )}
-                      </div>
-                    )}
-
-                    {/* HISTORY TAB */}
-                    {detailTab === "history" && (
-                      <div>
-                        <AssetHistoryTab
-                          assetCode={a.id}
-                          allBorrows={MOCK_ALL_BORROWS}
-                        />
-                      </div>
-                    )}
-                  </div>
-                  {/* Footer */}
-                  <div
-                    style={{
-                      padding: "14px 24px",
-                      background: "#fff",
-                      borderTop: "1px solid #f1f5f9",
-                      display: "flex",
-                      gap: 10,
-                      justifyContent: "flex-end",
-                      flexShrink: 0,
+                      </optgroup>
+                    ))}
+                    <option value="__custom__">✏ Ketik baru...</option>
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    placeholder="Satuan..."
+                    value={spec.default_unit}
+                    autoFocus
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setEditSpecsData((prev) => ({
+                        ...prev,
+                        specs: prev.specs.map((s, idx) =>
+                          idx === i ? { ...s, default_unit: val } : s,
+                        ),
+                      }));
                     }}
-                  >
-                    <button
-                      className="btn-cancel"
-                      onClick={() => {
-                        setShowDetailModal(false);
-                        setEditSpecsMode(false);
-                      }}
-                    >
-                      Tutup
-                    </button>
-                    <button
-                      className="btn-barcode"
-                      onClick={() => {
-                        setShowDetailModal(false);
-                        setShowBarcodeModal(true);
-                      }}
-                    >
-                      <Icon.Barcode /> Cetak Barcode
-                    </button>
-                    <button
-                      className="btn-save"
-                      onClick={() => openEditModal(a)}
-                    >
-                      <Icon.Edit /> Edit Aset
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          })()}
-
-        {/* DELETE CONFIRM */}
-        {showDeleteConfirm && selectedAsset && (
-          <div className="modal-overlay">
-            <div className="modal-content confirm-modal">
-              <div className="confirm-icon">
-                <Icon.Warn />
-              </div>
-              <h3>Hapus Aset?</h3>
-              <p>
-                Aset <strong>{selectedAsset.name}</strong> dengan ID{" "}
-                <code>{selectedAsset.id}</code> akan dihapus permanen.
-              </p>
-              <div className="confirm-actions">
-                <button
-                  className="btn-cancel"
-                  onClick={() => setShowDeleteConfirm(false)}
-                >
-                  Batal
-                </button>
-                <button className="btn-delete-confirm" onClick={handleDelete}>
-                  <Icon.Trash /> Ya, Hapus
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* BARCODE MODAL */}
-        {showBarcodeModal && selectedAsset && (
-          <BarcodeLabelModal
-            asset={selectedAsset}
-            onClose={() => setShowBarcodeModal(false)}
-            fmt={fmt}
-            fmtDate={fmtDate}
-          />
-        )}
-
-        {/* ── EDIT MODAL ── */}
-        {showEditModal && selectedAsset && (
-          <div
-            className="modal-overlay"
-            onClick={() => setShowEditModal(false)}
-          >
-            <div
-              className="modal-content large-modal"
-              style={{ maxWidth: 640 }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="modal-header modal-header--fancy">
-                <div className="modal-header-left">
-                  <div className="modal-header-icon">
-                    <Icon.Edit />
-                  </div>
-                  <div>
-                    <h3 className="modal-title">Edit Aset</h3>
-                    <p className="modal-subtitle">
-                      ID Aset: <strong>{selectedAsset.id}</strong> — Kode tidak
-                      dapat diubah
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setShowEditModal(false)}
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 8,
-                    border: "1.5px solid #e2e8f0",
-                    background: "#f8fafc",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "#64748b",
-                    flexShrink: 0,
-                    lineHeight: 0,
-                    fontSize: 0,
-                  }}
-                >
-                  <Icon.Times />
-                </button>
-              </div>
-              <div className="asset-form-scroll">
-                {/* SECTION A */}
-                <div className="form-section-card">
-                  <div className="fsc-header">
-                    <div className="fsc-step">A</div>
-                    <div className="fsc-titles">
-                      <h4 className="fsc-title">
-                        <Icon.Tag /> Informasi Utama
-                      </h4>
-                      <p className="fsc-desc">
-                        Nama, kategori, status, nilai, dan tanggal pengadaan
-                      </p>
-                    </div>
-                  </div>
-                  <div className="form-group" style={{ marginBottom: 14 }}>
-                    <label>
-                      Nama Aset <span className="req">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={editData.name || ""}
-                      onChange={(e) =>
-                        setEditData((p) => ({ ...p, name: e.target.value }))
-                      }
-                      placeholder="Nama aset"
-                    />
-                  </div>
-                  <div className="form-row" style={{ marginBottom: 14 }}>
-                    <div className="form-group">
-                      <label>
-                        Kategori <span className="req">*</span>
-                      </label>
-                      <select
-                        value={editData.category || ""}
-                        onChange={(e) =>
-                          setEditData((p) => ({
-                            ...p,
-                            category: e.target.value,
-                          }))
-                        }
-                      >
-                        <option value="">— Pilih Kategori —</option>
-                        <option value="IT Equipment">IT Equipment</option>
-                        <option value="Kendaraan">Kendaraan Operasional</option>
-                        <option value="Alat Berat">Alat Berat (HMC/RTG)</option>
-                        <option value="Furniture">Furniture</option>
-                      </select>
-                    </div>
-                    <div className="form-group">
-                      <label>Tanggal Pengadaan</label>
-                      <input
-                        type="date"
-                        value={editData.procurementDate || ""}
-                        onChange={(e) =>
-                          setEditData((p) => ({
-                            ...p,
-                            procurementDate: e.target.value,
-                          }))
-                        }
-                      />
-                    </div>
-                  </div>
-                  <div className="form-row-3">
-                    <div className="form-group">
-                      <label>Status</label>
-                      <select
-                        value={editData.status || "Tersedia"}
-                        onChange={(e) =>
-                          setEditData((p) => ({ ...p, status: e.target.value }))
-                        }
-                      >
-                        <option>Tersedia</option>
-                        <option>Dipinjam</option>
-                        <option>Maintenance</option>
-                      </select>
-                    </div>
-                    <div className="form-group">
-                      <label>Nilai Aset (IDR)</label>
-                      <input
-                        type="number"
-                        value={editData.value || ""}
-                        onChange={(e) =>
-                          setEditData((p) => ({ ...p, value: e.target.value }))
-                        }
-                        placeholder="0"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Nama Pekerjaan</label>
-                      <div className="cascade-selects">
-                        <div className="cascade-step">
-                          <span className="cascade-step-label">
-                            Tahun Anggaran
-                          </span>
-                          <select
-                            value={editData.thn_anggaran || ""}
-                            onChange={(e) =>
-                              setEditData((p) => ({
-                                ...p,
-                                thn_anggaran: e.target.value,
-                                kd_anggaran: "",
-                                id_pekerjaan: "",
-                              }))
-                            }
-                            className={
-                              !editData.thn_anggaran
-                                ? "inp--pending"
-                                : "cascade-select--filled"
-                            }
-                          >
-                            <option value="">— Pilih Tahun —</option>
-                            {ALL_TAHUN_LIST.map((t) => (
-                              <option key={t} value={String(t)}>
-                                {t}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        {editData.thn_anggaran &&
-                          (() => {
-                            const list = getAnggaranByTahun(
-                              editData.thn_anggaran,
-                            );
-                            const capexList = list.filter(
-                              (a) => a.jenis === "CAPEX",
-                            );
-                            const opexList = list.filter(
-                              (a) => a.jenis === "OPEX",
-                            );
-                            return (
-                              <div className="cascade-step">
-                                <span className="cascade-step-label">
-                                  Nama Anggaran
-                                </span>
-                                <select
-                                  value={editData.kd_anggaran || ""}
-                                  onChange={(e) =>
-                                    setEditData((p) => ({
-                                      ...p,
-                                      kd_anggaran: e.target.value,
-                                      id_pekerjaan: "",
-                                    }))
-                                  }
-                                  className={
-                                    !editData.kd_anggaran
-                                      ? "inp--pending"
-                                      : "cascade-select--filled"
-                                  }
-                                >
-                                  <option value="">— Pilih Anggaran —</option>
-                                  {capexList.length > 0 && (
-                                    <optgroup label="CAPEX">
-                                      {capexList.map((a) => (
-                                        <option
-                                          key={a.kd_anggaran}
-                                          value={a.kd_anggaran}
-                                        >
-                                          {a.nm_anggaran}
-                                        </option>
-                                      ))}
-                                    </optgroup>
-                                  )}
-                                  {opexList.length > 0 && (
-                                    <optgroup label="OPEX">
-                                      {opexList.map((a) => (
-                                        <option
-                                          key={a.kd_anggaran}
-                                          value={a.kd_anggaran}
-                                        >
-                                          {a.nm_anggaran}
-                                        </option>
-                                      ))}
-                                    </optgroup>
-                                  )}
-                                </select>
-                              </div>
-                            );
-                          })()}
-                        {editData.kd_anggaran &&
-                          (() => {
-                            const anggaranCapex = CAPEX_ANGGARAN.find(
-                              (a) => a.kd_anggaran === editData.kd_anggaran,
-                            );
-                            if (!anggaranCapex) return null;
-                            return (
-                              <div className="cascade-step">
-                                <span className="cascade-step-label">
-                                  Nama Pekerjaan
-                                </span>
-                                <select
-                                  value={editData.id_pekerjaan || ""}
-                                  onChange={(e) =>
-                                    setEditData((p) => ({
-                                      ...p,
-                                      id_pekerjaan: e.target.value,
-                                    }))
-                                  }
-                                  className={
-                                    !editData.id_pekerjaan
-                                      ? "inp--pending"
-                                      : "cascade-select--filled"
-                                  }
-                                >
-                                  <option value="">— Pilih Pekerjaan —</option>
-                                  {anggaranCapex.pekerjaan.map((p) => (
-                                    <option
-                                      key={p.id_pekerjaan}
-                                      value={String(p.id_pekerjaan)}
-                                    >
-                                      {p.nm_pekerjaan}
-                                    </option>
-                                  ))}
-                                </select>
-                              </div>
-                            );
-                          })()}
-                      </div>
-                    </div>
-                  </div>
-                  {editData.kd_anggaran &&
-                    (() => {
-                      const isCapex = !!CAPEX_ANGGARAN.find(
-                        (a) => a.kd_anggaran === editData.kd_anggaran,
-                      );
-                      const opexEntry = !isCapex
-                        ? OPEX_ANGGARAN.find(
-                            (o) => o.kd_anggaran === editData.kd_anggaran,
-                          )
-                        : null;
-                      if (isCapex && !editData.id_pekerjaan) return null;
-                      const anggaran = isCapex
-                        ? CAPEX_ANGGARAN.find(
-                            (a) => a.kd_anggaran === editData.kd_anggaran,
-                          )
-                        : null;
-                      return (
-                        <div className="project-info-box project-info-box--full">
-                          <Icon.Briefcase />
-                          <div style={{ flex: 1 }}>
-                            <div className="project-info-label">
-                              {isCapex
-                                ? "Pekerjaan Terpilih"
-                                : "Anggaran Terpilih"}
-                            </div>
-                            <div className="project-info-meta">
-                              <span className="pim-tag pim-tag--year">
-                                📅 {editData.thn_anggaran}
-                              </span>
-                              {isCapex ? (
-                                <>
-                                  <span className="pim-tag pim-tag--kd">
-                                    {editData.kd_anggaran}
-                                  </span>
-                                  <span className="pim-tag pim-tag--anggaran">
-                                    {anggaran?.nm_anggaran}
-                                  </span>
-                                </>
-                              ) : (
-                                <>
-                                  <span className="pim-tag pim-tag--opex">
-                                    OPEX
-                                  </span>
-                                  <span className="pim-tag pim-tag--kd">
-                                    {opexEntry?.kd_akun}
-                                  </span>
-                                </>
-                              )}
-                            </div>
-                            <div className="project-info-name">
-                              {isCapex
-                                ? getProjectName(editData.id_pekerjaan)
-                                : opexEntry?.nm_anggaran}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })()}
-                </div>
-                {/* SECTION B — Foto */}
-                <div
-                  className="form-section-card"
-                  style={{
-                    borderColor: editPhoto ? "#86efac" : undefined,
-                    background: editPhoto ? "#f0fdf4" : undefined,
-                  }}
-                >
-                  <div
-                    className="fsc-header"
-                    style={{ marginBottom: editPhoto ? 16 : 12 }}
-                  >
-                    <div className="fsc-step fsc-step--photo">B</div>
-                    <div className="fsc-titles">
-                      <h4 className="fsc-title">
-                        <Icon.PhotoSm /> Foto Aset{" "}
-                        <span className="optional-badge">Opsional</span>
-                      </h4>
-                      <p className="fsc-desc">Ganti atau hapus foto aset.</p>
-                    </div>
-                    {editPhoto && (
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 6,
-                          background: "#dcfce7",
-                          border: "1px solid #86efac",
-                          borderRadius: 8,
-                          padding: "5px 10px",
-                          fontSize: 11,
-                          fontWeight: 700,
-                          color: "#15803d",
-                          flexShrink: 0,
-                        }}
-                      >
-                        <Icon.Check /> Foto tersimpan
-                      </div>
-                    )}
-                  </div>
-                  <PhotoUpload value={editPhoto} onChange={setEditPhoto} />
-                </div>
-                {/* SECTION C — Lokasi */}
-                <div className="form-section-card form-section-card--generate">
-                  <div className="fsc-header">
-                    <div className="fsc-step fsc-step--indigo">C</div>
-                    <div className="fsc-titles">
-                      <h4 className="fsc-title">
-                        <Icon.MapPin /> Lokasi Aset
-                      </h4>
-                      <p className="fsc-desc">
-                        Perbarui lokasi aset. Kode ID tidak akan berubah.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="form-row" style={{ marginBottom: 14 }}>
-                    <div className="form-group">
-                      <label>Entitas</label>
-                      <select
-                        value={
-                          ENTITAS_LIST.find((e) => e.name === editData.entitas)
-                            ?.code || ""
-                        }
-                        onChange={(e) => {
-                          const f = ENTITAS_LIST.find(
-                            (x) => x.code === e.target.value,
-                          );
-                          setEditData((p) => ({
-                            ...p,
-                            entitas: f?.name || "",
-                          }));
-                        }}
-                      >
-                        <option value="">— Pilih Entitas —</option>
-                        {ENTITAS_LIST.map((en) => (
-                          <option key={en.code} value={en.code}>
-                            {en.code} – {en.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="form-group">
-                      <label>Cabang</label>
-                      <select
-                        value={
-                          Object.values(BRANCH_BY_ENTITY)
-                            .flat()
-                            .find((b) => b.name === editData.branch)?.code || ""
-                        }
-                        onChange={(e) => {
-                          const f = Object.values(BRANCH_BY_ENTITY)
-                            .flat()
-                            .find((b) => b.code === e.target.value);
-                          setEditData((p) => ({ ...p, branch: f?.name || "" }));
-                        }}
-                      >
-                        <option value="">— Pilih Cabang —</option>
-                        {Object.values(BRANCH_BY_ENTITY)
-                          .flat()
-                          .sort((a, b) => a.name.localeCompare(b.name))
-                          .map((b) => (
-                            <option key={b.code} value={b.code}>
-                              {b.code} – {b.name}
-                            </option>
-                          ))}
-                      </select>
-                    </div>
-                  </div>
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Zona</label>
-                      <select
-                        value={editData.zona || ""}
-                        onChange={(e) =>
-                          setEditData((p) => ({ ...p, zona: e.target.value }))
-                        }
-                      >
-                        <option value="">— Pilih Zona —</option>
-                        {ZONA_LIST.map((z) => (
-                          <option key={z.code} value={z.code}>
-                            {z.code} – {z.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="form-group">
-                      <label>Sub Zona</label>
-                      <select
-                        value={editData.subzona || ""}
-                        onChange={(e) =>
-                          setEditData((p) => ({
-                            ...p,
-                            subzona: e.target.value,
-                          }))
-                        }
-                      >
-                        <option value="">— Pilih Sub Zona —</option>
-                        {SUBZONA_LIST.map((s) => (
-                          <option key={s.code} value={s.code}>
-                            {s.code} – {s.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                  <div
-                    style={{
-                      marginTop: 14,
-                      padding: "10px 14px",
-                      background: "#fef9c3",
-                      border: "1px solid #fde047",
-                      borderRadius: 9,
-                      fontSize: 12,
-                      color: "#854d0e",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 8,
+                    onBlur={() => {
+                      if (!spec.default_unit)
+                        setEditSpecsData((prev) => ({
+                          ...prev,
+                          specs: prev.specs.map((s, idx) =>
+                            idx === i ? { ...s, _unitMode: "pick" } : s,
+                          ),
+                        }));
                     }}
-                  >
-                    <Icon.WarnSm />{" "}
-                    <span>
-                      Kode Aset <strong>{selectedAsset.id}</strong> tidak
-                      berubah meskipun lokasi diperbarui.
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <div className="modal-footer sticky-footer">
-                <button
-                  className="btn-cancel"
-                  onClick={() => setShowEditModal(false)}
-                >
-                  Batal
-                </button>
-                <button className="btn-save" onClick={handleSaveEdit}>
-                  <Icon.Save /> Simpan Perubahan
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+                    style={{
+                      ...modernInputStyle,
+                      flex: 1,
+                      background: "#f0f9ff",
+                      borderColor: "#bae6fd",
+                    }}
+                  />
+                )}
+              </TableRow>
+            ))}
 
-        {/* ── INPUT MODAL ── */}
-        {showModal && (
-          <div className="modal-overlay">
-            <div className="modal-content large-modal">
-              <div className="modal-header modal-header--fancy">
-                <div className="modal-header-left">
-                  <div className="modal-header-icon">
-                    <Icon.Database />
-                  </div>
-                  <div>
-                    <h3 className="modal-title">Input Data Aset</h3>
-                    <p className="modal-subtitle">
-                      Isi informasi aset lengkap — kode unik digenerate di akhir
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => {
-                    setShowModal(false);
-                    resetForm();
-                  }}
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 8,
-                    border: "1.5px solid #e2e8f0",
-                    background: "#f8fafc",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "#64748b",
-                    flexShrink: 0,
-                    lineHeight: 0,
-                    fontSize: 0,
-                  }}
-                >
-                  <Icon.Times />
-                </button>
-              </div>
-              <div className="form-step-bar">
-                {[
-                  "Informasi",
-                  "Foto",
-                  "Spesifikasi",
-                  "Tambahan",
-                  "Kode Aset",
-                ].map((s, i) => (
-                  <div key={s} className="form-step-item">
-                    <div className="form-step-num">
-                      {String(i + 1).padStart(2, "0")}
-                    </div>
-                    <div className="form-step-lbl">{s}</div>
-                    {i < 4 && <div className="form-step-line" />}
-                  </div>
-                ))}
-              </div>
-              <form
-                className="asset-form-scroll"
-                onSubmit={(e) => e.preventDefault()}
+            <tr>
+              <td
+                colSpan="2"
+                style={{
+                  padding: "16px",
+                  background: "#f8fafc",
+                  borderTop: "1px solid #e2e8f0",
+                  borderBottom: "1px solid #f1f5f9",
+                }}
               >
-                {/* SECTION 01 */}
-                <div className="form-section-card">
-                  <div className="fsc-header">
-                    <div className="fsc-step">01</div>
-                    <div className="fsc-titles">
-                      <h4 className="fsc-title">
-                        <Icon.Tag /> Informasi Aset
-                      </h4>
-                      <p className="fsc-desc">
-                        Nama, kategori, tanggal pengadaan, status, nilai, dan
-                        pekerjaan terkait
-                      </p>
-                    </div>
-                  </div>
-                  <div className="form-group" style={{ marginBottom: 16 }}>
-                    <label>
-                      Nama Aset <span className="req">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Contoh: CCTV Hikvision BL 01"
-                      value={formData.name}
-                      onChange={(e) =>
-                        setFormData((p) => ({ ...p, name: e.target.value }))
-                      }
-                    />
-                  </div>
-                  <div className="form-row" style={{ marginBottom: 16 }}>
-                    <div className="form-group">
-                      <label>
-                        Kategori <span className="req">*</span>
-                      </label>
-                      <select
-                        onChange={handleCategoryChange}
-                        value={formData.category}
-                      >
-                        <option value="">— Pilih Kategori —</option>
-                        <option value="IT Equipment">IT Equipment</option>
-                        <option value="Kendaraan">Kendaraan Operasional</option>
-                        <option value="Alat Berat">Alat Berat (HMC/RTG)</option>
-                        <option value="Furniture">Furniture</option>
-                      </select>
-                    </div>
-                    <div className="form-group">
-                      <label>Tanggal Pengadaan</label>
-                      <input
-                        type="date"
-                        value={formData.procurementDate}
-                        onChange={(e) =>
-                          setFormData((p) => ({
-                            ...p,
-                            procurementDate: e.target.value,
-                          }))
-                        }
-                      />
-                    </div>
-                  </div>
-                  <div className="form-row-3">
-                    <div className="form-group">
-                      <label>Status</label>
-                      <select
-                        value={formData.status}
-                        onChange={(e) =>
-                          setFormData((p) => ({ ...p, status: e.target.value }))
-                        }
-                      >
-                        <option>Tersedia</option>
-                        <option>Dipinjam</option>
-                        <option>Maintenance</option>
-                      </select>
-                    </div>
-                    <div className="form-group">
-                      <label>Nilai Aset (IDR)</label>
-                      <input
-                        type="number"
-                        placeholder="0"
-                        value={formData.value}
-                        onChange={(e) =>
-                          setFormData((p) => ({ ...p, value: e.target.value }))
-                        }
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>
-                        Nama Pekerjaan <span className="req">*</span>
-                      </label>
-                      <div className="cascade-selects">
-                        <div className="cascade-step">
-                          <span className="cascade-step-label">
-                            Tahun Anggaran
-                          </span>
-                          <select
-                            value={formData.thn_anggaran}
-                            onChange={(e) =>
-                              setFormData((p) => ({
-                                ...p,
-                                thn_anggaran: e.target.value,
-                                kd_anggaran: "",
-                                id_pekerjaan: "",
-                              }))
-                            }
-                            className={
-                              !formData.thn_anggaran
-                                ? "inp--pending"
-                                : "cascade-select--filled"
-                            }
-                          >
-                            <option value="">— Pilih Tahun —</option>
-                            {ALL_TAHUN_LIST.map((t) => (
-                              <option key={t} value={String(t)}>
-                                {t}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        {formData.thn_anggaran &&
-                          (() => {
-                            const list = getAnggaranByTahun(
-                              formData.thn_anggaran,
-                            );
-                            const capexList = list.filter(
-                              (a) => a.jenis === "CAPEX",
-                            );
-                            const opexList = list.filter(
-                              (a) => a.jenis === "OPEX",
-                            );
-                            return (
-                              <div className="cascade-step">
-                                <span className="cascade-step-label">
-                                  Nama Anggaran
-                                </span>
-                                <select
-                                  value={formData.kd_anggaran}
-                                  onChange={(e) =>
-                                    setFormData((p) => ({
-                                      ...p,
-                                      kd_anggaran: e.target.value,
-                                      id_pekerjaan: "",
-                                    }))
-                                  }
-                                  className={
-                                    !formData.kd_anggaran
-                                      ? "inp--pending"
-                                      : "cascade-select--filled"
-                                  }
-                                >
-                                  <option value="">— Pilih Anggaran —</option>
-                                  {capexList.length > 0 && (
-                                    <optgroup label="CAPEX">
-                                      {capexList.map((a) => (
-                                        <option
-                                          key={a.kd_anggaran}
-                                          value={a.kd_anggaran}
-                                        >
-                                          {a.nm_anggaran}
-                                        </option>
-                                      ))}
-                                    </optgroup>
-                                  )}
-                                  {opexList.length > 0 && (
-                                    <optgroup label="OPEX">
-                                      {opexList.map((a) => (
-                                        <option
-                                          key={a.kd_anggaran}
-                                          value={a.kd_anggaran}
-                                        >
-                                          {a.nm_anggaran}
-                                        </option>
-                                      ))}
-                                    </optgroup>
-                                  )}
-                                </select>
-                              </div>
-                            );
-                          })()}
-                        {formData.kd_anggaran &&
-                          (() => {
-                            const anggaranCapex = CAPEX_ANGGARAN.find(
-                              (a) => a.kd_anggaran === formData.kd_anggaran,
-                            );
-                            if (!anggaranCapex) return null;
-                            return (
-                              <div className="cascade-step">
-                                <span className="cascade-step-label">
-                                  Nama Pekerjaan
-                                </span>
-                                <select
-                                  value={formData.id_pekerjaan}
-                                  onChange={(e) =>
-                                    setFormData((p) => ({
-                                      ...p,
-                                      id_pekerjaan: e.target.value,
-                                    }))
-                                  }
-                                  className={
-                                    !formData.id_pekerjaan
-                                      ? "inp--pending"
-                                      : "cascade-select--filled"
-                                  }
-                                >
-                                  <option value="">— Pilih Pekerjaan —</option>
-                                  {anggaranCapex.pekerjaan.map((p) => (
-                                    <option
-                                      key={p.id_pekerjaan}
-                                      value={String(p.id_pekerjaan)}
-                                    >
-                                      {p.nm_pekerjaan}
-                                    </option>
-                                  ))}
-                                </select>
-                              </div>
-                            );
-                          })()}
-                      </div>
-                    </div>
-                  </div>
-                  {formData.kd_anggaran &&
-                    (() => {
-                      const isCapex = !!CAPEX_ANGGARAN.find(
-                        (a) => a.kd_anggaran === formData.kd_anggaran,
-                      );
-                      const opexEntry = !isCapex
-                        ? OPEX_ANGGARAN.find(
-                            (o) => o.kd_anggaran === formData.kd_anggaran,
-                          )
-                        : null;
-                      const anggaran = isCapex
-                        ? CAPEX_ANGGARAN.find(
-                            (a) => a.kd_anggaran === formData.kd_anggaran,
-                          )
-                        : null;
-                      if (isCapex && !formData.id_pekerjaan) return null;
-                      return (
-                        <div className="project-info-box project-info-box--full">
-                          <Icon.Briefcase />
-                          <div style={{ flex: 1 }}>
-                            <div className="project-info-label">
-                              {isCapex
-                                ? "Pekerjaan Terpilih"
-                                : "Anggaran Terpilih"}
-                            </div>
-                            <div className="project-info-meta">
-                              <span className="pim-tag pim-tag--year">
-                                📅 {formData.thn_anggaran}
-                              </span>
-                              {isCapex ? (
-                                <>
-                                  <span className="pim-tag pim-tag--kd">
-                                    {formData.kd_anggaran}
-                                  </span>
-                                  <span className="pim-tag pim-tag--anggaran">
-                                    {anggaran?.nm_anggaran}
-                                  </span>
-                                </>
-                              ) : (
-                                <>
-                                  <span className="pim-tag pim-tag--opex">
-                                    OPEX
-                                  </span>
-                                  <span className="pim-tag pim-tag--kd">
-                                    {opexEntry?.kd_akun}
-                                  </span>
-                                </>
-                              )}
-                            </div>
-                            <div className="project-info-name">
-                              {isCapex
-                                ? getProjectName(formData.id_pekerjaan)
-                                : opexEntry?.nm_anggaran}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })()}
-                </div>
-
-                {/* SECTION 02 — FOTO */}
                 <div
-                  className="form-section-card"
                   style={{
-                    borderColor: formPhoto ? "#86efac" : undefined,
-                    background: formPhoto ? "#f0fdf4" : undefined,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
                   }}
                 >
-                  <div
-                    className="fsc-header"
-                    style={{ marginBottom: formPhoto ? 16 : 12 }}
+                  <span
+                    style={{
+                      fontSize: "13.5px",
+                      fontWeight: "600",
+                      color: "#475569",
+                    }}
                   >
-                    <div className="fsc-step fsc-step--photo">02</div>
-                    <div className="fsc-titles">
-                      <h4 className="fsc-title">
-                        <Icon.PhotoSm /> Foto Aset{" "}
-                        <span className="optional-badge">Opsional</span>
-                      </h4>
-                      <p className="fsc-desc">
-                        Upload foto aset dalam format PNG, JPG, atau JPEG (maks.
-                        5MB)
-                      </p>
-                    </div>
-                    {formPhoto && (
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 6,
-                          background: "#dcfce7",
-                          border: "1px solid #86efac",
-                          borderRadius: 8,
-                          padding: "5px 10px",
-                          fontSize: 11,
-                          fontWeight: 700,
-                          color: "#15803d",
-                          flexShrink: 0,
-                        }}
-                      >
-                        <Icon.Check /> Foto tersimpan
-                      </div>
-                    )}
-                  </div>
-                  <PhotoUpload value={formPhoto} onChange={setFormPhoto} />
-                  {!formPhoto && formData.category && (
-                    <div
-                      style={{
-                        marginTop: 10,
-                        padding: "10px 14px",
-                        background: "#f0f9ff",
-                        border: "1px solid #bae6fd",
-                        borderRadius: 9,
-                        fontSize: 12,
-                        color: "#0369a1",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 8,
-                      }}
-                    >
-                      <Icon.InfoCircle />
-                      <span>
-                        Jika tidak diupload, foto default kategori{" "}
-                        <strong>{formData.category}</strong> akan digunakan
-                        sebagai gambar aset.
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* SECTION 03 — Spesifikasi */}
-                <div className="form-section-card form-section-card--spec">
-                  <div className="fsc-header">
-                    <div className="fsc-step fsc-step--teal">03</div>
-                    <div className="fsc-titles">
-                      <h4 className="fsc-title">
-                        <Icon.Cogs /> Spesifikasi Teknis
-                      </h4>
-                      <p className="fsc-desc">
-                        Field muncul otomatis sesuai kategori. Satuan bersifat
-                        opsional.
-                      </p>
-                    </div>
-                  </div>
-                  {!formData.category ? (
-                    <div className="spec-empty-state">
-                      <Icon.LayersIcon />
-                      <span>
-                        Pilih <strong>Kategori</strong> di section 01 untuk
-                        memuat form spesifikasi
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="form-grid-2">
-                      {templateSpecs.map((spec, i) => (
-                        <div className="form-group" key={i}>
-                          <label>{spec.spec_label}</label>
-                          <div
-                            style={{
-                              display: "flex",
-                              gap: 0,
-                              borderRadius: 10,
-                              overflow: "hidden",
-                              border: "1.5px solid var(--border)",
-                              background: "var(--white)",
-                              transition: "border-color .15s",
-                            }}
-                          >
-                            <input
-                              type={
-                                spec.input_type === "number" ? "number" : "text"
-                              }
-                              placeholder={
-                                spec.input_type === "number"
-                                  ? "0"
-                                  : `Isi nilai...`
-                              }
-                              value={spec.value}
-                              style={{
-                                flex: 1,
-                                border: "none",
-                                outline: "none",
-                                padding: "9px 12px",
-                                fontSize: 13,
-                                color: "#334155",
-                                background: "transparent",
-                                minWidth: 0,
-                              }}
-                              onChange={(e) => {
-                                const val = e.target.value;
-                                setTemplateSpecs((prev) =>
-                                  prev.map((s, idx) =>
-                                    idx === i ? { ...s, value: val } : s,
-                                  ),
-                                );
-                              }}
-                            />
-                            {spec._unitMode !== "custom" ? (
-                              <select
-                                value={spec.default_unit}
-                                title="Satuan (opsional)"
-                                onChange={(e) => {
-                                  const val = e.target.value;
-                                  setTemplateSpecs((prev) =>
-                                    prev.map((s, idx) =>
-                                      idx === i
-                                        ? {
-                                            ...s,
-                                            default_unit:
-                                              val === "__custom__" ? "" : val,
-                                            _unitMode:
-                                              val === "__custom__"
-                                                ? "custom"
-                                                : "pick",
-                                          }
-                                        : s,
-                                    ),
-                                  );
-                                }}
-                                style={{
-                                  border: "none",
-                                  borderLeft: `2px solid ${spec.default_unit ? "var(--cyan)" : "var(--border)"}`,
-                                  outline: "none",
-                                  padding: "0 10px",
-                                  fontSize: 12,
-                                  fontWeight: 700,
-                                  color: spec.default_unit
-                                    ? "#0369a1"
-                                    : "#94a3b8",
-                                  background: spec.default_unit
-                                    ? "#f0f9ff"
-                                    : "#f8fafc",
-                                  cursor: "pointer",
-                                  flexShrink: 0,
-                                  maxWidth: 110,
-                                  transition: "all .15s",
-                                }}
-                              >
-                                <option value="">Satuan</option>
-                                {SPEC_UNIT_OPTIONS.map((g) => (
-                                  <optgroup key={g.group} label={g.group}>
-                                    {g.units.map((u) => (
-                                      <option key={u} value={u}>
-                                        {u}
-                                      </option>
-                                    ))}
-                                  </optgroup>
-                                ))}
-                                <option value="__custom__">
-                                  ✏ Ketik baru...
-                                </option>
-                              </select>
-                            ) : (
-                              <input
-                                type="text"
-                                placeholder="Satuan..."
-                                value={spec.default_unit}
-                                autoFocus
-                                onChange={(e) => {
-                                  const val = e.target.value;
-                                  setTemplateSpecs((prev) =>
-                                    prev.map((s, idx) =>
-                                      idx === i
-                                        ? { ...s, default_unit: val }
-                                        : s,
-                                    ),
-                                  );
-                                }}
-                                onBlur={() => {
-                                  if (!spec.default_unit)
-                                    setTemplateSpecs((prev) =>
-                                      prev.map((s, idx) =>
-                                        idx === i
-                                          ? { ...s, _unitMode: "pick" }
-                                          : s,
-                                      ),
-                                    );
-                                }}
-                                style={{
-                                  border: "none",
-                                  borderLeft: "2px solid var(--cyan)",
-                                  outline: "none",
-                                  padding: "9px 8px",
-                                  fontSize: 12,
-                                  fontWeight: 700,
-                                  color: "#0369a1",
-                                  background: "#f0f9ff",
-                                  width: 90,
-                                  flexShrink: 0,
-                                }}
-                              />
-                            )}
-                          </div>
-                          {spec.value && (
-                            <span
-                              style={{
-                                fontSize: 11,
-                                color: "#64748b",
-                                marginTop: 2,
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 4,
-                              }}
-                            >
-                              <span style={{ color: "#16a34a" }}>✓</span>
-                              <strong style={{ color: "#0369a1" }}>
-                                {spec.value}
-                                {spec.default_unit
-                                  ? ` ${spec.default_unit}`
-                                  : ""}
-                              </strong>
-                            </span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* SECTION 04 — Tambahan */}
-                <div className="form-section-card">
-                  <div
-                    className="fsc-header"
-                    style={{ marginBottom: customSpecs.length > 0 ? 16 : 0 }}
-                  >
-                    <div className="fsc-step fsc-step--gray">04</div>
-                    <div className="fsc-titles">
-                      <h4 className="fsc-title">
-                        Spesifikasi Tambahan{" "}
-                        <span className="optional-badge">Opsional</span>
-                      </h4>
-                      <p className="fsc-desc">
-                        Tambah atribut di luar template. Satuan bersifat
-                        opsional.
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      className="btn-small-add"
-                      onClick={() =>
-                        setCustomSpecs([
-                          ...customSpecs,
+                    Atribut Tambahan
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setEditSpecsData((prev) => ({
+                        ...prev,
+                        customSpecs: [
+                          ...prev.customSpecs,
                           {
                             spec_label: "",
                             value: "",
                             default_unit: "",
-                            input_type: "text",
                             _unitMode: "pick",
                           },
-                        ])
-                      }
-                      style={{ marginLeft: "auto", flexShrink: 0 }}
-                    >
-                      <Icon.Plus /> Tambah
-                    </button>
-                  </div>
-                  {customSpecs.length === 0 && (
-                    <div className="spec-empty-state">
-                      <span className="spec-empty-icon">⚙</span>
-                      <span>
-                        Belum ada spesifikasi tambahan. Klik{" "}
-                        <strong>+ Tambah</strong> untuk menambahkan.
-                      </span>
-                    </div>
-                  )}
-                  {customSpecs.map((spec, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "1fr 1fr auto",
-                        gap: 8,
-                        alignItems: "start",
-                        padding: "10px 12px",
-                        background: "#f8fafc",
-                        border: "1.5px solid #e2e8f0",
-                        borderRadius: 10,
-                        marginBottom: 8,
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: 4,
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontSize: 10,
-                            fontWeight: 700,
-                            color: "#94a3b8",
-                            textTransform: "uppercase",
-                            letterSpacing: "0.5px",
-                          }}
-                        >
-                          Nama Atribut
-                        </span>
-                        <input
-                          type="text"
-                          placeholder="Contoh: Warna, Berat, Voltase..."
-                          value={spec.spec_label}
-                          style={{
-                            padding: "8px 10px",
-                            border: "1.5px solid #e2e8f0",
-                            borderRadius: 8,
-                            fontSize: 13,
-                            color: "#334155",
-                            background: "#fff",
-                            outline: "none",
-                            width: "100%",
-                          }}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            setCustomSpecs((prev) =>
-                              prev.map((s, idx) =>
-                                idx === i ? { ...s, spec_label: val } : s,
-                              ),
-                            );
-                          }}
-                        />
-                      </div>
-                      <div
-                        style={{
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: 4,
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontSize: 10,
-                            fontWeight: 700,
-                            color: "#94a3b8",
-                            textTransform: "uppercase",
-                            letterSpacing: "0.5px",
-                          }}
-                        >
-                          Nilai &amp; Satuan{" "}
-                          <span
-                            style={{
-                              color: "#bfdbfe",
-                              fontWeight: 500,
-                              fontSize: 9,
-                            }}
-                          >
-                            (satuan opsional)
-                          </span>
-                        </span>
-                        <div
-                          style={{
-                            display: "flex",
-                            gap: 0,
-                            borderRadius: 8,
-                            overflow: "hidden",
-                            border: "1.5px solid #e2e8f0",
-                            background: "#fff",
-                          }}
-                        >
-                          <input
-                            type="text"
-                            placeholder="Contoh: 16, Windows 11, Merah..."
-                            value={spec.value}
-                            style={{
-                              flex: 1,
-                              border: "none",
-                              outline: "none",
-                              padding: "8px 10px",
-                              fontSize: 13,
-                              color: "#334155",
-                              background: "transparent",
-                              minWidth: 0,
-                            }}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              setCustomSpecs((prev) =>
-                                prev.map((s, idx) =>
-                                  idx === i ? { ...s, value: val } : s,
-                                ),
-                              );
-                            }}
-                          />
-                          {spec._unitMode !== "custom" ? (
-                            <select
-                              value={spec.default_unit}
-                              onChange={(e) => {
-                                const val = e.target.value;
-                                setCustomSpecs((prev) =>
-                                  prev.map((s, idx) =>
-                                    idx === i
-                                      ? {
-                                          ...s,
-                                          default_unit:
-                                            val === "__custom__" ? "" : val,
-                                          _unitMode:
-                                            val === "__custom__"
-                                              ? "custom"
-                                              : "pick",
-                                        }
-                                      : s,
-                                  ),
-                                );
-                              }}
-                              style={{
-                                border: "none",
-                                borderLeft: `2px solid ${spec.default_unit ? "var(--cyan)" : "#e2e8f0"}`,
-                                outline: "none",
-                                padding: "0 8px",
-                                fontSize: 11,
-                                fontWeight: 700,
-                                color: spec.default_unit
-                                  ? "#0369a1"
-                                  : "#94a3b8",
-                                background: spec.default_unit
-                                  ? "#f0f9ff"
-                                  : "#f8fafc",
-                                cursor: "pointer",
-                                flexShrink: 0,
-                                maxWidth: 100,
-                              }}
-                            >
-                              <option value="">Satuan</option>
-                              {SPEC_UNIT_OPTIONS.map((g) => (
-                                <optgroup key={g.group} label={g.group}>
-                                  {g.units.map((u) => (
-                                    <option key={u} value={u}>
-                                      {u}
-                                    </option>
-                                  ))}
-                                </optgroup>
-                              ))}
-                              <option value="__custom__">
-                                ✏ Ketik baru...
-                              </option>
-                            </select>
-                          ) : (
-                            <input
-                              type="text"
-                              placeholder="Satuan..."
-                              value={spec.default_unit}
-                              autoFocus
-                              onChange={(e) => {
-                                const val = e.target.value;
-                                setCustomSpecs((prev) =>
-                                  prev.map((s, idx) =>
-                                    idx === i ? { ...s, default_unit: val } : s,
-                                  ),
-                                );
-                              }}
-                              onBlur={() => {
-                                if (!spec.default_unit)
-                                  setCustomSpecs((prev) =>
-                                    prev.map((s, idx) =>
-                                      idx === i
-                                        ? { ...s, _unitMode: "pick" }
-                                        : s,
-                                    ),
-                                  );
-                              }}
-                              style={{
-                                border: "none",
-                                borderLeft: "1.5px solid var(--cyan)",
-                                outline: "none",
-                                padding: "8px 8px",
-                                fontSize: 11,
-                                fontWeight: 700,
-                                color: "#0369a1",
-                                background: "#f0f9ff",
-                                width: 80,
-                                flexShrink: 0,
-                              }}
-                            />
-                          )}
-                        </div>
-                        {spec.value && (
-                          <span
-                            style={{
-                              fontSize: 11,
-                              color: "#64748b",
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 4,
-                            }}
-                          >
-                            <span style={{ color: "#16a34a" }}>✓</span>{" "}
-                            <strong style={{ color: "#0369a1" }}>
-                              {spec.value}
-                              {spec.default_unit ? ` ${spec.default_unit}` : ""}
-                            </strong>
-                          </span>
-                        )}
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const n = [...customSpecs];
-                          n.splice(i, 1);
-                          setCustomSpecs(n);
-                        }}
-                        title="Hapus"
-                        style={{
-                          marginTop: 22,
-                          width: 36,
-                          height: 36,
-                          borderRadius: 8,
-                          border: "1.5px solid #fecaca",
-                          background: "#fef2f2",
-                          color: "#dc2626",
-                          cursor: "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          flexShrink: 0,
-                          lineHeight: 0,
-                          fontSize: 0,
-                        }}
-                      >
-                        <Icon.SmallTrash />
-                      </button>
-                    </div>
-                  ))}
+                        ],
+                      }))
+                    }
+                    style={{
+                      padding: "6px 12px",
+                      borderRadius: "8px",
+                      background: "#eff6ff",
+                      color: "#2563eb",
+                      border: "1px solid #bfdbfe",
+                      fontSize: "12px",
+                      fontWeight: "bold",
+                      cursor: "pointer",
+                    }}
+                  >
+                    + Tambah Atribut
+                  </button>
                 </div>
+              </td>
+            </tr>
+            {editSpecsData.customSpecs.map((spec, i) => (
+              <TableRow
+                key={`custom-${i}`}
+                alignTop
+                label={
+                  <input
+                    type="text"
+                    placeholder="Nama Atribut"
+                    value={spec.spec_label}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setEditSpecsData((prev) => ({
+                        ...prev,
+                        customSpecs: prev.customSpecs.map((s, idx) =>
+                          idx === i ? { ...s, spec_label: val } : s,
+                        ),
+                      }));
+                    }}
+                    style={{
+                      ...modernInputStyle,
+                      background: "#fff",
+                      border: "1px dashed #cbd5e1",
+                      padding: "6px 10px",
+                    }}
+                  />
+                }
+              >
+                <input
+                  type="text"
+                  placeholder="Nilai..."
+                  value={spec.value}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setEditSpecsData((prev) => ({
+                      ...prev,
+                      customSpecs: prev.customSpecs.map((s, idx) =>
+                        idx === i ? { ...s, value: val } : s,
+                      ),
+                    }));
+                  }}
+                  style={{ ...modernInputStyle, flex: 2 }}
+                />
 
-                {/* SECTION 05 — Kode Aset */}
-                <div
-                  className={`form-section-card form-section-card--generate ${formData.assetId ? "form-section-card--done" : ""}`}
-                >
-                  <div className="fsc-header">
-                    <div className="fsc-step fsc-step--indigo">05</div>
-                    <div className="fsc-titles">
-                      <h4 className="fsc-title">
-                        <Icon.MapPin /> Lokasi &amp; Kode Aset
-                      </h4>
-                      <p className="fsc-desc">
-                        Pilih lokasi aset — kode unik akan digenerate dari
-                        kombinasi data ini
-                      </p>
-                    </div>
-                  </div>
-                  <div className="form-row" style={{ marginBottom: 14 }}>
-                    <div className="form-group">
-                      <label>
-                        Entitas <span className="req">*</span>
-                      </label>
-                      <select
-                        value={formData.entitasCode}
-                        onChange={handleEntitasChange}
-                        className={!formData.entitasCode ? "inp--pending" : ""}
-                      >
-                        <option value="">— Pilih Entitas —</option>
-                        {ENTITAS_LIST.map((en) => (
-                          <option key={en.code} value={en.code}>
-                            {en.code} – {en.name}
+                {spec._unitMode !== "custom" ? (
+                  <select
+                    value={spec.default_unit}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setEditSpecsData((prev) => ({
+                        ...prev,
+                        customSpecs: prev.customSpecs.map((s, idx) =>
+                          idx === i
+                            ? {
+                                ...s,
+                                default_unit: val === "__custom__" ? "" : val,
+                                _unitMode:
+                                  val === "__custom__" ? "custom" : "pick",
+                              }
+                            : s,
+                        ),
+                      }));
+                    }}
+                    style={{
+                      ...modernSelectStyle,
+                      flex: 1,
+                      background: "#f8fafc",
+                    }}
+                  >
+                    <option value="">Satuan</option>
+                    {SPEC_UNIT_OPTIONS.map((g) => (
+                      <optgroup key={g.group} label={g.group}>
+                        {g.units.map((u) => (
+                          <option key={u} value={u}>
+                            {u}
                           </option>
                         ))}
-                      </select>
-                    </div>
-                    <div className="form-group">
-                      <label>
-                        Cabang <span className="req">*</span>
-                      </label>
-                      <select
-                        value={formData.branchCode}
-                        onChange={handleBranchChange}
-                        disabled={!formData.entitasCode}
-                        className={
-                          !formData.entitasCode
-                            ? "inp--disabled"
-                            : !formData.branchCode
-                              ? "inp--pending"
-                              : ""
-                        }
-                      >
-                        <option value="">— Pilih Cabang —</option>
-                        {availableBranches.map((b) => (
-                          <option key={b.code} value={b.code}>
-                            {b.code} – {b.name}
-                          </option>
-                        ))}
-                      </select>
-                      {!formData.entitasCode && (
-                        <span className="field-hint fh--warn">
-                          Pilih entitas terlebih dahulu
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="form-row" style={{ marginBottom: 14 }}>
-                    <div className="form-group">
-                      <label>
-                        Zona <span className="req">*</span>
-                      </label>
-                      <select
-                        value={formData.zonaCode}
-                        onChange={handleZonaChange}
-                        className={!formData.zonaCode ? "inp--pending" : ""}
-                      >
-                        <option value="">— Pilih Zona —</option>
-                        {ZONA_LIST.map((z) => (
-                          <option key={z.code} value={z.code}>
-                            {z.code} – {z.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="form-group">
-                      <label>
-                        Sub Zona <span className="req">*</span>
-                      </label>
-                      <select
-                        value={formData.subzonaCode}
-                        onChange={handleSubzonaChange}
-                        className={!formData.subzonaCode ? "inp--pending" : ""}
-                      >
-                        <option value="">— Pilih Sub Zona —</option>
-                        {SUBZONA_LIST.map((s) => (
-                          <option key={s.code} value={s.code}>
-                            {s.code} – {s.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                  {canGenerate && (
-                    <div className="nomor-auto-box">
-                      <div className="nomor-auto-left">
-                        <div className="nomor-auto-label">
-                          <span
-                            style={{
-                              marginRight: 6,
-                              opacity: 0.6,
-                              display: "flex",
-                            }}
-                          >
-                            <Icon.DatabaseSm />
-                          </span>
-                          Nomor Aset (Auto)
-                        </div>
-                        <div className="nomor-auto-value">{autoNomor}</div>
-                        <div className="nomor-auto-hint">
-                          Dihitung otomatis berdasarkan jumlah aset terdaftar di
-                          lokasi ini.
-                        </div>
-                      </div>
-                      <div className="nomor-auto-badge">
-                        <Icon.CheckSm />
-                        <span>Auto</span>
-                      </div>
-                    </div>
-                  )}
-                  <div className="generate-divider">
-                    <span>Generate Kode Aset</span>
-                  </div>
-                  {codePreview && (
-                    <div className="code-segments">
-                      {codePreview.split("-").map((seg, i, arr) => (
-                        <React.Fragment key={i}>
-                          <span className="code-seg">{seg}</span>
-                          {i < arr.length - 1 && (
-                            <span className="code-sep">·</span>
-                          )}
-                        </React.Fragment>
-                      ))}
-                      {!formData.assetId && (
-                        <span className="code-seg-note">← preview</span>
-                      )}
-                    </div>
-                  )}
-                  <div className="input-group-generate">
-                    <input
-                      type="text"
-                      readOnly
-                      value={formData.assetId}
-                      placeholder="Lengkapi semua field di atas, lalu klik Generate"
-                      className="input-code"
-                    />
-                    <button
-                      type="button"
-                      className={`btn-generate ${!canGenerate ? "btn-generate--off" : ""}`}
-                      onClick={handleGenerateCode}
-                      disabled={!canGenerate}
-                    >
-                      <Icon.Magic /> Generate Kode
-                    </button>
-                  </div>
-                  {!canGenerate && missingFields.length > 0 && (
-                    <div className="missing-row">
-                      <span className="missing-label">Belum diisi:</span>
-                      {missingFields.map((f) => (
-                        <span key={f} className="missing-pill">
-                          {f}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                  {formData.assetId && (
-                    <div className="barcode-result">
-                      <div className="barcode-result-header">
-                        <span className="barcode-result-icon">
-                          <Icon.Check />
-                        </span>
-                        <span>
-                          Kode berhasil digenerate — barcode Code128 siap untuk
-                          dicetak
-                        </span>
-                      </div>
-                      <div className="barcode-result-canvas">
-                        <BarcodeCanvas
-                          value={formData.assetId}
-                          width={560}
-                          height={60}
-                        />
-                        <div className="barcode-result-id">
-                          {formData.assetId}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </form>
-              <div className="modal-footer sticky-footer">
+                      </optgroup>
+                    ))}
+                    <option value="__custom__">✏ Ketik baru...</option>
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    placeholder="Satuan..."
+                    value={spec.default_unit}
+                    autoFocus
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setEditSpecsData((prev) => ({
+                        ...prev,
+                        customSpecs: prev.customSpecs.map((s, idx) =>
+                          idx === i ? { ...s, default_unit: val } : s,
+                        ),
+                      }));
+                    }}
+                    onBlur={() => {
+                      if (!spec.default_unit)
+                        setEditSpecsData((prev) => ({
+                          ...prev,
+                          customSpecs: prev.customSpecs.map((s, idx) =>
+                            idx === i ? { ...s, _unitMode: "pick" } : s,
+                          ),
+                        }));
+                    }}
+                    style={{
+                      ...modernInputStyle,
+                      flex: 1,
+                      background: "#f0f9ff",
+                      borderColor: "#bae6fd",
+                    }}
+                  />
+                )}
                 <button
                   type="button"
-                  className="btn-cancel"
                   onClick={() => {
-                    setShowModal(false);
-                    resetForm();
+                    const n = [...editSpecsData.customSpecs];
+                    n.splice(i, 1);
+                    setEditSpecsData((prev) => ({ ...prev, customSpecs: n }));
+                  }}
+                  style={{
+                    width: "34px",
+                    height: "34px",
+                    borderRadius: "8px",
+                    background: "#fef2f2",
+                    border: "1px solid #fecaca",
+                    color: "#dc2626",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
                   }}
                 >
-                  Batal
+                  <Icon.Trash />
                 </button>
-                <button type="button" className="btn-save" onClick={handleSave}>
-                  <Icon.Save /> Simpan Data
-                </button>
-              </div>
-            </div>
+              </TableRow>
+            ))}
+          </ModernTable>
+
+          <h3
+            style={{
+              fontSize: "15px",
+              color: "#0f172a",
+              marginBottom: "10px",
+              marginTop: "24px",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            <Icon.MapPin /> Lokasi Aset
+          </h3>
+          <ModernTable>
+            <TableRow label="Entitas">
+              <span
+                style={{
+                  fontSize: "14px",
+                  color: "#334155",
+                  fontWeight: "500",
+                }}
+              >
+                {editData.entitas}
+              </span>
+            </TableRow>
+            <TableRow label="Cabang">
+              <span
+                style={{
+                  fontSize: "14px",
+                  color: "#334155",
+                  fontWeight: "500",
+                }}
+              >
+                {editData.branch}
+              </span>
+            </TableRow>
+            <TableRow label="Zona" required>
+              <select
+                value={editData.zona || ""}
+                onChange={(e) =>
+                  setEditData((p) => ({ ...p, zona: e.target.value }))
+                }
+                style={modernSelectStyle}
+              >
+                <option value="">— Pilih Zona —</option>
+                {ZONA_LIST.map((z) => (
+                  <option key={z.code} value={z.code}>
+                    {z.code} – {z.name}
+                  </option>
+                ))}
+              </select>
+            </TableRow>
+            <TableRow label="Sub Zona" required>
+              <select
+                value={editData.subzona || ""}
+                onChange={(e) =>
+                  setEditData((p) => ({ ...p, subzona: e.target.value }))
+                }
+                style={modernSelectStyle}
+              >
+                <option value="">— Pilih Sub Zona —</option>
+                {SUBZONA_LIST.map((s) => (
+                  <option key={s.code} value={s.code}>
+                    {s.code} – {s.name}
+                  </option>
+                ))}
+              </select>
+            </TableRow>
+          </ModernTable>
+        </div>
+      </PageWrapper>
+    );
+  };
+
+  // ── RENDER DETAIL PAGE ──────────────────────────────────────────
+  const renderDetailPage = () => {
+    const a = selectedAsset;
+    if (!a) return null;
+
+    const proj = getProjectById(a.id_pekerjaan);
+    const isOpexProj = proj?.jenis === "OPEX";
+    const history = MOCK_ALL_BORROWS.filter((b) => b.code === a.id).sort(
+      (x, y) => new Date(y.borrow_date) - new Date(x.borrow_date),
+    );
+
+    return (
+      <PageWrapper
+        title="Detail Aset"
+        onBack={() => setCurrentView("list")}
+        actions={
+          <div style={{ display: "flex", gap: "12px" }}>
+            <button
+              onClick={() => setCurrentView("barcode")}
+              style={{
+                padding: "8px 16px",
+                background: "#fff",
+                border: "1.5px solid #e2e8f0",
+                borderRadius: "10px",
+                fontSize: "13px",
+                fontWeight: "700",
+                color: "#475569",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                transition: "all 0.2s",
+              }}
+            >
+              <Icon.Barcode /> Cetak Barcode
+            </button>
+            <button
+              onClick={() => openEditPage(a)}
+              style={{
+                padding: "8px 16px",
+                background: "#2563eb",
+                border: "none",
+                borderRadius: "10px",
+                fontSize: "13px",
+                fontWeight: "700",
+                color: "#fff",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                transition: "all 0.2s",
+              }}
+            >
+              <Icon.Edit /> Edit Aset
+            </button>
+          </div>
+        }
+      >
+        {/* TABS NATIVE */}
+        <div
+          style={{
+            display: "flex",
+            borderBottom: "2px solid #f1f5f9",
+            marginBottom: "24px",
+          }}
+        >
+          {[
+            {
+              key: "info",
+              label: "Informasi Utama",
+              icon: <Icon.InfoCircle />,
+            },
+            {
+              key: "spec",
+              label: `Spesifikasi (${(a.specs || []).length + (a.customSpecs || []).length})`,
+              icon: <Icon.Cogs />,
+            },
+            {
+              key: "history",
+              label: `Riwayat Pinjam (${history.length})`,
+              icon: <Icon.History />,
+            },
+          ].map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setDetailTab(t.key)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "10px 20px",
+                background: "transparent",
+                border: "none",
+                fontSize: "13.5px",
+                fontWeight: detailTab === t.key ? "700" : "600",
+                color: detailTab === t.key ? "#2563eb" : "#64748b",
+                cursor: "pointer",
+                borderBottom:
+                  detailTab === t.key
+                    ? "2px solid #2563eb"
+                    : "2px solid transparent",
+                marginBottom: "-2px",
+                transition: "all 0.2s ease",
+              }}
+            >
+              {t.icon} {t.label}
+            </button>
+          ))}
+        </div>
+
+        {detailTab === "info" && (
+          <div style={{ maxWidth: "900px" }}>
+            <h3
+              style={{
+                fontSize: "15px",
+                color: "#0f172a",
+                marginBottom: "10px",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+              }}
+            >
+              <Icon.Tag /> Identitas & Status
+            </h3>
+            <ModernTable>
+              <TableRow label="ID Aset">
+                <code
+                  style={{
+                    padding: "4px 8px",
+                    background: "#f1f5f9",
+                    borderRadius: "6px",
+                    fontSize: "13px",
+                    fontWeight: "bold",
+                  }}
+                >
+                  {a.id}
+                </code>
+              </TableRow>
+              <TableRow label="Nama Aset">
+                <span
+                  style={{
+                    fontSize: "15px",
+                    fontWeight: "700",
+                    color: "#0f172a",
+                  }}
+                >
+                  {a.name}
+                </span>
+              </TableRow>
+              <TableRow label="Foto Aset" alignTop>
+                {getAssetImage(a) ? (
+                  <img
+                    src={getAssetImage(a)}
+                    alt={a.name}
+                    style={{
+                      width: "140px",
+                      height: "100px",
+                      objectFit: "cover",
+                      borderRadius: "8px",
+                      border: "1px solid #e2e8f0",
+                    }}
+                  />
+                ) : (
+                  <span style={{ fontSize: "13px", color: "#94a3b8" }}>
+                    Tidak ada foto
+                  </span>
+                )}
+              </TableRow>
+              <TableRow label="Kategori">
+                <span className="cat-badge" style={{ margin: 0 }}>
+                  {a.category}
+                </span>
+              </TableRow>
+              <TableRow label="Status">
+                <span className={`status-badge ${statusClass(a.status)}`}>
+                  {a.status}
+                </span>
+              </TableRow>
+            </ModernTable>
+
+            <h3
+              style={{
+                fontSize: "15px",
+                color: "#0f172a",
+                marginBottom: "10px",
+                marginTop: "24px",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+              }}
+            >
+              <Icon.MapPin /> Lokasi & Administrasi
+            </h3>
+            <ModernTable>
+              <TableRow label="Entitas">
+                <span style={{ fontSize: "14px", color: "#334155" }}>
+                  {a.entitas}
+                </span>
+              </TableRow>
+              <TableRow label="Cabang / Lokasi">
+                <span
+                  style={{
+                    fontSize: "14px",
+                    color: "#334155",
+                    fontWeight: "600",
+                  }}
+                >
+                  {a.branch}
+                </span>{" "}
+                <span
+                  style={{
+                    color: "#94a3b8",
+                    fontSize: "13px",
+                    marginLeft: "6px",
+                  }}
+                >
+                  {" "}
+                  (Zona: {a.zona} · Sub: {a.subzona})
+                </span>
+              </TableRow>
+              <TableRow label="Tanggal Pengadaan">
+                <span style={{ fontSize: "14px", color: "#334155" }}>
+                  {fmtDate(a.procurementDate)}
+                </span>
+              </TableRow>
+              <TableRow label="Nilai Aset">
+                <span
+                  style={{
+                    fontSize: "15px",
+                    fontWeight: "800",
+                    color: "#16a34a",
+                  }}
+                >
+                  {fmt(a.value)}
+                </span>
+              </TableRow>
+              <TableRow label="Tipe Anggaran">
+                <span
+                  style={{
+                    padding: "4px 8px",
+                    background: isOpexProj ? "#ede9fe" : "#dbeafe",
+                    color: isOpexProj ? "#7c3aed" : "#1d4ed8",
+                    borderRadius: "6px",
+                    fontSize: "12px",
+                    fontWeight: "bold",
+                  }}
+                >
+                  {isOpexProj ? "OPEX" : "CAPEX"}
+                </span>
+              </TableRow>
+              <TableRow label="Pekerjaan Terkait">
+                <span
+                  style={{
+                    fontSize: "13.5px",
+                    color: "#334155",
+                    lineHeight: "1.5",
+                  }}
+                >
+                  {proj ? proj.nm_pekerjaan : "—"}
+                </span>
+              </TableRow>
+            </ModernTable>
           </div>
         )}
-      </div>
+
+        {detailTab === "spec" && (
+          <div style={{ maxWidth: "900px" }}>
+            <h3
+              style={{
+                fontSize: "15px",
+                color: "#0f172a",
+                marginBottom: "10px",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+              }}
+            >
+              <Icon.Cogs /> Spesifikasi Utama
+            </h3>
+            <ModernTable>
+              {!a.specs || a.specs.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan="2"
+                    style={{
+                      padding: "16px",
+                      color: "#94a3b8",
+                      fontSize: "13.5px",
+                    }}
+                  >
+                    Tidak ada data spesifikasi.
+                  </td>
+                </tr>
+              ) : (
+                (a.specs || []).map((s, idx) => (
+                  <TableRow key={idx} label={s.spec_label}>
+                    <span
+                      style={{
+                        fontSize: "14px",
+                        color: "#0f172a",
+                        fontWeight: "600",
+                      }}
+                    >
+                      {s.value}{" "}
+                      <span style={{ color: "#64748b", fontWeight: "normal" }}>
+                        {s.default_unit}
+                      </span>
+                    </span>
+                  </TableRow>
+                ))
+              )}
+            </ModernTable>
+
+            <h3
+              style={{
+                fontSize: "15px",
+                color: "#0f172a",
+                marginBottom: "10px",
+                marginTop: "24px",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+              }}
+            >
+              <Icon.LayersIcon /> Atribut Tambahan
+            </h3>
+            <ModernTable>
+              {!a.customSpecs || a.customSpecs.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan="2"
+                    style={{
+                      padding: "16px",
+                      color: "#94a3b8",
+                      fontSize: "13.5px",
+                    }}
+                  >
+                    Tidak ada data atribut tambahan.
+                  </td>
+                </tr>
+              ) : (
+                (a.customSpecs || []).map((s, idx) => (
+                  <TableRow key={idx} label={s.spec_label}>
+                    <span
+                      style={{
+                        fontSize: "14px",
+                        color: "#0f172a",
+                        fontWeight: "600",
+                      }}
+                    >
+                      {s.value}{" "}
+                      <span style={{ color: "#64748b", fontWeight: "normal" }}>
+                        {s.default_unit}
+                      </span>
+                    </span>
+                  </TableRow>
+                ))
+              )}
+            </ModernTable>
+          </div>
+        )}
+
+        {detailTab === "history" && (
+          <div>
+            <AssetHistoryTab assetCode={a.id} allBorrows={MOCK_ALL_BORROWS} />
+          </div>
+        )}
+      </PageWrapper>
+    );
+  };
+
+  // ── RENDER DELETE CONFIRMATION PAGE ─────────────────────────────
+  const renderDeletePage = () => {
+    return (
+      <PageWrapper title="Hapus Aset" onBack={() => setCurrentView("list")}>
+        <div
+          style={{
+            maxWidth: "600px",
+            margin: "0 auto",
+            textAlign: "center",
+            padding: "40px 0",
+          }}
+        >
+          <div
+            style={{
+              display: "inline-flex",
+              width: "80px",
+              height: "80px",
+              borderRadius: "50%",
+              background: "#fef2f2",
+              color: "#ef4444",
+              alignItems: "center",
+              justifyContent: "center",
+              marginBottom: "24px",
+            }}
+          >
+            <Icon.Warn />
+          </div>
+          <h2
+            style={{ fontSize: "24px", color: "#0f172a", marginBottom: "16px" }}
+          >
+            Konfirmasi Penghapusan
+          </h2>
+          <p
+            style={{
+              fontSize: "15px",
+              color: "#64748b",
+              lineHeight: "1.6",
+              marginBottom: "32px",
+            }}
+          >
+            Anda yakin ingin menghapus aset secara permanen? Data riwayat,
+            spesifikasi, dan barcode aset ini juga akan ikut terhapus dan tidak
+            dapat dikembalikan.
+          </p>
+
+          <ModernTable>
+            <TableRow label="ID Aset">
+              <code style={{ fontWeight: "bold" }}>{selectedAsset.id}</code>
+            </TableRow>
+            <TableRow label="Nama Aset">
+              <span style={{ fontWeight: "bold" }}>{selectedAsset.name}</span>
+            </TableRow>
+            <TableRow label="Lokasi">
+              <span>
+                {selectedAsset.branch} ({selectedAsset.zona})
+              </span>
+            </TableRow>
+          </ModernTable>
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: "16px",
+              marginTop: "24px",
+            }}
+          >
+            <button
+              onClick={() => setCurrentView("list")}
+              style={{
+                padding: "10px 20px",
+                borderRadius: "10px",
+                fontSize: "14px",
+                fontWeight: "bold",
+                background: "#fff",
+                border: "1.5px solid #cbd5e1",
+                color: "#475569",
+                cursor: "pointer",
+              }}
+            >
+              Batal
+            </button>
+            <button
+              onClick={handleDelete}
+              style={{
+                padding: "10px 20px",
+                borderRadius: "10px",
+                fontSize: "14px",
+                fontWeight: "bold",
+                background: "#ef4444",
+                border: "none",
+                color: "#fff",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+              }}
+            >
+              <Icon.Trash /> Ya, Hapus Aset
+            </button>
+          </div>
+        </div>
+      </PageWrapper>
+    );
+  };
+
+  // ── RENDER BARCODE PAGE ─────────────────────────────────────────
+  const renderBarcodePage = () => {
+    return (
+      <PageWrapper
+        title="Cetak Barcode Aset"
+        onBack={() => setCurrentView("list")}
+      >
+        <div
+          style={{
+            maxWidth: "900px",
+            margin: "0 auto",
+            display: "flex",
+            gap: "40px",
+            alignItems: "flex-start",
+            flexWrap: "wrap",
+          }}
+        >
+          <div style={{ flex: 1, minWidth: "300px" }}>
+            <h3
+              style={{
+                fontSize: "15px",
+                color: "#0f172a",
+                marginBottom: "10px",
+                marginTop: 0,
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+              }}
+            >
+              <Icon.InfoCircle /> Informasi Label
+            </h3>
+            <ModernTable>
+              <TableRow label="ID Aset">
+                <code>{selectedAsset.id}</code>
+              </TableRow>
+              <TableRow label="Nama Aset">
+                <strong>{selectedAsset.name}</strong>
+              </TableRow>
+              <TableRow label="Kategori">{selectedAsset.category}</TableRow>
+              <TableRow label="Entitas">
+                {selectedAsset.entitas || "—"}
+              </TableRow>
+              <TableRow label="Lokasi">
+                {selectedAsset.branch} · {selectedAsset.zona}/
+                {selectedAsset.subzona}
+              </TableRow>
+              <TableRow label="Tgl Pengadaan">
+                {fmtDate(selectedAsset.procurementDate)}
+              </TableRow>
+            </ModernTable>
+
+            <button
+              onClick={handlePrintBarcode}
+              style={{
+                padding: "12px 24px",
+                background: "#2563eb",
+                border: "none",
+                borderRadius: "10px",
+                fontSize: "14px",
+                fontWeight: "700",
+                color: "#fff",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                marginTop: "16px",
+              }}
+            >
+              <Icon.Print /> Cetak Label Barcode
+            </button>
+          </div>
+
+          <div style={{ width: "380px", flexShrink: 0 }}>
+            <h3
+              style={{
+                fontSize: "15px",
+                color: "#0f172a",
+                marginBottom: "10px",
+                marginTop: 0,
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+              }}
+            >
+              <Icon.Eye /> Preview Barcode
+            </h3>
+            <div
+              style={{
+                width: "100%",
+                background: "#fff",
+                border: "2.5px solid #111",
+                borderRadius: "10px",
+                padding: "18px 20px",
+                boxShadow: "0 4px 20px rgba(0,0,0,.08)",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                  borderBottom: "1.5px solid #111",
+                  paddingBottom: "10px",
+                  marginBottom: "10px",
+                }}
+              >
+                <div>
+                  <div
+                    style={{
+                      fontSize: "16px",
+                      fontWeight: "900",
+                      letterSpacing: "3px",
+                      color: "#000",
+                    }}
+                  >
+                    PELINDO
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "8px",
+                      fontWeight: "700",
+                      color: "#555",
+                      letterSpacing: "1.5px",
+                      marginTop: "2px",
+                    }}
+                  >
+                    ASSET MANAGEMENT SYSTEM
+                  </div>
+                </div>
+                <span
+                  style={{
+                    border: "1.5px solid #000",
+                    borderRadius: "4px",
+                    padding: "3px 8px",
+                    fontSize: "8px",
+                    fontWeight: "900",
+                    letterSpacing: "1px",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  {selectedAsset.status}
+                </span>
+              </div>
+              <div
+                style={{
+                  fontSize: "14px",
+                  fontWeight: "800",
+                  margin: "8px 0 3px",
+                  color: "#000",
+                  fontFamily: "sans-serif",
+                }}
+              >
+                {selectedAsset.name}
+              </div>
+              <div
+                style={{
+                  fontSize: "10px",
+                  fontWeight: "700",
+                  color: "#444",
+                  letterSpacing: ".5px",
+                  marginBottom: "10px",
+                }}
+              >
+                {selectedAsset.id}
+              </div>
+
+              <div
+                style={{
+                  textAlign: "center",
+                  borderTop: "1px dashed #ddd",
+                  borderBottom: "1px dashed #ddd",
+                  padding: "6px 0",
+                  margin: "8px 0",
+                }}
+              >
+                <BarcodeCanvas
+                  value={selectedAsset.id}
+                  width={310}
+                  height={58}
+                />
+              </div>
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "6px",
+                  marginTop: "10px",
+                  borderTop: "1px solid #eee",
+                  paddingTop: "8px",
+                }}
+              >
+                <div>
+                  <span
+                    style={{
+                      display: "block",
+                      fontSize: "7.5px",
+                      color: "#888",
+                      textTransform: "uppercase",
+                      letterSpacing: ".4px",
+                    }}
+                  >
+                    Entitas
+                  </span>
+                  <span
+                    style={{
+                      fontSize: "9.5px",
+                      fontWeight: "700",
+                      color: "#111",
+                    }}
+                  >
+                    {selectedAsset.entitas || "—"}
+                  </span>
+                </div>
+                <div>
+                  <span
+                    style={{
+                      display: "block",
+                      fontSize: "7.5px",
+                      color: "#888",
+                      textTransform: "uppercase",
+                      letterSpacing: ".4px",
+                    }}
+                  >
+                    Cabang
+                  </span>
+                  <span
+                    style={{
+                      fontSize: "9.5px",
+                      fontWeight: "700",
+                      color: "#111",
+                    }}
+                  >
+                    {selectedAsset.branch}
+                  </span>
+                </div>
+                <div>
+                  <span
+                    style={{
+                      display: "block",
+                      fontSize: "7.5px",
+                      color: "#888",
+                      textTransform: "uppercase",
+                      letterSpacing: ".4px",
+                    }}
+                  >
+                    Zona · Subzona
+                  </span>
+                  <span
+                    style={{
+                      fontSize: "9.5px",
+                      fontWeight: "700",
+                      color: "#111",
+                    }}
+                  >
+                    {selectedAsset.zona} · {selectedAsset.subzona}
+                  </span>
+                </div>
+                <div>
+                  <span
+                    style={{
+                      display: "block",
+                      fontSize: "7.5px",
+                      color: "#888",
+                      textTransform: "uppercase",
+                      letterSpacing: ".4px",
+                    }}
+                  >
+                    Kategori
+                  </span>
+                  <span
+                    style={{
+                      fontSize: "9.5px",
+                      fontWeight: "700",
+                      color: "#111",
+                    }}
+                  >
+                    {selectedAsset.category}
+                  </span>
+                </div>
+              </div>
+              <div
+                style={{
+                  textAlign: "center",
+                  marginTop: "10px",
+                  fontSize: "7px",
+                  color: "#aaa",
+                  letterSpacing: ".5px",
+                  borderTop: "1px dashed #ddd",
+                  paddingTop: "7px",
+                  textTransform: "uppercase",
+                }}
+              >
+                SCAN BARCODE UNTUK VERIFIKASI ASET · {new Date().getFullYear()}
+              </div>
+            </div>
+            <div
+              style={{
+                marginTop: "16px",
+                display: "flex",
+                alignItems: "flex-start",
+                gap: "8px",
+                color: "#64748b",
+                fontSize: "12px",
+              }}
+            >
+              <Icon.QrCode />
+              <span>
+                Barcode Code128 — kompatibel dengan semua scanner industri
+                standar. (Di-render sebagai gambar saat dicetak agar tidak
+                hilang di PDF).
+              </span>
+            </div>
+          </div>
+        </div>
+      </PageWrapper>
+    );
+  };
+
+  // ── RENDER ROOT ───────────────────────────────────────────────────
+  return (
+    <>
+      {currentView === "list" && renderListView()}
+      {currentView === "add" && renderAddPage()}
+      {currentView === "edit" && renderEditPage()}
+      {currentView === "detail" && renderDetailPage()}
+      {currentView === "delete" && renderDeletePage()}
+      {currentView === "barcode" && renderBarcodePage()}
     </>
   );
 };
