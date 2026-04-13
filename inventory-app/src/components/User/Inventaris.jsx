@@ -936,7 +936,7 @@ export default function Inventaris({ loans, setLoans }) {
                       <td className="inv-table-id">
                         <code className="inv-table-code">{a.id}</code>
                       </td>
-                      
+
                       {/* Nama Aset dengan foto */}
                       <td className="inv-table-name">
                         <div className="inv-table-cell-name">
@@ -950,7 +950,9 @@ export default function Inventaris({ loans, setLoans }) {
                               }
                             }}
                           />
-                          <span className="inv-table-text-strong">{a.name}</span>
+                          <span className="inv-table-text-strong">
+                            {a.name}
+                          </span>
                           {isDisposed && (
                             <span className="inv-table-badge inv-table-badge--disposed">
                               Disposed
@@ -958,29 +960,34 @@ export default function Inventaris({ loans, setLoans }) {
                           )}
                         </div>
                       </td>
-                      
+
                       {/* Brand · Model */}
                       <td className="inv-table-brand">
-                        <span className="inv-table-text">{a.brand} · {a.model}</span>
+                        <span className="inv-table-text">
+                          {a.brand} · {a.model}
+                        </span>
                       </td>
-                      
+
                       {/* Serial */}
                       <td className="inv-table-serial">
                         <code className="inv-table-code">{a.serial}</code>
                       </td>
-                      
+
                       {/* Lokasi */}
                       <td className="inv-table-location">
                         <div className="inv-table-location-text">
                           <div className="inv-table-loc-main">{a.location}</div>
                         </div>
                       </td>
-                      
+
                       {/* Kategori */}
                       <td className="inv-table-category">
                         <span
                           className="inv-table-badge"
-                          style={{ background: cat.color + "20", color: cat.color }}
+                          style={{
+                            background: cat.color + "20",
+                            color: cat.color,
+                          }}
                         >
                           {cat.label}
                         </span>
@@ -994,7 +1001,7 @@ export default function Inventaris({ loans, setLoans }) {
                           {st.label}
                         </span>
                       </td>
-                      
+
                       {/* Aksi */}
                       <td className="inv-table-action">
                         <div className="inv-table-actions">
