@@ -706,9 +706,9 @@ function InlineEditField({ label, value, onSave, type = "text" }) {
   );
 }
 
-// ── HISTORY POPUP (unified for OPEX & CAPEX) ──────────────────
-function HistoryPopup({ row, title, onClose, mode = "opex" }) {
-  const lbl = mode === "opex" ? "Realisasi" : "Anggaran";
+// ── HISTORY TABLE (shared inline component) ────────────────────
+function InlineHistoryTable({ row, mode = "opex" }) {
+  const lbl = mode === "opex" ? "Anggaran" : "Anggaran";
   const history = row.history || [];
   const TIPE_META = {
     initial: { label: "Input Awal", color: "#0284c7", bg: "#e0f2fe" },
@@ -718,15 +718,12 @@ function HistoryPopup({ row, title, onClose, mode = "opex" }) {
     transfer: { label: `Transfer ${lbl}`, color: "#7c3aed", bg: "#ede9fe" },
   };
 
-  let totalReal = 0,
-    totalBymhd = 0;
+  let totalReal = 0, totalBymhd = 0;
   const rows = history.map((h) => {
     const isInitial = h.is_initial || h.tipe === "initial";
-    let real = null,
-      bymhd = null,
-      jumlah = 0;
+    let real = null, bymhd = null, jumlah = 0;
     if (isInitial || h.tipe === "penambahan") {
-      real = isInitial ? h.nilai : h.nilai;
+      real = h.nilai;
       totalReal += h.nilai;
       jumlah = h.nilai;
     } else if (h.tipe === "pengurangan") {
@@ -745,212 +742,114 @@ function HistoryPopup({ row, title, onClose, mode = "opex" }) {
   });
 
   return (
-    <div style={S.ovs} onClick={onClose}>
-      <div
-        style={{
-          background: "white",
-          borderRadius: 12,
-          width: "100%",
-          maxWidth: 720,
-          maxHeight: "85vh",
-          display: "flex",
-          flexDirection: "column",
-          boxShadow: "0 10px 25px rgba(0,0,0,.1)",
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
+    <div style={{ marginTop: 0 }}>
+      {history.length === 0 ? (
         <div
           style={{
-            padding: "16px 20px",
-            borderBottom: "1px solid #e2e8f0",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
+            textAlign: "center",
+            padding: "20px 0",
+            color: "#94a3b8",
+            fontSize: "0.82rem",
+            fontStyle: "italic",
           }}
         >
-          <div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                marginBottom: 4,
-              }}
-            >
-              <History size={18} style={{ color: "#2563eb" }} />
-              <h3
-                style={{ fontWeight: 600, fontSize: "1rem", color: "#1e293b" }}
-              >
-                Riwayat Perubahan {lbl}
-              </h3>
-            </div>
-            <div style={{ fontSize: "0.8rem", color: "#64748b" }}>
-              <b>{title}</b> — Tahun {row.thn}
-            </div>
-          </div>
-          <button
-            style={{
-              background: "transparent",
-              border: "none",
-              cursor: "pointer",
-              color: "#64748b",
-            }}
-            onClick={onClose}
-          >
-            <X size={20} />
-          </button>
+          Belum ada riwayat.
         </div>
-        <div style={{ overflowY: "auto", padding: "16px", flex: 1 }}>
-          {history.length === 0 ? (
-            <div
-              style={{
-                textAlign: "center",
-                padding: "32px 0",
-                color: "#94a3b8",
-                fontSize: "0.85rem",
-              }}
-            >
-              Belum ada riwayat.
-            </div>
-          ) : (
-            <table style={S.tbl}>
-              <thead>
-                <tr>
-                  <th style={{ ...S.th, width: 40, textAlign: "center" }}>
-                    NO
-                  </th>
-                  <th style={{ ...S.th, width: 120 }}>TANGGAL</th>
-                  <th style={{ ...S.th, width: 160 }}>TIPE</th>
-                  <th style={{ ...S.th, textAlign: "right" }}>MURNI (Rp)</th>
-                  <th style={{ ...S.th, textAlign: "right" }}>BYMHD (Rp)</th>
-                  <th style={{ ...S.th, textAlign: "right" }}>JUMLAH (Rp)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((h, i) => (
-                  <tr key={h.id}>
-                    <td style={{ ...S.td, textAlign: "center" }}>{i + 1}</td>
-                    <td style={{ ...S.td, color: "#64748b" }}>
-                      {fmtDate(h.tgl)}
-                    </td>
-                    <td style={S.td}>
-                      <span
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          padding: "4px 8px",
-                          borderRadius: 4,
-                          fontSize: "0.75rem",
-                          fontWeight: 600,
-                          background: h.meta.bg,
-                          color: h.meta.color,
-                        }}
-                      >
-                        {h.meta.label}
-                      </span>
-                      {h.keterangan && (
-                        <div
-                          style={{
-                            fontSize: "0.75rem",
-                            color: "#94a3b8",
-                            marginTop: 4,
-                          }}
-                        >
-                          {h.keterangan}
-                        </div>
-                      )}
-                    </td>
-                    <td
+      ) : (
+        <div style={{ overflowX: "auto" }}>
+          <table style={S.tbl}>
+            <thead>
+              <tr>
+                <th style={{ ...S.th, width: 40, textAlign: "center" }}>NO</th>
+                <th style={{ ...S.th, width: 120 }}>TANGGAL</th>
+                <th style={{ ...S.th, width: 160 }}>TIPE</th>
+                <th style={{ ...S.th, textAlign: "right" }}>MURNI (Rp)</th>
+                <th style={{ ...S.th, textAlign: "right" }}>BYMHD (Rp)</th>
+                <th style={{ ...S.th, textAlign: "right" }}>JUMLAH (Rp)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((h, i) => (
+                <tr key={h.id}>
+                  <td style={{ ...S.td, textAlign: "center" }}>{i + 1}</td>
+                  <td style={{ ...S.td, color: "#64748b" }}>{fmtDate(h.tgl)}</td>
+                  <td style={S.td}>
+                    <span
                       style={{
-                        ...S.td,
-                        textAlign: "right",
-                        color:
-                          h.real === null
-                            ? "#cbd5e1"
-                            : h.real < 0
-                              ? "#ef4444"
-                              : "#16a34a",
-                      }}
-                    >
-                      {h.real !== null ? (
-                        <>
-                          {h.real < 0 ? "−" : ""}
-                          {fmt(Math.abs(h.real))}
-                        </>
-                      ) : (
-                        "—"
-                      )}
-                    </td>
-                    <td
-                      style={{ ...S.td, textAlign: "right", color: "#d97706" }}
-                    >
-                      {h.bymhd !== null ? (
-                        fmt(h.bymhd)
-                      ) : (
-                        <span style={{ color: "#cbd5e1" }}>—</span>
-                      )}
-                    </td>
-                    <td
-                      style={{
-                        ...S.td,
-                        textAlign: "right",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        padding: "4px 8px",
+                        borderRadius: 4,
+                        fontSize: "0.75rem",
                         fontWeight: 600,
-                        color: (h.jumlah || 0) < 0 ? "#ef4444" : "#1e293b",
+                        background: h.meta.bg,
+                        color: h.meta.color,
                       }}
                     >
-                      {h.jumlah < 0 ? "−" : ""}
-                      {fmt(Math.abs(h.jumlah || 0))}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr style={{ background: "#f8fafc" }}>
+                      {h.meta.label}
+                    </span>
+                    {h.keterangan && (
+                      <div style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: 4 }}>
+                        {h.keterangan}
+                      </div>
+                    )}
+                  </td>
                   <td
-                    colSpan={5}
+                    style={{
+                      ...S.td,
+                      textAlign: "right",
+                      color: h.real === null ? "#cbd5e1" : h.real < 0 ? "#ef4444" : "#16a34a",
+                    }}
+                  >
+                    {h.real !== null ? (
+                      <>{h.real < 0 ? "−" : ""}{fmt(Math.abs(h.real))}</>
+                    ) : "—"}
+                  </td>
+                  <td style={{ ...S.td, textAlign: "right", color: "#d97706" }}>
+                    {h.bymhd !== null ? fmt(h.bymhd) : <span style={{ color: "#cbd5e1" }}>—</span>}
+                  </td>
+                  <td
                     style={{
                       ...S.td,
                       textAlign: "right",
                       fontWeight: 600,
-                      color: "#475569",
+                      color: (h.jumlah || 0) < 0 ? "#ef4444" : "#1e293b",
                     }}
                   >
-                    TOTAL {lbl.toUpperCase()} SAAT INI
-                  </td>
-                  <td
-                    style={{
-                      ...S.td,
-                      textAlign: "right",
-                      fontWeight: 700,
-                      color: "#2563eb",
-                      fontSize: "0.9rem",
-                    }}
-                  >
-                    {fmt(totalReal + totalBymhd)}
+                    {h.jumlah < 0 ? "−" : ""}{fmt(Math.abs(h.jumlah || 0))}
                   </td>
                 </tr>
-              </tfoot>
-            </table>
-          )}
+              ))}
+            </tbody>
+            <tfoot>
+              <tr style={{ background: "#f8fafc" }}>
+                <td
+                  colSpan={5}
+                  style={{ ...S.td, textAlign: "right", fontWeight: 600, color: "#475569" }}
+                >
+                  TOTAL ANGGARAN SAAT INI
+                </td>
+                <td
+                  style={{
+                    ...S.td,
+                    textAlign: "right",
+                    fontWeight: 700,
+                    color: "#2563eb",
+                    fontSize: "0.9rem",
+                  }}
+                >
+                  {fmt(totalReal + totalBymhd)}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
         </div>
-        <div
-          style={{
-            padding: "16px",
-            borderTop: "1px solid #e2e8f0",
-            display: "flex",
-            justifyContent: "flex-end",
-          }}
-        >
-          <button style={S.btnOut} onClick={onClose}>
-            Tutup
-          </button>
-        </div>
-      </div>
+      )}
     </div>
   );
 }
 
-// ── EDIT SECTION (unified for OPEX Realisasi & CAPEX Anggaran) ─
+// ── EDIT SECTION (unified for OPEX Anggaran & CAPEX Anggaran) ─
 function EditSection({
   row,
   masterNama,
@@ -964,39 +863,14 @@ function EditSection({
   const [ket, setKet] = useState("");
 
   const OPEX_OPTS = [
-    {
-      value: "penambahan",
-      label: "Penambahan Realisasi",
-      color: "#16a34a",
-      bg: "#f0fdf4",
-    },
-    {
-      value: "pengurangan",
-      label: "Pengurangan Realisasi",
-      color: "#dc2626",
-      bg: "#fef2f2",
-    },
+    { value: "penambahan", label: "Penambahan Anggaran", color: "#16a34a", bg: "#f0fdf4" },
+    { value: "pengurangan", label: "Pengurangan Anggaran", color: "#dc2626", bg: "#fef2f2" },
     { value: "bymhd", label: "BYMHD", color: "#d97706", bg: "#fffbeb" },
-    {
-      value: "transfer",
-      label: "Transfer Realisasi",
-      color: "#7c3aed",
-      bg: "#f5f3ff",
-    },
+    { value: "transfer", label: "Transfer Anggaran", color: "#7c3aed", bg: "#f5f3ff" },
   ];
   const CAPEX_OPTS = [
-    {
-      value: "penambahan",
-      label: "Penambahan",
-      color: "#16a34a",
-      bg: "#f0fdf4",
-    },
-    {
-      value: "pengurangan",
-      label: "Pengurangan",
-      color: "#dc2626",
-      bg: "#fef2f2",
-    },
+    { value: "penambahan", label: "Penambahan", color: "#16a34a", bg: "#f0fdf4" },
+    { value: "pengurangan", label: "Pengurangan", color: "#dc2626", bg: "#fef2f2" },
   ];
   const OPTS = mode === "opex" ? OPEX_OPTS : CAPEX_OPTS;
 
@@ -1023,8 +897,7 @@ function EditSection({
 
   const selOpt = OPTS.find((o) => o.value === tipe);
   const lbl = mode === "opex" ? "Nama Anggaran Master" : "Nama Anggaran CAPEX";
-  const totalLbl =
-    mode === "opex" ? "Total Realisasi Berjalan" : "Total Anggaran Berjalan";
+  const totalLbl = mode === "opex" ? "Total Anggaran Berjalan" : "Total Anggaran Berjalan";
 
   return (
     <div
@@ -1196,11 +1069,12 @@ function EditSection({
   );
 }
 
-// ── REALISASI SECTION (OPEX) ───────────────────────────────────
+// ── ANGGARAN SECTION (OPEX) ────────────────────────────────────
+// REVISION 1: "realisasi" → "anggaran" in labels
+// REVISION 2: History table shown directly below each row (no icon toggle)
 function RealisasiSection({ master, setMasters, toast_ }) {
   const [showForm, setShowForm] = useState(false);
   const [editRowId, setEditRowId] = useState(null);
-  const [historyRowId, setHistoryRowId] = useState(null);
   const [confirm, setConfirm] = useState(null);
   const [form, setForm] = useState({
     thn: new Date().getFullYear(),
@@ -1249,7 +1123,7 @@ function RealisasiSection({ master, setMasters, toast_ }) {
           : m,
       ),
     );
-    toast_("Data realisasi tahunan ditambahkan.");
+    toast_("Data anggaran tahunan ditambahkan.");
     setShowForm(false);
     setForm({
       thn: new Date().getFullYear(),
@@ -1285,7 +1159,7 @@ function RealisasiSection({ master, setMasters, toast_ }) {
         };
       }),
     );
-    toast_("Perubahan realisasi disimpan.");
+    toast_("Perubahan anggaran disimpan.");
     setEditRowId(null);
   };
 
@@ -1314,7 +1188,7 @@ function RealisasiSection({ master, setMasters, toast_ }) {
                   tgl: new Date().toISOString().split("T")[0],
                   tipe: selisih >= 0 ? "penambahan" : "pengurangan",
                   nilai: Math.abs(selisih),
-                  keterangan: "Edit langsung total realisasi berjalan",
+                  keterangan: "Edit langsung total anggaran berjalan",
                   is_initial: false,
                 },
               ];
@@ -1329,7 +1203,7 @@ function RealisasiSection({ master, setMasters, toast_ }) {
 
   const handleDelete = (rowId) =>
     setConfirm({
-      msg: "Hapus data realisasi tahunan ini?",
+      msg: "Hapus data anggaran tahunan ini?",
       onConfirm: () => {
         setMasters((prev) =>
           prev.map((m) =>
@@ -1344,7 +1218,7 @@ function RealisasiSection({ master, setMasters, toast_ }) {
           ),
         );
         setConfirm(null);
-        toast_("Data realisasi dihapus.");
+        toast_("Data anggaran dihapus.");
       },
     });
 
@@ -1362,8 +1236,6 @@ function RealisasiSection({ master, setMasters, toast_ }) {
           onCancel={() => setConfirm(null)}
         />
       )}
-
-      {/* Inline History Section will be rendered inside table row below */}
 
       {showForm && (
         <div style={S.ovs} onClick={() => setShowForm(false)}>
@@ -1388,7 +1260,7 @@ function RealisasiSection({ master, setMasters, toast_ }) {
             >
               <div>
                 <h3 style={{ fontWeight: 600, fontSize: "1rem" }}>
-                  Input Realisasi Tahunan
+                  Input Anggaran Tahunan
                 </h3>
                 <div
                   style={{
@@ -1420,7 +1292,7 @@ function RealisasiSection({ master, setMasters, toast_ }) {
                 marginBottom: 16,
               }}
             >
-              <ModalFormRow label="Tahun Realisasi" required>
+              <ModalFormRow label="Tahun Anggaran" required>
                 <select
                   style={S.inp}
                   value={form.thn}
@@ -1435,7 +1307,7 @@ function RealisasiSection({ master, setMasters, toast_ }) {
                   ))}
                 </select>
               </ModalFormRow>
-              <ModalFormRow label="Realisasi Murni (Rp)" required>
+              <ModalFormRow label="Anggaran Murni (Rp)" required>
                 <input
                   type="number"
                   className="no-spinners"
@@ -1447,7 +1319,7 @@ function RealisasiSection({ master, setMasters, toast_ }) {
                   }
                 />
               </ModalFormRow>
-              <ModalFormRow label="Realisasi BYMHD (Rp)" noBorder>
+              <ModalFormRow label="Anggaran BYMHD (Rp)" noBorder>
                 <input
                   type="number"
                   className="no-spinners"
@@ -1487,496 +1359,287 @@ function RealisasiSection({ master, setMasters, toast_ }) {
         </div>
       )}
 
+      {/* CARD 2: Daftar Anggaran Tahunan Table */}
       <div
         style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "10px 16px",
-          background: "#f8fafc",
-          borderTop: "1px solid #e2e8f0",
+          background: "white",
+          borderRadius: 12,
+          border: "1px solid #e2e8f0",
+          overflow: "hidden",
+          boxShadow: "0 4px 12px rgba(0,0,0,.04)",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <Calendar size={14} style={{ color: "#16a34a" }} />
-          <span
-            style={{ fontSize: "0.8rem", fontWeight: 700, color: "#374151" }}
-          >
-            Daftar Anggaran Tahunan
-          </span>
-          <span
-            style={{
-              fontSize: "0.72rem",
-              color: "#64748b",
-              background: "#e2e8f0",
-              padding: "1px 7px",
-              borderRadius: 99,
-              fontWeight: 600,
-            }}
-          >
-            {list.length} tahun
-          </span>
-        </div>
-        <button
+        <div
           style={{
-            ...S.btn,
-            background: "#16a34a",
-            padding: "6px 12px",
-            fontSize: "0.75rem",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            padding: "10px 16px",
+            background: "#f8fafc",
+            borderBottom: "1px solid #e2e8f0",
           }}
-          onClick={() => setShowForm(true)}
         >
-          <Plus size={12} /> Input Realisasi Baru
-        </button>
-      </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <Calendar size={14} style={{ color: "#16a34a" }} />
+            <span
+              style={{ fontSize: "0.8rem", fontWeight: 700, color: "#374151" }}
+            >
+              Daftar Anggaran Tahunan
+            </span>
+            <span
+              style={{
+                fontSize: "0.72rem",
+                color: "#64748b",
+                background: "#e2e8f0",
+                padding: "1px 7px",
+                borderRadius: 99,
+                fontWeight: 600,
+              }}
+            >
+              {list.length} tahun
+            </span>
+          </div>
+          <button
+            style={{
+              ...S.btn,
+              background: "#16a34a",
+              padding: "6px 12px",
+              fontSize: "0.75rem",
+            }}
+            onClick={() => setShowForm(true)}
+          >
+            <Plus size={12} /> Input Anggaran Baru
+          </button>
+        </div>
 
-      <table style={{ ...S.tbl, border: "none" }}>
-        <thead>
-          <tr>
-            <th style={{ ...S.th, width: 40, textAlign: "center" }}>NO</th>
-            <th style={{ ...S.th, width: 80, textAlign: "center" }}>TAHUN</th>
-            <th style={{ ...S.th, textAlign: "right" }}>REALISASI MURNI</th>
-            <th style={{ ...S.th, textAlign: "right" }}>REALISASI BYMHD</th>
-            <th style={{ ...S.th, textAlign: "right" }}>TOTAL REALISASI</th>
-            <th style={{ ...S.th, textAlign: "center", width: 120 }}>AKSI</th>
-          </tr>
-        </thead>
-        <tbody>
-          {list.length === 0 ? (
+        <table style={{ ...S.tbl, border: "none" }}>
+          <thead>
             <tr>
-              <td
-                colSpan={6}
-                style={{
-                  ...S.td,
-                  textAlign: "center",
-                  color: "#94a3b8",
-                  padding: 24,
-                  fontSize: "0.82rem",
-                  background: "#fafafa",
-                  fontStyle: "italic",
-                }}
-              >
-                Belum ada data realisasi tahunan.
-              </td>
+              <th style={{ ...S.th, width: 40, textAlign: "center" }}>NO</th>
+              <th style={{ ...S.th, width: 80, textAlign: "center" }}>TAHUN</th>
+              <th style={{ ...S.th, textAlign: "right" }}>ANGGARAN MURNI</th>
+              <th style={{ ...S.th, textAlign: "right" }}>ANGGARAN BYMHD</th>
+              <th style={{ ...S.th, textAlign: "right" }}>TOTAL ANGGARAN</th>
+              {/* REVISION 2: removed history column, now only edit + delete */}
+              <th style={{ ...S.th, textAlign: "center", width: 100 }}>AKSI</th>
             </tr>
-          ) : (
-            list.map((row, idx) => {
-              const total =
-                (row.realisasi_murni || 0) + (row.realisasi_bymhd || 0);
-              return (
-                <React.Fragment key={row.id}>
-                  <tr
-                    style={{
-                      background: editRowId === row.id ? "#fffbeb" : "white",
-                    }}
-                  >
-                    <td
+          </thead>
+          <tbody>
+            {list.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={6}
+                  style={{
+                    ...S.td,
+                    textAlign: "center",
+                    color: "#94a3b8",
+                    padding: 24,
+                    fontSize: "0.82rem",
+                    background: "#fafafa",
+                    fontStyle: "italic",
+                  }}
+                >
+                  Belum ada data anggaran tahunan.
+                </td>
+              </tr>
+            ) : (
+              list.map((row, idx) => {
+                const total =
+                  (row.realisasi_murni || 0) + (row.realisasi_bymhd || 0);
+                return (
+                  <React.Fragment key={row.id}>
+                    <tr
                       style={{
-                        ...S.td,
-                        textAlign: "center",
-                        fontSize: "0.72rem",
-                        color: "#94a3b8",
-                        fontWeight: 700,
+                        background: editRowId === row.id ? "#fffbeb" : "white",
                       }}
                     >
-                      {idx + 1}
-                    </td>
-                    <td
-                      style={{
-                        ...S.td,
-                        textAlign: "center",
-                        fontWeight: 700,
-                        color: "#0f172a",
-                      }}
-                    >
-                      {row.thn}
-                    </td>
-                    <td
-                      style={{
-                        ...S.td,
-                        textAlign: "right",
-                        fontWeight: 600,
-                        color: "#475569",
-                      }}
-                    >
-                      {fmt(row.realisasi_murni)}
-                    </td>
-                    <td
-                      style={{
-                        ...S.td,
-                        textAlign: "right",
-                        fontWeight: 600,
-                        color: "#d97706",
-                      }}
-                    >
-                      {fmt(row.realisasi_bymhd)}
-                    </td>
-                    <td
-                      style={{
-                        ...S.td,
-                        textAlign: "right",
-                        fontWeight: 700,
-                        color: "#16a34a",
-                      }}
-                    >
-                      {fmt(total)}
-                    </td>
-                    <td style={{ ...S.td, textAlign: "center" }}>
-                      <div
-                        style={{
-                          display: "flex",
-                          gap: 4,
-                          justifyContent: "center",
-                        }}
-                      >
-                        <button
-                          style={S.abtn}
-                          onClick={() =>
-                            setEditRowId(editRowId === row.id ? null : row.id)
-                          }
-                        >
-                          <Edit size={12} style={{ color: "#d97706" }} />
-                        </button>
-                        <button
-                          style={S.abtn}
-                          onClick={() =>
-                            setHistoryRowId(
-                              historyRowId === row.id ? null : row.id,
-                            )
-                          }
-                        >
-                          <History size={12} style={{ color: "#2563eb" }} />
-                        </button>
-                        <button
-                          style={S.abtn}
-                          onClick={() => handleDelete(row.id)}
-                        >
-                          <Trash2 size={12} style={{ color: "#ef4444" }} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                  {editRowId === row.id && (
-                    <tr>
                       <td
-                        colSpan={6}
                         style={{
-                          padding: "0 16px 16px",
-                          background: "#fffbeb",
-                          borderBottom: "1px solid #e2e8f0",
+                          ...S.td,
+                          textAlign: "center",
+                          fontSize: "0.72rem",
+                          color: "#94a3b8",
+                          fontWeight: 700,
                         }}
                       >
-                        <EditSection
-                          row={row}
-                          masterNama={master.nama}
-                          onBack={() => setEditRowId(null)}
-                          onSave={handleSavePerubahan}
-                          onUpdateRow={(changes) =>
-                            handleUpdateRow(row.id, changes)
-                          }
-                          mode="opex"
-                        />
+                        {idx + 1}
                       </td>
-                    </tr>
-                  )}
-                  {historyRowId === row.id && (
-                    <tr>
                       <td
-                        colSpan={6}
                         style={{
-                          padding: "0 16px 16px",
-                          background: "#f0fdf4",
-                          borderBottom: "1px solid #e2e8f0",
+                          ...S.td,
+                          textAlign: "center",
+                          fontWeight: 700,
+                          color: "#0f172a",
                         }}
                       >
-                        <div style={{ marginTop: 12 }}>
-                          <div
-                            style={{
-                              fontSize: "0.85rem",
-                              fontWeight: 700,
-                              color: "#374151",
-                              marginBottom: 12,
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 8,
-                            }}
+                        {row.thn}
+                      </td>
+                      <td
+                        style={{
+                          ...S.td,
+                          textAlign: "right",
+                          fontWeight: 600,
+                          color: "#475569",
+                        }}
+                      >
+                        {fmt(row.realisasi_murni)}
+                      </td>
+                      <td
+                        style={{
+                          ...S.td,
+                          textAlign: "right",
+                          fontWeight: 600,
+                          color: "#d97706",
+                        }}
+                      >
+                        {fmt(row.realisasi_bymhd)}
+                      </td>
+                      <td
+                        style={{
+                          ...S.td,
+                          textAlign: "right",
+                          fontWeight: 700,
+                          color: "#16a34a",
+                        }}
+                      >
+                        {fmt(total)}
+                      </td>
+                      <td style={{ ...S.td, textAlign: "center" }}>
+                        {/* REVISION 2: History icon removed */}
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: 4,
+                            justifyContent: "center",
+                          }}
+                        >
+                          <button
+                            style={S.abtn}
+                            onClick={() =>
+                              setEditRowId(editRowId === row.id ? null : row.id)
+                            }
                           >
-                            <History size={16} style={{ color: "#2563eb" }} />
-                            Riwayat Perubahan Anggaran
-                          </div>
-                          {(row.history || []).length === 0 ? (
-                            <div
-                              style={{
-                                textAlign: "center",
-                                padding: "32px 0",
-                                color: "#94a3b8",
-                                fontSize: "0.85rem",
-                              }}
-                            >
-                              Belum ada riwayat.
-                            </div>
-                          ) : (
-                            <div style={{ overflowX: "auto" }}>
-                              <table style={S.tbl}>
-                                <thead>
-                                  <tr>
-                                    <th
-                                      style={{
-                                        ...S.th,
-                                        width: 40,
-                                        textAlign: "center",
-                                      }}
-                                    >
-                                      NO
-                                    </th>
-                                    <th style={{ ...S.th, width: 120 }}>
-                                      TANGGAL
-                                    </th>
-                                    <th style={{ ...S.th, width: 160 }}>
-                                      TIPE
-                                    </th>
-                                    <th style={{ ...S.th, textAlign: "right" }}>
-                                      MURNI (Rp)
-                                    </th>
-                                    <th style={{ ...S.th, textAlign: "right" }}>
-                                      BYMHD (Rp)
-                                    </th>
-                                    <th style={{ ...S.th, textAlign: "right" }}>
-                                      JUMLAH (Rp)
-                                    </th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {(row.history || []).map((h, i) => {
-                                    const TIPE_META = {
-                                      initial: {
-                                        label: "Input Awal",
-                                        color: "#0284c7",
-                                        bg: "#e0f2fe",
-                                      },
-                                      penambahan: {
-                                        label: "Penambahan",
-                                        color: "#16a34a",
-                                        bg: "#dcfce7",
-                                      },
-                                      pengurangan: {
-                                        label: "Pengurangan",
-                                        color: "#dc2626",
-                                        bg: "#fee2e2",
-                                      },
-                                      bymhd: {
-                                        label: "BYMHD",
-                                        color: "#d97706",
-                                        bg: "#fef3c7",
-                                      },
-                                      transfer: {
-                                        label: "Transfer Anggaran",
-                                        color: "#7c3aed",
-                                        bg: "#ede9fe",
-                                      },
-                                    };
-                                    const isInitial =
-                                      h.is_initial || h.tipe === "initial";
-                                    const meta = isInitial
-                                      ? TIPE_META.initial
-                                      : TIPE_META[h.tipe] || {
-                                          label: h.tipe,
-                                          color: "#475569",
-                                          bg: "#f1f5f9",
-                                        };
-                                    let real = null,
-                                      bymhd = null,
-                                      jumlah = 0;
-                                    if (isInitial || h.tipe === "penambahan") {
-                                      real = isInitial ? h.nilai : h.nilai;
-                                      jumlah = h.nilai;
-                                    } else if (h.tipe === "pengurangan") {
-                                      real = -h.nilai;
-                                      jumlah = -h.nilai;
-                                    } else if (
-                                      h.tipe === "bymhd" ||
-                                      h.tipe === "transfer"
-                                    ) {
-                                      bymhd = h.nilai;
-                                      jumlah = h.nilai;
-                                    }
-                                    return (
-                                      <tr key={h.id}>
-                                        <td
-                                          style={{
-                                            ...S.td,
-                                            textAlign: "center",
-                                          }}
-                                        >
-                                          {i + 1}
-                                        </td>
-                                        <td
-                                          style={{ ...S.td, color: "#64748b" }}
-                                        >
-                                          {fmtDate(h.tgl)}
-                                        </td>
-                                        <td style={S.td}>
-                                          <span
-                                            style={{
-                                              display: "inline-flex",
-                                              alignItems: "center",
-                                              padding: "4px 8px",
-                                              borderRadius: 4,
-                                              fontSize: "0.75rem",
-                                              fontWeight: 600,
-                                              background: meta.bg,
-                                              color: meta.color,
-                                            }}
-                                          >
-                                            {meta.label}
-                                          </span>
-                                          {h.keterangan && (
-                                            <div
-                                              style={{
-                                                fontSize: "0.75rem",
-                                                color: "#94a3b8",
-                                                marginTop: 4,
-                                              }}
-                                            >
-                                              {h.keterangan}
-                                            </div>
-                                          )}
-                                        </td>
-                                        <td
-                                          style={{
-                                            ...S.td,
-                                            textAlign: "right",
-                                            color:
-                                              real === null
-                                                ? "#cbd5e1"
-                                                : real < 0
-                                                  ? "#ef4444"
-                                                  : "#16a34a",
-                                          }}
-                                        >
-                                          {real !== null ? (
-                                            <>
-                                              {real < 0 ? "−" : ""}
-                                              {fmt(Math.abs(real))}
-                                            </>
-                                          ) : (
-                                            "—"
-                                          )}
-                                        </td>
-                                        <td
-                                          style={{
-                                            ...S.td,
-                                            textAlign: "right",
-                                            color: "#d97706",
-                                          }}
-                                        >
-                                          {bymhd !== null ? (
-                                            fmt(bymhd)
-                                          ) : (
-                                            <span style={{ color: "#cbd5e1" }}>
-                                              —
-                                            </span>
-                                          )}
-                                        </td>
-                                        <td
-                                          style={{
-                                            ...S.td,
-                                            textAlign: "right",
-                                            fontWeight: 600,
-                                            color:
-                                              (jumlah || 0) < 0
-                                                ? "#ef4444"
-                                                : "#1e293b",
-                                          }}
-                                        >
-                                          {jumlah < 0 ? "−" : ""}
-                                          {fmt(Math.abs(jumlah || 0))}
-                                        </td>
-                                      </tr>
-                                    );
-                                  })}
-                                </tbody>
-                                <tfoot>
-                                  <tr style={{ background: "#f8fafc" }}>
-                                    <td
-                                      colSpan={5}
-                                      style={{
-                                        ...S.td,
-                                        textAlign: "right",
-                                        fontWeight: 600,
-                                        color: "#475569",
-                                      }}
-                                    >
-                                      TOTAL ANGGARAN SAAT INI
-                                    </td>
-                                    <td
-                                      style={{
-                                        ...S.td,
-                                        textAlign: "right",
-                                        fontWeight: 700,
-                                        color: "#2563eb",
-                                        fontSize: "0.9rem",
-                                      }}
-                                    >
-                                      {fmt(
-                                        (row.realisasi_murni || 0) +
-                                          (row.realisasi_bymhd || 0),
-                                      )}
-                                    </td>
-                                  </tr>
-                                </tfoot>
-                              </table>
-                            </div>
-                          )}
+                            <Edit size={12} style={{ color: "#d97706" }} />
+                          </button>
+                          <button
+                            style={S.abtn}
+                            onClick={() => handleDelete(row.id)}
+                          >
+                            <Trash2 size={12} style={{ color: "#ef4444" }} />
+                          </button>
                         </div>
                       </td>
                     </tr>
-                  )}
-                </React.Fragment>
-              );
-            })
+                    {editRowId === row.id && (
+                      <tr>
+                        <td
+                          colSpan={6}
+                          style={{
+                            padding: "0 16px 16px",
+                            background: "#fffbeb",
+                            borderBottom: "1px solid #e2e8f0",
+                          }}
+                        >
+                          <EditSection
+                            row={row}
+                            masterNama={master.nama}
+                            onBack={() => setEditRowId(null)}
+                            onSave={handleSavePerubahan}
+                            onUpdateRow={(changes) =>
+                              handleUpdateRow(row.id, changes)
+                            }
+                            mode="opex"
+                          />
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                );
+              })
+            )}
+          </tbody>
+          {list.length > 0 && (
+            <tfoot>
+              <tr style={{ background: "#f0fdf4" }}>
+                <td
+                  colSpan={4}
+                  style={{
+                    ...S.td,
+                    textAlign: "right",
+                    fontWeight: 700,
+                    color: "#15803d",
+                    fontSize: "0.75rem",
+                  }}
+                >
+                  GRAND TOTAL
+                </td>
+                <td
+                  style={{
+                    ...S.td,
+                    textAlign: "right",
+                    fontWeight: 800,
+                    color: "#15803d",
+                    fontSize: "0.88rem",
+                  }}
+                >
+                  {fmt(grandTotal)}
+                </td>
+                <td style={S.td} />
+              </tr>
+            </tfoot>
           )}
-        </tbody>
-        {list.length > 0 && (
-          <tfoot>
-            <tr style={{ background: "#f0fdf4" }}>
-              <td
-                colSpan={4}
+        </table>
+      </div>
+
+      {/* PADDING AREA: Abu-abu spacing between CARD 2 and CARD 3+ */}
+      {list.length > 0 && (
+        <div style={{ marginTop: 0, paddingTop: 12, background: "#f5f5f5" }}>
+          <div style={{ padding: "0 0 12px 0" }}>
+            {list.map((row, idx) => (
+              <div
+                key={row.id}
                 style={{
-                  ...S.td,
-                  textAlign: "right",
-                  fontWeight: 700,
-                  color: "#15803d",
-                  fontSize: "0.75rem",
+                  border: "1px solid #e2e8f0",
+                  borderRadius: 8,
+                  overflow: "hidden",
+                  marginBottom: 12,
+                  background: "white",
                 }}
               >
-                GRAND TOTAL
-              </td>
-              <td
-                style={{
-                  ...S.td,
-                  textAlign: "right",
-                  fontWeight: 800,
-                  color: "#15803d",
-                  fontSize: "0.88rem",
-                }}
-              >
-                {fmt(grandTotal)}
-              </td>
-              <td style={S.td} />
-            </tr>
-          </tfoot>
-        )}
-      </table>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "10px 16px",
+                    background: "#f8fafc",
+                    borderBottom: "1px solid #e2e8f0",
+                  }}
+                >
+                  <History size={14} style={{ color: "#0284c7" }} />
+                  <span
+                    style={{ fontSize: "0.8rem", fontWeight: 700, color: "#374151" }}
+                  >
+                    Riwayat Perubahan Anggaran
+                  </span>
+                </div>
+                <div style={{ padding: "16px" }}>
+                  <InlineHistoryTable row={row} mode="opex" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 // ── CAPEX ANGGARAN TAHUNAN SECTION ─────────────────────────────
+// REVISION 2: History always shown directly below each row (no icon)
 function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
   const [showForm, setShowForm] = useState(false);
   const [editRowId, setEditRowId] = useState(null);
-  const [historyRow, setHistoryRow] = useState(null);
   const [confirm, setConfirm] = useState(null);
   const [form, setForm] = useState({
     thn: new Date().getFullYear(),
@@ -1985,8 +1648,7 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
   const list = capex.anggaran_tahunan || [];
 
   const calcRealBymhd = (history) => {
-    let real = 0,
-      bymhd = 0;
+    let real = 0, bymhd = 0;
     (history || []).forEach((h) => {
       if (h.is_initial || h.tipe === "initial") real += h.nilai;
       else if (h.tipe === "penambahan") bymhd += h.nilai;
@@ -2114,14 +1776,7 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
           onCancel={() => setConfirm(null)}
         />
       )}
-      {historyRow && (
-        <HistoryPopup
-          row={historyRow}
-          title={capex.nm_anggaran}
-          onClose={() => setHistoryRow(null)}
-          mode="capex"
-        />
-      )}
+      {/* REVISION 2: HistoryPopup removed, inline table used instead */}
 
       {showForm && (
         <div style={S.ovs} onClick={() => setShowForm(false)}>
@@ -2271,6 +1926,7 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
         </button>
       </div>
 
+      {/* CARD 1: Tabel Daftar Anggaran */}
       <div
         style={{
           border: "1px solid #e2e8f0",
@@ -2286,7 +1942,8 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
               <th style={{ ...S.th, textAlign: "right" }}>REAL (Rp)</th>
               <th style={{ ...S.th, textAlign: "right" }}>BYMHD (Rp)</th>
               <th style={{ ...S.th, textAlign: "right" }}>TOTAL (Rp)</th>
-              <th style={{ ...S.th, textAlign: "center", width: 120 }}>AKSI</th>
+              {/* REVISION 2: History icon column removed */}
+              <th style={{ ...S.th, textAlign: "center", width: 100 }}>AKSI</th>
             </tr>
           </thead>
           <tbody>
@@ -2369,6 +2026,7 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
                         {fmt(total)}
                       </td>
                       <td style={{ ...S.td, textAlign: "center" }}>
+                        {/* REVISION 2: History icon removed */}
                         <div
                           style={{
                             display: "flex",
@@ -2383,12 +2041,6 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
                             }
                           >
                             <Edit size={12} style={{ color: "#d97706" }} />
-                          </button>
-                          <button
-                            style={S.abtn}
-                            onClick={() => setHistoryRow({ ...row })}
-                          >
-                            <History size={12} style={{ color: "#2563eb" }} />
                           </button>
                           <button
                             style={S.abtn}
@@ -2496,6 +2148,47 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
           )}
         </table>
       </div>
+
+      {/* CARD 2: Tabel Riwayat Perubahan Anggaran (Terpisah dengan padding abu-abu) */}
+      {list.length > 0 && (
+        <div style={{ marginTop: 0, paddingTop: 12, background: "#f5f5f5" }}>
+          <div style={{ padding: "0 0 12px 0" }}>
+            {list.map((row, idx) => (
+              <div
+                key={row.id}
+                style={{
+                  border: "1px solid #e2e8f0",
+                  borderRadius: 8,
+                  overflow: "hidden",
+                  marginBottom: 12,
+                  background: "white",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "10px 16px",
+                    background: "#f8fafc",
+                    borderBottom: "1px solid #e2e8f0",
+                  }}
+                >
+                  <History size={14} style={{ color: "#2563eb" }} />
+                  <span
+                    style={{ fontSize: "0.8rem", fontWeight: 700, color: "#374151" }}
+                  >
+                    Riwayat Perubahan Anggaran
+                  </span>
+                </div>
+                <div style={{ padding: "16px" }}>
+                  <InlineHistoryTable row={row} mode="capex" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -2634,6 +2327,7 @@ function CapexInputAnggaranPage({ capex, onBack, onSave }) {
   const [nilaiKad, setNilaiKad] = useState(capex.nilai_kad || "");
   const [nilaiRkap, setNilaiRkap] = useState("");
   const [thnAnggaran, setThnAnggaran] = useState("");
+  const [error, setError] = useState(null);
 
   const awal = parseInt(thnRkapAwal) || 0,
     akhir = parseInt(thnRkapAkhir) || 0;
@@ -2662,12 +2356,13 @@ function CapexInputAnggaranPage({ capex, onBack, onSave }) {
 
   const handleSimpan = () => {
     if (!isRangeValid)
-      return alert("Tahun RKAP Awal harus ≤ Tahun RKAP Akhir!");
-    if (!thnAnggaran) return alert("Pilih Tahun Anggaran!");
-    if (!nilaiRkap) return alert("Nilai RKAP harus diisi!");
+      return setError("Tahun RKAP Awal harus ≤ Tahun RKAP Akhir!");
+    if (!thnAnggaran) return setError("Pilih Tahun Anggaran!");
+    if (!nilaiRkap) return setError("Nilai RKAP harus diisi!");
     const kad = parseFloat(nilaiKad) || 0,
       rkap = parseFloat(nilaiRkap) || 0;
-    if (kad < 0 || rkap < 0) return alert("Nilai tidak boleh negatif!");
+    if (kad < 0 || rkap < 0) return setError("Nilai tidak boleh negatif!");
+    if (kad === 0) return setError("Nilai KAD harus lebih dari 0 untuk membuat entri anggaran baru!");
     onSave(
       capex.id,
       {
@@ -2699,6 +2394,40 @@ function CapexInputAnggaranPage({ capex, onBack, onSave }) {
           Input Anggaran CAPEX
         </h2>
       </div>
+      {error && (
+        <div
+          style={{
+            background: "#fef2f2",
+            border: "1px solid #fecaca",
+            borderRadius: 8,
+            padding: "12px 16px",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 12,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: "1.1rem", color: "#dc2626" }}>⚠</span>
+            <span style={{ color: "#991b1b", fontSize: "0.9rem", fontWeight: 500 }}>
+              {error}
+            </span>
+          </div>
+          <button
+            style={{
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              color: "#dc2626",
+              fontSize: "1.2rem",
+              padding: 0,
+            }}
+            onClick={() => setError(null)}
+          >
+            ×
+          </button>
+        </div>
+      )}
       <div
         style={{
           background: "white",
@@ -3166,7 +2895,7 @@ function OpexModule({ masterList, setMasterList }) {
 
   const handleDeleteMaster = (id) =>
     setConfirm({
-      msg: "Hapus anggaran master ini beserta seluruh data realisasinya?",
+      msg: "Hapus anggaran master ini beserta seluruh data anggarannya?",
       onConfirm: () => {
         setMasters((p) => p.filter((m) => m.id !== id));
         setConfirm(null);
@@ -3224,7 +2953,7 @@ function OpexModule({ masterList, setMasterList }) {
         });
   }, [masters, filterThnFrom, filterThnTo, filterNama, filteredMasters]);
 
-  const kpiRealisasi = useMemo(() => {
+  const kpiAnggaran = useMemo(() => {
     return kpiBase.reduce((s, m) => {
       const rows = kpiYear
         ? (m.realisasi_tahunan || []).filter((r) => r.thn === parseInt(kpiYear))
@@ -3243,7 +2972,7 @@ function OpexModule({ masterList, setMasterList }) {
     (s, m) => s + (m.nilai_anggaran || 0),
     0,
   );
-  const totalRealisasiAll = kpiBase.reduce(
+  const totalAnggaranAll = kpiBase.reduce(
     (s, m) =>
       s +
       (m.realisasi_tahunan || []).reduce(
@@ -3311,6 +3040,7 @@ function OpexModule({ masterList, setMasterList }) {
               >
                 <ArrowLeft size={16} style={{ color: "#2563eb" }} />
               </button>
+              {/* CARD 1: Master Info (Green Wrapper) */}
               <div
                 style={{
                   background: "white",
@@ -3429,7 +3159,7 @@ function OpexModule({ masterList, setMasterList }) {
                             fontWeight: 700,
                           }}
                         >
-                          Realisasi {pct}%
+                          Anggaran {pct}%
                         </span>
                       </div>
                     </div>
@@ -3455,6 +3185,9 @@ function OpexModule({ masterList, setMasterList }) {
                     </button>
                   </div>
                 </div>
+              </div>
+              {/* CARD 2 & 3: Realisasi Section (Separated with padding area) */}
+              <div style={{ marginTop: 0 }}>
                 <RealisasiSection
                   master={latest}
                   setMasters={setMasters}
@@ -3562,12 +3295,12 @@ function OpexModule({ masterList, setMasterList }) {
                 },
                 {
                   label: "Sisa Anggaran",
-                  val: fmt(totalAnggaran - totalRealisasiAll),
+                  val: fmt(totalAnggaran - totalAnggaranAll),
                   color:
-                    totalRealisasiAll > totalAnggaran ? "#dc2626" : "#16a34a",
-                  bg: totalRealisasiAll > totalAnggaran ? "#fef2f2" : "#f0fdf4",
+                    totalAnggaranAll > totalAnggaran ? "#dc2626" : "#16a34a",
+                  bg: totalAnggaranAll > totalAnggaran ? "#fef2f2" : "#f0fdf4",
                   border:
-                    totalRealisasiAll > totalAnggaran ? "#fecaca" : "#bbf7d0",
+                    totalAnggaranAll > totalAnggaran ? "#fecaca" : "#bbf7d0",
                 },
                 {
                   label: "Total Pos Master",
@@ -4425,39 +4158,38 @@ const CapexFormModal = React.memo(function CapexFormModal({
   );
 });
 
-// ── CAPEX EDIT ANGGARAN MODAL (extracted to module level) ──────
-function CapexEditAnggaranModal({ capexId, anggaran, onSave, onClose }) {
-  const [thnRkapAwal, setThnRkapAwal] = useState(
-    String(anggaran.thn_rkap_awal || ""),
-  );
-  const [thnRkapAkhir, setThnRkapAkhir] = useState(
-    String(anggaran.thn_rkap_akhir || ""),
-  );
-  const [nilaiKad, setNilaiKad] = useState(String(anggaran.nilai_kad || ""));
+// ── CAPEX EDIT ANGGARAN MODAL (child row edit) ─────────────────
+// REVISION 3: Tahun RKAP Awal, Tahun RKAP Akhir, Nilai KAD = read-only text (no inputs)
+function CapexEditAnggaranModal({ capexId, anggaran, capex, onSave, onClose }) {
   const [thnAnggaran, setThnAnggaran] = useState(String(anggaran.thn || ""));
   const [nilaiRkap, setNilaiRkap] = useState(
     String(anggaran.nilai_anggaran || ""),
   );
+  const [error, setError] = useState(null);
 
   const handleSave = () => {
-    if (
-      !thnRkapAwal.trim() ||
-      !thnRkapAkhir.trim() ||
-      !thnAnggaran.trim() ||
-      !nilaiRkap.trim()
-    ) {
-      return alert("Semua field harus diisi!");
+    if (!thnAnggaran.trim() || !nilaiRkap.trim()) {
+      return setError("Semua field harus diisi!");
     }
-    const awal = parseInt(thnRkapAwal),
-      akhir = parseInt(thnRkapAkhir);
-    if (awal > akhir)
-      return alert("RKAP Awal tidak boleh lebih besar dari RKAP Akhir!");
+    const newNilai = parseFloat(nilaiRkap) || 0;
+    const anggaranList = capex.anggaran_tahunan || [];
+    const totalExistingExcludingThis = anggaranList
+      .filter((a) => a.id !== anggaran.id)
+      .reduce((sum, a) => sum + (a.nilai_anggaran || 0), 0);
+    const totalWithThis = totalExistingExcludingThis + newNilai;
+    const kad = capex.nilai_kad || 0;
+    if (totalWithThis > kad) {
+      return setError(
+        `Anggaran tidak boleh melebihi Nilai KAD!`,
+      );
+    }
     onSave(capexId, anggaran.id, {
-      thn_rkap_awal: awal,
-      thn_rkap_akhir: akhir,
-      nilai_kad: parseFloat(nilaiKad) || 0,
+      // REVISION 3: pass through original read-only values unchanged
+      thn_rkap_awal: anggaran.thn_rkap_awal,
+      thn_rkap_akhir: anggaran.thn_rkap_akhir,
+      nilai_kad: anggaran.nilai_kad,
       thn: parseInt(thnAnggaran),
-      nilai_anggaran: parseFloat(nilaiRkap) || 0,
+      nilai_anggaran: newNilai,
     });
   };
 
@@ -4500,51 +4232,86 @@ function CapexEditAnggaranModal({ capexId, anggaran, onSave, onClose }) {
             <X size={20} />
           </button>
         </div>
-        <ModalFormRow label="Tahun RKAP Awal">
-          <input
-            type="number"
-            className="no-spinners"
-            style={{ ...S.inp, maxWidth: 160 }}
-            placeholder="Contoh: 2026"
-            value={thnRkapAwal}
-            onChange={(e) => setThnRkapAwal(e.target.value)}
-            autoFocus
-          />
-        </ModalFormRow>
-        <ModalFormRow label="Tahun RKAP Akhir">
-          <input
-            type="number"
-            className="no-spinners"
-            style={{ ...S.inp, maxWidth: 160 }}
-            placeholder="Contoh: 2027"
-            value={thnRkapAkhir}
-            onChange={(e) => setThnRkapAkhir(e.target.value)}
-          />
-        </ModalFormRow>
-        <ModalFormRow label="Nilai KAD (Rp)">
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <input
-              type="number"
-              className="no-spinners"
-              style={{ ...S.inp, maxWidth: 280, flex: 1 }}
-              placeholder="0"
-              value={nilaiKad}
-              onChange={(e) => setNilaiKad(e.target.value)}
-            />
-            {parseFloat(nilaiKad) > 0 && (
-              <span
-                style={{
-                  fontSize: "0.78rem",
-                  color: "#64748b",
-                  whiteSpace: "nowrap",
-                  fontWeight: 600,
-                }}
-              >
-                ≈ {fmt(nilaiKad)}
+
+        {error && (
+          <div
+            style={{
+              margin: "16px 20px 0",
+              background: "#fef2f2",
+              border: "1px solid #fecaca",
+              borderRadius: 8,
+              padding: "12px 16px",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 12,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: "1.1rem", color: "#dc2626" }}>⚠</span>
+              <span style={{ color: "#991b1b", fontSize: "0.9rem", fontWeight: 500 }}>
+                {error}
               </span>
-            )}
+            </div>
+            <button
+              style={{
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                color: "#dc2626",
+                fontSize: "1.2rem",
+                padding: 0,
+              }}
+              onClick={() => setError(null)}
+            >
+              ×
+            </button>
           </div>
+        )}
+
+        {/* REVISION 3: Tahun RKAP Awal — read-only text, no input box */}
+        <ModalFormRow label="Tahun RKAP Awal">
+          <span
+            style={{
+              fontWeight: 700,
+              color: "#1e293b",
+              fontSize: "0.95rem",
+              padding: "2px 0",
+            }}
+          >
+            {anggaran.thn_rkap_awal || "—"}
+          </span>
         </ModalFormRow>
+
+        {/* REVISION 3: Tahun RKAP Akhir — read-only text, no input box */}
+        <ModalFormRow label="Tahun RKAP Akhir">
+          <span
+            style={{
+              fontWeight: 700,
+              color: "#1e293b",
+              fontSize: "0.95rem",
+              padding: "2px 0",
+            }}
+          >
+            {anggaran.thn_rkap_akhir || "—"}
+          </span>
+        </ModalFormRow>
+
+        {/* REVISION 3: Nilai KAD — read-only text, no input box */}
+        <ModalFormRow label="Nilai KAD (Rp)">
+          <span
+            style={{
+              fontWeight: 700,
+              color: "#2563eb",
+              fontSize: "0.95rem",
+              padding: "2px 0",
+            }}
+          >
+            {fmt(anggaran.nilai_kad || 0)}
+          </span>
+        </ModalFormRow>
+
+        {/* Tahun Anggaran — still editable */}
         <ModalFormRow label="Tahun Anggaran">
           <input
             type="number"
@@ -4553,8 +4320,11 @@ function CapexEditAnggaranModal({ capexId, anggaran, onSave, onClose }) {
             placeholder="Contoh: 2026"
             value={thnAnggaran}
             onChange={(e) => setThnAnggaran(e.target.value)}
+            autoFocus
           />
         </ModalFormRow>
+
+        {/* Nilai RKAP — still editable */}
         <ModalFormRow label="Nilai RKAP (Rp)" noBorder>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <input
@@ -4579,6 +4349,7 @@ function CapexEditAnggaranModal({ capexId, anggaran, onSave, onClose }) {
             )}
           </div>
         </ModalFormRow>
+
         <div
           style={{
             padding: "14px 20px",
@@ -4751,6 +4522,7 @@ function CapexModule({ capexList, setCapexList }) {
             ? c
             : {
                 ...c,
+                // REVISION 3: thn_rkap_awal, thn_rkap_akhir, nilai_kad passed through unchanged
                 thn_rkap_awal: updatedData.thn_rkap_awal,
                 thn_rkap_akhir: updatedData.thn_rkap_akhir,
                 nilai_kad: updatedData.nilai_kad,
@@ -4831,10 +4603,12 @@ function CapexModule({ capexList, setCapexList }) {
           onClose={() => setEditTarget(null)}
         />
       )}
+      {/* REVISION 3: Pass capex data so modal can show read-only RKAP & KAD */}
       {editAnggaran && (
         <CapexEditAnggaranModal
           capexId={editAnggaran.capexId}
           anggaran={editAnggaran.anggaran}
+          capex={capexList.find((c) => c.id === editAnggaran.capexId)}
           onSave={handleSaveEditAnggaran}
           onClose={() => setEditAnggaran(null)}
         />
@@ -5394,6 +5168,7 @@ function CapexModule({ capexList, setCapexList }) {
                                   justifyContent: "center",
                                 }}
                               >
+                                {/* REVISION 3: Edit child row — opens modal with read-only RKAP & KAD */}
                                 <button
                                   style={{
                                     ...S.abtn,
