@@ -1560,16 +1560,16 @@ function AssetHistoryTab({ assetCode, allBorrows }) {
                 style={{
                   padding: "12px 16px",
                   fontSize: "13px",
-                  color: "#475569",
+                  color: "#ffffff",
                 }}
               >
-                #
+                No
               </th>
               <th
                 style={{
                   padding: "12px 16px",
                   fontSize: "13px",
-                  color: "#475569",
+                  color: "#ffffff",
                 }}
               >
                 Peminjam
@@ -1578,7 +1578,7 @@ function AssetHistoryTab({ assetCode, allBorrows }) {
                 style={{
                   padding: "12px 16px",
                   fontSize: "13px",
-                  color: "#475569",
+                  color: "#ffffff",
                 }}
               >
                 Lokasi
@@ -1587,7 +1587,7 @@ function AssetHistoryTab({ assetCode, allBorrows }) {
                 style={{
                   padding: "12px 16px",
                   fontSize: "13px",
-                  color: "#475569",
+                  color: "#ffffff",
                 }}
               >
                 Tgl Pinjam
@@ -1596,7 +1596,7 @@ function AssetHistoryTab({ assetCode, allBorrows }) {
                 style={{
                   padding: "12px 16px",
                   fontSize: "13px",
-                  color: "#475569",
+                  color: "#ffffff",
                 }}
               >
                 Tgl Kembali
@@ -1605,7 +1605,7 @@ function AssetHistoryTab({ assetCode, allBorrows }) {
                 style={{
                   padding: "12px 16px",
                   fontSize: "13px",
-                  color: "#475569",
+                  color: "#ffffff",
                 }}
               >
                 Kondisi
@@ -1614,7 +1614,7 @@ function AssetHistoryTab({ assetCode, allBorrows }) {
                 style={{
                   padding: "12px 16px",
                   fontSize: "13px",
-                  color: "#475569",
+                  color: "#ffffff",
                 }}
               >
                 Status
@@ -4624,17 +4624,15 @@ const ViewAsset = () => {
             </h3>
             <ModernTable>
               <TableRow label="ID Aset">
-                <code
+                <span
                   style={{
-                    padding: "4px 8px",
-                    background: "#f1f5f9",
-                    borderRadius: "6px",
-                    fontSize: "13px",
-                    fontWeight: "bold",
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    color: "#334155",
                   }}
                 >
                   {a.id}
-                </code>
+                </span>
               </TableRow>
               <TableRow label="Nama Aset">
                 <span
@@ -4667,12 +4665,22 @@ const ViewAsset = () => {
                 )}
               </TableRow>
               <TableRow label="Kategori">
-                <span className="cat-badge" style={{ margin: 0 }}>
+                <span
+                  style={{
+                    fontSize: "14px",
+                    color: "#334155",
+                  }}
+                >
                   {a.category}
                 </span>
               </TableRow>
               <TableRow label="Status">
-                <span className={`status-badge ${statusClass(a.status)}`}>
+                <span
+                  style={{
+                    fontSize: "14px",
+                    color: "#334155",
+                  }}
+                >
                   {a.status}
                 </span>
               </TableRow>
@@ -4737,12 +4745,8 @@ const ViewAsset = () => {
               <TableRow label="Tipe Anggaran">
                 <span
                   style={{
-                    padding: "4px 8px",
-                    background: isOpexProj ? "#ede9fe" : "#dbeafe",
-                    color: isOpexProj ? "#7c3aed" : "#1d4ed8",
-                    borderRadius: "6px",
-                    fontSize: "12px",
-                    fontWeight: "bold",
+                    fontSize: "14px",
+                    color: "#334155",
                   }}
                 >
                   {isOpexProj ? "OPEX" : "CAPEX"}

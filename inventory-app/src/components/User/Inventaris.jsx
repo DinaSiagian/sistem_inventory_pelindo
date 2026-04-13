@@ -1,13 +1,12 @@
 // ============================================================
 // Inventaris.jsx — with pagination, per-page selector & sorting
+// Detail aset ditampilkan sebagai halaman inline (tanpa modal/popup)
 // ============================================================
 import { useState, useMemo } from "react";
 import { currentUser, assetsMock, categoryConf, statusConf } from "./data";
-import AssetDetailModal from "./AssetDetailModal";
-import BorrowModal from "./BorrowModal";
 import "./Inventaris.css";
 
-// ── Pool foto per-kategori — dipakai oleh card grid DAN AssetDetailModal ──
+// ── Pool foto per-kategori ──
 const PHOTO_POOLS = {
   LAPTOP: [
     "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=600&q=80&fm=webp",
@@ -59,14 +58,12 @@ const PHOTO_POOLS = {
   ],
 };
 
-// Fungsi deterministik: aset sama → foto sama di card maupun modal
 function getAssetPhoto(asset) {
   const pool = PHOTO_POOLS[asset?.category] || PHOTO_POOLS.OTHER;
   const num = parseInt((asset?.id || "").replace(/\D/g, "") || "0", 10);
   return pool[num % pool.length];
 }
 
-// Fallback picsum.photos — 100% tidak pernah broken, tidak akan tampil icon
 function getAssetPhotoFallback(asset) {
   const cat = (asset?.category || "OTHER").toLowerCase();
   const num = parseInt((asset?.id || "").replace(/\D/g, "") || "0", 10);
@@ -203,6 +200,50 @@ const Ico = ({ n, s = 18, c }) => {
         <polyline points="9 18 15 12 9 6" />
       </>
     ),
+    arrowLeft: (
+      <>
+        <line x1="19" y1="12" x2="5" y2="12" />
+        <polyline points="12 19 5 12 12 5" />
+      </>
+    ),
+    calendar: (
+      <>
+        <rect x="3" y="4" width="18" height="18" rx="2" />
+        <line x1="16" y1="2" x2="16" y2="6" />
+        <line x1="8" y1="2" x2="8" y2="6" />
+        <line x1="3" y1="10" x2="21" y2="10" />
+      </>
+    ),
+    hash: (
+      <>
+        <line x1="4" y1="9" x2="20" y2="9" />
+        <line x1="4" y1="15" x2="20" y2="15" />
+        <line x1="10" y1="3" x2="8" y2="21" />
+        <line x1="16" y1="3" x2="14" y2="21" />
+      </>
+    ),
+    info: (
+      <>
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="16" x2="12" y2="12" />
+        <line x1="12" y1="8" x2="12.01" y2="8" />
+      </>
+    ),
+    edit: (
+      <>
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+      </>
+    ),
+    share: (
+      <>
+        <circle cx="18" cy="5" r="3" />
+        <circle cx="6" cy="12" r="3" />
+        <circle cx="18" cy="19" r="3" />
+        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+      </>
+    ),
   };
   const catIcons = {
     LAPTOP: "laptop",
@@ -228,7 +269,7 @@ const Ico = ({ n, s = 18, c }) => {
   );
 };
 
-// ── Pagination helper: build page number list with ellipsis ──
+// ── Pagination helper ──
 function buildPageList(current, total) {
   if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
   const pages = [];
@@ -242,13 +283,343 @@ function buildPageList(current, total) {
   return pages;
 }
 
+// ── Halaman Detail Aset (inline, bukan modal) ──
+function AssetDetailPage({ asset, loans, onBack, onBorrow }) {
+  const [imgErr, setImgErr] = useState(false);
+  const cat = categoryConf[asset.category] || categoryConf.OTHER;
+  const st = statusConf[asset.status];
+  const isDisposed = isDisposedStatus(asset.status);
+  const photo = getAssetPhoto(asset);
+
+  // Riwayat peminjaman untuk aset ini
+  const assetLoans = (loans || []).filter((l) => l.asset_id === asset.id);
+
+  return (
+    <div className="inv-detail-page">
+      {/* ── Breadcrumb / Back ── */}
+      <div className="inv-detail-breadcrumb">
+        <button className="inv-back-btn" onClick={onBack}>
+          <Ico n="arrowLeft" s={16} />
+          Kembali ke Inventaris
+        </button>
+        <span className="inv-breadcrumb-sep">/</span>
+        <span className="inv-breadcrumb-current">{asset.name}</span>
+      </div>
+
+      {/* ── Hero foto ── */}
+      <div className="inv-detail-hero">
+        <img
+          src={!imgErr ? photo : getAssetPhotoFallback(asset)}
+          alt={asset.name}
+          className={`inv-detail-hero-img${isDisposed ? " is-disposed" : ""}`}
+          onError={() => setImgErr(true)}
+        />
+
+        {isDisposed && (
+          <div className="inv-disposed-overlay">
+            <div className="inv-disposed-badge">
+              <Ico n="ban" s={12} c="#f1f5f9" />
+              Aset Disposed
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Konten Detail */}
+      <div className="inv-detail-content">
+        {/* Kolom kiri: info aset */}
+        <div className="inv-detail-main">
+          <div className="card inv-detail-card">
+            <h2 className="inv-detail-name">{asset.name}</h2>
+            <p className="inv-detail-brand">
+              {asset.brand} · {asset.model}
+            </p>
+
+            <div className="inv-detail-divider" />
+
+            <div className="inv-detail-grid">
+              <div className="inv-detail-field">
+                <span className="inv-detail-label">ID</span>
+                <span
+                  className="inv-detail-value inv-detail-mono"
+                  style={{
+                    background: "var(--gray-50)",
+                    padding: "4px 10px",
+                    borderRadius: "6px",
+                    fontSize: "12.5px",
+                    color: "var(--gray-600)",
+                  }}
+                >
+                  {asset.id}
+                </span>
+              </div>
+
+              <div className="inv-detail-field">
+                <span className="inv-detail-label">Serial</span>
+                <span className="inv-detail-value">{asset.serial}</span>
+              </div>
+
+              <div className="inv-detail-field">
+                <span className="inv-detail-label">Kategori</span>
+                <span className="inv-detail-value">{cat.label}</span>
+              </div>
+
+              <div className="inv-detail-field">
+                <span className="inv-detail-label">Lokasi</span>
+                <span className="inv-detail-value">{asset.location}</span>
+              </div>
+
+              <div className="inv-detail-field">
+                <span className="inv-detail-label">Status</span>
+                <span className="inv-detail-value">{st.label}</span>
+              </div>
+
+              <div className="inv-detail-field">
+                <span className="inv-detail-label">Budget Type</span>
+                <span className="inv-detail-value">{asset.budget_type}</span>
+              </div>
+
+              {asset.purchase_date && (
+                <div className="inv-detail-field">
+                  <span className="inv-detail-label">Tanggal Beli</span>
+                  <span className="inv-detail-value">
+                    {asset.purchase_date}
+                  </span>
+                </div>
+              )}
+
+              {asset.warranty_until && (
+                <div className="inv-detail-field">
+                  <span className="inv-detail-label">Garansi s.d.</span>
+                  <span className="inv-detail-value">
+                    {asset.warranty_until}
+                  </span>
+                </div>
+              )}
+
+              {asset.notes && (
+                <div className="inv-detail-field inv-detail-field--full">
+                  <span className="inv-detail-label">Catatan</span>
+                  <span className="inv-detail-value">{asset.notes}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* ── Tombol aksi ── */}
+          {!isDisposed && (
+            <div className="inv-detail-actions">
+              {asset.status === "AVAILABLE" && (
+                <button
+                  className="inv-action-btn inv-action-btn--primary"
+                  onClick={() => onBorrow(asset)}
+                >
+                  <Ico n="share" s={16} />
+                  Pinjam Aset
+                </button>
+              )}
+              <button
+                className="inv-action-btn inv-action-btn--secondary"
+                onClick={onBack}
+              >
+                <Ico n="arrowLeft" s={16} />
+                Kembali
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Kolom kanan: riwayat peminjaman */}
+        <div className="inv-detail-sidebar">
+          <div className="card inv-detail-card">
+            <h3 className="inv-detail-section-title">Riwayat Peminjaman</h3>
+            {assetLoans.length === 0 ? (
+              <p className="inv-detail-empty-loans">
+                Belum ada riwayat peminjaman untuk aset ini.
+              </p>
+            ) : (
+              <div className="inv-loan-list">
+                {assetLoans.map((loan, idx) => (
+                  <div key={loan.id || idx} className="inv-loan-item">
+                    <div className="inv-loan-header">
+                      <span className="inv-loan-user">
+                        {loan.borrower_name || loan.user_id}
+                      </span>
+                      <span
+                        className={`inv-loan-status ${loan.returned_at ? "returned" : "active"}`}
+                      >
+                        {loan.returned_at ? "Dikembalikan" : "Sedang dipinjam"}
+                      </span>
+                    </div>
+                    <div className="inv-loan-dates">
+                      <span>
+                        <Ico n="calendar" s={11} c="var(--gray-400)" />
+                        {loan.borrow_date || loan.borrowed_at}
+                      </span>
+                      {loan.returned_at && <span>→ {loan.returned_at}</span>}
+                    </div>
+                    {loan.notes && (
+                      <p className="inv-loan-notes">{loan.notes}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Halaman Form Peminjaman (inline, bukan modal) ──
+function BorrowPage({ asset, onBack, onConfirm }) {
+  const [form, setForm] = useState({
+    borrower_name: currentUser.name || "",
+    borrow_date: new Date().toISOString().slice(0, 10),
+    return_plan: "",
+    notes: "",
+  });
+
+  const handleChange = (field, value) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = () => {
+    if (!form.borrower_name || !form.borrow_date) return;
+    const newTrx = {
+      id: `TRX-${Date.now()}`,
+      asset_id: asset.id,
+      borrower_name: form.borrower_name,
+      borrow_date: form.borrow_date,
+      return_plan: form.return_plan,
+      notes: form.notes,
+      borrowed_at: form.borrow_date,
+      returned_at: null,
+    };
+    onConfirm(newTrx);
+  };
+
+  const cat = categoryConf[asset.category] || categoryConf.OTHER;
+
+  return (
+    <div className="inv-borrow-page">
+      {/* Breadcrumb */}
+      <div className="inv-detail-breadcrumb">
+        <button className="inv-back-btn" onClick={onBack}>
+          <Ico n="arrowLeft" s={16} />
+          Kembali ke Detail Aset
+        </button>
+        <span className="inv-breadcrumb-sep">/</span>
+        <span className="inv-breadcrumb-current">Pinjam Aset</span>
+      </div>
+
+      <div className="inv-borrow-layout">
+        {/* Info aset ringkas */}
+        <div className="card inv-borrow-asset-card">
+          <div className="inv-borrow-asset-info">
+            <span
+              className="inv-cat-chip"
+              style={{
+                background: cat.color,
+                position: "relative",
+                fontSize: 11,
+              }}
+            >
+              <Ico n={asset.category} s={10} c="#fff" />
+              {cat.label}
+            </span>
+            <div>
+              <p className="inv-borrow-asset-name">{asset.name}</p>
+              <p className="inv-borrow-asset-brand">
+                {asset.brand} · {asset.model}
+              </p>
+              <p className="inv-borrow-asset-serial">{asset.serial}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Form */}
+        <div className="card inv-borrow-form-card">
+          <h2 className="inv-borrow-title">Form Peminjaman</h2>
+
+          <div className="inv-borrow-field">
+            <label className="inv-borrow-label">Nama Peminjam *</label>
+            <input
+              className="inv-borrow-input"
+              type="text"
+              value={form.borrower_name}
+              onChange={(e) => handleChange("borrower_name", e.target.value)}
+              placeholder="Nama lengkap peminjam"
+            />
+          </div>
+
+          <div className="inv-borrow-row">
+            <div className="inv-borrow-field">
+              <label className="inv-borrow-label">Tanggal Pinjam *</label>
+              <input
+                className="inv-borrow-input"
+                type="date"
+                value={form.borrow_date}
+                onChange={(e) => handleChange("borrow_date", e.target.value)}
+              />
+            </div>
+            <div className="inv-borrow-field">
+              <label className="inv-borrow-label">Rencana Pengembalian</label>
+              <input
+                className="inv-borrow-input"
+                type="date"
+                value={form.return_plan}
+                onChange={(e) => handleChange("return_plan", e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="inv-borrow-field">
+            <label className="inv-borrow-label">Catatan</label>
+            <textarea
+              className="inv-borrow-input inv-borrow-textarea"
+              value={form.notes}
+              onChange={(e) => handleChange("notes", e.target.value)}
+              placeholder="Keterangan tambahan (opsional)"
+              rows={3}
+            />
+          </div>
+
+          <div className="inv-borrow-actions">
+            <button
+              className="inv-action-btn inv-action-btn--secondary"
+              onClick={onBack}
+            >
+              Batal
+            </button>
+            <button
+              className="inv-action-btn inv-action-btn--primary"
+              onClick={handleSubmit}
+              disabled={!form.borrower_name || !form.borrow_date}
+            >
+              <Ico n="share" s={16} />
+              Konfirmasi Peminjaman
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Inventaris({ loans, setLoans }) {
   const [search, setSearch] = useState("");
   const [catFilter, setCatFilter] = useState("");
   const [statusFilter, setStatus] = useState("");
-  const [selectedAsset, setSelected] = useState(null);
-  const [borrowAsset, setBorrow] = useState(null);
   const [imgErr, setImgErr] = useState({});
+
+  // ── View state: "list" | "detail" | "borrow" ──
+  const [view, setView] = useState("list");
+  const [selectedAsset, setSelectedAsset] = useState(null);
+
+  // ── Display mode: "table" | "grid" (default table) ──
+  const [displayMode, setDisplayMode] = useState("table");
 
   // ── Sorting & paging state ──
   const [sortKey, setSortKey] = useState("name_asc");
@@ -283,10 +654,8 @@ export default function Inventaris({ loans, setLoans }) {
     return [...filtered].sort((a, b) => {
       const aDisposed = isDisposedStatus(a.status);
       const bDisposed = isDisposedStatus(b.status);
-      // Disposed always sinks to bottom
       if (aDisposed && !bDisposed) return 1;
       if (!aDisposed && bDisposed) return -1;
-      // Normal sort for the rest
       const va = (a[opt.field] || "").toString().toLowerCase();
       const vb = (b[opt.field] || "").toString().toLowerCase();
       if (va < vb) return opt.dir === "asc" ? -1 : 1;
@@ -302,7 +671,6 @@ export default function Inventaris({ loans, setLoans }) {
   const startItem = sorted.length === 0 ? 0 : (safePage - 1) * perPage + 1;
   const endItem = Math.min(safePage * perPage, sorted.length);
 
-  // Reset to page 1 on filter/sort/perPage change
   const handleSearch = (v) => {
     setSearch(v);
     setPage(1);
@@ -326,13 +694,55 @@ export default function Inventaris({ loans, setLoans }) {
 
   const handleCardClick = (a) => {
     if (isDisposedStatus(a.status)) return;
-    setSelected(a);
+    setSelectedAsset(a);
+    setView("detail");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleBackToList = () => {
+    setView("list");
+    setSelectedAsset(null);
+  };
+
+  const handleGoToBorrow = (a) => {
+    setSelectedAsset(a);
+    setView("borrow");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleBorrowConfirm = (newTrx) => {
+    setLoans((prev) => [...prev, newTrx]);
+    setView("list");
+    setSelectedAsset(null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const pageList = buildPageList(safePage, totalPages);
 
-  const currentSortOpt = SORT_OPTIONS.find((o) => o.key === sortKey);
+  // ── Render: halaman detail ──
+  if (view === "detail" && selectedAsset) {
+    return (
+      <AssetDetailPage
+        asset={selectedAsset}
+        loans={loans}
+        onBack={handleBackToList}
+        onBorrow={handleGoToBorrow}
+      />
+    );
+  }
 
+  // ── Render: halaman form pinjam ──
+  if (view === "borrow" && selectedAsset) {
+    return (
+      <BorrowPage
+        asset={selectedAsset}
+        onBack={() => setView("detail")}
+        onConfirm={handleBorrowConfirm}
+      />
+    );
+  }
+
+  // ── Render: halaman daftar inventaris ──
   return (
     <div className="inventaris">
       {/* ── Header ── */}
@@ -419,7 +829,7 @@ export default function Inventaris({ loans, setLoans }) {
         </div>
       </div>
 
-      {/* ── Toolbar: Sort + Per-page ── */}
+      {/* ── Toolbar: Sort + Per-page + View Toggle ── */}
       <div className="inv-toolbar">
         <div className="inv-toolbar-left">
           <span className="inv-toolbar-label">Urutkan:</span>
@@ -445,6 +855,26 @@ export default function Inventaris({ loans, setLoans }) {
         </div>
 
         <div className="inv-toolbar-right">
+          {/* View Mode Toggle */}
+          <div className="inv-view-toggle">
+            <button
+              className={`inv-view-btn${displayMode === "table" ? " active" : ""}`}
+              onClick={() => setDisplayMode("table")}
+              title="Tampilan Tabel"
+            >
+              <Ico n="hash" s={14} />
+              Tabel
+            </button>
+            <button
+              className={`inv-view-btn${displayMode === "grid" ? " active" : ""}`}
+              onClick={() => setDisplayMode("grid")}
+              title="Tampilan Grid"
+            >
+              <Ico n="cube" s={14} />
+              Grid
+            </button>
+          </div>
+
           <span className="inv-perpage-label">Tampilkan:</span>
           <div className="inv-perpage-group">
             {PER_PAGE_OPTIONS.map((n) => (
@@ -460,7 +890,7 @@ export default function Inventaris({ loans, setLoans }) {
         </div>
       </div>
 
-      {/* ── Grid / Empty ── */}
+      {/* ── Table / Grid / Empty ── */}
       {filtered.length === 0 ? (
         <div className="card inv-empty">
           <div className="inv-empty-icon">
@@ -471,7 +901,179 @@ export default function Inventaris({ loans, setLoans }) {
             Coba ubah filter atau kata kunci pencarian
           </p>
         </div>
+      ) : displayMode === "table" ? (
+        /* ── TABLE VIEW ── */
+        <>
+          <div className="inv-table-container">
+            <table className="inv-table">
+              <thead>
+                <tr>
+                  <th className="inv-table-id">ID Aset</th>
+                  <th className="inv-table-name">Nama Aset</th>
+                  <th className="inv-table-brand">Brand · Model</th>
+                  <th className="inv-table-serial">Serial</th>
+                  <th className="inv-table-location">Lokasi</th>
+                  <th className="inv-table-category">Kategori</th>
+                  <th className="inv-table-status">Status</th>
+                  <th className="inv-table-action">Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pageItems.map((a) => {
+                  const cat = categoryConf[a.category] || categoryConf.OTHER;
+                  const st = statusConf[a.status];
+                  const photo = getAssetPhoto(a);
+                  const hasErr = imgErr[a.id];
+                  const isDisposed = isDisposedStatus(a.status);
+                  const isAvailable = a.status === "AVAILABLE";
+
+                  return (
+                    <tr
+                      key={a.id}
+                      className={`inv-table-row${isDisposed ? " is-disposed" : ""}`}
+                    >
+                      {/* ID Aset */}
+                      <td className="inv-table-id">
+                        <code className="inv-table-code">{a.id}</code>
+                      </td>
+                      
+                      {/* Nama Aset dengan foto */}
+                      <td className="inv-table-name">
+                        <div className="inv-table-cell-name">
+                          <img
+                            src={!hasErr ? photo : getAssetPhotoFallback(a)}
+                            alt={a.name}
+                            className="inv-table-thumb"
+                            onError={() => {
+                              if (!hasErr) {
+                                setImgErr((p) => ({ ...p, [a.id]: true }));
+                              }
+                            }}
+                          />
+                          <span className="inv-table-text-strong">{a.name}</span>
+                          {isDisposed && (
+                            <span className="inv-table-badge inv-table-badge--disposed">
+                              Disposed
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      
+                      {/* Brand · Model */}
+                      <td className="inv-table-brand">
+                        <span className="inv-table-text">{a.brand} · {a.model}</span>
+                      </td>
+                      
+                      {/* Serial */}
+                      <td className="inv-table-serial">
+                        <code className="inv-table-code">{a.serial}</code>
+                      </td>
+                      
+                      {/* Lokasi */}
+                      <td className="inv-table-location">
+                        <div className="inv-table-location-text">
+                          <div className="inv-table-loc-main">{a.location}</div>
+                        </div>
+                      </td>
+                      
+                      {/* Kategori */}
+                      <td className="inv-table-category">
+                        <span
+                          className="inv-table-badge"
+                          style={{ background: cat.color + "20", color: cat.color }}
+                        >
+                          {cat.label}
+                        </span>
+                      </td>
+                      {/* Status */}
+                      <td className="inv-table-status">
+                        <span
+                          className="inv-table-status-badge"
+                          style={{ background: st.bg, color: st.color }}
+                        >
+                          {st.label}
+                        </span>
+                      </td>
+                      
+                      {/* Aksi */}
+                      <td className="inv-table-action">
+                        <div className="inv-table-actions">
+                          <button
+                            className="inv-table-action-btn inv-table-action-btn--detail"
+                            onClick={() => handleCardClick(a)}
+                            title="Lihat Detail"
+                          >
+                            <Ico n="eye" s={13} />
+                          </button>
+                          {isAvailable && !isDisposed && (
+                            <button
+                              className="inv-table-action-btn inv-table-action-btn--borrow"
+                              onClick={() => handleGoToBorrow(a)}
+                              title="Pinjam Aset"
+                            >
+                              <Ico n="share" s={13} />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* ── Pagination ── */}
+          {totalPages > 1 && (
+            <div className="inv-pagination-wrap">
+              <p className="inv-pagination-info">
+                Menampilkan{" "}
+                <strong>
+                  {startItem}–{endItem}
+                </strong>{" "}
+                dari <strong>{sorted.length}</strong> aset
+              </p>
+
+              <div className="inv-pagination">
+                <button
+                  className="inv-pg-btn"
+                  disabled={safePage === 1}
+                  onClick={() => setPage((p) => p - 1)}
+                  title="Halaman sebelumnya"
+                >
+                  <Ico n="chevLeft" s={13} />
+                </button>
+
+                {pageList.map((p, i) =>
+                  p === "…" ? (
+                    <span key={`ellipsis-${i}`} className="inv-pg-ellipsis">
+                      …
+                    </span>
+                  ) : (
+                    <button
+                      key={p}
+                      className={`inv-pg-btn${p === safePage ? " active" : ""}`}
+                      onClick={() => setPage(p)}
+                    >
+                      {p}
+                    </button>
+                  ),
+                )}
+
+                <button
+                  className="inv-pg-btn"
+                  disabled={safePage === totalPages}
+                  onClick={() => setPage((p) => p + 1)}
+                  title="Halaman berikutnya"
+                >
+                  <Ico n="chevRight" s={13} />
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       ) : (
+        /* ── GRID VIEW ── */
         <>
           <div className="inv-grid">
             {pageItems.map((a) => {
@@ -490,24 +1092,20 @@ export default function Inventaris({ loans, setLoans }) {
                 >
                   {/* ── Foto ── */}
                   <div className="inv-card-photo">
-                    {/* Foto: primary (Unsplash) → fallback (picsum, 100% reliable) */}
                     <img
                       src={!hasErr ? photo : getAssetPhotoFallback(a)}
                       alt={a.name}
                       className="inv-card-img"
                       onError={(e) => {
                         if (!hasErr) {
-                          // Primary gagal → coba picsum fallback
                           setImgErr((p) => ({ ...p, [a.id]: true }));
                         } else {
-                          // Picsum juga gagal (sangat jarang) → hide img
                           e.currentTarget.style.display = "none";
                         }
                       }}
                     />
                     <div className="inv-photo-gradient" />
 
-                    {/* Status badge */}
                     <span
                       className="inv-status-badge"
                       style={{ background: st.bg, color: st.color }}
@@ -519,7 +1117,6 @@ export default function Inventaris({ loans, setLoans }) {
                       {st.label}
                     </span>
 
-                    {/* Kategori chip */}
                     <span
                       className="inv-cat-chip"
                       style={{ background: cat.color }}
@@ -528,7 +1125,6 @@ export default function Inventaris({ loans, setLoans }) {
                       {cat.label}
                     </span>
 
-                    {/* Disposed overlay */}
                     {isDisposed && (
                       <div className="inv-disposed-overlay">
                         <div className="inv-disposed-badge">
@@ -538,7 +1134,6 @@ export default function Inventaris({ loans, setLoans }) {
                       </div>
                     )}
 
-                    {/* Hover overlay */}
                     {!isDisposed && (
                       <div className="inv-hover-overlay">
                         <div className="inv-hover-btn">
@@ -587,7 +1182,6 @@ export default function Inventaris({ loans, setLoans }) {
               </p>
 
               <div className="inv-pagination">
-                {/* Prev */}
                 <button
                   className="inv-pg-btn"
                   disabled={safePage === 1}
@@ -613,7 +1207,6 @@ export default function Inventaris({ loans, setLoans }) {
                   ),
                 )}
 
-                {/* Next */}
                 <button
                   className="inv-pg-btn"
                   disabled={safePage === totalPages}
@@ -626,28 +1219,6 @@ export default function Inventaris({ loans, setLoans }) {
             </div>
           )}
         </>
-      )}
-
-      {selectedAsset && (
-        <AssetDetailModal
-          asset={selectedAsset}
-          loans={loans}
-          onClose={() => setSelected(null)}
-          onBorrow={(a) => {
-            setSelected(null);
-            setBorrow(a);
-          }}
-        />
-      )}
-      {borrowAsset && (
-        <BorrowModal
-          asset={borrowAsset}
-          onClose={() => setBorrow(null)}
-          onConfirm={(newTrx) => {
-            setLoans((prev) => [...prev, newTrx]);
-            setBorrow(null);
-          }}
-        />
       )}
     </div>
   );
