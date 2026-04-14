@@ -687,18 +687,15 @@ function InlineEditField({ label, value, onSave, type = "text" }) {
           <button
             style={{
               ...S.abtn,
-              color: "#d97706",
-              borderColor: "#fde68a",
-              background: "#fffbeb",
+              color: "#2563eb",
+              borderColor: "#bfdbfe",
+              background: "#eff6ff",
+              padding: "8px",
             }}
             onClick={() => setEditing(true)}
+            title="Tambah Perubahan"
           >
-            <Pencil size={13} style={{ color: "#d97706" }} />
-            <span
-              style={{ fontSize: "0.72rem", color: "#d97706", fontWeight: 600 }}
-            >
-              Edit
-            </span>
+            <Plus size={16} style={{ color: "#2563eb" }} />
           </button>
         )}
       </td>
@@ -707,9 +704,11 @@ function InlineEditField({ label, value, onSave, type = "text" }) {
 }
 
 // ── HISTORY TABLE (shared inline component) ────────────────────
-function InlineHistoryTable({ row, mode = "opex" }) {
+function InlineHistoryTable({ row, mode = "opex", onUpdateHistoryRecord, onDeleteHistoryRecord }) {
   const lbl = mode === "opex" ? "Anggaran" : "Anggaran";
   const history = row.history || [];
+  const [editHistoryId, setEditHistoryId] = useState(null);
+  const [editFormH, setEditFormH] = useState({ tipe: "", nilai: "", keterangan: "" });
   const TIPE_META = {
     initial: { label: "Input Awal", color: "#0284c7", bg: "#e0f2fe" },
     penambahan: { label: "Penambahan", color: "#16a34a", bg: "#dcfce7" },
@@ -766,6 +765,7 @@ function InlineHistoryTable({ row, mode = "opex" }) {
                 <th style={{ ...S.th, textAlign: "right" }}>MURNI (Rp)</th>
                 <th style={{ ...S.th, textAlign: "right" }}>BYMHD (Rp)</th>
                 <th style={{ ...S.th, textAlign: "right" }}>JUMLAH (Rp)</th>
+                <th style={{ ...S.th, textAlign: "center", width: 100 }}>AKSI</th>
               </tr>
             </thead>
             <tbody>
@@ -818,6 +818,53 @@ function InlineHistoryTable({ row, mode = "opex" }) {
                   >
                     {h.jumlah < 0 ? "−" : ""}{fmt(Math.abs(h.jumlah || 0))}
                   </td>
+                  <td style={{ ...S.td, textAlign: "center" }}>
+                    <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>
+                      <button
+                        style={{
+                          ...S.abtn,
+                          padding: "6px 10px",
+                          background: "#fffbeb",
+                          borderColor: "#fde68a",
+                        }}
+                        onClick={() => {
+                          if (h.is_initial) {
+                            alert("Tidak bisa edit riwayat Input Awal");
+                            return;
+                          }
+                          setEditHistoryId(h.id);
+                          setEditFormH({
+                            tipe: h.tipe,
+                            nilai: h.nilai,
+                            keterangan: h.keterangan || "",
+                          });
+                        }}
+                        title="Edit"
+                      >
+                        <Edit size={13} style={{ color: "#d97706" }} />
+                      </button>
+                      <button
+                        style={{
+                          ...S.abtn,
+                          padding: "6px 10px",
+                          background: "#fef2f2",
+                          borderColor: "#fecaca",
+                        }}
+                        onClick={() => {
+                          if (h.is_initial) {
+                            alert("Tidak bisa hapus riwayat Input Awal");
+                            return;
+                          }
+                          if (onDeleteHistoryRecord) {
+                            onDeleteHistoryRecord(h.id);
+                          }
+                        }}
+                        title="Hapus"
+                      >
+                        <Trash2 size={13} style={{ color: "#ef4444" }} />
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -843,6 +890,140 @@ function InlineHistoryTable({ row, mode = "opex" }) {
               </tr>
             </tfoot>
           </table>
+        </div>
+      )}
+      
+      {/* EDIT HISTORY MODAL */}
+      {editHistoryId && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "rgba(0,0,0,0.4)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9999,
+          }}
+          onClick={() => setEditHistoryId(null)}
+        >
+          <div
+            style={{
+              background: "white",
+              borderRadius: 8,
+              padding: "24px",
+              maxWidth: 400,
+              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 style={{ margin: 0, marginBottom: 16, color: "#1e293b" }}>
+              Edit Riwayat
+            </h3>
+            <div style={{ marginBottom: 12 }}>
+              <label style={{ display: "block", fontSize: "0.8rem", fontWeight: 600, marginBottom: 4, color: "#475569" }}>
+                Tipe Perubahan
+              </label>
+              <select
+                value={editFormH.tipe}
+                onChange={(e) =>
+                  setEditFormH((f) => ({ ...f, tipe: e.target.value }))
+                }
+                style={{
+                  width: "100%",
+                  padding: "6px 8px",
+                  fontSize: "0.8rem",
+                  border: "1px solid #cbd5e1",
+                  borderRadius: 4,
+                }}
+              >
+                <option value="">Pilih tipe</option>
+                <option value="penambahan">Penambahan</option>
+                <option value="pengurangan">Pengurangan</option>
+                <option value="bymhd">BYMHD</option>
+                <option value="transfer">Transfer</option>
+              </select>
+            </div>
+            <div style={{ marginBottom: 12 }}>
+              <label style={{ display: "block", fontSize: "0.8rem", fontWeight: 600, marginBottom: 4, color: "#475569" }}>
+                Nilai (Rp)
+              </label>
+              <input
+                type="number"
+                value={editFormH.nilai}
+                onChange={(e) =>
+                  setEditFormH((f) => ({ ...f, nilai: +e.target.value || 0 }))
+                }
+                style={{
+                  width: "100%",
+                  padding: "6px 8px",
+                  fontSize: "0.8rem",
+                  border: "1px solid #cbd5e1",
+                  borderRadius: 4,
+                  boxSizing: "border-box",
+                }}
+              />
+            </div>
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: "block", fontSize: "0.8rem", fontWeight: 600, marginBottom: 4, color: "#475569" }}>
+                Keterangan
+              </label>
+              <textarea
+                value={editFormH.keterangan}
+                onChange={(e) =>
+                  setEditFormH((f) => ({ ...f, keterangan: e.target.value }))
+                }
+                style={{
+                  width: "100%",
+                  padding: "6px 8px",
+                  fontSize: "0.8rem",
+                  border: "1px solid #cbd5e1",
+                  borderRadius: 4,
+                  boxSizing: "border-box",
+                  minHeight: 60,
+                  fontFamily: "inherit",
+                }}
+              />
+            </div>
+            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+              <button
+                onClick={() => setEditHistoryId(null)}
+                style={{
+                  padding: "6px 12px",
+                  fontSize: "0.8rem",
+                  border: "1px solid #cbd5e1",
+                  borderRadius: 4,
+                  background: "#fff",
+                  cursor: "pointer",
+                }}
+              >
+                Batal
+              </button>
+              <button
+                onClick={() => {
+                  if (onUpdateHistoryRecord) {
+                    onUpdateHistoryRecord(editHistoryId, editFormH);
+                  }
+                  setEditHistoryId(null);
+                }}
+                style={{
+                  padding: "6px 12px",
+                  fontSize: "0.8rem",
+                  border: "none",
+                  borderRadius: 4,
+                  background: "#d97706",
+                  color: "white",
+                  cursor: "pointer",
+                  fontWeight: 600,
+                }}
+              >
+                Simpan
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -917,23 +1098,6 @@ function EditSection({
           </tr>
         </thead>
         <tbody>
-          <InlineEditField
-            label={lbl}
-            value={masterNama}
-            onSave={(v) => onUpdateRow && onUpdateRow({ masterNama: v })}
-          />
-          <InlineEditField
-            label="Tahun"
-            value={row.thn}
-            type="year"
-            onSave={(v) => onUpdateRow && onUpdateRow({ thn: v })}
-          />
-          <InlineEditField
-            label={totalLbl}
-            value={currentTotal}
-            type="currency"
-            onSave={(v) => onUpdateRow && onUpdateRow({ overrideTotal: v })}
-          />
         </tbody>
       </table>
       <div style={{ borderTop: "1px solid #e2e8f0", background: "#fafafa" }}>
@@ -1070,8 +1234,6 @@ function EditSection({
 }
 
 // ── ANGGARAN SECTION (OPEX) ────────────────────────────────────
-// REVISION 1: "realisasi" → "anggaran" in labels
-// REVISION 2: History table shown directly below each row (no icon toggle)
 function RealisasiSection({ master, setMasters, toast_ }) {
   const [showForm, setShowForm] = useState(false);
   const [editRowId, setEditRowId] = useState(null);
@@ -1221,6 +1383,40 @@ function RealisasiSection({ master, setMasters, toast_ }) {
         toast_("Data anggaran dihapus.");
       },
     });
+
+  const handleUpdateHistoryRecord = (historyId, updates) => {
+    setMasters((prev) =>
+      prev.map((m) => {
+        if (m.id !== master.id) return m;
+        return {
+          ...m,
+          realisasi_tahunan: (m.realisasi_tahunan || []).map((r) => ({
+            ...r,
+            history: (r.history || []).map((h) =>
+              h.id === historyId ? { ...h, ...updates } : h,
+            ),
+          })),
+        };
+      }),
+    );
+    toast_("Riwayat diperbarui.");
+  };
+
+  const handleDeleteHistoryRecord = (historyId) => {
+    setMasters((prev) =>
+      prev.map((m) => {
+        if (m.id !== master.id) return m;
+        return {
+          ...m,
+          realisasi_tahunan: (m.realisasi_tahunan || []).map((r) => ({
+            ...r,
+            history: (r.history || []).filter((h) => h.id !== historyId),
+          })),
+        };
+      }),
+    );
+    toast_("Riwayat dihapus.");
+  };
 
   const grandTotal = list.reduce(
     (a, r) => a + (r.realisasi_murni || 0) + (r.realisasi_bymhd || 0),
@@ -1420,7 +1616,6 @@ function RealisasiSection({ master, setMasters, toast_ }) {
               <th style={{ ...S.th, textAlign: "right" }}>ANGGARAN MURNI</th>
               <th style={{ ...S.th, textAlign: "right" }}>ANGGARAN BYMHD</th>
               <th style={{ ...S.th, textAlign: "right" }}>TOTAL ANGGARAN</th>
-              {/* REVISION 2: removed history column, now only edit + delete */}
               <th style={{ ...S.th, textAlign: "center", width: 100 }}>AKSI</th>
             </tr>
           </thead>
@@ -1505,29 +1700,21 @@ function RealisasiSection({ master, setMasters, toast_ }) {
                         {fmt(total)}
                       </td>
                       <td style={{ ...S.td, textAlign: "center" }}>
-                        {/* REVISION 2: History icon removed */}
-                        <div
+                        <button
                           style={{
-                            display: "flex",
-                            gap: 4,
-                            justifyContent: "center",
+                            ...S.abtn,
+                            color: "#2563eb",
+                            borderColor: "#bfdbfe",
+                            background: "#eff6ff",
+                            padding: "8px",
                           }}
+                          onClick={() =>
+                            setEditRowId(editRowId === row.id ? null : row.id)
+                          }
+                          title="Tambah Jenis Perubahan"
                         >
-                          <button
-                            style={S.abtn}
-                            onClick={() =>
-                              setEditRowId(editRowId === row.id ? null : row.id)
-                            }
-                          >
-                            <Edit size={12} style={{ color: "#d97706" }} />
-                          </button>
-                          <button
-                            style={S.abtn}
-                            onClick={() => handleDelete(row.id)}
-                          >
-                            <Trash2 size={12} style={{ color: "#ef4444" }} />
-                          </button>
-                        </div>
+                          <Plus size={14} style={{ color: "#2563eb" }} />
+                        </button>
                       </td>
                     </tr>
                     {editRowId === row.id && (
@@ -1624,7 +1811,12 @@ function RealisasiSection({ master, setMasters, toast_ }) {
                   </span>
                 </div>
                 <div style={{ padding: "16px" }}>
-                  <InlineHistoryTable row={row} mode="opex" />
+                  <InlineHistoryTable
+                    row={row}
+                    mode="opex"
+                    onUpdateHistoryRecord={handleUpdateHistoryRecord}
+                    onDeleteHistoryRecord={handleDeleteHistoryRecord}
+                  />
                 </div>
               </div>
             ))}
@@ -1636,7 +1828,6 @@ function RealisasiSection({ master, setMasters, toast_ }) {
 }
 
 // ── CAPEX ANGGARAN TAHUNAN SECTION ─────────────────────────────
-// REVISION 2: History always shown directly below each row (no icon)
 function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
   const [showForm, setShowForm] = useState(false);
   const [editRowId, setEditRowId] = useState(null);
@@ -1767,6 +1958,40 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
       },
     });
 
+  const handleUpdateHistoryRecord = (historyId, updates) => {
+    setCapexList((prev) =>
+      prev.map((c) => {
+        if (c.id !== capex.id) return c;
+        return {
+          ...c,
+          anggaran_tahunan: (c.anggaran_tahunan || []).map((r) => ({
+            ...r,
+            history: (r.history || []).map((h) =>
+              h.id === historyId ? { ...h, ...updates } : h,
+            ),
+          })),
+        };
+      }),
+    );
+    toast_("Riwayat diperbarui.");
+  };
+
+  const handleDeleteHistoryRecord = (historyId) => {
+    setCapexList((prev) =>
+      prev.map((c) => {
+        if (c.id !== capex.id) return c;
+        return {
+          ...c,
+          anggaran_tahunan: (c.anggaran_tahunan || []).map((r) => ({
+            ...r,
+            history: (r.history || []).filter((h) => h.id !== historyId),
+          })),
+        };
+      }),
+    );
+    toast_("Riwayat dihapus.");
+  };
+
   return (
     <div style={{ padding: "0 20px 20px" }}>
       {confirm && (
@@ -1776,7 +2001,6 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
           onCancel={() => setConfirm(null)}
         />
       )}
-      {/* REVISION 2: HistoryPopup removed, inline table used instead */}
 
       {showForm && (
         <div style={S.ovs} onClick={() => setShowForm(false)}>
@@ -1942,7 +2166,6 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
               <th style={{ ...S.th, textAlign: "right" }}>REAL (Rp)</th>
               <th style={{ ...S.th, textAlign: "right" }}>BYMHD (Rp)</th>
               <th style={{ ...S.th, textAlign: "right" }}>TOTAL (Rp)</th>
-              {/* REVISION 2: History icon column removed */}
               <th style={{ ...S.th, textAlign: "center", width: 100 }}>AKSI</th>
             </tr>
           </thead>
@@ -2026,7 +2249,6 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
                         {fmt(total)}
                       </td>
                       <td style={{ ...S.td, textAlign: "center" }}>
-                        {/* REVISION 2: History icon removed */}
                         <div
                           style={{
                             display: "flex",
@@ -2149,7 +2371,7 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
         </table>
       </div>
 
-      {/* CARD 2: Tabel Riwayat Perubahan Anggaran (Terpisah dengan padding abu-abu) */}
+      {/* CARD 2: Tabel Riwayat Perubahan Anggaran */}
       {list.length > 0 && (
         <div style={{ marginTop: 0, paddingTop: 12, background: "#f5f5f5" }}>
           <div style={{ padding: "0 0 12px 0" }}>
@@ -2182,7 +2404,12 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
                   </span>
                 </div>
                 <div style={{ padding: "16px" }}>
-                  <InlineHistoryTable row={row} mode="capex" />
+                  <InlineHistoryTable
+                    row={row}
+                    mode="capex"
+                    onUpdateHistoryRecord={handleUpdateHistoryRecord}
+                    onDeleteHistoryRecord={handleDeleteHistoryRecord}
+                  />
                 </div>
               </div>
             ))}
@@ -2696,6 +2923,385 @@ function CapexInputAnggaranPage({ capex, onBack, onSave }) {
   );
 }
 
+// ── OPEX MASTER LIST PAGE ──────────────────────────────────────
+// REVISION: Tombol Edit di baris tabel langsung mengisi form "Tambah/Edit Anggaran Master" di bawah
+// (bukan membuka modal baru). Form berubah menjadi mode Edit saat salah satu baris diklik Edit.
+function OpexMasterListPage({ masters, onBack, onAdd, onEdit, onDelete }) {
+  const [editingMaster, setEditingMaster] = useState(null); // null = mode tambah, obj = mode edit
+  const [formKd, setFormKd] = useState("");
+  const [formNama, setFormNama] = useState("");
+
+  // Saat klik Edit di baris, isi form dengan data baris tersebut dan set mode edit
+  const handleClickEdit = (m) => {
+    setEditingMaster(m);
+    setFormKd(m.kd);
+    setFormNama(m.nama);
+    // Scroll ke form bawah
+    setTimeout(() => {
+      document.getElementById("opex-master-form-card")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 50);
+  };
+
+  // Reset form ke mode tambah
+  const handleCancelEdit = () => {
+    setEditingMaster(null);
+    setFormKd("");
+    setFormNama("");
+  };
+
+  const handleSubmit = () => {
+    if (!formNama) return;
+    if (editingMaster) {
+      // Mode edit: panggil onEdit dengan data baru
+      onEdit({ ...editingMaster, kd: formKd, nama: formNama });
+      setEditingMaster(null);
+    } else {
+      // Mode tambah
+      onAdd(formKd, formNama);
+    }
+    setFormKd("");
+    setFormNama("");
+  };
+
+  const isEditMode = !!editingMaster;
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <button
+        style={{ ...S.abtn, padding: "6px 10px", alignSelf: "flex-start" }}
+        onClick={onBack}
+        title="Kembali"
+      >
+        <ArrowLeft size={16} style={{ color: "#2563eb" }} />
+      </button>
+
+      {/* Tabel Daftar Anggaran Master OPEX */}
+      <div
+        style={{
+          background: "white",
+          border: "1px solid #e2e8f0",
+          borderRadius: 10,
+          overflow: "hidden",
+        }}
+      >
+        <div
+          style={{
+            padding: "14px 18px",
+            borderBottom: "1px solid #f1f5f9",
+            background: "#f8fafc",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <Database size={17} style={{ color: "#16a34a" }} />
+            <span
+              style={{
+                fontSize: "0.95rem",
+                fontWeight: 800,
+                color: "#0f172a",
+              }}
+            >
+              Daftar Anggaran Master OPEX
+            </span>
+            <span
+              style={{
+                fontSize: "0.72rem",
+                background: "#dcfce7",
+                color: "#16a34a",
+                fontWeight: 700,
+                padding: "2px 8px",
+                borderRadius: 99,
+                border: "1px solid #bbf7d0",
+              }}
+            >
+              {masters.length} pos
+            </span>
+          </div>
+        </div>
+
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ ...S.tbl, border: "none" }}>
+            <thead>
+              <tr>
+                <th style={{ ...S.th, width: 40, textAlign: "center" }}>
+                  NO
+                </th>
+                <th style={{ ...S.th }}>NAMA ANGGARAN</th>
+                <th style={{ ...S.th, width: 110, textAlign: "center", paddingLeft: "4px", paddingRight: "4px" }}>
+                  KODE
+                </th>
+                <th style={{ ...S.th, width: 80, textAlign: "center", paddingLeft: "4px", paddingRight: "4px" }}>
+                  AKSI
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {masters.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={4}
+                    style={{
+                      ...S.td,
+                      textAlign: "center",
+                      color: "#94a3b8",
+                      padding: 24,
+                      fontSize: "0.82rem",
+                      background: "#fafafa",
+                      fontStyle: "italic",
+                    }}
+                  >
+                    Belum ada data anggaran master.
+                  </td>
+                </tr>
+              ) : (
+                masters.map((m, idx) => {
+                  const isBeingEdited = editingMaster?.id === m.id;
+                  return (
+                    <tr
+                      key={m.id}
+                      style={{
+                        background: isBeingEdited ? "#fffbeb" : "white",
+                        transition: "background 0.15s",
+                      }}
+                    >
+                      <td
+                        style={{
+                          ...S.td,
+                          textAlign: "center",
+                          fontWeight: 700,
+                          fontSize: "0.78rem",
+                          color: "#94a3b8",
+                        }}
+                      >
+                        {idx + 1}
+                      </td>
+                      <td style={S.td}>
+                        <div
+                          style={{
+                            fontWeight: 600,
+                            color: isBeingEdited ? "#d97706" : "#1e293b",
+                            fontSize: "0.88rem",
+                          }}
+                        >
+                          {m.nama}
+                          {isBeingEdited && (
+                            <span
+                              style={{
+                                marginLeft: 8,
+                                fontSize: "0.68rem",
+                                background: "#fef3c7",
+                                color: "#b45309",
+                                padding: "2px 6px",
+                                borderRadius: 4,
+                                fontWeight: 700,
+                                border: "1px solid #fde68a",
+                              }}
+                            >
+                              ✎ Sedang diedit
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td style={{ ...S.td, textAlign: "center" }}>
+                        <span
+                          style={{
+                            fontFamily: "monospace",
+                            background: "#f1f5f9",
+                            color: "#475569",
+                            padding: "3px 8px",
+                            borderRadius: 4,
+                            fontWeight: 700,
+                            fontSize: "0.8rem",
+                          }}
+                        >
+                          {m.kd}
+                        </span>
+                      </td>
+                      <td
+                        style={{
+                          ...S.td,
+                          textAlign: "center",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: 6,
+                            justifyContent: "center",
+                          }}
+                        >
+                          <button
+                            style={{
+                              ...S.abtn,
+                              padding: "6px 10px",
+                              background: isBeingEdited ? "#fef3c7" : "#fffbeb",
+                              borderColor: "#fde68a",
+                            }}
+                            onClick={() => isBeingEdited ? handleCancelEdit() : handleClickEdit(m)}
+                            title={isBeingEdited ? "Batalkan edit" : "Edit"}
+                          >
+                            {isBeingEdited
+                              ? <X size={13} style={{ color: "#d97706" }} />
+                              : <Edit size={13} style={{ color: "#d97706" }} />
+                            }
+                          </button>
+                          <button
+                            style={{
+                              ...S.abtn,
+                              padding: "6px 10px",
+                              background: "#fef2f2",
+                              borderColor: "#fecaca",
+                            }}
+                            onClick={() => {
+                              if (isBeingEdited) handleCancelEdit();
+                              onDelete(m.id);
+                            }}
+                          >
+                            <Trash2
+                              size={13}
+                              style={{ color: "#ef4444" }}
+                            />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Form Tambah / Edit Anggaran Master */}
+      <div
+        id="opex-master-form-card"
+        style={{
+          background: "white",
+          border: isEditMode ? "2px solid #fde68a" : "1px solid #e2e8f0",
+          borderRadius: 10,
+          padding: "20px",
+          overflow: "hidden",
+          transition: "border 0.2s",
+        }}
+      >
+        <div style={{ marginBottom: 16 }}>
+          <h3
+            style={{
+              fontSize: "0.9rem",
+              fontWeight: 700,
+              color: isEditMode ? "#d97706" : "#1e293b",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+            }}
+          >
+            {isEditMode ? (
+              <>
+                <Edit size={15} style={{ color: "#d97706" }} />
+                Edit Anggaran Master
+                <span
+                  style={{
+                    fontSize: "0.75rem",
+                    background: "#fef3c7",
+                    color: "#b45309",
+                    padding: "2px 8px",
+                    borderRadius: 99,
+                    fontWeight: 600,
+                    border: "1px solid #fde68a",
+                  }}
+                >
+                  {editingMaster?.nama}
+                </span>
+              </>
+            ) : (
+              <>
+                <Plus size={15} style={{ color: "#16a34a" }} />
+                Tambah Anggaran Master Baru
+              </>
+            )}
+          </h3>
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: 16,
+            marginBottom: 16,
+          }}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <label style={S.lbl}>Kode</label>
+            <input
+              type="text"
+              style={{
+                ...S.inp,
+                borderColor: isEditMode ? "#fde68a" : "#cbd5e1",
+              }}
+              placeholder="Contoh: 5030905000"
+              value={formKd}
+              onChange={(e) => setFormKd(e.target.value)}
+            />
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <label style={S.lbl}>
+              Nama Anggaran{" "}
+              <span style={{ color: "#ef4444" }}>*</span>
+            </label>
+            <input
+              type="text"
+              style={{
+                ...S.inp,
+                borderColor: isEditMode ? "#fde68a" : "#cbd5e1",
+              }}
+              placeholder="Contoh: Beban Pemeliharaan Software"
+              value={formNama}
+              onChange={(e) => setFormNama(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            gap: 10,
+          }}
+        >
+          {isEditMode && (
+            <button
+              style={{ ...S.btnOut, fontSize: "0.82rem" }}
+              onClick={handleCancelEdit}
+            >
+              <X size={14} /> Batal Edit
+            </button>
+          )}
+          <button
+            style={{
+              ...S.btn,
+              background: isEditMode ? "#d97706" : "#16a34a",
+              opacity: formNama ? 1 : 0.5,
+              padding: "10px 20px",
+            }}
+            disabled={!formNama}
+            onClick={handleSubmit}
+          >
+            {isEditMode ? (
+              <>
+                <Save size={15} /> Simpan Perubahan
+              </>
+            ) : (
+              <>
+                <Plus size={15} /> Submit
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── OPEX MASTER FORM MODAL (extracted to module level) ─────────
 function OpexMasterFormModal({ title, form, setForm, onSave, onClose }) {
   return (
@@ -2832,14 +3438,20 @@ function OpexModule({ masterList, setMasterList }) {
   const [masters, setMasters] = useState(INIT_OPEX_MASTERS);
   const [toast, setToast] = useState(null);
   const [confirm, setConfirm] = useState(null);
-  const [showAddMaster, setShowAddMaster] = useState(false);
+  const [showMasterListPage, setShowMasterListPage] = useState(false);
   const [editModalMaster, setEditModalMaster] = useState(null);
   const [detailMaster, setDetailMaster] = useState(null);
   const [filterThnFrom, setFilterThnFrom] = useState("");
   const [filterThnTo, setFilterThnTo] = useState("");
   const [filterNama, setFilterNama] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [kpiYear, setKpiYear] = useState("");
+  const [showAddAnggaranTahunan, setShowAddAnggaranTahunan] = useState(false);
+  const [formTahunan, setFormTahunan] = useState({
+    masterNama: "",
+    thn: new Date().getFullYear(),
+    realisasi_murni: "",
+    nilai_anggaran: "",
+  });
   const PAGE_SIZE = 5;
 
   const toast_ = (msg) => {
@@ -2852,25 +3464,98 @@ function OpexModule({ masterList, setMasterList }) {
     thn_anggaran: new Date().getFullYear(),
     nilai_anggaran: "",
   };
-  const [addForm, setAddForm] = useState(emptyForm);
   const [editForm, setEditForm] = useState(emptyForm);
 
-  const handleAddMaster = () => {
-    if (!addForm.nama || !addForm.nilai_anggaran) return;
+  // Handler untuk tambah dari halaman master list
+  const handleAddMasterFromPage = (kd, nama) => {
+    if (!nama) {
+      toast_("Nama anggaran harus diisi.");
+      return;
+    }
     setMasters((p) => [
       ...p,
       {
         id: uid(),
-        kd: addForm.kd || uid(),
-        nama: addForm.nama,
-        thn_anggaran: parseInt(addForm.thn_anggaran),
-        nilai_anggaran: parseFloat(addForm.nilai_anggaran) || 0,
+        kd: kd || uid(),
+        nama: nama,
+        thn_anggaran: new Date().getFullYear(),
+        nilai_anggaran: 0,
         realisasi_tahunan: [],
       },
     ]);
     toast_("Anggaran master baru ditambahkan.");
-    setShowAddMaster(false);
-    setAddForm(emptyForm);
+  };
+
+  // Handler untuk edit dari halaman master list (inline form)
+  // onEdit dipanggil dari OpexMasterListPage dengan obj master yang sudah diupdate kd & nama
+  const handleEditMasterFromPage = (updatedMaster) => {
+    setMasters((p) =>
+      p.map((m) =>
+        m.id === updatedMaster.id
+          ? { ...m, kd: updatedMaster.kd, nama: updatedMaster.nama }
+          : m,
+      ),
+    );
+    toast_("Data master berhasil diperbarui.");
+  };
+
+  const handleAddAnggaranTahunanForm = () => {
+    if (!formTahunan.masterNama || !formTahunan.nilai_anggaran) {
+      toast_("Nama anggaran dan nilai anggaran harus diisi.");
+      return;
+    }
+    const selectedMaster = masters.find((m) => m.nama === formTahunan.masterNama);
+    if (!selectedMaster) {
+      toast_("Master anggaran tidak ditemukan.");
+      return;
+    }
+    const today = new Date().toISOString().split("T")[0];
+    const payload = {
+      id: uid(),
+      thn: parseInt(formTahunan.thn),
+      realisasi_murni: parseFloat(formTahunan.realisasi_murni) || 0,
+      realisasi_bymhd: parseFloat(formTahunan.realisasi_bymhd) || 0,
+      history: [
+        {
+          id: uid(),
+          tgl: today,
+          tipe: "initial",
+          nilai: parseFloat(formTahunan.realisasi_murni) || 0,
+          keterangan: "Input awal murni",
+          is_initial: true,
+        },
+        ...(parseFloat(formTahunan.realisasi_bymhd) > 0
+          ? [
+              {
+                id: uid(),
+                tgl: today,
+                tipe: "bymhd",
+                nilai: parseFloat(formTahunan.realisasi_bymhd) || 0,
+                keterangan: "Input awal BYMHD",
+                is_initial: false,
+              },
+            ]
+          : []),
+      ],
+    };
+    setMasters((prev) =>
+      prev.map((m) =>
+        m.id === selectedMaster.id
+          ? {
+              ...m,
+              realisasi_tahunan: [...(m.realisasi_tahunan || []), payload],
+            }
+          : m,
+      ),
+    );
+    toast_("Data anggaran tahunan ditambahkan.");
+    setShowAddAnggaranTahunan(false);
+    setFormTahunan({
+      masterNama: "",
+      thn: new Date().getFullYear(),
+      realisasi_murni: "",
+      nilai_anggaran: "",
+    });
   };
 
   const handleSaveEditMaster = () => {
@@ -2903,6 +3588,7 @@ function OpexModule({ masterList, setMasterList }) {
       },
     });
 
+  // FIX 1: namaOptions tidak include duplikat "Semua Pos"
   const namaOptions = useMemo(() => {
     const pool = masters.filter((m) => {
       if (filterThnFrom && m.thn_anggaran < parseInt(filterThnFrom))
@@ -2931,12 +3617,11 @@ function OpexModule({ masterList, setMasterList }) {
   }, [namaOptions]);
 
   const filteredMasters = useMemo(() => {
-    if (!filterNama) return [];
     return masters.filter((m) => {
       if (filterThnFrom && m.thn_anggaran < parseInt(filterThnFrom))
         return false;
       if (filterThnTo && m.thn_anggaran > parseInt(filterThnTo)) return false;
-      if (filterNama !== "SEMUA" && m.nama !== filterNama) return false;
+      if (filterNama && filterNama !== "SEMUA" && m.nama !== filterNama) return false;
       return true;
     });
   }, [masters, filterThnFrom, filterThnTo, filterNama]);
@@ -2953,21 +3638,6 @@ function OpexModule({ masterList, setMasterList }) {
         });
   }, [masters, filterThnFrom, filterThnTo, filterNama, filteredMasters]);
 
-  const kpiAnggaran = useMemo(() => {
-    return kpiBase.reduce((s, m) => {
-      const rows = kpiYear
-        ? (m.realisasi_tahunan || []).filter((r) => r.thn === parseInt(kpiYear))
-        : m.realisasi_tahunan || [];
-      return (
-        s +
-        rows.reduce(
-          (ss, r) => ss + (r.realisasi_murni || 0) + (r.realisasi_bymhd || 0),
-          0,
-        )
-      );
-    }, 0);
-  }, [kpiBase, kpiYear]);
-
   const totalAnggaran = kpiBase.reduce(
     (s, m) => s + (m.nilai_anggaran || 0),
     0,
@@ -2981,6 +3651,12 @@ function OpexModule({ masterList, setMasterList }) {
       ),
     0,
   );
+
+  const totalPersentase = totalAnggaran > 0
+    ? Math.round((totalAnggaranAll / totalAnggaran) * 100)
+    : 0;
+
+  const sisaAnggaran = totalAnggaran - totalAnggaranAll;
 
   const totalPages = Math.ceil(filteredMasters.length / PAGE_SIZE);
   const paginatedWithIdx = filteredMasters
@@ -3000,15 +3676,6 @@ function OpexModule({ masterList, setMasterList }) {
           onCancel={() => setConfirm(null)}
         />
       )}
-      {showAddMaster && (
-        <OpexMasterFormModal
-          title="Tambah Anggaran Master OPEX"
-          form={addForm}
-          setForm={setAddForm}
-          onSave={handleAddMaster}
-          onClose={() => setShowAddMaster(false)}
-        />
-      )}
       {editModalMaster && (
         <OpexMasterFormModal
           title="Edit Anggaran Master"
@@ -3017,6 +3684,143 @@ function OpexModule({ masterList, setMasterList }) {
           onSave={handleSaveEditMaster}
           onClose={() => setEditModalMaster(null)}
         />
+      )}
+
+      {/* Halaman master list */}
+      {showMasterListPage && (
+        <OpexMasterListPage
+          masters={masters}
+          onBack={() => setShowMasterListPage(false)}
+          onAdd={handleAddMasterFromPage}
+          onEdit={handleEditMasterFromPage}
+          onDelete={handleDeleteMaster}
+        />
+      )}
+
+      {showAddAnggaranTahunan && (
+        <div style={S.ovs} onClick={() => setShowAddAnggaranTahunan(false)}>
+          <div
+            style={{
+              background: "white",
+              borderRadius: 12,
+              padding: 24,
+              maxWidth: 420,
+              width: "100%",
+              boxShadow: "0 10px 25px rgba(0,0,0,.1)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 20,
+              }}
+            >
+              <div>
+                <h3 style={{ fontWeight: 600, fontSize: "1rem" }}>
+                  Tambah Anggaran Tahunan
+                </h3>
+                <div
+                  style={{
+                    fontSize: "0.78rem",
+                    color: "#64748b",
+                    marginTop: 2,
+                  }}
+                >
+                  Input anggaran baru untuk master anggaran
+                </div>
+              </div>
+              <button
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "#64748b",
+                }}
+                onClick={() => setShowAddAnggaranTahunan(false)}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div
+              style={{
+                border: "1px solid #f1f5f9",
+                borderRadius: 8,
+                overflow: "hidden",
+                marginBottom: 16,
+              }}
+            >
+              <ModalFormRow label="Nama Anggaran" required>
+                <select
+                  style={S.inp}
+                  value={formTahunan.masterNama}
+                  onChange={(e) =>
+                    setFormTahunan((f) => ({ ...f, masterNama: e.target.value }))
+                  }
+                >
+                  <option value="">— Pilih Anggaran Master —</option>
+                  {masters.map((m) => (
+                    <option key={m.id} value={m.nama}>
+                      {m.nama}
+                    </option>
+                  ))}
+                </select>
+              </ModalFormRow>
+              <ModalFormRow label="Tahun Anggaran" required>
+                <select
+                  style={S.inp}
+                  value={formTahunan.thn}
+                  onChange={(e) =>
+                    setFormTahunan((f) => ({ ...f, thn: e.target.value }))
+                  }
+                >
+                  {yearOpts.map((y) => (
+                    <option key={y} value={y}>
+                      {y}
+                    </option>
+                  ))}
+                </select>
+              </ModalFormRow>
+              <ModalFormRow label="Nilai Anggaran (Rp)" required noBorder>
+                <input
+                  type="number"
+                  className="no-spinners"
+                  style={S.inp}
+                  placeholder="0"
+                  value={formTahunan.nilai_anggaran || ""}
+                  onChange={(e) =>
+                    setFormTahunan((f) => ({ ...f, nilai_anggaran: e.target.value }))
+                  }
+                />
+              </ModalFormRow>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                gap: 10,
+                marginTop: 20,
+                justifyContent: "flex-end",
+              }}
+            >
+              <button style={S.btnOut} onClick={() => setShowAddAnggaranTahunan(false)}>
+                Batal
+              </button>
+              <button
+                style={{
+                  ...S.btn,
+                  background: "#16a34a",
+                  opacity: formTahunan.masterNama && formTahunan.nilai_anggaran ? 1 : 0.5,
+                }}
+                disabled={!formTahunan.masterNama || !formTahunan.nilai_anggaran}
+                onClick={handleAddAnggaranTahunanForm}
+              >
+                Simpan
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {detailMaster &&
@@ -3186,7 +3990,7 @@ function OpexModule({ masterList, setMasterList }) {
                   </div>
                 </div>
               </div>
-              {/* CARD 2 & 3: Realisasi Section (Separated with padding area) */}
+              {/* CARD 2 & 3: Realisasi Section */}
               <div style={{ marginTop: 0 }}>
                 <RealisasiSection
                   master={latest}
@@ -3198,8 +4002,9 @@ function OpexModule({ masterList, setMasterList }) {
           );
         })()}
 
-      {!detailMaster && (
+      {!detailMaster && !showMasterListPage && (
         <>
+          {/* Ringkasan Anggaran */}
           <div
             style={{
               background: "white",
@@ -3227,56 +4032,6 @@ function OpexModule({ masterList, setMasterList }) {
               >
                 Ringkasan Anggaran
               </span>
-              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <span
-                  style={{
-                    fontSize: "0.75rem",
-                    color: "#64748b",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  Tahun:
-                </span>
-                <select
-                  style={{
-                    padding: "4px 8px",
-                    border: "1px solid #cbd5e1",
-                    borderRadius: 6,
-                    fontSize: "0.78rem",
-                    color: kpiYear ? "#1d4ed8" : "#475569",
-                    fontWeight: kpiYear ? 700 : 400,
-                    background: kpiYear ? "#eff6ff" : "white",
-                    outline: "none",
-                    cursor: "pointer",
-                  }}
-                  value={kpiYear}
-                  onChange={(e) => setKpiYear(e.target.value)}
-                >
-                  <option value="">Semua</option>
-                  {yearOpts.map((y) => (
-                    <option key={y} value={y}>
-                      {y}
-                    </option>
-                  ))}
-                </select>
-                {kpiYear && (
-                  <button
-                    style={{
-                      ...S.abtn,
-                      padding: "3px 6px",
-                      color: "#ef4444",
-                      borderColor: "#fecaca",
-                      background: "#fef2f2",
-                      gap: 3,
-                      fontSize: "0.72rem",
-                      fontWeight: 700,
-                    }}
-                    onClick={() => setKpiYear("")}
-                  >
-                    <X size={11} />
-                  </button>
-                )}
-              </div>
             </div>
             <div
               style={{
@@ -3295,7 +4050,7 @@ function OpexModule({ masterList, setMasterList }) {
                 },
                 {
                   label: "Sisa Anggaran",
-                  val: fmt(totalAnggaran - totalAnggaranAll),
+                  val: fmt(sisaAnggaran),
                   color:
                     totalAnggaranAll > totalAnggaran ? "#dc2626" : "#16a34a",
                   bg: totalAnggaranAll > totalAnggaran ? "#fef2f2" : "#f0fdf4",
@@ -3303,11 +4058,28 @@ function OpexModule({ masterList, setMasterList }) {
                     totalAnggaranAll > totalAnggaran ? "#fecaca" : "#bbf7d0",
                 },
                 {
-                  label: "Total Pos Master",
-                  val: `${kpiBase.length} pos`,
-                  color: "#475569",
-                  bg: "#f8fafc",
-                  border: "#e2e8f0",
+                  label: "Total Persentase",
+                  val: `${totalPersentase}%`,
+                  color:
+                    totalPersentase >= 100
+                      ? "#dc2626"
+                      : totalPersentase >= 80
+                        ? "#d97706"
+                        : totalPersentase >= 50
+                          ? "#2563eb"
+                          : "#475569",
+                  bg:
+                    totalPersentase >= 100
+                      ? "#fef2f2"
+                      : totalPersentase >= 80
+                        ? "#fffbeb"
+                        : "#f8fafc",
+                  border:
+                    totalPersentase >= 100
+                      ? "#fecaca"
+                      : totalPersentase >= 80
+                        ? "#fde68a"
+                        : "#e2e8f0",
                 },
               ].map((item, i) => (
                 <div
@@ -3392,7 +4164,7 @@ function OpexModule({ masterList, setMasterList }) {
                   padding: "8px 14px",
                   fontSize: "0.78rem",
                 }}
-                onClick={() => setShowAddMaster(true)}
+                onClick={() => setShowMasterListPage(true)}
               >
                 <Plus size={13} /> Tambah Anggaran Master
               </button>
@@ -3496,6 +4268,7 @@ function OpexModule({ masterList, setMasterList }) {
                     flexShrink: 0,
                   }}
                 />
+                {/* FIX 1: Dropdown Pos - hapus duplikat "Semua Pos" */}
                 <div
                   style={{
                     display: "flex",
@@ -3514,7 +4287,7 @@ function OpexModule({ masterList, setMasterList }) {
                   >
                     Pos
                   </span>
-                  <div style={{ position: "relative", flex: 1, maxWidth: 440 }}>
+                  <div style={{ position: "relative", flex: 1, maxWidth: 280 }}>
                     <select
                       style={{
                         ...S.inp,
@@ -3533,14 +4306,7 @@ function OpexModule({ masterList, setMasterList }) {
                         setCurrentPage(1);
                       }}
                     >
-                      <option value="">
-                        {namaOptions.length === 0
-                          ? "— Tidak ada pos —"
-                          : `— Pilih Pos Anggaran (${namaOptions.length}) —`}
-                      </option>
-                      {namaOptions.length > 0 && (
-                        <option value="SEMUA">— Semua Pos —</option>
-                      )}
+                      <option value="SEMUA">— Semua Pos —</option>
                       {namaOptions.map((item) => (
                         <option key={item.id} value={item.nama}>
                           {item.nama}
@@ -3594,27 +4360,20 @@ function OpexModule({ masterList, setMasterList }) {
                     <X size={12} /> Reset
                   </button>
                 )}
+                <button
+                  style={{
+                    ...S.btn,
+                    background: "#2563eb",
+                    padding: "6px 12px",
+                    fontSize: "0.75rem",
+                    marginLeft: "auto",
+                  }}
+                  onClick={() => setShowAddAnggaranTahunan(true)}
+                >
+                  <Plus size={12} /> Tambah Anggaran
+                </button>
               </div>
             </div>
-
-            {!filterNama && (
-              <div
-                style={{
-                  padding: "8px 18px",
-                  textAlign: "center",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 10,
-                }}
-              >
-                <Search size={16} style={{ color: "#cbd5e1" }} />
-                <span style={{ fontSize: "0.82rem", color: "#94a3b8" }}>
-                  Pilih pos anggaran dari dropdown di atas untuk melihat
-                  datanya.
-                </span>
-              </div>
-            )}
           </div>
 
           {filterNama &&
@@ -3655,7 +4414,6 @@ function OpexModule({ masterList, setMasterList }) {
                             "TAHUN",
                             "NILAI ANGGARAN",
                             "ANGGARAN TOTAL",
-                            "ANGGARAN %",
                             "AKSI",
                           ].map((h, i) => (
                             <th
@@ -3683,10 +4441,6 @@ function OpexModule({ masterList, setMasterList }) {
                                   textAlign: "right",
                                 }),
                                 ...(i === 6 && {
-                                  width: 100,
-                                  textAlign: "center",
-                                }),
-                                ...(i === 7 && {
                                   width: 130,
                                   textAlign: "center",
                                 }),
@@ -3778,31 +4532,6 @@ function OpexModule({ masterList, setMasterList }) {
                                   }}
                                 >
                                   {fmt(totalR)}
-                                </span>
-                              </td>
-                              <td style={{ ...S.td, textAlign: "center" }}>
-                                <span
-                                  style={{
-                                    background:
-                                      pct >= 100
-                                        ? "#f0fdf4"
-                                        : pct >= 50
-                                          ? "#fef3c7"
-                                          : "#fecaca",
-                                    color:
-                                      pct >= 100
-                                        ? "#16a34a"
-                                        : pct >= 50
-                                          ? "#b45309"
-                                          : "#dc2626",
-                                    border: `1px solid ${pct >= 100 ? "#bbf7d0" : pct >= 50 ? "#fde68a" : "#fecaca"}`,
-                                    padding: "3px 10px",
-                                    borderRadius: 99,
-                                    fontWeight: 700,
-                                    fontSize: "0.78rem",
-                                  }}
-                                >
-                                  {pct}%
                                 </span>
                               </td>
                               <td style={{ ...S.td, textAlign: "center" }}>
@@ -4159,7 +4888,6 @@ const CapexFormModal = React.memo(function CapexFormModal({
 });
 
 // ── CAPEX EDIT ANGGARAN MODAL (child row edit) ─────────────────
-// REVISION 3: Tahun RKAP Awal, Tahun RKAP Akhir, Nilai KAD = read-only text (no inputs)
 function CapexEditAnggaranModal({ capexId, anggaran, capex, onSave, onClose }) {
   const [thnAnggaran, setThnAnggaran] = useState(String(anggaran.thn || ""));
   const [nilaiRkap, setNilaiRkap] = useState(
@@ -4184,7 +4912,6 @@ function CapexEditAnggaranModal({ capexId, anggaran, capex, onSave, onClose }) {
       );
     }
     onSave(capexId, anggaran.id, {
-      // REVISION 3: pass through original read-only values unchanged
       thn_rkap_awal: anggaran.thn_rkap_awal,
       thn_rkap_akhir: anggaran.thn_rkap_akhir,
       nilai_kad: anggaran.nilai_kad,
@@ -4269,7 +4996,6 @@ function CapexEditAnggaranModal({ capexId, anggaran, capex, onSave, onClose }) {
           </div>
         )}
 
-        {/* REVISION 3: Tahun RKAP Awal — read-only text, no input box */}
         <ModalFormRow label="Tahun RKAP Awal">
           <span
             style={{
@@ -4283,7 +5009,6 @@ function CapexEditAnggaranModal({ capexId, anggaran, capex, onSave, onClose }) {
           </span>
         </ModalFormRow>
 
-        {/* REVISION 3: Tahun RKAP Akhir — read-only text, no input box */}
         <ModalFormRow label="Tahun RKAP Akhir">
           <span
             style={{
@@ -4297,7 +5022,6 @@ function CapexEditAnggaranModal({ capexId, anggaran, capex, onSave, onClose }) {
           </span>
         </ModalFormRow>
 
-        {/* REVISION 3: Nilai KAD — read-only text, no input box */}
         <ModalFormRow label="Nilai KAD (Rp)">
           <span
             style={{
@@ -4311,7 +5035,6 @@ function CapexEditAnggaranModal({ capexId, anggaran, capex, onSave, onClose }) {
           </span>
         </ModalFormRow>
 
-        {/* Tahun Anggaran — still editable */}
         <ModalFormRow label="Tahun Anggaran">
           <input
             type="number"
@@ -4324,7 +5047,6 @@ function CapexEditAnggaranModal({ capexId, anggaran, capex, onSave, onClose }) {
           />
         </ModalFormRow>
 
-        {/* Nilai RKAP — still editable */}
         <ModalFormRow label="Nilai RKAP (Rp)" noBorder>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <input
@@ -4522,7 +5244,6 @@ function CapexModule({ capexList, setCapexList }) {
             ? c
             : {
                 ...c,
-                // REVISION 3: thn_rkap_awal, thn_rkap_akhir, nilai_kad passed through unchanged
                 thn_rkap_awal: updatedData.thn_rkap_awal,
                 thn_rkap_akhir: updatedData.thn_rkap_akhir,
                 nilai_kad: updatedData.nilai_kad,
@@ -4603,7 +5324,6 @@ function CapexModule({ capexList, setCapexList }) {
           onClose={() => setEditTarget(null)}
         />
       )}
-      {/* REVISION 3: Pass capex data so modal can show read-only RKAP & KAD */}
       {editAnggaran && (
         <CapexEditAnggaranModal
           capexId={editAnggaran.capexId}
@@ -4675,6 +5395,99 @@ function CapexModule({ capexList, setCapexList }) {
         </div>
       </div>
 
+      {/* RINGKASAN ANGGARAN CAPEX */}
+      <div
+        style={{
+          background: "white",
+          border: "1px solid #e2e8f0",
+          borderRadius: 10,
+          overflow: "hidden",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "10px 16px",
+            borderBottom: "1px solid #f1f5f9",
+            background: "#f8fafc",
+          }}
+        >
+          <span
+            style={{
+              fontSize: "0.8rem",
+              fontWeight: 700,
+              color: "#374151",
+            }}
+          >
+            Ringkasan Anggaran CAPEX
+          </span>
+        </div>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3,1fr)",
+            gap: 0,
+          }}
+        >
+          {[
+            {
+              label: "Total KAD",
+              val: fmt(capexList.reduce((sum, c) => sum + (c.nilai_kad || 0), 0)),
+              color: "#2563eb",
+              bg: "#eff6ff",
+              border: "#bfdbfe",
+            },
+            {
+              label: "Total RKAP",
+              val: fmt(capexList.reduce((sum, c) => sum + (c.nilai_rkap || 0), 0)),
+              color: "#16a34a",
+              bg: "#f0fdf4",
+              border: "#bbf7d0",
+            },
+            {
+              label: "Total Item CAPEX",
+              val: `${capexList.length} item`,
+              color: "#475569",
+              bg: "#f8fafc",
+              border: "#e2e8f0",
+            },
+          ].map((item, i) => (
+            <div
+              key={item.label}
+              style={{
+                padding: "12px 16px",
+                borderRight: i < 2 ? "1px solid #f1f5f9" : "none",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: "0.68rem",
+                  fontWeight: 700,
+                  color: "#94a3b8",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.5px",
+                  marginBottom: 4,
+                }}
+              >
+                {item.label}
+              </div>
+              <div
+                style={{
+                  fontSize: "1rem",
+                  fontWeight: 800,
+                  color: item.color,
+                }}
+              >
+                {item.val}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* DAFTAR ANGGARAN CAPEX */}
       <div
         style={{
           background: "white",
@@ -5168,7 +5981,6 @@ function CapexModule({ capexList, setCapexList }) {
                                   justifyContent: "center",
                                 }}
                               >
-                                {/* REVISION 3: Edit child row — opens modal with read-only RKAP & KAD */}
                                 <button
                                   style={{
                                     ...S.abtn,

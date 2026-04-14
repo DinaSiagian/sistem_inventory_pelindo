@@ -235,13 +235,17 @@ const Ico = ({ n, s = 18, c }) => {
         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
       </>
     ),
-    share: (
+    // ── icon peminjaman: tangan menerima/mengulurkan barang ──
+    borrow: (
       <>
-        <circle cx="18" cy="5" r="3" />
-        <circle cx="6" cy="12" r="3" />
-        <circle cx="18" cy="19" r="3" />
-        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+        <path d="M14 8V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2v-2" />
+        <path d="M18 8l4 4-4 4" />
+        <line x1="22" y1="12" x2="10" y2="12" />
+      </>
+    ),
+    hand: (
+      <>
+        <path d="M20 10V7c0-1.65-1.35-3-3-3s-3 1.35-3 3v3M10 18.5a2 2 0 0 1-3-3M4 21v-3.5a4.5 4.5 0 0 1 9 0V21M3 16h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2z" />
       </>
     ),
   };
@@ -260,9 +264,14 @@ const Ico = ({ n, s = 18, c }) => {
       viewBox="0 0 24 24"
       fill="none"
       stroke={c || "currentColor"}
-      strokeWidth="1.9"
+      strokeWidth="2.2"
       strokeLinecap="round"
       strokeLinejoin="round"
+      style={{
+        display: "block",
+        color: c || "inherit",
+        flex: "0 0 auto",
+      }}
     >
       {paths[catIcons[n] || n]}
     </svg>
@@ -414,7 +423,7 @@ function AssetDetailPage({ asset, loans, onBack, onBorrow }) {
                   className="inv-action-btn inv-action-btn--primary"
                   onClick={() => onBorrow(asset)}
                 >
-                  <Ico n="share" s={16} />
+                  <Ico n="borrow" s={16} />
                   Pinjam Aset
                 </button>
               )}
@@ -598,7 +607,7 @@ function BorrowPage({ asset, onBack, onConfirm }) {
               onClick={handleSubmit}
               disabled={!form.borrower_name || !form.borrow_date}
             >
-              <Ico n="share" s={16} />
+              <Ico n="borrow" s={16} />
               Konfirmasi Peminjaman
             </button>
           </div>
@@ -992,6 +1001,7 @@ export default function Inventaris({ loans, setLoans }) {
                           {cat.label}
                         </span>
                       </td>
+
                       {/* Status */}
                       <td className="inv-table-status">
                         <span
@@ -1018,7 +1028,7 @@ export default function Inventaris({ loans, setLoans }) {
                               onClick={() => handleGoToBorrow(a)}
                               title="Pinjam Aset"
                             >
-                              <Ico n="share" s={13} />
+                              <Ico n="borrow" s={13} />
                             </button>
                           )}
                         </div>
