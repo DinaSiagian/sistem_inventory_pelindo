@@ -34,10 +34,10 @@ const fmt = (n) =>
 const fmtDate = (d) =>
   d
     ? new Date(d).toLocaleDateString("id-ID", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      })
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    })
     : "—";
 const uid = () => `ID-${Date.now().toString().slice(-6)}`;
 const CURRENT_YEAR = new Date().getFullYear();
@@ -892,7 +892,7 @@ function InlineHistoryTable({ row, mode = "opex", onUpdateHistoryRecord, onDelet
           </table>
         </div>
       )}
-      
+
       {/* EDIT HISTORY MODAL */}
       {editHistoryId && (
         <div
@@ -1263,15 +1263,15 @@ function RealisasiSection({ master, setMasters, toast_ }) {
         },
         ...(parseFloat(form.realisasi_bymhd) > 0
           ? [
-              {
-                id: uid(),
-                tgl: today,
-                tipe: "bymhd",
-                nilai: parseFloat(form.realisasi_bymhd) || 0,
-                keterangan: "Input awal BYMHD",
-                is_initial: false,
-              },
-            ]
+            {
+              id: uid(),
+              tgl: today,
+              tipe: "bymhd",
+              nilai: parseFloat(form.realisasi_bymhd) || 0,
+              keterangan: "Input awal BYMHD",
+              is_initial: false,
+            },
+          ]
           : []),
       ],
     };
@@ -1279,9 +1279,9 @@ function RealisasiSection({ master, setMasters, toast_ }) {
       prev.map((m) =>
         m.id === master.id
           ? {
-              ...m,
-              realisasi_tahunan: [...(m.realisasi_tahunan || []), payload],
-            }
+            ...m,
+            realisasi_tahunan: [...(m.realisasi_tahunan || []), payload],
+          }
           : m,
       ),
     );
@@ -1371,11 +1371,11 @@ function RealisasiSection({ master, setMasters, toast_ }) {
           prev.map((m) =>
             m.id === master.id
               ? {
-                  ...m,
-                  realisasi_tahunan: (m.realisasi_tahunan || []).filter(
-                    (r) => r.id !== rowId,
-                  ),
-                }
+                ...m,
+                realisasi_tahunan: (m.realisasi_tahunan || []).filter(
+                  (r) => r.id !== rowId,
+                ),
+              }
               : m,
           ),
         );
@@ -1945,11 +1945,11 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
           prev.map((c) =>
             c.id === capex.id
               ? {
-                  ...c,
-                  anggaran_tahunan: (c.anggaran_tahunan || []).filter(
-                    (r) => r.id !== rowId,
-                  ),
-                }
+                ...c,
+                anggaran_tahunan: (c.anggaran_tahunan || []).filter(
+                  (r) => r.id !== rowId,
+                ),
+              }
               : c,
           ),
         );
@@ -2575,6 +2575,12 @@ function CapexInputAnggaranPage({ capex, onBack, onSave }) {
     [isRangeValid, awal, akhir],
   );
 
+  const history = capex.history_anggaran || [];
+  const currentTotalRkap = (capex.anggaran_tahunan || []).reduce(
+    (sum, a) => sum + (a.nilai_anggaran || 0),
+    0,
+  );
+
   useEffect(() => {
     if (tahunOpts.length > 0 && !tahunOpts.includes(parseInt(thnAnggaran))) {
       setThnAnggaran(tahunOpts[0]);
@@ -2590,6 +2596,8 @@ function CapexInputAnggaranPage({ capex, onBack, onSave }) {
       rkap = parseFloat(nilaiRkap) || 0;
     if (kad < 0 || rkap < 0) return setError("Nilai tidak boleh negatif!");
     if (kad === 0) return setError("Nilai KAD harus lebih dari 0 untuk membuat entri anggaran baru!");
+    const sisaAnggaran = Math.max(0, kad - currentTotalRkap);
+    if (rkap > sisaAnggaran) return setError(`Nilai RKAP tidak boleh melebihi sisa anggaran (Sisa: ${fmt(sisaAnggaran)})!`);
     onSave(
       capex.id,
       {
@@ -2608,8 +2616,7 @@ function CapexInputAnggaranPage({ capex, onBack, onSave }) {
     setThnAnggaran(tahunOpts[0] || "");
   };
 
-  const history = capex.history_anggaran || [];
-  const historyTotal = history.reduce((sum, h) => sum + (h.nilai_rkap || 0), 0);
+  const currentHistoryTotal = history.reduce((sum, h) => sum + (h.nilai_rkap || 0), 0);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
@@ -2707,11 +2714,28 @@ function CapexInputAnggaranPage({ capex, onBack, onSave }) {
           </div>
         </ModalFormRow>
         <ModalFormRow label="Nilai KAD">
-          <span
-            style={{ fontSize: "0.9rem", fontWeight: 600, color: "#2563eb" }}
-          >
-            {fmt(nilaiKad)}
-          </span>
+          <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+            <span
+              style={{ fontSize: "0.9rem", fontWeight: 600, color: "#2563eb" }}
+            >
+              {fmt(nilaiKad)}
+            </span>
+            {parseFloat(nilaiKad) > 0 && (
+              <span
+                style={{
+                  fontSize: "0.78rem",
+                  color: "#16a34a",
+                  background: "#f0fdf4",
+                  border: "1px solid #bbf7d0",
+                  padding: "2px 8px",
+                  borderRadius: 6,
+                  fontWeight: 700,
+                }}
+              >
+                Sisa Anggaran: {fmt(Math.max(0, (parseFloat(nilaiKad) || 0) - currentTotalRkap))}
+              </span>
+            )}
+          </div>
         </ModalFormRow>
         {isRangeValid && tahunOpts.length > 0 && (
           <ModalFormRow label="Tahun Anggaran" required>
@@ -2910,7 +2934,7 @@ function CapexInputAnggaranPage({ capex, onBack, onSave }) {
                         fontSize: "0.88rem",
                       }}
                     >
-                      {fmt(historyTotal)}
+                      {fmt(currentTotalRkap)}
                     </td>
                   </tr>
                 </tfoot>
@@ -3526,15 +3550,15 @@ function OpexModule({ masterList, setMasterList }) {
         },
         ...(parseFloat(formTahunan.realisasi_bymhd) > 0
           ? [
-              {
-                id: uid(),
-                tgl: today,
-                tipe: "bymhd",
-                nilai: parseFloat(formTahunan.realisasi_bymhd) || 0,
-                keterangan: "Input awal BYMHD",
-                is_initial: false,
-              },
-            ]
+            {
+              id: uid(),
+              tgl: today,
+              tipe: "bymhd",
+              nilai: parseFloat(formTahunan.realisasi_bymhd) || 0,
+              keterangan: "Input awal BYMHD",
+              is_initial: false,
+            },
+          ]
           : []),
       ],
     };
@@ -3542,9 +3566,9 @@ function OpexModule({ masterList, setMasterList }) {
       prev.map((m) =>
         m.id === selectedMaster.id
           ? {
-              ...m,
-              realisasi_tahunan: [...(m.realisasi_tahunan || []), payload],
-            }
+            ...m,
+            realisasi_tahunan: [...(m.realisasi_tahunan || []), payload],
+          }
           : m,
       ),
     );
@@ -3564,12 +3588,12 @@ function OpexModule({ masterList, setMasterList }) {
       p.map((m) =>
         m.id === editModalMaster.id
           ? {
-              ...m,
-              nama: editForm.nama,
-              kd: editForm.kd,
-              thn_anggaran: parseInt(editForm.thn_anggaran),
-              nilai_anggaran: parseFloat(editForm.nilai_anggaran),
-            }
+            ...m,
+            nama: editForm.nama,
+            kd: editForm.kd,
+            thn_anggaran: parseInt(editForm.thn_anggaran),
+            nilai_anggaran: parseFloat(editForm.nilai_anggaran),
+          }
           : m,
       ),
     );
@@ -3630,12 +3654,12 @@ function OpexModule({ masterList, setMasterList }) {
     return filterNama
       ? filteredMasters
       : masters.filter((m) => {
-          if (filterThnFrom && m.thn_anggaran < parseInt(filterThnFrom))
-            return false;
-          if (filterThnTo && m.thn_anggaran > parseInt(filterThnTo))
-            return false;
-          return true;
-        });
+        if (filterThnFrom && m.thn_anggaran < parseInt(filterThnFrom))
+          return false;
+        if (filterThnTo && m.thn_anggaran > parseInt(filterThnTo))
+          return false;
+        return true;
+      });
   }, [masters, filterThnFrom, filterThnTo, filterNama, filteredMasters]);
 
   const totalAnggaran = kpiBase.reduce(
@@ -4855,22 +4879,30 @@ const CapexFormModal = React.memo(function CapexFormModal({
             borderTop: "1px solid #e2e8f0",
             background: "#f8fafc",
             display: "flex",
-            justifyContent: "flex-end",
-            gap: 10,
+            justifyContent: "space-between",
+            alignItems: "center",
           }}
         >
-          <button style={S.btnOut} onClick={onClose}>
-            Batal
-          </button>
-          <button
-            style={{
-              ...S.btn,
-              background: title.includes("Edit") ? "#d97706" : "#2563eb",
-              opacity: data.nm_anggaran ? 1 : 0.5,
-            }}
-            disabled={!data.nm_anggaran}
-            onClick={onSave}
-          >
+          <div>
+            {(parseFloat(data.nilai_rkap) || 0) > (parseFloat(data.nilai_kad) || 0) && (
+              <span style={{ color: "#dc2626", fontSize: "0.8rem", fontWeight: 600 }}>
+                ⚠ RKAP tidak melebihi KAD
+              </span>
+            )}
+          </div>
+          <div style={{ display: "flex", gap: 10 }}>
+            <button style={S.btnOut} onClick={onClose}>
+              Batal
+            </button>
+            <button
+              style={{
+                ...S.btn,
+                background: title.includes("Edit") ? "#d97706" : "#2563eb",
+                opacity: data.nm_anggaran && !((parseFloat(data.nilai_rkap) || 0) > (parseFloat(data.nilai_kad) || 0)) ? 1 : 0.5,
+              }}
+              disabled={!data.nm_anggaran || ((parseFloat(data.nilai_rkap) || 0) > (parseFloat(data.nilai_kad) || 0))}
+              onClick={onSave}
+            >
             {title.includes("Edit") ? (
               <>
                 <Save size={14} /> Simpan Perubahan
@@ -4881,6 +4913,7 @@ const CapexFormModal = React.memo(function CapexFormModal({
               </>
             )}
           </button>
+          </div>
         </div>
       </div>
     </div>
@@ -5138,7 +5171,25 @@ function CapexModule({ capexList, setCapexList }) {
         thn_anggaran: parseInt(newCapex.thn_anggaran),
         nilai_kad: parseFloat(newCapex.nilai_kad) || 0,
         nilai_rkap: parseFloat(newCapex.nilai_rkap) || 0,
-        anggaran_tahunan: [],
+        anggaran_tahunan: [
+          {
+            id: uid(),
+            tgl: new Date().toISOString().split("T")[0],
+            thn_rkap_awal: parseInt(newCapex.thn_rkap_awal),
+            thn_rkap_akhir: parseInt(newCapex.thn_rkap_akhir),
+            thn: parseInt(newCapex.thn_anggaran),
+            nilai_kad: parseFloat(newCapex.nilai_kad) || 0,
+            nilai_anggaran: parseFloat(newCapex.nilai_rkap) || 0,
+            history: [
+              {
+                tgl: new Date().toISOString().split("T")[0],
+                tipe: "entri_baru",
+                nilai: parseFloat(newCapex.nilai_rkap) || 0,
+                user: "System",
+              },
+            ],
+          },
+        ],
         pekerjaan: [],
         history_anggaran: [],
       },
@@ -5154,15 +5205,15 @@ function CapexModule({ capexList, setCapexList }) {
       p.map((c) =>
         c.id === editTarget.id
           ? {
-              ...c,
-              nm_anggaran: editTarget.nm_anggaran,
-              kd_capex: editTarget.kd_capex,
-              thn_rkap_awal: parseInt(editTarget.thn_rkap_awal),
-              thn_rkap_akhir: parseInt(editTarget.thn_rkap_akhir),
-              thn_anggaran: parseInt(editTarget.thn_anggaran),
-              nilai_kad: parseFloat(editTarget.nilai_kad) || 0,
-              nilai_rkap: parseFloat(editTarget.nilai_rkap) || 0,
-            }
+            ...c,
+            nm_anggaran: editTarget.nm_anggaran,
+            kd_capex: editTarget.kd_capex,
+            thn_rkap_awal: parseInt(editTarget.thn_rkap_awal),
+            thn_rkap_akhir: parseInt(editTarget.thn_rkap_akhir),
+            thn_anggaran: parseInt(editTarget.thn_anggaran),
+            nilai_kad: parseFloat(editTarget.nilai_kad) || 0,
+            nilai_rkap: parseFloat(editTarget.nilai_rkap) || 0,
+          }
           : c,
       ),
     );
@@ -5208,11 +5259,7 @@ function CapexModule({ capexList, setCapexList }) {
             : {
                 ...c,
                 nilai_kad: nilaiKad,
-                nilai_rkap: nilaiRkap,
-                anggaran_tahunan: [
-                  ...(c.anggaran_tahunan || []),
-                  anggaran_item,
-                ],
+                anggaran_tahunan: [...(c.anggaran_tahunan || []), anggaran_item],
                 history_anggaran: [...(c.history_anggaran || []), entry],
               },
         ),
@@ -5223,7 +5270,6 @@ function CapexModule({ capexList, setCapexList }) {
           ? {
               ...prev,
               nilai_kad: nilaiKad,
-              nilai_rkap: nilaiRkap,
               anggaran_tahunan: [
                 ...(prev.anggaran_tahunan || []),
                 anggaran_item,
@@ -5243,20 +5289,20 @@ function CapexModule({ capexList, setCapexList }) {
           c.id !== capexId
             ? c
             : {
-                ...c,
-                thn_rkap_awal: updatedData.thn_rkap_awal,
-                thn_rkap_akhir: updatedData.thn_rkap_akhir,
-                nilai_kad: updatedData.nilai_kad,
-                anggaran_tahunan: (c.anggaran_tahunan || []).map((a) =>
-                  a.id === anggaranId
-                    ? {
-                        ...a,
-                        thn: updatedData.thn,
-                        nilai_anggaran: updatedData.nilai_anggaran,
-                      }
-                    : a,
-                ),
-              },
+              ...c,
+              thn_rkap_awal: updatedData.thn_rkap_awal,
+              thn_rkap_akhir: updatedData.thn_rkap_akhir,
+              nilai_kad: updatedData.nilai_kad,
+              anggaran_tahunan: (c.anggaran_tahunan || []).map((a) =>
+                a.id === anggaranId
+                  ? {
+                    ...a,
+                    thn: updatedData.thn,
+                    nilai_anggaran: updatedData.nilai_anggaran,
+                  }
+                  : a,
+              ),
+            },
         ),
       );
       toast_("Perubahan anggaran berhasil disimpan.");
@@ -5441,7 +5487,17 @@ function CapexModule({ capexList, setCapexList }) {
             },
             {
               label: "Total RKAP",
-              val: fmt(capexList.reduce((sum, c) => sum + (c.nilai_rkap || 0), 0)),
+              val: fmt(
+                capexList.reduce(
+                  (sum, c) =>
+                    sum +
+                    (c.anggaran_tahunan || []).reduce(
+                      (s, a) => s + (a.nilai_anggaran || 0),
+                      0,
+                    ),
+                  0,
+                ),
+              ),
               color: "#16a34a",
               bg: "#f0fdf4",
               border: "#bbf7d0",
@@ -5695,23 +5751,6 @@ function CapexModule({ capexList, setCapexList }) {
                           >
                             {c.nm_anggaran}
                           </div>
-                          {isLebih && (
-                            <div style={{ marginTop: 4 }}>
-                              <span
-                                style={{
-                                  fontSize: "0.68rem",
-                                  background: "#fef3c7",
-                                  color: "#b45309",
-                                  padding: "2px 6px",
-                                  borderRadius: 4,
-                                  fontWeight: 700,
-                                  border: "1px solid #fde68a",
-                                }}
-                              >
-                                ★ RKAP Akhir melewati tahun berjalan
-                              </span>
-                            </div>
-                          )}
                         </td>
                         <td style={{ ...S.td, textAlign: "center" }}>
                           {c.kd_capex ? (
@@ -6014,11 +6053,11 @@ function CapexModule({ capexList, setCapexList }) {
                                       p.map((pc) =>
                                         pc.id === c.id
                                           ? {
-                                              ...pc,
-                                              anggaran_tahunan: (
-                                                pc.anggaran_tahunan || []
-                                              ).filter((r) => r.id !== a.id),
-                                            }
+                                            ...pc,
+                                            anggaran_tahunan: (
+                                              pc.anggaran_tahunan || []
+                                            ).filter((r) => r.id !== a.id),
+                                          }
                                           : pc,
                                       ),
                                     )
@@ -6099,7 +6138,15 @@ function CapexModule({ capexList, setCapexList }) {
                             !filterCapexTahun ||
                             c.thn_anggaran === parseInt(filterCapexTahun),
                         )
-                        .reduce((s, c) => s + (c.nilai_rkap || 0), 0),
+                      .reduce(
+                        (s, c) =>
+                          s +
+                          (c.anggaran_tahunan || []).reduce(
+                            (ss, a) => ss + (a.nilai_anggaran || 0),
+                            0,
+                          ),
+                        0,
+                      ),
                     )}
                   </td>
                   <td style={S.td} />

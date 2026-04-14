@@ -10,6 +10,7 @@ import {
   FaChevronLeft,
   FaChevronRight,
   FaHandHolding,
+  FaClipboardList,
 } from "react-icons/fa";
 import "./Layout.css";
 
@@ -20,8 +21,6 @@ const Layout = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [pageTitle, setPageTitle] = useState("Dashboard");
   const [expandedMenu, setExpandedMenu] = useState(null);
-
-  // 1. TAMBAHKAN STATE INI UNTUK TRIGGER RESET
   const [resetKey, setResetKey] = useState(0);
 
   const location = useLocation();
@@ -38,11 +37,17 @@ const Layout = () => {
     },
     { category: "Keuangan & Proyek" },
     {
-      path: "/budget",
+      // Input Pekerjaan — submenu CAPEX & OPEX
+      path: "/budget/pekerjaan",
       label: "Input Pekerjaan",
-      icon: <FaMoneyBillWave />,
+      icon: <FaClipboardList />,
+      submenu: [
+        { path: "/budget/pekerjaan/capex", label: "CAPEX" },
+        { path: "/budget/pekerjaan/opex", label: "OPEX" },
+      ],
     },
     {
+      // Input Anggaran — submenu OPEX & CAPEX (urutan asli dipertahankan)
       path: "/budget/input",
       label: "Input Anggaran",
       icon: <FaPlusCircle />,
@@ -55,6 +60,20 @@ const Layout = () => {
     { path: "/users", label: "User Management", icon: <FaUsers /> },
   ];
 
+  // Buka submenu secara otomatis jika path aktif termasuk di dalamnya
+  useEffect(() => {
+    menuItems.forEach((item, index) => {
+      if (item.submenu) {
+        const isActive = item.submenu.some(
+          (sub) => location.pathname === sub.path,
+        );
+        if (isActive) {
+          setExpandedMenu(index);
+        }
+      }
+    });
+  }, [location.pathname]);
+
   useEffect(() => {
     const currentMenu = menuItems.find(
       (item) => item.path === location.pathname,
@@ -62,7 +81,6 @@ const Layout = () => {
     if (currentMenu) {
       setPageTitle(currentMenu.label);
     } else {
-      // Check submenu items
       for (const item of menuItems) {
         if (item.submenu) {
           const subItem = item.submenu.find(
@@ -78,10 +96,9 @@ const Layout = () => {
   }, [location]);
 
   useEffect(() => {
-    const handleNavigateToBudget = (e) => {
+    const handleNavigateToBudget = () => {
       navigate("/budget");
     };
-
     window.addEventListener("navigate-to-budget", handleNavigateToBudget);
     return () => {
       window.removeEventListener("navigate-to-budget", handleNavigateToBudget);
@@ -92,10 +109,8 @@ const Layout = () => {
     if (window.confirm("Apakah Anda yakin ingin keluar?")) navigate("/");
   };
 
-  // 2. FUNGSI UNTUK MERESET HALAMAN JIKA MENU YANG SAMA DIKLIK
   const handleMenuClick = (path) => {
     if (location.pathname === path) {
-      // Jika URL saat ini sama dengan URL menu yang diklik, tambah nilai resetKey
       setResetKey((prevKey) => prevKey + 1);
     }
   };
@@ -121,24 +136,42 @@ const Layout = () => {
             ) : item.submenu ? (
               <div key={index}>
                 <button
-                  className={`menu-item ${expandedMenu === index ? "active" : ""} ${location.pathname.includes(item.path) ? "active" : ""}`}
-                  onClick={() => setExpandedMenu(expandedMenu === index ? null : index)}
+                  className={`menu-item ${expandedMenu === index ? "active" : ""} ${location.pathname.startsWith(item.path) ? "active" : ""}`}
+                  onClick={() =>
+                    setExpandedMenu(expandedMenu === index ? null : index)
+                  }
                   style={{
                     width: "100%",
                     textAlign: "left",
-                    background: expandedMenu === index ? "rgba(0, 181, 226, 0.15)" : "none",
-                    border: expandedMenu === index ? "1px solid rgba(0, 181, 226, 0.3)" : "none",
+                    background:
+                      expandedMenu === index
+                        ? "rgba(0, 181, 226, 0.15)"
+                        : "none",
+                    border:
+                      expandedMenu === index
+                        ? "1px solid rgba(0, 181, 226, 0.3)"
+                        : "none",
                     cursor: "pointer",
                   }}
                 >
                   <div className="menu-icon">{item.icon}</div>
                   {!collapsed && (
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flex: 1 }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        flex: 1,
+                      }}
+                    >
                       <span className="menu-text">{item.label}</span>
                       <FaChevronRight
                         style={{
                           transition: "transform 0.3s",
-                          transform: expandedMenu === index ? "rotate(90deg)" : "rotate(0deg)",
+                          transform:
+                            expandedMenu === index
+                              ? "rotate(90deg)"
+                              : "rotate(0deg)",
                           fontSize: "0.75rem",
                         }}
                       />
@@ -146,14 +179,16 @@ const Layout = () => {
                   )}
                 </button>
                 {expandedMenu === index && !collapsed && (
-                  <div style={{
-                    paddingLeft: "12px",
-                    paddingTop: "4px",
-                    paddingBottom: "4px",
-                    background: "rgba(255,255,255,0.05)",
-                    borderRadius: "8px",
-                    margin: "4px 0",
-                  }}>
+                  <div
+                    style={{
+                      paddingLeft: "12px",
+                      paddingTop: "4px",
+                      paddingBottom: "4px",
+                      background: "rgba(255,255,255,0.05)",
+                      borderRadius: "8px",
+                      margin: "4px 0",
+                    }}
+                  >
                     {item.submenu.map((subItem, subIndex) => (
                       <Link
                         key={`${index}-${subIndex}`}
@@ -172,7 +207,6 @@ const Layout = () => {
                 key={index}
                 to={item.path}
                 className={`menu-item ${location.pathname === item.path ? "active" : ""}`}
-                // 3. TAMBAHKAN ONCLICK DI SINI
                 onClick={() => handleMenuClick(item.path)}
               >
                 <div className="menu-icon">{item.icon}</div>
@@ -216,7 +250,6 @@ const Layout = () => {
         </header>
 
         <main className="page-content">
-          {/* 4. TAMBAHKAN KEY PADA OUTLET */}
           <Outlet key={`${location.pathname}-${resetKey}`} />
         </main>
       </div>

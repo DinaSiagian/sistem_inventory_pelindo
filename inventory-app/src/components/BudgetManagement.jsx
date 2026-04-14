@@ -228,16 +228,19 @@ const mkAssets = () => [
   },
 ];
 
+// ══════ INIT DATA ══════
+// Structure: capexData = array of Anggaran, each Anggaran has projects[], each project has assets[]
 const INIT_CAPEX = [
   {
     id: "CAP-2440013",
     kode: "2440013",
     nama: "Penyiapan Infrastruktur IT Kantor Pusat & Branch",
-    pagu: 0,
+    nilai_kad: 0,
     thnAwal: 2024,
     thnAkhir: 2024,
     thnAnggaran: 2024,
     type: "capex",
+    assets: mkAssets(), // Anggaran-level assets
     projects: [
       {
         id: "PKJ-2440013-001",
@@ -252,7 +255,20 @@ const INIT_CAPEX = [
         no_sp3: "",
         tgl_sp3: "2024-09-06",
         tgl_bamk: "2024-09-06",
-        assets: mkAssets(),
+      },
+      {
+        id: "PKJ-2440013-002",
+        nm_pekerjaan: "Optimasi dan Konfigurasi Infrastruktur Jaringan",
+        nilai_rab: 250000000,
+        nilai_kontrak: 300000000,
+        no_pr: "8260000100",
+        no_po: "6440000200",
+        no_kontrak: "SI.01/11/9/1/PPTI/TEKI/PLMT-24",
+        tgl_kontrak: "2024-09-15",
+        durasi_kontrak: 60,
+        no_sp3: "",
+        tgl_sp3: "2024-09-10",
+        tgl_bamk: "2024-09-12",
       },
     ],
   },
@@ -260,11 +276,52 @@ const INIT_CAPEX = [
     id: "CAP-2440014",
     kode: "2440014",
     nama: "Penyediaan Network di Branch SPMT",
-    pagu: 3200000000,
+    nilai_kad: 3200000000,
     thnAwal: 2024,
     thnAkhir: 2024,
     thnAnggaran: 2024,
     type: "capex",
+    assets: [
+      {
+        id: newId(),
+        asset_code: "SPMT-MLH-DTC-PKR-02",
+        serial_number: "CSC-MLH-CSW-001",
+        name: "Core Switch Malahayati",
+        brand: "Cisco",
+        model: "Catalyst 9300-48P",
+        category: "Network",
+        location: "Malahayati",
+        procurement_date: "2024-08-15",
+        acquisition_value: 320000000,
+        image: null,
+      },
+      {
+        id: newId(),
+        asset_code: "SPMT-MLH-DTC-SRV-01",
+        serial_number: "DELL-MLH-SRV-001",
+        name: "Server Malahayati",
+        brand: "Dell",
+        model: "PowerEdge R750",
+        category: "Server",
+        location: "Malahayati",
+        procurement_date: "2024-08-15",
+        acquisition_value: 400000000,
+        image: null,
+      },
+      {
+        id: newId(),
+        asset_code: "SPMT-MLH-DTC-FWL-01",
+        serial_number: "FGT-MLH-FWL-001",
+        name: "Firewall Malahayati",
+        brand: "Fortinet",
+        model: "FortiGate 200F",
+        category: "Security",
+        location: "Malahayati",
+        procurement_date: "2024-08-15",
+        acquisition_value: 280000000,
+        image: null,
+      },
+    ],
     projects: [
       {
         id: "PKJ-2440014-001",
@@ -279,21 +336,20 @@ const INIT_CAPEX = [
         no_sp3: "",
         tgl_sp3: "2024-08-02",
         tgl_bamk: "2024-08-09",
-        assets: [
-          {
-            id: newId(),
-            asset_code: "SPMT-MLH-DTC-PKR-02",
-            serial_number: "CSC-MLH-CSW-001",
-            name: "Core Switch Malahayati",
-            brand: "Cisco",
-            model: "Catalyst 9300-48P",
-            category: "Network",
-            location: "Malahayati",
-            procurement_date: "2024-08-15",
-            acquisition_value: 320000000,
-            image: null,
-          },
-        ],
+      },
+      {
+        id: "PKJ-2440014-002",
+        nm_pekerjaan: "Instalasi dan Testing Network Infrastructure",
+        nilai_rab: 400000000,
+        nilai_kontrak: 500000000,
+        no_pr: "8260000110",
+        no_po: "6440000220",
+        no_kontrak: "SI.01/16/8/2/PPTI/TEKI/PLMT-24",
+        tgl_kontrak: "2024-08-20",
+        durasi_kontrak: 45,
+        no_sp3: "",
+        tgl_sp3: "2024-08-15",
+        tgl_bamk: "2024-08-18",
       },
     ],
   },
@@ -301,11 +357,12 @@ const INIT_CAPEX = [
     id: "CAP-2440015",
     kode: "2440015",
     nama: "Implementasi dan Standarisasi IT Infrastruktur",
-    pagu: 1500000000,
+    nilai_kad: 1500000000,
     thnAwal: 2024,
     thnAkhir: 2024,
     thnAnggaran: 2024,
     type: "capex",
+    assets: [],
     projects: [
       {
         id: "PKJ-2440015-001",
@@ -321,7 +378,6 @@ const INIT_CAPEX = [
         no_sp3: "",
         tgl_sp3: "2024-08-02",
         tgl_bamk: "2024-08-06",
-        assets: [],
       },
       {
         id: "PKJ-2440015-002",
@@ -337,7 +393,20 @@ const INIT_CAPEX = [
         no_sp3: "",
         tgl_sp3: "2024-08-05",
         tgl_bamk: "2024-08-10",
-        assets: [],
+      },
+      {
+        id: "PKJ-2440015-003",
+        nm_pekerjaan: "Integrasi Sistem dan Dokumentasi Teknis",
+        nilai_rab: 150000000,
+        nilai_kontrak: 200000000,
+        no_pr: "8260000120",
+        no_po: "6440000230",
+        no_kontrak: "SI.01/17/8/3/PPTI/TEKI/PLMT-24",
+        tgl_kontrak: "2024-08-22",
+        durasi_kontrak: 30,
+        no_sp3: "",
+        tgl_sp3: "2024-08-18",
+        tgl_bamk: "2024-08-20",
       },
     ],
   },
@@ -345,22 +414,39 @@ const INIT_CAPEX = [
     id: "CAP-2440020",
     kode: "2440020",
     nama: "Revisi Capex (Pemeliharaan Infrastruktur)",
-    pagu: 500000000,
+    nilai_kad: 500000000,
     thnAwal: 2024,
     thnAkhir: 2024,
     thnAnggaran: 2024,
     type: "capex",
-    projects: [],
+    assets: [],
+    projects: [
+      {
+        id: "PKJ-2440020-001",
+        nm_pekerjaan: "Pemeliharaan dan Upgrade Perangkat Infrastruktur",
+        nilai_rab: 200000000,
+        nilai_kontrak: 300000000,
+        no_pr: "8260000130",
+        no_po: "6440000240",
+        no_kontrak: "SI.01/18/8/4/PPTI/TEKI/PLMT-24",
+        tgl_kontrak: "2024-08-25",
+        durasi_kontrak: 45,
+        no_sp3: "",
+        tgl_sp3: "2024-08-20",
+        tgl_bamk: "2024-08-22",
+      },
+    ],
   },
   {
     id: "CAP-2540011",
     kode: "2540011",
     nama: "Penyediaan Kebutuhan Perangkat Jaringan, SIEM & Gate System",
-    pagu: 4500000000,
+    nilai_kad: 4500000000,
     thnAwal: 2025,
     thnAkhir: 2025,
     thnAnggaran: 2025,
     type: "capex",
+    assets: [],
     projects: [
       {
         id: "PKJ-2540011-001",
@@ -376,7 +462,20 @@ const INIT_CAPEX = [
         no_sp3: "PD.01/23/10/2/PGDN/SDMU/PLMT-25",
         tgl_sp3: "2025-10-23",
         tgl_bamk: "2025-10-02",
-        assets: [],
+      },
+      {
+        id: "PKJ-2540011-002",
+        nm_pekerjaan: "Konfigurasi dan Testing SIEM System",
+        nilai_rab: 300000000,
+        nilai_kontrak: 250000000,
+        no_pr: "8260001122",
+        no_po: "6440000840",
+        no_kontrak: "PD.01/29/10/2/PPTI/TEKI/PLMT-25",
+        tgl_kontrak: "2025-10-30",
+        durasi_kontrak: 30,
+        no_sp3: "PD.01/24/10/2/PGDN/SDMU/PLMT-25",
+        tgl_sp3: "2025-10-25",
+        tgl_bamk: "2025-10-05",
       },
     ],
   },
@@ -384,11 +483,12 @@ const INIT_CAPEX = [
     id: "CAP-2540012",
     kode: "2540012",
     nama: "Penyediaan Kebutuhan Transformasi dan Digitalisasi Terminal",
-    pagu: 3500000000,
+    nilai_kad: 3500000000,
     thnAwal: 2025,
     thnAkhir: 2025,
     thnAnggaran: 2025,
     type: "capex",
+    assets: [],
     projects: [
       {
         id: "PKJ-2540012-001",
@@ -404,7 +504,20 @@ const INIT_CAPEX = [
         no_sp3: "PD.02/10/11/2/PGDN/SDMU/PLMT-25",
         tgl_sp3: "2025-11-10",
         tgl_bamk: "2025-11-01",
-        assets: [],
+      },
+      {
+        id: "PKJ-2540012-002",
+        nm_pekerjaan: "Instalasi CCTV dan PA System Integration",
+        nilai_rab: 400000000,
+        nilai_kontrak: 350000000,
+        no_pr: "8260001151",
+        no_po: "6440000851",
+        no_kontrak: "PD.02/16/11/2/PPTI/TEKI/PLMT-25",
+        tgl_kontrak: "2025-11-18",
+        durasi_kontrak: 60,
+        no_sp3: "PD.02/11/11/2/PGDN/SDMU/PLMT-25",
+        tgl_sp3: "2025-11-12",
+        tgl_bamk: "2025-11-05",
       },
     ],
   },
@@ -412,11 +525,12 @@ const INIT_CAPEX = [
     id: "CAP-2540013",
     kode: "2540013",
     nama: "Pengadaan Perangkat End User Computing (EUC)",
-    pagu: 1500000000,
+    nilai_kad: 1500000000,
     thnAwal: 2025,
     thnAkhir: 2025,
     thnAnggaran: 2025,
     type: "capex",
+    assets: [],
     projects: [
       {
         id: "PKJ-2540013-001",
@@ -432,7 +546,20 @@ const INIT_CAPEX = [
         no_sp3: "PD.03/01/03/2/PGDN/SDMU/PLMT-25",
         tgl_sp3: "2025-03-01",
         tgl_bamk: "2025-02-20",
-        assets: [],
+      },
+      {
+        id: "PKJ-2540013-002",
+        nm_pekerjaan: "Setup dan Deployment End User Devices",
+        nilai_rab: 100000000,
+        nilai_kontrak: 120000000,
+        no_pr: "8260001202",
+        no_po: "6440000913",
+        no_kontrak: "PD.03/06/03/2/PPTI/TEKI/PLMT-25",
+        tgl_kontrak: "2025-03-08",
+        durasi_kontrak: 30,
+        no_sp3: "PD.03/02/03/2/PGDN/SDMU/PLMT-25",
+        tgl_sp3: "2025-03-03",
+        tgl_bamk: "2025-02-25",
       },
     ],
   },
@@ -863,7 +990,6 @@ body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:var(--bg);c
 .toast{position:fixed;bottom:24px;right:24px;background:var(--ink);color:#fff;padding:12px 20px;border-radius:12px;font-size:0.85rem;font-weight:600;box-shadow:var(--sh-lg);display:flex;align-items:center;gap:8px;z-index:9999;animation:toastIn .2s ease}
 .cbox{background:var(--surf);border-radius:16px;padding:24px;max-width:320px;width:100%;box-shadow:var(--sh-lg);display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center;animation:modalUp .2s ease}
 
-/* ══ TAMBAH PAGE — REVISED ══ */
 .tambah-page{animation:fadeUp .15s ease-out;max-width:820px;margin:0 auto}
 .tambah-page-hdr{display:flex;align-items:center;gap:15px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border)}
 .tambah-page-hdr-ico{width:40px;height:40px;border-radius:11px;background:var(--blue-lt);color:var(--blue);display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -872,8 +998,6 @@ body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:var(--bg);c
 .tambah-sec{background:var(--surf);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--sh);overflow:hidden;margin-bottom:12px}
 .tambah-sec-hdr{display:flex;align-items:center;gap:9px;padding:9px 15px;background:var(--border-lt);border-bottom:1px solid var(--border);font-size:0.70rem;font-weight:800;color:var(--ink2);text-transform:uppercase;letter-spacing:0.5px}
 .tambah-sec-body{padding:3px 15px 6px}
-
-/* ── Horizontal field layout (revised) ── */
 .tambah-fld{display:flex;align-items:center;padding:6px 0;gap:0;border-bottom:1px solid var(--border-lt)}
 .tambah-fld:last-child{border-bottom:none}
 .tambah-fld-lbl{width:170px;min-width:170px;font-size:.70rem;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:0.4px;padding-right:13px;flex-shrink:0;line-height:1.3}
@@ -885,8 +1009,6 @@ body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:var(--bg);c
 .tambah-fld select{cursor:pointer}
 .tambah-fld-hint{font-size:.66rem;color:var(--ink4);margin-top:2px}
 .tambah-2col{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-
-/* ── Anggaran info: horizontal row of items ── */
 .anggaran-info-bar{display:flex;align-items:center;gap:0;background:var(--blue-lt);border:1px solid var(--blue-mid);border-radius:7px;overflow:hidden;flex-shrink:0}
 .anggaran-info-bar .ai-item-s{display:flex;flex-direction:column;gap:0px;padding:5px 12px;border-right:1px solid var(--blue-mid);white-space:nowrap}
 .anggaran-info-bar .ai-item-s:last-child{border-right:none}
@@ -895,17 +1017,29 @@ body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:var(--bg);c
 .anggaran-info-bar .ai-val-s.sisa-ok{color:var(--green)}
 .anggaran-info-bar .ai-val-s.sisa-warn{color:var(--amber)}
 .anggaran-info-bar .ai-val-s.sisa-over{color:var(--red)}
-
-/* ── OPEX Modal: inline value preview (right of input) ── */
 .opex-inline-preview{display:inline-flex;align-items:center;padding:6px 11px;background:var(--green-lt);border:1px solid var(--green-mid);border-radius:7px;font-size:0.78rem;font-weight:700;color:var(--green);white-space:nowrap;flex-shrink:0;min-width:fit-content}
-
 .req-note-small{font-size:0.7rem;color:var(--ink4);padding:0 0 10px;font-style:italic}
+
+/* ── CAPEX ANGGARAN CARD (Level 1) ── */
+.ang-card{background:var(--surf);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh);transition:transform .15s,box-shadow .15s;cursor:pointer}
+.ang-card:hover{transform:translateY(-2px);box-shadow:var(--sh-md);border-color:var(--blue-mid)}
+.ang-card-inner{display:flex}
+.ang-card-accent{width:4px;flex-shrink:0;background:var(--blue)}
+.ang-card-body{flex:1;min-width:0;padding:16px 18px;display:grid;grid-template-columns:2.5fr 1.5fr 2fr auto;align-items:center;gap:16px}
+.ang-card-info{display:flex;flex-direction:column;gap:5px;min-width:0}
+.ang-card-tags{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.ang-card-title{font-size:0.88rem;font-weight:700;color:var(--ink);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ang-card-meta{display:flex;flex-direction:column;gap:4px;font-size:0.75rem;color:var(--ink3);font-weight:500}
+.ang-card-meta span{display:flex;align-items:center;gap:6px}
+.ang-card-fin{display:flex;align-items:center;justify-content:flex-end;gap:18px}
+.ang-card-actions{display:flex;align-items:center;gap:8px}
+.ang-card-chevron{color:var(--blue);display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:var(--blue-lt);border:1px solid var(--blue-mid)}
 @keyframes slideDown{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fadeOvl{from{opacity:0}to{opacity:1}}
 @keyframes modalUp{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes toastIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-@media(max-width:1024px){.jcard-top{grid-template-columns:1fr;gap:12px}.jc-fin{justify-content:flex-start}.jc-actions{justify-content:flex-start;flex-wrap:wrap}.fin-div{display:none}.asset-table{font-size:0.75rem}.asset-table thead th,.asset-table tbody td{padding:9px 10px}}
+@media(max-width:1024px){.jcard-top{grid-template-columns:1fr;gap:12px}.jc-fin{justify-content:flex-start}.jc-actions{justify-content:flex-start;flex-wrap:wrap}.fin-div{display:none}.asset-table{font-size:0.75rem}.asset-table thead th,.asset-table tbody td{padding:9px 10px}.ang-card-body{grid-template-columns:1fr;gap:12px}}
 @media(max-width:900px){.root{padding:24px 20px 80px}.hdr{flex-direction:column;align-items:stretch}.kpi-strip{grid-template-columns:1fr}.detail-grid{grid-template-columns:1fr}.ctx-card{grid-template-columns:1fr 1fr}.opex-flt-select{min-width:200px}.tambah-fld-lbl{width:140px;min-width:140px}.hfld-label{width:160px;min-width:160px}.aefld-label{width:140px;min-width:140px}}
 `;
 
@@ -1102,8 +1236,6 @@ function AEFld({ label, req, children }) {
     </div>
   );
 }
-
-/* ══ TFld — horizontal compact layout (REVISED) ══ */
 function TFld({ label, req, children }) {
   return (
     <div className="tambah-fld">
@@ -1115,7 +1247,6 @@ function TFld({ label, req, children }) {
     </div>
   );
 }
-
 function MHFld({ label, req, green, children }) {
   return (
     <div className={`tambah-fld${green ? " green" : ""}`}>
@@ -1128,10 +1259,76 @@ function MHFld({ label, req, green, children }) {
   );
 }
 
-// ══════ TAMBAH CAPEX PAGE — REVISED ══════
-function TambahCapexPage({ capexData, onBack, onSave }) {
+// ══════ BREADCRUMB ══════
+function Breadcrumb({ items }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 6,
+        marginBottom: 16,
+        flexWrap: "wrap",
+      }}
+    >
+      {items.map((item, i) => (
+        <React.Fragment key={i}>
+          {i > 0 && (
+            <Icon
+              d={I.chevRight}
+              size={12}
+              style={{ color: "var(--ink4)", flexShrink: 0 }}
+            />
+          )}
+          {item.onClick ? (
+            <button
+              onClick={item.onClick}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                fontSize: "0.78rem",
+                fontWeight: 600,
+                color: "var(--blue)",
+                padding: 0,
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+              }}
+            >
+              {item.icon && <Icon d={item.icon} size={12} />}
+              {item.label}
+            </button>
+          ) : (
+            <span
+              style={{
+                fontSize: "0.78rem",
+                fontWeight: 700,
+                color: "var(--ink2)",
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+              }}
+            >
+              {item.icon && (
+                <Icon
+                  d={item.icon}
+                  size={12}
+                  style={{ color: "var(--ink3)" }}
+                />
+              )}
+              {item.label}
+            </span>
+          )}
+        </React.Fragment>
+      ))}
+    </div>
+  );
+}
+
+// ══════ TAMBAH PEKERJAAN PAGE ══════
+function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
   const [form, setForm] = useState({
-    anggaranId: capexData[0]?.id || "",
     nm_pekerjaan: "",
     nilai_rab: "",
     nilai_kontrak: "",
@@ -1145,12 +1342,11 @@ function TambahCapexPage({ capexData, onBack, onSave }) {
     tgl_bamk: "",
   });
   const up = (k, v) => setForm((f) => ({ ...f, [k]: v }));
-  const ang = capexData.find((a) => a.id === form.anggaranId);
-  const totalKontrakAng = useMemo(() => {
-    if (!ang) return 0;
-    return (ang.projects || []).reduce((s, p) => s + (p.nilai_kontrak || 0), 0);
-  }, [ang]);
-  const sisaAnggaran = ang ? ang.pagu - totalKontrakAng : 0;
+  const totalKontrak = (anggaran.projects || []).reduce(
+    (s, p) => s + (p.nilai_kontrak || 0),
+    0,
+  );
+  const sisaAnggaran = anggaran.nilai_kad - totalKontrak;
   const sisaClass =
     sisaAnggaran > 0
       ? "sisa-ok"
@@ -1159,12 +1355,20 @@ function TambahCapexPage({ capexData, onBack, onSave }) {
         : "sisa-over";
 
   const handleSave = () => {
-    if (!form.nm_pekerjaan || !form.anggaranId) return;
-    onSave(form.anggaranId, {
+    if (!form.nm_pekerjaan) return;
+    const nilaiKontrak = parseFloat(form.nilai_kontrak) || 0;
+    // Validasi: nilai kontrak tidak boleh melebihi nilai KAD
+    if (nilaiKontrak > anggaran.nilai_kad) {
+      alert(
+        `Nilai Kontrak tidak boleh melebihi Nilai KAD (${fmt(anggaran.nilai_kad)})`,
+      );
+      return;
+    }
+    onSave({
       id: `PKJ-${Date.now()}`,
       nm_pekerjaan: form.nm_pekerjaan,
       nilai_rab: parseFloat(form.nilai_rab) || 0,
-      nilai_kontrak: parseFloat(form.nilai_kontrak) || 0,
+      nilai_kontrak: nilaiKontrak,
       no_pr: form.no_pr,
       no_po: form.no_po,
       no_kontrak: form.no_kontrak,
@@ -1173,7 +1377,6 @@ function TambahCapexPage({ capexData, onBack, onSave }) {
       no_sp3: form.no_sp3,
       tgl_sp3: form.tgl_sp3,
       tgl_bamk: form.tgl_bamk,
-      assets: [],
     });
   };
 
@@ -1188,7 +1391,7 @@ function TambahCapexPage({ capexData, onBack, onSave }) {
         </div>
         <div className="tambah-page-hdr-text">
           <h2>Tambah Pekerjaan CAPEX</h2>
-          <p>Isi semua informasi pekerjaan baru di bawah ini</p>
+          <p>Pos Anggaran: {anggaran.nama}</p>
         </div>
       </div>
       <p className="req-note-small">
@@ -1196,31 +1399,19 @@ function TambahCapexPage({ capexData, onBack, onSave }) {
         diisi
       </p>
 
-      {/* ── Pos Anggaran ── */}
       <div className="tambah-sec">
         <div className="tambah-sec-hdr">
           <Icon d={I.database} size={13} /> Pos Anggaran CAPEX
         </div>
         <div className="tambah-sec-body">
-          <TFld label="Pos Anggaran" req>
+          <TFld label="Pos Anggaran">
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <select
-                value={form.anggaranId}
-                onChange={(e) => up("anggaranId", e.target.value)}
-                style={{ flex: 1 }}
-              >
-                <option value="">— Pilih Pos Anggaran —</option>
-                {capexData.map((a) => (
-                  <option key={a.id} value={a.id}>
-                    [{a.kode}] {a.thnAnggaran} —{" "}
-                    {a.nama.length > 50
-                      ? a.nama.substring(0, 50) + "..."
-                      : a.nama}
-                  </option>
-                ))}
-              </select>
-              {/* Anggaran info: horizontal inline strip */}
-              {ang && (
+              <input
+                value={`[${anggaran.kode}] ${anggaran.thnAnggaran} — ${anggaran.nama}`}
+                disabled
+                style={{ flex: 1, opacity: 0.7 }}
+              />
+              {anggaran.nilai_kad > 0 && (
                 <div className="anggaran-info-bar">
                   <div className="ai-item-s">
                     <span className="ai-lbl-s">Sisa Anggaran</span>
@@ -1236,7 +1427,6 @@ function TambahCapexPage({ capexData, onBack, onSave }) {
         </div>
       </div>
 
-      {/* ── Informasi Pekerjaan ── */}
       <div className="tambah-sec">
         <div className="tambah-sec-hdr">
           <Icon d={I.fileText} size={13} /> Informasi Pekerjaan
@@ -1319,7 +1509,6 @@ function TambahCapexPage({ capexData, onBack, onSave }) {
         </div>
       </div>
 
-      {/* ── Referensi Dokumen ── */}
       <div className="tambah-sec">
         <div className="tambah-sec-hdr">
           <Icon d={I.tag} size={13} /> Referensi Dokumen
@@ -1370,7 +1559,7 @@ function TambahCapexPage({ capexData, onBack, onSave }) {
       <div className="edit-footer">
         <div>
           <span style={{ fontSize: "0.75rem", color: "var(--ink3)" }}>
-            Pekerjaan akan disimpan ke pos anggaran terpilih
+            Pekerjaan akan disimpan ke pos anggaran:
           </span>
           <strong
             style={{
@@ -1379,8 +1568,20 @@ function TambahCapexPage({ capexData, onBack, onSave }) {
               color: "var(--ink)",
             }}
           >
-            {ang ? ang.nama : "—"}
+            {anggaran.nama}
           </strong>
+          {anggaran.nilai_kad === 0 && (
+            <span
+              style={{
+                fontSize: "0.75rem",
+                color: "var(--red)",
+                marginTop: 4,
+                display: "block",
+              }}
+            >
+              ⚠️ Isi Nilai KAD terlebih dahulu
+            </span>
+          )}
         </div>
         <div style={{ display: "flex", gap: 12 }}>
           <button className="btn btn-outline" onClick={onBack}>
@@ -1389,10 +1590,14 @@ function TambahCapexPage({ capexData, onBack, onSave }) {
           <button
             className="btn btn-prim"
             style={{
-              opacity: !form.nm_pekerjaan || !form.anggaranId ? 0.5 : 1,
+              opacity: !form.nm_pekerjaan || anggaran.nilai_kad === 0 ? 0.5 : 1,
+              cursor:
+                !form.nm_pekerjaan || anggaran.nilai_kad === 0
+                  ? "not-allowed"
+                  : "pointer",
             }}
             onClick={handleSave}
-            disabled={!form.nm_pekerjaan || !form.anggaranId}
+            disabled={!form.nm_pekerjaan || anggaran.nilai_kad === 0}
           >
             <Icon d={I.save} size={13} /> Simpan Pekerjaan
           </button>
@@ -1432,7 +1637,6 @@ function TambahOpexModal({ onClose, onSave }) {
       transaksi: [],
     });
   };
-
   const nilaiPreview = parseFloat(form.nilai_anggaran_tahunan) || 0;
 
   return (
@@ -1543,7 +1747,6 @@ function TambahOpexModal({ onClose, onSave }) {
               max="2030"
             />
           </HFld>
-          {/* ── FIX: Nilai Anggaran Tahunan — preview inline to the right ── */}
           <HFld label="Nilai Anggaran Tahunan (IDR)">
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <input
@@ -1588,18 +1791,19 @@ function TambahOpexModal({ onClose, onSave }) {
 
 // ══════ ASSET TABLE PAGE ══════
 function AssetTablePage({
-  project,
   anggaran,
+  project,
   onBack,
   onEntryNew,
   onSaveAssets,
   showToast,
 }) {
+  // Assets are stored at the anggaran level, not per-project
   const [searchQ, setSearchQ] = useState("");
   const [catFilter, setCatFilter] = useState("all");
   const [locFilter, setLocFilter] = useState("all");
   const [confirm, setConfirm] = useState(null);
-  const assets = project.assets || [];
+  const assets = anggaran.assets || [];
   const cats = useMemo(
     () => [
       "all",
@@ -1645,9 +1849,33 @@ function AssetTablePage({
 
   return (
     <div className="asset-page">
+      <Breadcrumb
+        items={[
+          {
+            label: "Daftar Anggaran",
+            onClick: () => onBack("root"),
+            icon: I.layers,
+          },
+          {
+            label:
+              anggaran.nama.substring(0, 30) +
+              (anggaran.nama.length > 30 ? "…" : ""),
+            onClick: () => onBack("anggaran"),
+            icon: I.briefcase,
+          },
+          {
+            label:
+              project.nm_pekerjaan.substring(0, 30) +
+              (project.nm_pekerjaan.length > 30 ? "…" : ""),
+            onClick: () => onBack("project"),
+            icon: I.fileText,
+          },
+          { label: "Daftar Aset", icon: I.package },
+        ]}
+      />
       <div className="asset-page-hdr">
         <div className="asset-page-hdr-left">
-          <button className="btn btn-outline" onClick={onBack}>
+          <button className="btn btn-outline" onClick={() => onBack("project")}>
             <Icon d={I.arrowLeft} size={12} /> Kembali
           </button>
           <div>
@@ -1660,7 +1888,7 @@ function AssetTablePage({
                 marginBottom: 3,
               }}
             >
-              Daftar Aset Pekerjaan
+              Daftar Aset
             </h2>
             <p
               style={{
@@ -1669,9 +1897,7 @@ function AssetTablePage({
                 fontWeight: 500,
               }}
             >
-              {assets.length} aset terdaftar ·{" "}
-              {project.nm_pekerjaan?.substring(0, 55)}
-              {project.nm_pekerjaan?.length > 55 ? "…" : ""}
+              {assets.length} aset · Anggaran: {anggaran.kode}
             </p>
           </div>
         </div>
@@ -1701,18 +1927,23 @@ function AssetTablePage({
       <div className="asset-ctx-banner">
         {[
           [
+            "Anggaran",
+            anggaran.nama?.substring(0, 48) +
+              (anggaran.nama?.length > 48 ? "…" : ""),
+          ],
+          [
             "Pekerjaan",
-            project.nm_pekerjaan?.substring(0, 48) +
-              (project.nm_pekerjaan?.length > 48 ? "…" : ""),
+            project.nm_pekerjaan?.substring(0, 36) +
+              (project.nm_pekerjaan?.length > 36 ? "…" : ""),
           ],
           ["No. Kontrak", project.no_kontrak || "—"],
           [
-            "Nilai Kontrak",
-            project.nilai_kontrak > 0 ? fmt(project.nilai_kontrak) : "—",
-            "var(--red)",
+            "Nilai KAD",
+            anggaran.nilai_kad > 0 ? fmt(anggaran.nilai_kad) : "—",
+            "var(--blue)",
           ],
-          ["Total Nilai Aset", fmt(totalAll), "var(--blue)"],
-          ["Serapan Aset", `${pct}%`, pctColor(pct)],
+          ["Nilai Kontrak", fmt(totalAll), "var(--red)"],
+          ["Serapan", `${pct}%`, pctColor(pct)],
         ].map(([lbl, val, color]) => (
           <div key={lbl} className="asset-ctx-item">
             <span>{lbl}</span>
@@ -1871,10 +2102,10 @@ function AssetTablePage({
                         className="abtn del"
                         onClick={() =>
                           setConfirm({
-                            msg: "Hapus aset ini dari daftar pekerjaan?",
+                            msg: "Hapus aset ini?",
                             onConfirm: () => {
                               onSaveAssets(
-                                project.id,
+                                anggaran.id,
                                 assets.filter((x) => x.id !== a.id),
                               );
                               showToast("Aset dihapus");
@@ -1980,7 +2211,7 @@ function RealisasiTablePage({
         </div>
         <div className="asset-page-hdr-right">
           <button className="btn btn-green" onClick={onEntryNew}>
-            <Icon d={I.plus} size={13} /> Entry Transaksi Baru
+            <Icon d={I.plus} size={13} /> Tambah Pekerjaan
           </button>
         </div>
       </div>
@@ -2138,10 +2369,11 @@ function RealisasiTablePage({
   );
 }
 
-// ══════ CAPEX CARD ══════
-function CapexCard({ proj, onEdit, onAssetTable, onAssetEntry, onDelete }) {
+// ══════ CAPEX PEKERJAAN CARD (Level 2) ══════
+function PekerjaanCard({ proj, anggaran, onEdit, onAssetTable, onDelete }) {
   const [open, setOpen] = useState(false);
-  const assets = proj.assets || [];
+  // Assets are at the anggaran level
+  const assets = anggaran.assets || [];
   const assetTotal = assets.reduce((s, a) => s + (a.acquisition_value || 0), 0);
   const pct =
     proj.nilai_kontrak > 0
@@ -2157,8 +2389,8 @@ function CapexCard({ proj, onEdit, onAssetTable, onAssetEntry, onDelete }) {
             <div className="jc-info">
               <div className="jc-tags">
                 <span className="badge capex">CAPEX</span>
-                <span className="yr-tag">{proj._thn}</span>
-                <code className="code-tag">{proj._angKode}</code>
+                <span className="yr-tag">{anggaran.thnAnggaran}</span>
+                <code className="code-tag">{anggaran.kode}</code>
               </div>
               <p className="jc-title">{proj.nm_pekerjaan}</p>
             </div>
@@ -2176,13 +2408,13 @@ function CapexCard({ proj, onEdit, onAssetTable, onAssetEntry, onDelete }) {
             </div>
             <div className="jc-fin">
               <div className="amt-blk">
-                <span className="amt-lbl">Nilai Anggaran</span>
+                <span className="amt-lbl">Nilai Kontrak</span>
                 <span className="amt-val blue">{fmt(assetTotal)}</span>
               </div>
               <div className="fin-div" />
               <div className="amt-blk">
-                <span className="amt-lbl">Nilai Kontrak</span>
-                <span className="amt-val red">{fmt(proj.nilai_kontrak)}</span>
+                <span className="amt-lbl">Nilai RAB</span>
+                <span className="amt-val amber">{fmt(proj.nilai_rab)}</span>
               </div>
             </div>
             <div className="jc-actions">
@@ -2197,9 +2429,6 @@ function CapexCard({ proj, onEdit, onAssetTable, onAssetEntry, onDelete }) {
                 >
                   <Icon d={I.table} size={12} />
                   {assets.length > 0 ? `${assets.length} Aset` : "Lihat Aset"}
-                </button>
-                <button className="abtn del" onClick={() => onDelete(proj)}>
-                  <Icon d={I.trash} size={12} />
                 </button>
               </div>
               <div className="chev">
@@ -2227,8 +2456,9 @@ function CapexCard({ proj, onEdit, onAssetTable, onAssetEntry, onDelete }) {
                       proj.nilai_rab > 0 && ["Nilai RAB", fmt(proj.nilai_rab)],
                     ]
                       .filter(Boolean)
-                      .map(
-                        ([lbl, val, isCode]) =>
+                      .map((item) => {
+                        const [lbl, val, isCode] = item;
+                        return (
                           val &&
                           val !== "—" && (
                             <div key={lbl} className="d-row">
@@ -2237,13 +2467,14 @@ function CapexCard({ proj, onEdit, onAssetTable, onAssetEntry, onDelete }) {
                                 {isCode ? <code>{val}</code> : val}
                               </span>
                             </div>
-                          ),
-                      )}
+                          )
+                        );
+                      })}
                   </div>
                 </div>
                 <div className="d-panel">
                   <div className="d-title">
-                    Aset Tercatat
+                    Aset Anggaran
                     <button
                       className="inline-link"
                       onClick={() => onAssetTable(proj)}
@@ -2253,14 +2484,14 @@ function CapexCard({ proj, onEdit, onAssetTable, onAssetEntry, onDelete }) {
                   </div>
                   {assets.length === 0 ? (
                     <div className="d-empty">
-                      Belum ada aset.
+                      Belum ada aset di anggaran ini.
                       <div style={{ marginTop: 10 }}>
                         <button
                           className="btn btn-prim"
                           style={{ fontSize: "0.75rem", padding: "6px 14px" }}
-                          onClick={() => onAssetEntry(proj)}
+                          onClick={() => onAssetTable(proj)}
                         >
-                          <Icon d={I.plus} size={11} /> Entry Aset Baru
+                          <Icon d={I.plus} size={11} /> Entry Aset
                         </button>
                       </div>
                     </div>
@@ -2373,16 +2604,6 @@ function OpexCard({
               <PctRing pct={pct} />
               <div className="act-btns" onClick={(e) => e.stopPropagation()}>
                 <button
-                  className={`abtn ${showEdit ? "del" : ""}`}
-                  onClick={() => {
-                    setShowEdit((v) => !v);
-                    if (!showEdit) setOpen(true);
-                  }}
-                >
-                  <Icon d={showEdit ? I.x : I.edit} size={12} />
-                  {showEdit ? "Tutup" : "Edit"}
-                </button>
-                <button
                   className="abtn green"
                   onClick={() => onRealisasiTable(ang)}
                 >
@@ -2390,9 +2611,6 @@ function OpexCard({
                   {ang.transaksi?.length > 0
                     ? `${ang.transaksi.length} Transaksi`
                     : "Lihat Riwayat"}
-                </button>
-                <button className="abtn del" onClick={() => onDelete(ang.id)}>
-                  <Icon d={I.trash} size={12} />
                 </button>
               </div>
               <div className="chev">
@@ -2458,7 +2676,7 @@ function OpexCard({
                           style={{ fontSize: "0.75rem", padding: "6px 14px" }}
                           onClick={() => onRealisasiEntry(ang)}
                         >
-                          <Icon d={I.plus} size={11} /> Entry Transaksi Baru
+                          <Icon d={I.plus} size={11} /> Tambah Pekerjaan
                         </button>
                       </div>
                     </div>
@@ -2624,10 +2842,18 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
   const [form, setForm] = useState({ ...project });
   const up = (k, v) => setForm((f) => ({ ...f, [k]: v }));
   const handleSave = () => {
+    const nilaiKontrak = parseFloat(form.nilai_kontrak) || 0;
+    // Validasi: nilai kontrak tidak boleh melebihi nilai KAD
+    if (nilaiKontrak > anggaran.nilai_kad) {
+      showToast(
+        `Nilai Kontrak tidak boleh melebihi Nilai KAD (${fmt(anggaran.nilai_kad)})`,
+      );
+      return;
+    }
     onSave(project.id, {
       ...form,
       nilai_rab: parseFloat(form.nilai_rab) || 0,
-      nilai_kontrak: parseFloat(form.nilai_kontrak) || 0,
+      nilai_kontrak: nilaiKontrak,
       durasi_kontrak: parseInt(form.durasi_kontrak) || 0,
     });
     showToast("Pekerjaan berhasil diperbarui");
@@ -2655,11 +2881,11 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
             <strong>{isCode ? <code>{val}</code> : val}</strong>
           </div>
         ))}
-        {anggaran?.pagu > 0 && (
+        {anggaran?.nilai_kad > 0 && (
           <div className="ctx-item">
-            <span>Pagu</span>
+            <span>Nilai KAD</span>
             <strong style={{ color: "var(--blue)" }}>
-              {fmt(anggaran.pagu)}
+              {fmt(anggaran.nilai_kad)}
             </strong>
           </div>
         )}
@@ -2773,15 +2999,15 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
 }
 
 // ══════ ASSET ENTRY PAGE ══════
-function AssetEntryPage({ project, anggaran, onBack, onSave, showToast }) {
+function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
+  // Assets stored at anggaran level
+  const existingAssets = anggaran.assets || [];
   const [assets, setAssets] = useState(() => {
-    const mapped = (project.assets || []).map((a) => ({
+    const mapped = existingAssets.map((a) => ({
       ...a,
       _af: false,
       image: a.image || null,
     }));
-
-    // Jika belum ada aset, langsung tampilkan form input baru
     if (mapped.length === 0) {
       mapped.push({
         id: newId(),
@@ -2799,7 +3025,6 @@ function AssetEntryPage({ project, anggaran, onBack, onSave, showToast }) {
         _af: false,
       });
     }
-
     return mapped;
   });
   const [confirm, setConfirm] = useState(null);
@@ -2881,7 +3106,7 @@ function AssetEntryPage({ project, anggaran, onBack, onSave, showToast }) {
       ...a,
       acquisition_value: parseFloat(a.acquisition_value) || 0,
     }));
-    onSave(project.id, cl);
+    onSave(anggaran.id, cl);
     showToast(`${cl.length} aset disimpan`);
     onBack();
   };
@@ -2959,23 +3184,17 @@ function AssetEntryPage({ project, anggaran, onBack, onSave, showToast }) {
           <Icon d={I.arrowLeft} size={14} /> Kembali
         </button>
         <div style={{ flex: 1 }}>
-          <h2>Kelola Aset Pekerjaan</h2>
+          <h2>Kelola Aset Anggaran</h2>
         </div>
       </div>
       <div className="ctx-card">
         <div className="ctx-item">
+          <span>Anggaran</span>
+          <strong>{anggaran.nama?.substring(0, 40)}...</strong>
+        </div>
+        <div className="ctx-item">
           <span>Pekerjaan</span>
-          <strong>{project.nm_pekerjaan?.substring(0, 40)}...</strong>
-        </div>
-        <div className="ctx-item">
-          <span>No. Kontrak</span>
-          <strong>{project.no_kontrak || "—"}</strong>
-        </div>
-        <div className="ctx-item">
-          <span>Nilai Kontrak</span>
-          <strong style={{ color: "var(--red)" }}>
-            {project.nilai_kontrak > 0 ? fmt(project.nilai_kontrak) : "—"}
-          </strong>
+          <strong>{project?.nm_pekerjaan?.substring(0, 36) || "—"}</strong>
         </div>
         <div className="ctx-item">
           <span>Total Nilai Aset</span>
@@ -3358,9 +3577,455 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
   );
 }
 
+// ══════ LEVEL 1: ANGGARAN CARD ══════
+function AnggaranCard({ ang, onSelect, onDelete }) {
+  const assetTotal = (ang.assets || []).reduce(
+    (s, a) => s + (a.acquisition_value || 0),
+    0,
+  );
+  const hasAssets = (ang.assets || []).length > 0;
+  const kontrakTotal = hasAssets
+    ? (ang.projects || []).reduce((s, p) => s + (p.nilai_kontrak || 0), 0)
+    : 0;
+  const serapan =
+    ang.nilai_kad > 0 ? Math.round((assetTotal / ang.nilai_kad) * 100) : 0;
+  const meta = pctMeta(serapan);
+
+  return (
+    <div className="ang-card" onClick={() => onSelect(ang)}>
+      <div className="ang-card-inner">
+        <div className="ang-card-accent" />
+        <div className="ang-card-body">
+          <div className="ang-card-info">
+            <div className="ang-card-tags">
+              <span className="badge capex">CAPEX</span>
+              <span className="yr-tag">{ang.thnAnggaran}</span>
+              <code className="code-tag">{ang.kode}</code>
+            </div>
+            <p className="ang-card-title">{ang.nama}</p>
+          </div>
+          <div className="ang-card-meta">
+            <span>
+              <Icon d={I.briefcase} size={12} />
+              {ang.projects?.length || 0} pekerjaan
+            </span>
+            <span>
+              <Icon d={I.package} size={12} />
+              {ang.assets?.length || 0} aset terdaftar
+            </span>
+          </div>
+          <div className="ang-card-fin">
+            <div className="amt-blk">
+              <span className="amt-lbl">Nilai KAD</span>
+              <span className="amt-val blue">
+                {ang.nilai_kad > 0 ? fmt(ang.nilai_kad) : "—"}
+              </span>
+            </div>
+            <div className="fin-div" />
+            <div className="amt-blk">
+              <span className="amt-lbl">Nilai Kontrak</span>
+              <span className="amt-val red">{fmt(kontrakTotal)}</span>
+            </div>
+          </div>
+          <div
+            className="ang-card-actions"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {ang.nilai_kad > 0 && (
+              <div className="ring-wrap">
+                <div className="ring">
+                  <svg width="36" height="36" viewBox="0 0 36 36">
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r={16}
+                      fill="none"
+                      stroke="#e2e8f0"
+                      strokeWidth="4"
+                    />
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r={16}
+                      fill="none"
+                      stroke={pctColor(serapan)}
+                      strokeWidth="4"
+                      strokeDasharray={`${(Math.min(serapan, 100) / 100) * 2 * Math.PI * 16} ${2 * Math.PI * 16}`}
+                      strokeDashoffset={2 * Math.PI * 16 * 0.25}
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <span className="ring-lbl">{serapan}%</span>
+                </div>
+                <span
+                  className="status-pill"
+                  style={{
+                    background: meta.bg,
+                    color: meta.fg,
+                    borderColor: meta.border,
+                  }}
+                >
+                  {meta.label}
+                </span>
+              </div>
+            )}
+            <div
+              className="ang-card-chevron"
+              onClick={() => onSelect(ang)}
+              style={{ cursor: "pointer" }}
+            >
+              <Icon d={I.chevRight} size={16} />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ══════ LEVEL 2: DAFTAR PEKERJAAN (per Anggaran) ══════
+function PekerjaanListPage({
+  anggaran,
+  capexData,
+  onBack,
+  onGoAssetTable,
+  onGoAssetEntry,
+  onGoEditProject,
+  onAddPekerjaan,
+  onDeleteProject,
+  showToast,
+  setCapexData,
+}) {
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [confirm, setConfirm] = useState(null);
+
+  const projects = anggaran.projects || [];
+  const filtered = useMemo(
+    () =>
+      projects.filter(
+        (p) =>
+          !search ||
+          p.nm_pekerjaan?.toLowerCase().includes(search.toLowerCase()) ||
+          p.no_kontrak?.toLowerCase().includes(search.toLowerCase()),
+      ),
+    [projects, search],
+  );
+  const paginated = useMemo(
+    () => filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+    [filtered, page],
+  );
+
+  const assetCount = (anggaran.assets || []).length;
+  const assetTotal = (anggaran.assets || []).reduce(
+    (s, a) => s + (a.acquisition_value || 0),
+    0,
+  );
+  const totalKontrak =
+    assetCount > 0
+      ? projects.reduce((s, p) => s + (p.nilai_kontrak || 0), 0)
+      : 0;
+  const totalRab = projects.reduce((s, p) => s + (p.nilai_rab || 0), 0);
+
+  return (
+    <div style={{ animation: "fadeUp .15s ease-out" }}>
+      <Breadcrumb
+        items={[
+          { label: "Daftar Anggaran", onClick: onBack, icon: I.layers },
+          {
+            label:
+              anggaran.nama.substring(0, 35) +
+              (anggaran.nama.length > 35 ? "…" : ""),
+            icon: I.briefcase,
+          },
+        ]}
+      />
+
+      {/* Context banner for selected anggaran */}
+      <div
+        style={{
+          background: "var(--surf)",
+          border: "1px solid var(--blue-mid)",
+          borderLeft: "4px solid var(--blue)",
+          borderRadius: "var(--r-lg)",
+          padding: "14px 20px",
+          marginBottom: 20,
+          display: "flex",
+          gap: 28,
+          flexWrap: "wrap",
+          boxShadow: "var(--sh)",
+        }}
+      >
+        {[
+          ["Kode Anggaran", anggaran.kode, true],
+          [
+            "Nama Anggaran",
+            anggaran.nama.substring(0, 40) +
+              (anggaran.nama.length > 40 ? "…" : ""),
+          ],
+          ["Tahun", String(anggaran.thnAnggaran)],
+          [
+            "Nilai KAD",
+            anggaran.nilai_kad > 0 ? fmt(anggaran.nilai_kad) : "—",
+            false,
+            "var(--blue)",
+          ],
+          ["Nilai RAB", fmt(totalRab), false, "var(--amber)"],
+          [
+            "Nilai Kontrak",
+            fmt(totalKontrak),
+            false,
+            totalKontrak > anggaran.nilai_kad ? "var(--red)" : "var(--red)",
+          ],
+        ].map(([lbl, val, isCode, color]) => (
+          <div key={lbl} className="asset-ctx-item">
+            <span>{lbl}</span>
+            <strong style={color ? { color } : {}}>
+              {isCode ? (
+                <code
+                  style={{
+                    fontFamily: "var(--mono)",
+                    fontSize: "0.82rem",
+                    color: "var(--blue)",
+                    background: "var(--blue-lt)",
+                    padding: "2px 6px",
+                    borderRadius: 4,
+                  }}
+                >
+                  {val}
+                </code>
+              ) : (
+                val
+              )}
+            </strong>
+          </div>
+        ))}
+      </div>
+
+      {/* Toolbar */}
+      <div className="toolbar">
+        <button className="btn btn-outline" onClick={onBack}>
+          <Icon d={I.arrowLeft} size={13} /> Kembali
+        </button>
+        <div className="srch">
+          <Icon d={I.search} size={14} />
+          <input
+            placeholder="Cari nama pekerjaan atau nomor kontrak..."
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+          />
+        </div>
+        <button
+          className="btn btn-prim"
+          onClick={onAddPekerjaan}
+          disabled={anggaran.nilai_kad === 0}
+          style={{
+            opacity: anggaran.nilai_kad === 0 ? 0.5 : 1,
+            cursor: anggaran.nilai_kad === 0 ? "not-allowed" : "pointer",
+          }}
+          title={
+            anggaran.nilai_kad === 0
+              ? "Silakan isi Nilai KAD terlebih dahulu"
+              : ""
+          }
+        >
+          <Icon d={I.plus} size={14} /> Tambah Pekerjaan
+        </button>
+      </div>
+
+      {/* KPI strip */}
+      <div className="kpi-strip" style={{ marginBottom: 16 }}>
+        {[
+          {
+            cls: "blue",
+            icon: I.briefcase,
+            lbl: "Total Pekerjaan",
+            val: projects.length,
+          },
+          {
+            cls: "amber",
+            icon: I.fileText,
+            lbl: "Nilai RAB",
+            val: fmt(totalRab),
+          },
+          {
+            cls: "amber",
+            icon: I.fileText,
+            lbl: "Nilai Kontrak",
+            val: fmt(totalKontrak),
+          },
+        ].map(({ cls, icon, lbl, val }) => (
+          <div key={lbl} className={`kpi ${cls}`}>
+            <div className="kpi-ico">
+              <Icon d={icon} size={20} />
+            </div>
+            <div className="kpi-body">
+              <div className="kpi-lbl">{lbl}</div>
+              <div className="kpi-val">{val}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {filtered.length === 0 ? (
+        <div className="empty">
+          {projects.length === 0
+            ? anggaran.nilai_kad === 0
+              ? "Silakan isi Nilai KAD terlebih dahulu sebelum menambahkan pekerjaan."
+              : "Belum ada pekerjaan untuk anggaran ini."
+            : "Tidak ada pekerjaan yang cocok dengan pencarian."}
+          {projects.length === 0 && anggaran.nilai_kad > 0 && (
+            <div style={{ marginTop: 12 }}>
+              <button className="btn btn-prim" onClick={onAddPekerjaan}>
+                <Icon d={I.plus} size={13} /> Tambah Pekerjaan Pertama
+              </button>
+            </div>
+          )}
+        </div>
+      ) : (
+        <>
+          <div className="asset-table-wrap">
+            <table className="asset-table">
+              <thead>
+                <tr>
+                  <th className="th-no">No</th>
+                  <th>Nama Pekerjaan</th>
+                  <th>No. Kontrak</th>
+                  <th>Tgl. Kontrak</th>
+                  <th style={{ textAlign: "right" }}>Nilai Kontrak</th>
+                  <th style={{ textAlign: "right" }}>Nilai RAB</th>
+                  <th style={{ textAlign: "center" }}>Aset</th>
+                  <th className="th-actions">Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginated.length === 0 ? (
+                  <tr className="table-empty-row">
+                    <td colSpan={8}>
+                      <div className="table-empty-inner">
+                        <Icon
+                          d={I.fileText}
+                          size={36}
+                          style={{ opacity: 0.2 }}
+                        />
+                        <span style={{ fontWeight: 600 }}>
+                          Tidak ada pekerjaan yang cocok.
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  paginated.map((proj, i) => {
+                    const assets = anggaran.assets || [];
+                    const assetCount = assets.length;
+                    const displayedKontrak =
+                      assetCount > 0 ? proj.nilai_kontrak || 0 : 0;
+                    return (
+                      <tr key={proj.id}>
+                        <td className="td-no">
+                          {(page - 1) * PAGE_SIZE + i + 1}
+                        </td>
+                        <td>
+                          <span className="td-name-text">
+                            {proj.nm_pekerjaan}
+                          </span>
+                        </td>
+                        <td>
+                          <span className="td-sn">
+                            {proj.no_kontrak || "—"}
+                          </span>
+                        </td>
+                        <td>
+                          <span className="td-date">
+                            {fmtDate(proj.tgl_kontrak)}
+                          </span>
+                        </td>
+                        <td>
+                          <span
+                            className="td-value"
+                            style={{ color: "var(--red)" }}
+                          >
+                            {fmt(displayedKontrak)}
+                          </span>
+                        </td>
+                        <td>
+                          <span
+                            className="td-value"
+                            style={{ color: "var(--amber)" }}
+                          >
+                            {fmt(proj.nilai_rab || 0)}
+                          </span>
+                        </td>
+                        <td
+                          style={{ textAlign: "center", color: "var(--ink2)" }}
+                        >
+                          {assetCount} aset
+                        </td>
+                        <td className="td-actions">
+                          <div className="td-act-row">
+                            <button
+                              className="abtn"
+                              onClick={() => onGoEditProject(proj, anggaran)}
+                              title="Edit"
+                            >
+                              <Icon d={I.edit} size={11} />
+                            </button>
+                            <button
+                              className="abtn blue"
+                              onClick={() => onGoAssetTable(proj, anggaran)}
+                              title="Lihat Aset"
+                            >
+                              <Icon d={I.table} size={11} />
+                            </button>
+                            <button
+                              className="abtn del"
+                              onClick={() =>
+                                setConfirm({
+                                  msg: "Hapus pekerjaan ini?",
+                                  onConfirm: () => {
+                                    onDeleteProject(proj.id, anggaran.id);
+                                    setConfirm(null);
+                                  },
+                                })
+                              }
+                              title="Hapus"
+                            >
+                              <Icon d={I.trash} size={11} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+          <Pagination
+            total={filtered.length}
+            page={page}
+            onPage={setPage}
+            label="pekerjaan"
+          />
+        </>
+      )}
+      {confirm && (
+        <Confirm
+          msg={confirm.msg}
+          onConfirm={confirm.onConfirm}
+          onCancel={() => setConfirm(null)}
+        />
+      )}
+    </div>
+  );
+}
+
 // ══════ MAIN APP ══════
-export default function BudgetManagement() {
-  const [typeFilter, setTypeFilter] = useState("all");
+export default function BudgetManagement({ forcedType }) {
+  const [typeFilter, setTypeFilter] = useState(forcedType || "all");
   const [tahun, setTahun] = useState("all");
   const [angFilter, setAngFilter] = useState("all");
   const [search, setSearch] = useState("");
@@ -3375,6 +4040,18 @@ export default function BudgetManagement() {
   const [opexPage, setOpexPage] = useState(1);
   const [showAddOpex, setShowAddOpex] = useState(false);
 
+  // ── CAPEX 3-level navigation state ──
+  // capexLevel: "list" | "pekerjaan" | "detail"
+  const [capexLevel, setCapexLevel] = useState("list");
+  const [selectedAnggaran, setSelectedAnggaran] = useState(null);
+  const [capexAngPage, setCapexAngPage] = useState(1);
+  const [capexAngSearch, setCapexAngSearch] = useState("");
+  const [capexAngTahun, setCapexAngTahun] = useState("all");
+
+  useEffect(() => {
+    if (forcedType) setTypeFilter(forcedType);
+  }, [forcedType]);
+
   const showToast = (msg) => setToast(msg);
 
   const yearOpts = useMemo(() => {
@@ -3386,20 +4063,6 @@ export default function BudgetManagement() {
     ).sort();
     return ["all", ...all.map(String)];
   }, [capexData, opexData]);
-
-  const allProjects = useMemo(
-    () =>
-      capexData.flatMap((ang) =>
-        ang.projects.map((p) => ({
-          ...p,
-          _angId: ang.id,
-          _angNama: ang.nama,
-          _angKode: ang.kode,
-          _thn: ang.thnAnggaran,
-        })),
-      ),
-    [capexData],
-  );
 
   const filteredOpex = useMemo(
     () =>
@@ -3429,32 +4092,34 @@ export default function BudgetManagement() {
     );
   }, [opexData, tahun]);
 
-  const angList = useMemo(() => {
-    const f = allProjects.filter(
-      (p) => tahun === "all" || String(p._thn) === tahun,
-    );
-    const m = new Map();
-    f.forEach((p) => {
-      if (!m.has(p._angId)) m.set(p._angId, { id: p._angId, nama: p._angNama });
-    });
-    return Array.from(m.values());
-  }, [allProjects, tahun]);
+  // Filtered anggaran for CAPEX level 1
+  const filteredAnggaran = useMemo(
+    () =>
+      capexData.filter((a) => {
+        if (capexAngTahun !== "all" && String(a.thnAnggaran) !== capexAngTahun)
+          return false;
+        if (
+          capexAngSearch &&
+          !a.nama?.toLowerCase().includes(capexAngSearch.toLowerCase()) &&
+          !a.kode?.toLowerCase().includes(capexAngSearch.toLowerCase())
+        )
+          return false;
+        // Filter: jika ada aset tapi nilai_kad = 0, jangan tampilkan
+        const hasAssets = (a.assets || []).length > 0;
+        if (hasAssets && a.nilai_kad === 0) return false;
+        return true;
+      }),
+    [capexData, capexAngTahun, capexAngSearch],
+  );
 
-  const filteredProjects = useMemo(() => {
-    if (typeFilter === "opex") return [];
-    return allProjects.filter((p) => {
-      if (tahun !== "all" && String(p._thn) !== tahun) return false;
-      if (angFilter !== "all" && p._angId !== angFilter) return false;
-      if (
-        search &&
-        !p.nm_pekerjaan?.toLowerCase().includes(search.toLowerCase()) &&
-        !p.no_kontrak?.toLowerCase().includes(search.toLowerCase()) &&
-        !p._angNama?.toLowerCase().includes(search.toLowerCase())
-      )
-        return false;
-      return true;
-    });
-  }, [allProjects, typeFilter, tahun, angFilter, search]);
+  const paginatedAnggaran = useMemo(
+    () =>
+      filteredAnggaran.slice(
+        (capexAngPage - 1) * PAGE_SIZE,
+        capexAngPage * PAGE_SIZE,
+      ),
+    [filteredAnggaran, capexAngPage],
+  );
 
   useEffect(() => {
     setAngFilter("all");
@@ -3469,40 +4134,63 @@ export default function BudgetManagement() {
   useEffect(() => {
     setOpexPage(1);
   }, [opexKdFilter, opexSearch]);
+  useEffect(() => {
+    setCapexAngPage(1);
+  }, [capexAngSearch, capexAngTahun]);
 
-  const paginatedCapex = useMemo(() => {
-    const s = (capexPage - 1) * PAGE_SIZE;
-    return filteredProjects.slice(s, s + PAGE_SIZE);
-  }, [filteredProjects, capexPage]);
   const paginatedOpex = useMemo(() => {
     const s = (opexPage - 1) * PAGE_SIZE;
     return filteredOpex.slice(s, s + PAGE_SIZE);
   }, [filteredOpex, opexPage]);
 
-  // ══════ DYNAMIC KPI STATS ══════
+  // Get latest anggaran data
+  const getLatestAnggaran = (id) => capexData.find((a) => a.id === id);
+
+  // KPI cards
   const kpiCards = useMemo(() => {
-    const capexFiltered = allProjects.filter(
-      (p) => tahun === "all" || String(p._thn) === tahun,
-    );
+    const capexFiltered = capexData.filter((a) => {
+      if (capexAngTahun !== "all" && String(a.thnAnggaran) !== capexAngTahun)
+        return false;
+      const hasAssets = (a.assets || []).length > 0;
+      if (hasAssets && a.nilai_kad === 0) return false;
+      return true;
+    });
     const opexFiltered = filteredOpex;
-
-    // CAPEX metrics
-    const capexCount = capexFiltered.length;
-    const capexKontrak = capexFiltered.reduce(
-      (s, p) => s + (p.nilai_kontrak || 0),
+    const capexCount = capexFiltered.reduce(
+      (s, a) => s + (a.projects || []).length,
       0,
     );
-    const capexPagu = capexData
-      .filter((a) => tahun === "all" || String(a.thnAnggaran) === tahun)
-      .reduce((s, a) => s + (a.pagu || 0), 0);
-    const capexAset = capexFiltered.reduce(
-      (s, p) =>
+    const capexKad = capexFiltered.reduce((s, a) => s + (a.nilai_kad || 0), 0);
+    const capexKontrak = capexFiltered.reduce((s, a) => {
+      const hasAset = (a.assets || []).length > 0;
+      return (
         s +
-        (p.assets || []).reduce((as, a) => as + (a.acquisition_value || 0), 0),
+        (a.projects || []).reduce(
+          (ss, p) => ss + (hasAset ? p.nilai_kontrak || 0 : 0),
+          0,
+        )
+      );
+    }, 0);
+    const capexRab = capexFiltered.reduce(
+      (s, a) =>
+        s + (a.projects || []).reduce((ss, p) => ss + (p.nilai_rab || 0), 0),
       0,
     );
-
-    // OPEX metrics
+    const capexAset = capexFiltered.reduce(
+      (s, a) =>
+        s +
+        (a.assets || []).reduce(
+          (ss, ast) => ss + (ast.acquisition_value || 0),
+          0,
+        ),
+      0,
+    );
+    const capexKadPct =
+      capexKad > 0 ? Math.round((capexAset / capexKad) * 100) : 0;
+    const capexAsetPct =
+      capexKad > 0 ? Math.round((capexAset / capexKad) * 100) : 0;
+    const capexKontrakPct =
+      capexKontrak > 0 ? Math.round((capexAset / capexKontrak) * 100) : 0;
     const opexCount = opexFiltered.length;
     const opexPagu = opexFiltered.reduce(
       (s, a) => s + (a.nilai_anggaran_tahunan || 0),
@@ -3513,31 +4201,34 @@ export default function BudgetManagement() {
         s + (a.transaksi || []).reduce((ts, t) => ts + (t.jumlah || 0), 0),
       0,
     );
-    const opexSisa = opexPagu - opexRealisasi;
 
     if (typeFilter === "capex") {
       return [
         {
           cls: "blue",
-          icon: I.briefcase,
-          lbl: "Total Pekerjaan CAPEX",
-          val: capexCount,
+          icon: I.layers,
+          lbl: "Total Pos Anggaran CAPEX",
+          val: filteredAnggaran.length,
+        },
+        {
+          cls: "amber",
+          icon: I.fileText,
+          lbl: "Total Nilai KAD",
+          val: fmt(capexKad),
+          pct: "—",
         },
         {
           cls: "amber",
           icon: I.fileText,
           lbl: "Total Nilai Kontrak",
           val: fmt(capexKontrak),
-        },
-        {
-          cls: "green",
-          icon: I.package,
-          lbl: "Total Nilai Aset Tercatat",
-          val: fmt(capexAset),
+          pct:
+            capexKad > 0
+              ? `${Math.round((capexKontrak / capexKad) * 100)}% dari KAD`
+              : "—",
         },
       ];
     }
-
     if (typeFilter === "opex") {
       return [
         {
@@ -3560,14 +4251,12 @@ export default function BudgetManagement() {
         },
       ];
     }
-
-    // "all" — combined view
     return [
       {
         cls: "blue",
         icon: I.layers,
-        lbl: "Total Pekerjaan & Pos Anggaran",
-        val: capexCount + opexCount,
+        lbl: "Total Anggaran & Pos OPEX",
+        val: filteredAnggaran.length + opexCount,
       },
       {
         cls: "amber",
@@ -3582,24 +4271,9 @@ export default function BudgetManagement() {
         val: fmt(opexPagu),
       },
     ];
-  }, [allProjects, filteredOpex, capexData, typeFilter, tahun]);
+  }, [capexData, filteredOpex, typeFilter, capexAngTahun, filteredAnggaran]);
 
-  const getAng = (id) => capexData.find((a) => a.id === id);
-  const getLatestProject = (projId) => {
-    for (const ang of capexData) {
-      const p = ang.projects.find((pr) => pr.id === projId);
-      if (p)
-        return {
-          ...p,
-          _angId: ang.id,
-          _angNama: ang.nama,
-          _angKode: ang.kode,
-          _thn: ang.thnAnggaran,
-        };
-    }
-    return null;
-  };
-
+  // Data mutations
   const saveOpexTrx = (id, trx) =>
     setOpexData((p) =>
       p.map((a) => (a.id === id ? { ...a, transaksi: trx } : a)),
@@ -3615,50 +4289,72 @@ export default function BudgetManagement() {
         setConfirm(null);
       },
     });
+
   const saveProject = (id, u) =>
     setCapexData((p) =>
       p.map((ang) => ({
         ...ang,
-        projects: ang.projects.map((pr) =>
+        projects: (ang.projects || []).map((pr) =>
           pr.id === id ? { ...pr, ...u } : pr,
         ),
       })),
     );
-  const saveAssets = (id, assets) =>
+
+  // Save assets at anggaran level
+  const saveAssetsToAnggaran = (anggaranId, assets) => {
     setCapexData((p) =>
-      p.map((ang) => ({
-        ...ang,
-        projects: ang.projects.map((pr) =>
-          pr.id === id ? { ...pr, assets } : pr,
-        ),
-      })),
+      p.map((ang) => (ang.id === anggaranId ? { ...ang, assets } : ang)),
     );
-  const deleteProject = (id, angId) => {
+    // Update selectedAnggaran if needed
+    setSelectedAnggaran((prev) =>
+      prev?.id === anggaranId ? { ...prev, assets } : prev,
+    );
+  };
+
+  const deleteProject = (projId, angId) => {
     setCapexData((p) =>
       p.map((ang) =>
         ang.id === angId
-          ? { ...ang, projects: ang.projects.filter((pr) => pr.id !== id) }
+          ? {
+              ...ang,
+              projects: (ang.projects || []).filter((pr) => pr.id !== projId),
+            }
           : ang,
       ),
     );
     showToast("Pekerjaan dihapus");
   };
 
-  const goAssetTable = (p) =>
-    setPage({
-      type: "assetTable",
-      projectId: p.id,
-      project: p,
-      anggaran: getAng(p._angId),
+  const addProjectToAnggaran = (angId, proj) => {
+    setCapexData((p) =>
+      p.map((a) =>
+        a.id === angId ? { ...a, projects: [...(a.projects || []), proj] } : a,
+      ),
+    );
+    setSelectedAnggaran((prev) =>
+      prev?.id === angId
+        ? { ...prev, projects: [...(prev.projects || []), proj] }
+        : prev,
+    );
+  };
+
+  const deleteAnggaran = (id) =>
+    setConfirm({
+      msg: "Hapus anggaran CAPEX ini beserta semua pekerjaan dan asetnya?",
+      onConfirm: () => {
+        setCapexData((p) => p.filter((a) => a.id !== id));
+        showToast("Anggaran dihapus");
+        setConfirm(null);
+      },
     });
-  const goAssetEntry = (p, returnToTable = false) =>
-    setPage({
-      type: "asset",
-      projectId: p.id,
-      project: p,
-      anggaran: getAng(p._angId),
-      returnToTable,
-    });
+
+  // Sync selectedAnggaran with capexData mutations
+  useEffect(() => {
+    if (selectedAnggaran) {
+      const latest = capexData.find((a) => a.id === selectedAnggaran.id);
+      if (latest) setSelectedAnggaran(latest);
+    }
+  }, [capexData]);
 
   const sharedWrap = (children) => (
     <>
@@ -3670,6 +4366,7 @@ export default function BudgetManagement() {
     </>
   );
 
+  // ── Sub-pages (OPEX & shared) ──
   if (page?.type === "editProject")
     return sharedWrap(
       <EditProjectPage
@@ -3680,52 +4377,55 @@ export default function BudgetManagement() {
         showToast={showToast}
       />,
     );
-  if (page?.type === "tambahCapex")
+  if (page?.type === "tambahPekerjaan")
     return sharedWrap(
-      <TambahCapexPage
-        capexData={capexData}
-        onBack={() => setPage(null)}
-        onSave={(angId, proj) => {
-          setCapexData((p) =>
-            p.map((a) =>
-              a.id === angId ? { ...a, projects: [...a.projects, proj] } : a,
-            ),
-          );
+      <TambahPekerjaanPage
+        anggaran={page.anggaran}
+        onBack={() => {
           setPage(null);
+          setCapexLevel("pekerjaan");
+        }}
+        onSave={(proj) => {
+          addProjectToAnggaran(page.anggaran.id, proj);
+          setPage(null);
+          setCapexLevel("pekerjaan");
           showToast("Pekerjaan CAPEX berhasil ditambahkan");
         }}
       />,
     );
   if (page?.type === "assetTable") {
-    const lp = getLatestProject(page.projectId) || page.project;
+    const latestAng = getLatestAnggaran(page.anggaranId) || page.anggaran;
     return sharedWrap(
       <AssetTablePage
-        project={lp}
-        anggaran={page.anggaran}
-        onBack={() => setPage(null)}
-        onEntryNew={() => goAssetEntry(lp, true)}
-        onSaveAssets={saveAssets}
+        anggaran={latestAng}
+        project={page.project}
+        onBack={(level) => {
+          if (level === "root") {
+            setCapexLevel("list");
+            setPage(null);
+          } else if (level === "anggaran") {
+            setCapexLevel("list");
+            setSelectedAnggaran(latestAng);
+            setPage(null);
+          } else {
+            setPage(null);
+            setCapexLevel("pekerjaan");
+          }
+        }}
+        onEntryNew={() => setPage({ ...page, type: "assetEntry" })}
+        onSaveAssets={saveAssetsToAnggaran}
         showToast={showToast}
       />,
     );
   }
-  if (page?.type === "asset") {
-    const lp = getLatestProject(page.projectId) || page.project;
+  if (page?.type === "assetEntry") {
+    const latestAng = getLatestAnggaran(page.anggaranId) || page.anggaran;
     return sharedWrap(
       <AssetEntryPage
-        project={lp}
-        anggaran={page.anggaran}
-        onBack={() =>
-          page.returnToTable
-            ? setPage({
-                type: "assetTable",
-                projectId: page.projectId,
-                project: lp,
-                anggaran: page.anggaran,
-              })
-            : setPage(null)
-        }
-        onSave={saveAssets}
+        anggaran={latestAng}
+        project={page.project}
+        onBack={() => setPage({ ...page, type: "assetTable" })}
+        onSave={saveAssetsToAnggaran}
         showToast={showToast}
       />,
     );
@@ -3795,12 +4495,89 @@ export default function BudgetManagement() {
     );
   }
 
-  const showCapex = typeFilter !== "opex",
-    showOpex = typeFilter !== "capex",
-    showBoth = typeFilter === "all";
+  // ── CAPEX Level 2: Daftar Pekerjaan per Anggaran ──
+  if (
+    capexLevel === "pekerjaan" &&
+    selectedAnggaran &&
+    (typeFilter === "capex" || typeFilter === "all")
+  ) {
+    const latestAng =
+      getLatestAnggaran(selectedAnggaran.id) || selectedAnggaran;
+    return sharedWrap(
+      <>
+        <div className="hdr">
+          <div>
+            <h1>
+              {forcedType === "capex"
+                ? "Input Pekerjaan CAPEX"
+                : "Anggaran & Pekerjaan"}
+            </h1>
+            <p>Daftar Pekerjaan — {latestAng.nama}</p>
+          </div>
+        </div>
+        <PekerjaanListPage
+          anggaran={latestAng}
+          capexData={capexData}
+          onBack={() => {
+            setCapexLevel("list");
+            setSelectedAnggaran(null);
+          }}
+          onGoAssetTable={(proj, ang) =>
+            setPage({
+              type: "assetTable",
+              project: proj,
+              anggaran: ang,
+              anggaranId: ang.id,
+            })
+          }
+          onGoAssetEntry={(proj, ang) =>
+            setPage({
+              type: "assetEntry",
+              project: proj,
+              anggaran: ang,
+              anggaranId: ang.id,
+            })
+          }
+          onGoEditProject={(proj, ang) =>
+            setPage({ type: "editProject", project: proj, anggaran: ang })
+          }
+          onAddPekerjaan={() =>
+            setPage({ type: "tambahPekerjaan", anggaran: latestAng })
+          }
+          onDeleteProject={deleteProject}
+          showToast={showToast}
+          setCapexData={setCapexData}
+        />
+        {confirm && (
+          <Confirm
+            msg={confirm.msg}
+            onConfirm={confirm.onConfirm}
+            onCancel={() => setConfirm(null)}
+          />
+        )}
+      </>,
+    );
+  }
+
+  const showCapex = typeFilter !== "opex";
+  const showOpex = typeFilter !== "capex";
+  const showBoth = typeFilter === "all";
   const activeOpexFilter = BUDGET_MASTERS.find(
     (m) => m.kd_anggaran_master === opexKdFilter,
   );
+
+  const headerTitle =
+    forcedType === "capex"
+      ? "Input Pekerjaan CAPEX"
+      : forcedType === "opex"
+        ? "Input Pekerjaan OPEX"
+        : "Anggaran & Pekerjaan";
+  const headerSubtitle =
+    forcedType === "capex"
+      ? "Pilih anggaran untuk melihat daftar pekerjaan"
+      : forcedType === "opex"
+        ? "Daftar dan realisasi anggaran OPEX"
+        : "Monitoring CAPEX & OPEX berdasarkan anggaran";
 
   return (
     <>
@@ -3809,31 +4586,32 @@ export default function BudgetManagement() {
         {toast && <Toast msg={toast} onDone={() => setToast(null)} />}
         <div className="hdr">
           <div>
-            <h1>Anggaran &amp; Pekerjaan</h1>
-            <p>Monitoring CAPEX &amp; OPEX berdasarkan anggaran</p>
+            <h1>{headerTitle}</h1>
+            <p>{headerSubtitle}</p>
           </div>
-          <div className="hdr-right">
-            <div className="type-tabs">
-              {[
-                ["all", "all", I.layers, "Semua"],
-                ["capex", "", I.briefcase, "CAPEX"],
-                ["opex", "", I.monitor, "OPEX"],
-              ].map(([val, cls, icon, lbl]) => (
-                <button
-                  key={val}
-                  className={`type-tab ${cls} ${typeFilter === val ? "on" : ""}`}
-                  onClick={() => setTypeFilter(val)}
-                >
-                  <Icon d={icon} size={14} /> {lbl}
-                </button>
-              ))}
+          {!forcedType && (
+            <div className="hdr-right">
+              <div className="type-tabs">
+                {[
+                  ["all", "all", I.layers, "Semua"],
+                  ["capex", "", I.briefcase, "CAPEX"],
+                  ["opex", "", I.monitor, "OPEX"],
+                ].map(([val, cls, icon, lbl]) => (
+                  <button
+                    key={val}
+                    className={`type-tab ${cls} ${typeFilter === val ? "on" : ""}`}
+                    onClick={() => setTypeFilter(val)}
+                  >
+                    <Icon d={icon} size={14} /> {lbl}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
-        {/* ══ DYNAMIC KPI STRIP ══ */}
         <div className="kpi-strip">
-          {kpiCards.map(({ cls, icon, lbl, val }) => (
+          {kpiCards.map(({ cls, icon, lbl, val, pct }) => (
             <div key={lbl} className={`kpi ${cls}`}>
               <div className="kpi-ico">
                 <Icon d={icon} size={20} />
@@ -3841,64 +4619,23 @@ export default function BudgetManagement() {
               <div className="kpi-body">
                 <div className="kpi-lbl">{lbl}</div>
                 <div className="kpi-val">{val}</div>
+                {pct && (
+                  <div
+                    style={{
+                      fontSize: "0.75rem",
+                      color: "var(--ink4)",
+                      marginTop: 4,
+                    }}
+                  >
+                    {pct}
+                  </div>
+                )}
               </div>
             </div>
           ))}
         </div>
 
-        {showCapex && (
-          <div className="toolbar">
-            <div className="flt-box">
-              <Icon d={I.calendar} size={14} />
-              <select
-                className="flt-select"
-                value={tahun}
-                onChange={(e) => setTahun(e.target.value)}
-              >
-                <option value="all">Semua Tahun</option>
-                {yearOpts
-                  .filter((y) => y !== "all")
-                  .map((y) => (
-                    <option key={y} value={y}>
-                      {y}
-                    </option>
-                  ))}
-              </select>
-            </div>
-            <div className="flt-box">
-              <Icon d={I.filter} size={14} />
-              <select
-                className="flt-select"
-                value={angFilter}
-                onChange={(e) => setAngFilter(e.target.value)}
-              >
-                <option value="all">Semua Anggaran</option>
-                {angList.map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {a.nama.length > 42
-                      ? a.nama.substring(0, 42) + "..."
-                      : a.nama}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="srch">
-              <Icon d={I.search} size={14} />
-              <input
-                placeholder="Cari nama pekerjaan atau nomor kontrak..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-            <button
-              className="btn btn-prim"
-              onClick={() => setPage({ type: "tambahCapex" })}
-            >
-              <Icon d={I.plus} size={14} /> Tambah Pekerjaan
-            </button>
-          </div>
-        )}
-
+        {/* ── CAPEX: Level 1 — Daftar Anggaran ── */}
         {showCapex && (
           <>
             {showBoth && (
@@ -3908,7 +4645,7 @@ export default function BudgetManagement() {
                   <Icon d={I.briefcase} size={12} /> CAPEX
                 </div>
                 <span className="section-count">
-                  {filteredProjects.length} pekerjaan
+                  {filteredAnggaran.length} pos anggaran
                 </span>
                 <div className="section-label-line" />
               </div>
@@ -3925,65 +4662,87 @@ export default function BudgetManagement() {
                   }}
                 >
                   <Icon
-                    d={I.briefcase}
+                    d={I.layers}
                     size={16}
                     style={{ color: "var(--blue)" }}
                   />{" "}
-                  Daftar Pekerjaan CAPEX
+                  Daftar Pos Anggaran CAPEX
                 </div>
+                <p
+                  style={{
+                    fontSize: "0.78rem",
+                    color: "var(--ink4)",
+                    marginTop: 4,
+                  }}
+                >
+                  Pilih pos anggaran untuk melihat daftar pekerjaan
+                </p>
               </div>
             )}
-            {filteredProjects.length === 0 ? (
+            <div className="toolbar">
+              <div className="flt-box">
+                <Icon d={I.calendar} size={14} />
+                <select
+                  className="flt-select"
+                  value={capexAngTahun}
+                  onChange={(e) => {
+                    setCapexAngTahun(e.target.value);
+                    setCapexAngPage(1);
+                  }}
+                >
+                  <option value="all">Semua Tahun</option>
+                  {yearOpts
+                    .filter((y) => y !== "all")
+                    .map((y) => (
+                      <option key={y} value={y}>
+                        {y}
+                      </option>
+                    ))}
+                </select>
+              </div>
+              <div className="srch">
+                <Icon d={I.search} size={14} />
+                <input
+                  placeholder="Cari nama atau kode anggaran..."
+                  value={capexAngSearch}
+                  onChange={(e) => {
+                    setCapexAngSearch(e.target.value);
+                    setCapexAngPage(1);
+                  }}
+                />
+              </div>
+            </div>
+            {filteredAnggaran.length === 0 ? (
               <div className="empty">
-                Tidak ada pekerjaan CAPEX yang cocok dengan filter.
-                <div style={{ marginTop: 12 }}>
-                  <button
-                    className="btn btn-prim"
-                    onClick={() => setPage({ type: "tambahCapex" })}
-                  >
-                    <Icon d={I.plus} size={13} /> Tambah Pekerjaan CAPEX Pertama
-                  </button>
-                </div>
+                Tidak ada pos anggaran CAPEX yang cocok.
               </div>
             ) : (
               <>
                 <div className="card-list">
-                  {paginatedCapex.map((proj) => (
-                    <CapexCard
-                      key={proj.id}
-                      proj={proj}
-                      onEdit={(p) =>
-                        setPage({
-                          type: "editProject",
-                          project: p,
-                          anggaran: getAng(p._angId),
-                        })
-                      }
-                      onAssetTable={goAssetTable}
-                      onAssetEntry={(p) => goAssetEntry(p, false)}
-                      onDelete={(p) =>
-                        setConfirm({
-                          msg: "Hapus pekerjaan ini beserta datanya?",
-                          onConfirm: () => {
-                            deleteProject(p.id, p._angId);
-                            setConfirm(null);
-                          },
-                        })
-                      }
+                  {paginatedAnggaran.map((ang) => (
+                    <AnggaranCard
+                      key={ang.id}
+                      ang={ang}
+                      onSelect={(a) => {
+                        setSelectedAnggaran(a);
+                        setCapexLevel("pekerjaan");
+                      }}
+                      onDelete={deleteAnggaran}
                     />
                   ))}
                 </div>
                 <Pagination
-                  total={filteredProjects.length}
-                  page={capexPage}
-                  onPage={setCapexPage}
-                  label="pekerjaan"
+                  total={filteredAnggaran.length}
+                  page={capexAngPage}
+                  onPage={setCapexAngPage}
+                  label="pos anggaran"
                 />
               </>
             )}
           </>
         )}
 
+        {/* ── OPEX section ── */}
         {showOpex && (
           <>
             {showBoth && (
@@ -4092,13 +4851,6 @@ export default function BudgetManagement() {
                   </button>
                 </div>
               )}
-              <button
-                className="btn btn-green"
-                style={{ marginLeft: "auto" }}
-                onClick={() => setShowAddOpex(true)}
-              >
-                <Icon d={I.plus} size={14} /> Tambah Pos OPEX
-              </button>
             </div>
             {filteredOpex.length === 0 ? (
               <div className="empty">

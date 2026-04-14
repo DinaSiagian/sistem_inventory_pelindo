@@ -36,9 +36,31 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/assets" element={<ViewAsset />} />
           <Route path="/peminjaman" element={<Peminjaman />} />
-          <Route path="/budget/input" element={<Navigate to="/budget/input/opex" />} />
+
+          {/* Input Anggaran routes */}
+          <Route
+            path="/budget/input"
+            element={<Navigate to="/budget/input/opex" replace />}
+          />
           <Route path="/budget/input/:type" element={<Budgetinput />} />
+
+          {/* Input Pekerjaan routes — BudgetManagement dengan prop forcedType */}
+          <Route
+            path="/budget/pekerjaan"
+            element={<Navigate to="/budget/pekerjaan/capex" replace />}
+          />
+          <Route
+            path="/budget/pekerjaan/capex"
+            element={<BudgetManagement forcedType="capex" />}
+          />
+          <Route
+            path="/budget/pekerjaan/opex"
+            element={<BudgetManagement forcedType="opex" />}
+          />
+
+          {/* Route lama /budget tetap berfungsi sebagai fallback (tampil semua) */}
           <Route path="/budget" element={<BudgetManagement />} />
+
           <Route
             path="/projects"
             element={
