@@ -2554,7 +2554,7 @@ function OpexCard({
               </div>
               <div className="fin-div" />
               <div className="amt-blk">
-                <span className="amt-lbl">Pekerjaan</span>
+                <span className="amt-lbl">Nilai Pekerjaan</span>
                 <span className="amt-val amber">{fmt(totalReal)}</span>
               </div>
               <div className="fin-div" />
@@ -2604,7 +2604,7 @@ function OpexCard({
                       ["Kode Master", ang.kd_anggaran_master, true],
                       ["Tahun Anggaran", ang.thn_anggaran],
                       ["Total Anggaran (Pagu)", fmt(pagu), false, "blue"],
-                      ["Total Pekerjaan", fmt(totalReal), false, "amber"],
+                      ["Total Nilai Pekerjaan", fmt(totalReal), false, "amber"],
                       [
                         "Sisa Anggaran",
                         `${fmt(Math.abs(sisa))}${sisa < 0 ? " (melebihi)" : ""}`,
@@ -4479,7 +4479,7 @@ export default function BudgetManagement({ forcedType }) {
         {
           cls: "amber",
           icon: I.trendUp,
-          lbl: "Total Pekerjaan",
+          lbl: "Total Nilai Pekerjaan",
           val: fmt(opexRealisasi),
         },
         {
