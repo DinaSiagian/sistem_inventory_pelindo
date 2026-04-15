@@ -3591,6 +3591,14 @@ function AnggaranCard({ ang, onSelect, onDelete }) {
     ang.nilai_kad > 0 ? Math.round((assetTotal / ang.nilai_kad) * 100) : 0;
   const meta = pctMeta(serapan);
 
+  // Hitung total semua RKAP entries (termasuk awal) dari history_anggaran
+  const totalRkapEntries = (ang.history_anggaran || []).reduce(
+    (s, h) => s + (h.nilai_rkap || 0), 0
+  );
+  const nilaiKadBatas = ang.nilai_kad || 0;
+  const sisaRkap = Math.max(0, nilaiKadBatas - totalRkapEntries);
+  const rkapPct = nilaiKadBatas > 0 ? Math.min(100, Math.round((totalRkapEntries / nilaiKadBatas) * 100)) : 0;
+
   return (
     <div className="ang-card" onClick={() => onSelect(ang)}>
       <div className="ang-card-inner">
@@ -3622,10 +3630,43 @@ function AnggaranCard({ ang, onSelect, onDelete }) {
               </span>
             </div>
             <div className="fin-div" />
-            <div className="amt-blk">
-              <span className="amt-lbl">Nilai Kontrak</span>
-              <span className="amt-val red">{fmt(kontrakTotal)}</span>
-            </div>
+            {totalRkapEntries > 0 ? (
+              <div className="amt-blk">
+                <span className="amt-lbl">RKAP Terisi</span>
+                <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                  <span
+                    className={`amt-val ${sisaRkap <= 0 ? "red" : totalRkapEntries > 0 ? "amber" : ""}`}
+                    style={{ fontSize: "0.82rem" }}
+                  >
+                    {fmt(totalRkapEntries)}
+                    <span style={{ fontSize: "0.65rem", fontWeight: 600, color: "var(--ink4)", marginLeft: 4 }}>
+                      / {fmt(nilaiKadBatas)}
+                    </span>
+                  </span>
+                  {/* Mini progress bar */}
+                  <div style={{ height: 3, background: "var(--border)", borderRadius: 99, overflow: "hidden", width: 80 }}>
+                    <div style={{
+                      height: "100%",
+                      borderRadius: 99,
+                      width: `${rkapPct}%`,
+                      background: sisaRkap <= 0 ? "var(--red)" : totalRkapEntries > 0 ? "var(--amber)" : "var(--border)",
+                      transition: "width 0.4s ease",
+                    }} />
+                  </div>
+                  {sisaRkap <= 0 && (
+                    <span style={{ fontSize: "0.6rem", fontWeight: 700, color: "var(--red)" }}>PENUH ✓</span>
+                  )}
+                  {sisaRkap > 0 && (
+                    <span style={{ fontSize: "0.6rem", color: "var(--ink4)" }}>Sisa: {fmt(sisaRkap)}</span>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="amt-blk">
+                <span className="amt-lbl">Nilai Kontrak</span>
+                <span className="amt-val red">{fmt(kontrakTotal)}</span>
+              </div>
+            )}
           </div>
           <div
             className="ang-card-actions"

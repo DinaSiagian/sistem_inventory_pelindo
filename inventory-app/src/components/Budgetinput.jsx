@@ -1832,11 +1832,19 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
   const [showForm, setShowForm] = useState(false);
   const [editRowId, setEditRowId] = useState(null);
   const [confirm, setConfirm] = useState(null);
+  const [formError, setFormError] = useState(null);
   const [form, setForm] = useState({
     thn: new Date().getFullYear(),
     nilai_anggaran: "",
   });
   const list = capex.anggaran_tahunan || [];
+
+  // Total child anggaran tahunan yang sudah diinput
+  const totalChildAnggaran = list.reduce((sum, r) => sum + (r.nilai_anggaran || 0), 0);
+  // Nilai RKAP sebagai batas atas pengisian child anggaran
+  const nilaiRkapBatas = capex.nilai_rkap || 0;
+  // Sisa yang masih bisa diinput
+  const sisaRkapTersedia = Math.max(0, nilaiRkapBatas - totalChildAnggaran);
 
   const calcRealBymhd = (history) => {
     let real = 0, bymhd = 0;
@@ -1849,17 +1857,28 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
   };
 
   const handleSaveNew = () => {
+    setFormError(null);
+    const nilaiInput = parseFloat(form.nilai_anggaran) || 0;
+    if (nilaiInput <= 0) {
+      setFormError("Nilai anggaran harus lebih dari 0!");
+      return;
+    }
+    // Validasi: total child tidak boleh melebihi nilai_rkap
+    if (nilaiRkapBatas > 0 && nilaiInput > sisaRkapTersedia) {
+      setFormError(`Nilai anggaran melebihi sisa RKAP! Sisa: ${fmt(sisaRkapTersedia)}`);
+      return;
+    }
     const today = new Date().toISOString().split("T")[0];
     const payload = {
       id: uid(),
       thn: parseInt(form.thn),
-      nilai_anggaran: parseFloat(form.nilai_anggaran) || 0,
+      nilai_anggaran: nilaiInput,
       history: [
         {
           id: uid(),
           tgl: today,
           tipe: "initial",
-          nilai: parseFloat(form.nilai_anggaran) || 0,
+          nilai: nilaiInput,
           keterangan: "Input awal",
           is_initial: true,
         },
@@ -1875,6 +1894,7 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
     toast_("Data anggaran ditambahkan.");
     setShowForm(false);
     setForm({ thn: new Date().getFullYear(), nilai_anggaran: "" });
+    setFormError(null);
   };
 
   const handleSavePerubahan = (rowId, newEntry, tipe, nilai) => {
@@ -2003,7 +2023,7 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
       )}
 
       {showForm && (
-        <div style={S.ovs} onClick={() => setShowForm(false)}>
+        <div style={S.ovs} onClick={() => { setShowForm(false); setFormError(null); }}>
           <div
             style={{
               background: "white",
@@ -2020,7 +2040,7 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
-                marginBottom: 20,
+                marginBottom: 16,
               }}
             >
               <div>
@@ -2044,11 +2064,66 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
                   cursor: "pointer",
                   color: "#64748b",
                 }}
-                onClick={() => setShowForm(false)}
+                onClick={() => { setShowForm(false); setFormError(null); }}
               >
                 <X size={20} />
               </button>
             </div>
+            {/* Info sisa RKAP */}
+            {nilaiRkapBatas > 0 && (
+              <div
+                style={{
+                  background: sisaRkapTersedia <= 0 ? "#fef2f2" : "#f0fdf4",
+                  border: `1px solid ${sisaRkapTersedia <= 0 ? "#fecaca" : "#bbf7d0"}`,
+                  borderRadius: 8,
+                  padding: "10px 14px",
+                  marginBottom: 16,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 4,
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.78rem" }}>
+                  <span style={{ color: "#64748b", fontWeight: 600 }}>Nilai RKAP</span>
+                  <span style={{ fontWeight: 700, color: "#2563eb" }}>{fmt(nilaiRkapBatas)}</span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.78rem" }}>
+                  <span style={{ color: "#64748b", fontWeight: 600 }}>Sudah Terisi</span>
+                  <span style={{ fontWeight: 700, color: "#d97706" }}>{fmt(totalChildAnggaran)}</span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.82rem" }}>
+                  <span style={{ fontWeight: 700, color: sisaRkapTersedia <= 0 ? "#dc2626" : "#15803d" }}>Sisa Anggaran</span>
+                  <span style={{ fontWeight: 800, color: sisaRkapTersedia <= 0 ? "#dc2626" : "#15803d" }}>
+                    {fmt(sisaRkapTersedia)}
+                    {sisaRkapTersedia <= 0 ? " (Penuh)" : ""}
+                  </span>
+                </div>
+                {/* Progress bar */}
+                <div style={{ height: 4, background: "#e2e8f0", borderRadius: 99, overflow: "hidden", marginTop: 4 }}>
+                  <div style={{
+                    height: "100%",
+                    borderRadius: 99,
+                    width: `${Math.min(100, nilaiRkapBatas > 0 ? (totalChildAnggaran / nilaiRkapBatas) * 100 : 0)}%`,
+                    background: sisaRkapTersedia <= 0 ? "#dc2626" : "#16a34a",
+                    transition: "width 0.4s ease",
+                  }} />
+                </div>
+              </div>
+            )}
+            {formError && (
+              <div style={{
+                background: "#fef2f2",
+                border: "1px solid #fecaca",
+                borderRadius: 6,
+                padding: "8px 12px",
+                marginBottom: 12,
+                fontSize: "0.82rem",
+                color: "#dc2626",
+                fontWeight: 500,
+              }}>
+                ⚠ {formError}
+              </div>
+            )}
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               <Fld label="Tahun Anggaran" required>
                 <select
@@ -2065,17 +2140,27 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
                   ))}
                 </select>
               </Fld>
-              <Fld label="Nilai Anggaran (Rp)" required>
+              <Fld label="Nilai Anggaran (Rp)" required
+                helper={nilaiRkapBatas > 0 ? `Maks. sisa: ${fmt(sisaRkapTersedia)}` : undefined}>
                 <input
                   type="number"
                   className="no-spinners"
-                  style={S.inp}
+                  style={{
+                    ...S.inp,
+                    borderColor: formError ? "#fca5a5" : undefined,
+                  }}
                   placeholder="0"
                   value={form.nilai_anggaran}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, nilai_anggaran: e.target.value }))
-                  }
+                  onChange={(e) => {
+                    setFormError(null);
+                    setForm((f) => ({ ...f, nilai_anggaran: e.target.value }));
+                  }}
                 />
+                {parseFloat(form.nilai_anggaran) > 0 && (
+                  <span style={{ fontSize: "0.78rem", color: "#64748b", marginTop: 4, display: "block" }}>
+                    ≈ {fmt(form.nilai_anggaran)}
+                  </span>
+                )}
               </Fld>
             </div>
             <div
@@ -2086,16 +2171,17 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
                 justifyContent: "flex-end",
               }}
             >
-              <button style={S.btnOut} onClick={() => setShowForm(false)}>
+              <button style={S.btnOut} onClick={() => { setShowForm(false); setFormError(null); }}>
                 Batal
               </button>
               <button
                 style={{
                   ...S.btn,
-                  background: "#16a34a",
+                  background: nilaiRkapBatas > 0 && sisaRkapTersedia <= 0 ? "#9ca3af" : "#16a34a",
                   opacity: form.nilai_anggaran ? 1 : 0.5,
+                  cursor: nilaiRkapBatas > 0 && sisaRkapTersedia <= 0 ? "not-allowed" : "pointer",
                 }}
-                disabled={!form.nilai_anggaran}
+                disabled={!form.nilai_anggaran || (nilaiRkapBatas > 0 && sisaRkapTersedia <= 0)}
                 onClick={handleSaveNew}
               >
                 Simpan
@@ -2115,9 +2201,11 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
           borderTop: "1px solid #e2e8f0",
           border: "1px solid #e2e8f0",
           borderRadius: "8px 8px 0 0",
+          flexWrap: "wrap",
+          gap: 8,
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
           <Calendar size={14} style={{ color: "#2563eb" }} />
           <span
             style={{ fontSize: "0.8rem", fontWeight: 700, color: "#374151" }}
@@ -2136,15 +2224,37 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
           >
             {list.length} tahun
           </span>
+          {/* Tampilkan progress pengisian RKAP */}
+          {nilaiRkapBatas > 0 && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: 4 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 4, padding: "2px 8px", background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 6 }}>
+                <span style={{ fontSize: "0.68rem", color: "#64748b", fontWeight: 600 }}>Terisi:</span>
+                <span style={{ fontSize: "0.72rem", fontWeight: 800, color: "#2563eb" }}>{fmt(totalChildAnggaran)}</span>
+                <span style={{ fontSize: "0.68rem", color: "#94a3b8" }}>/</span>
+                <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "#475569" }}>{fmt(nilaiRkapBatas)}</span>
+              </div>
+              {sisaRkapTersedia <= 0 ? (
+                <span style={{ fontSize: "0.68rem", fontWeight: 700, color: "#dc2626", background: "#fef2f2", border: "1px solid #fecaca", padding: "2px 7px", borderRadius: 6 }}>✓ PENUH</span>
+              ) : (
+                <span style={{ fontSize: "0.68rem", fontWeight: 600, color: "#16a34a", background: "#f0fdf4", border: "1px solid #bbf7d0", padding: "2px 7px", borderRadius: 6 }}>Sisa: {fmt(sisaRkapTersedia)}</span>
+              )}
+            </div>
+          )}
         </div>
         <button
           style={{
             ...S.btn,
-            background: "#2563eb",
+            background: nilaiRkapBatas > 0 && sisaRkapTersedia <= 0 ? "#9ca3af" : "#2563eb",
             padding: "6px 12px",
             fontSize: "0.75rem",
+            cursor: nilaiRkapBatas > 0 && sisaRkapTersedia <= 0 ? "not-allowed" : "pointer",
+            opacity: nilaiRkapBatas > 0 && sisaRkapTersedia <= 0 ? 0.6 : 1,
           }}
-          onClick={() => setShowForm(true)}
+          onClick={() => {
+            if (nilaiRkapBatas > 0 && sisaRkapTersedia <= 0) return;
+            setShowForm(true);
+          }}
+          title={nilaiRkapBatas > 0 && sisaRkapTersedia <= 0 ? "Anggaran RKAP sudah penuh" : ""}
         >
           <Plus size={12} /> Input Anggaran
         </button>
@@ -2576,10 +2686,13 @@ function CapexInputAnggaranPage({ capex, onBack, onSave }) {
   );
 
   const history = capex.history_anggaran || [];
+  // Total child anggaran tahunan yang sudah diinput (untuk validasi sisa RKAP)
   const currentTotalRkap = (capex.anggaran_tahunan || []).reduce(
     (sum, a) => sum + (a.nilai_anggaran || 0),
     0,
   );
+  // Nilai RKAP yang disimpan di capex (batas penyerapan anggaran child)
+  const savedNilaiRkap = capex.nilai_rkap || 0;
 
   useEffect(() => {
     if (tahunOpts.length > 0 && !tahunOpts.includes(parseInt(thnAnggaran))) {
@@ -2596,8 +2709,9 @@ function CapexInputAnggaranPage({ capex, onBack, onSave }) {
       rkap = parseFloat(nilaiRkap) || 0;
     if (kad < 0 || rkap < 0) return setError("Nilai tidak boleh negatif!");
     if (kad === 0) return setError("Nilai KAD harus lebih dari 0 untuk membuat entri anggaran baru!");
-    const sisaAnggaran = Math.max(0, kad - currentTotalRkap);
-    if (rkap > sisaAnggaran) return setError(`Nilai RKAP tidak boleh melebihi sisa anggaran (Sisa: ${fmt(sisaAnggaran)})!`);
+    // RKAP tidak boleh melebihi sisa KAD
+    const sisaKad = Math.max(0, kad - currentHistoryTotal);
+    if (rkap > sisaKad) return setError(`Nilai RKAP tidak boleh melebihi sisa KAD (Sisa: ${fmt(sisaKad)})!`);
     onSave(
       capex.id,
       {
@@ -2714,25 +2828,27 @@ function CapexInputAnggaranPage({ capex, onBack, onSave }) {
           </div>
         </ModalFormRow>
         <ModalFormRow label="Nilai KAD">
-          <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
             <span
               style={{ fontSize: "0.9rem", fontWeight: 600, color: "#2563eb" }}
             >
               {fmt(nilaiKad)}
             </span>
-            {parseFloat(nilaiKad) > 0 && (
+            {parseFloat(nilaiKad) > 0 && currentHistoryTotal > 0 && (
               <span
                 style={{
-                  fontSize: "0.78rem",
-                  color: "#16a34a",
-                  background: "#f0fdf4",
-                  border: "1px solid #bbf7d0",
+                  fontSize: "0.75rem",
+                  fontWeight: 700,
+                  color: Math.max(0, (parseFloat(nilaiKad) || 0) - currentHistoryTotal) <= 0 ? "#dc2626" : "#16a34a",
+                  background: Math.max(0, (parseFloat(nilaiKad) || 0) - currentHistoryTotal) <= 0 ? "#fef2f2" : "#f0fdf4",
+                  border: `1px solid ${Math.max(0, (parseFloat(nilaiKad) || 0) - currentHistoryTotal) <= 0 ? "#fecaca" : "#bbf7d0"}`,
                   padding: "2px 8px",
                   borderRadius: 6,
-                  fontWeight: 700,
+                  whiteSpace: "nowrap",
                 }}
               >
-                Sisa Anggaran: {fmt(Math.max(0, (parseFloat(nilaiKad) || 0) - currentTotalRkap))}
+                Sisa: {fmt(Math.max(0, (parseFloat(nilaiKad) || 0) - currentHistoryTotal))}
+                {Math.max(0, (parseFloat(nilaiKad) || 0) - currentHistoryTotal) <= 0 ? " ✓" : ""}
               </span>
             )}
           </div>
@@ -2934,7 +3050,7 @@ function CapexInputAnggaranPage({ capex, onBack, onSave }) {
                         fontSize: "0.88rem",
                       }}
                     >
-                      {fmt(currentTotalRkap)}
+                      {fmt(currentHistoryTotal)}
                     </td>
                   </tr>
                 </tfoot>
@@ -5158,6 +5274,21 @@ function CapexModule({ capexList, setCapexList }) {
 
   const handleAddCapex = useCallback(() => {
     if (!newCapex.nm_anggaran) return;
+    const rkap = parseFloat(newCapex.nilai_rkap) || 0;
+    const kad = parseFloat(newCapex.nilai_kad) || 0;
+    const today = new Date().toISOString().split("T")[0];
+    // Buat entri history_anggaran awal jika ada nilai RKAP
+    const initialHistory = rkap > 0
+      ? [{
+          id: uid(),
+          tgl: today,
+          thn_rkap_awal: parseInt(newCapex.thn_rkap_awal),
+          thn_rkap_akhir: parseInt(newCapex.thn_rkap_akhir),
+          thn_anggaran: parseInt(newCapex.thn_anggaran),
+          nilai_kad: kad,
+          nilai_rkap: rkap,
+        }]
+      : [];
     setCapexList((p) => [
       ...p,
       {
@@ -5169,29 +5300,11 @@ function CapexModule({ capexList, setCapexList }) {
         thn_rkap_awal: parseInt(newCapex.thn_rkap_awal),
         thn_rkap_akhir: parseInt(newCapex.thn_rkap_akhir),
         thn_anggaran: parseInt(newCapex.thn_anggaran),
-        nilai_kad: parseFloat(newCapex.nilai_kad) || 0,
-        nilai_rkap: parseFloat(newCapex.nilai_rkap) || 0,
-        anggaran_tahunan: [
-          {
-            id: uid(),
-            tgl: new Date().toISOString().split("T")[0],
-            thn_rkap_awal: parseInt(newCapex.thn_rkap_awal),
-            thn_rkap_akhir: parseInt(newCapex.thn_rkap_akhir),
-            thn: parseInt(newCapex.thn_anggaran),
-            nilai_kad: parseFloat(newCapex.nilai_kad) || 0,
-            nilai_anggaran: parseFloat(newCapex.nilai_rkap) || 0,
-            history: [
-              {
-                tgl: new Date().toISOString().split("T")[0],
-                tipe: "entri_baru",
-                nilai: parseFloat(newCapex.nilai_rkap) || 0,
-                user: "System",
-              },
-            ],
-          },
-        ],
+        nilai_kad: kad,
+        nilai_rkap: rkap,
+        anggaran_tahunan: [],
         pekerjaan: [],
-        history_anggaran: [],
+        history_anggaran: initialHistory,
       },
     ]);
     toast_("Data CAPEX baru ditambahkan.");
@@ -5201,21 +5314,38 @@ function CapexModule({ capexList, setCapexList }) {
 
   const saveEditCapex = useCallback(() => {
     if (!editTarget) return;
+    const newRkap = parseFloat(editTarget.nilai_rkap) || 0;
+    const newKad = parseFloat(editTarget.nilai_kad) || 0;
+    const today = new Date().toISOString().split("T")[0];
     setCapexList((p) =>
-      p.map((c) =>
-        c.id === editTarget.id
-          ? {
-            ...c,
-            nm_anggaran: editTarget.nm_anggaran,
-            kd_capex: editTarget.kd_capex,
-            thn_rkap_awal: parseInt(editTarget.thn_rkap_awal),
-            thn_rkap_akhir: parseInt(editTarget.thn_rkap_akhir),
-            thn_anggaran: parseInt(editTarget.thn_anggaran),
-            nilai_kad: parseFloat(editTarget.nilai_kad) || 0,
-            nilai_rkap: parseFloat(editTarget.nilai_rkap) || 0,
-          }
-          : c,
-      ),
+      p.map((c) => {
+        if (c.id !== editTarget.id) return c;
+        const oldRkap = c.nilai_rkap || 0;
+        // Jika nilai_rkap berubah atau belum ada di history, tambahkan entri baru
+        const shouldAddHistory = newRkap > 0 && newRkap !== oldRkap;
+        const newHistoryEntry = shouldAddHistory
+          ? [{
+              id: uid(),
+              tgl: today,
+              thn_rkap_awal: parseInt(editTarget.thn_rkap_awal),
+              thn_rkap_akhir: parseInt(editTarget.thn_rkap_akhir),
+              thn_anggaran: parseInt(editTarget.thn_anggaran),
+              nilai_kad: newKad,
+              nilai_rkap: newRkap,
+            }]
+          : [];
+        return {
+          ...c,
+          nm_anggaran: editTarget.nm_anggaran,
+          kd_capex: editTarget.kd_capex,
+          thn_rkap_awal: parseInt(editTarget.thn_rkap_awal),
+          thn_rkap_akhir: parseInt(editTarget.thn_rkap_akhir),
+          thn_anggaran: parseInt(editTarget.thn_anggaran),
+          nilai_kad: newKad,
+          nilai_rkap: newRkap,
+          history_anggaran: [...(c.history_anggaran || []), ...newHistoryEntry],
+        };
+      }),
     );
     setEditTarget(null);
     toast_("Perubahan disimpan.");
