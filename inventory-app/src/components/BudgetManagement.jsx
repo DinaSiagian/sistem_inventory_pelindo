@@ -2559,7 +2559,7 @@ function OpexCard({
               </div>
               <div className="fin-div" />
               <div className="amt-blk">
-                <span className="amt-lbl">Realisasi</span>
+                <span className="amt-lbl">Pekerjaan</span>
                 <span className="amt-val amber">{fmt(totalReal)}</span>
               </div>
               <div className="fin-div" />
@@ -2609,7 +2609,7 @@ function OpexCard({
                       ["Kode Master", ang.kd_anggaran_master, true],
                       ["Tahun Anggaran", ang.thn_anggaran],
                       ["Total Anggaran (Pagu)", fmt(pagu), false, "blue"],
-                      ["Total Realisasi", fmt(totalReal), false, "amber"],
+                      ["Total Pekerjaan", fmt(totalReal), false, "amber"],
                       [
                         "Sisa Anggaran",
                         `${fmt(Math.abs(sisa))}${sisa < 0 ? " (melebihi)" : ""}`,
@@ -2675,7 +2675,7 @@ function OpexCard({
                         </div>
                       )}
                       <div className="panel-total amber">
-                        <span>Total Realisasi</span>
+                        <span>Total Pekerjaan</span>
                         <strong>{fmt(totalReal)}</strong>
                       </div>
                     </div>
@@ -3677,7 +3677,7 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
       )
       : [...(ang.transaksi || []), { ...form, jumlah: j, id: newId() }];
     onSave(ang.id, list);
-    showToast(isEdit ? "Realisasi diperbarui" : "Realisasi ditambahkan");
+    showToast(isEdit ? "Pekerjaan diperbarui" : "Pekerjaan ditambahkan");
     onBack();
   };
   return (
@@ -3687,7 +3687,7 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
           <Icon d={I.arrowLeft} size={14} /> Kembali
         </button>
         <div style={{ flex: 1 }}>
-          <h2>{isEdit ? "Edit Realisasi" : "Tambah Pekerjaan"}</h2>
+          <h2>{isEdit ? "Edit Pekerjaan" : "Tambah Pekerjaan"}</h2>
         </div>
       </div>
       <div
