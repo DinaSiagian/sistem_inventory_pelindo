@@ -1,5 +1,4 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
-
 const Icon = ({ d, size = 16, style, className }) => (
   <svg
     width={size}
@@ -20,7 +19,6 @@ const Icon = ({ d, size = 16, style, className }) => (
     )}
   </svg>
 );
-
 const I = {
   briefcase:
     "M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0-2-2zM16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2",
@@ -70,7 +68,6 @@ const I = {
   wallet:
     "M21 12V7H5a2 2 0 0 1 0-4h14v4M3 5v14a2 2 0 0 0 2 2h16v-5M3 5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2M21 12a2 2 0 0 1 0 4h-4a2 2 0 0 1 0-4h4z",
 };
-
 const fmt = (n) =>
   new Intl.NumberFormat("id-ID", {
     style: "currency",
@@ -80,14 +77,13 @@ const fmt = (n) =>
 const fmtDate = (d) =>
   d
     ? new Date(d).toLocaleDateString("id-ID", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      })
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    })
     : "—";
 const newId = () =>
   `id-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-
 function pctColor(p) {
   return p >= 100
     ? "#ef4444"
@@ -121,7 +117,6 @@ function pctMeta(p) {
     };
   return { label: "Healthy", bg: "#f0fdf4", fg: "#16a34a", border: "#bbf7d0" };
 }
-
 const ASSET_DB = {
   "SPMT-KPT-DTC-SRV-01": {
     name: "Server Rack Kantor Pusat — Rack 1",
@@ -198,7 +193,6 @@ const BUDGET_MASTERS = [
     tipe_anggaran_master: "OPEX",
   },
 ];
-
 const mkAssets = () => [
   {
     id: newId(),
@@ -227,7 +221,6 @@ const mkAssets = () => [
     image: null,
   },
 ];
-
 // ══════ INIT DATA ══════
 // Structure: capexData = array of Anggaran, each Anggaran has projects[], each project has assets[]
 const INIT_CAPEX = [
@@ -564,7 +557,6 @@ const INIT_CAPEX = [
     ],
   },
 ];
-
 const INIT_OPEX = [
   {
     id: "OPX-1",
@@ -679,7 +671,6 @@ const INIT_OPEX = [
     transaksi: [],
   },
 ];
-
 function exportAssetsToExcel(assets, projectName, contractNo) {
   const esc = (s) =>
     String(s)
@@ -734,21 +725,20 @@ function exportAssetsToExcel(assets, projectName, contractNo) {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
-
 const CSS = `
 @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap");
 :root {
-  --blue:#2563eb;--blue-lt:#eff6ff;--blue-mid:#dbeafe;
-  --green:#16a34a;--green-lt:#f0fdf4;--green-mid:#dcfce7;
-  --amber:#d97706;--amber-lt:#fffbeb;
-  --red:#dc2626;--red-lt:#fef2f2;
-  --ink:#111827;--ink2:#374151;--ink3:#6b7280;--ink4:#9ca3af;
-  --border:#e5e7eb;--border-lt:#f3f4f6;
-  --surf:#ffffff;--bg:#f9fafb;
-  --mono:"JetBrains Mono","Courier New",monospace;
-  --r:8px;--r-lg:12px;
-  --sh:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
-  --sh-md:0 4px 12px rgba(0,0,0,.08);--sh-lg:0 20px 48px rgba(0,0,0,.14);
+--blue:#2563eb;--blue-lt:#eff6ff;--blue-mid:#dbeafe;
+--green:#16a34a;--green-lt:#f0fdf4;--green-mid:#dcfce7;
+--amber:#d97706;--amber-lt:#fffbeb;
+--red:#dc2626;--red-lt:#fef2f2;
+--ink:#111827;--ink2:#374151;--ink3:#6b7280;--ink4:#9ca3af;
+--border:#e5e7eb;--border-lt:#f3f4f6;
+--surf:#ffffff;--bg:#f9fafb;
+--mono:"JetBrains Mono","Courier New",monospace;
+--r:8px;--r-lg:12px;
+--sh:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+--sh-md:0 4px 12px rgba(0,0,0,.08);--sh-lg:0 20px 48px rgba(0,0,0,.14);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:13px;-webkit-font-smoothing:antialiased;line-height:1.5}
@@ -783,7 +773,6 @@ body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:var(--bg);c
 .flt-select{cursor:pointer;font-weight:500}
 .srch{flex:1;max-width:360px}
 .srch input{flex:1}
-
 .opex-toolbar{display:flex;align-items:center;gap:11px;margin-bottom:14px;flex-wrap:wrap}
 .opex-flt-box{display:flex;align-items:center;gap:8px;background:var(--surf);border:1px solid var(--border);border-radius:var(--r);padding:7px 11px;box-shadow:var(--sh);transition:border-color .2s}
 .opex-flt-box:focus-within{border-color:var(--green);box-shadow:0 0 0 3px rgba(22,163,74,.1)}
@@ -989,7 +978,6 @@ body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:var(--bg);c
 .abtn.clear:hover{background:#fff;color:var(--red);border-color:#fca5a5}
 .toast{position:fixed;bottom:24px;right:24px;background:var(--ink);color:#fff;padding:12px 20px;border-radius:12px;font-size:0.85rem;font-weight:600;box-shadow:var(--sh-lg);display:flex;align-items:center;gap:8px;z-index:9999;animation:toastIn .2s ease}
 .cbox{background:var(--surf);border-radius:16px;padding:24px;max-width:320px;width:100%;box-shadow:var(--sh-lg);display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center;animation:modalUp .2s ease}
-
 .tambah-page{animation:fadeUp .15s ease-out;max-width:820px;margin:0 auto}
 .tambah-page-hdr{display:flex;align-items:center;gap:15px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border)}
 .tambah-page-hdr-ico{width:40px;height:40px;border-radius:11px;background:var(--blue-lt);color:var(--blue);display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -1019,7 +1007,6 @@ body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:var(--bg);c
 .anggaran-info-bar .ai-val-s.sisa-over{color:var(--red)}
 .opex-inline-preview{display:inline-flex;align-items:center;padding:6px 11px;background:var(--green-lt);border:1px solid var(--green-mid);border-radius:7px;font-size:0.78rem;font-weight:700;color:var(--green);white-space:nowrap;flex-shrink:0;min-width:fit-content}
 .req-note-small{font-size:0.7rem;color:var(--ink4);padding:0 0 10px;font-style:italic}
-
 /* ── CAPEX ANGGARAN CARD (Level 1) ── */
 .ang-card{background:var(--surf);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh);transition:transform .15s,box-shadow .15s;cursor:pointer}
 .ang-card:hover{transform:translateY(-2px);box-shadow:var(--sh-md);border-color:var(--blue-mid)}
@@ -1042,9 +1029,7 @@ body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:var(--bg);c
 @media(max-width:1024px){.jcard-top{grid-template-columns:1fr;gap:12px}.jc-fin{justify-content:flex-start}.jc-actions{justify-content:flex-start;flex-wrap:wrap}.fin-div{display:none}.asset-table{font-size:0.75rem}.asset-table thead th,.asset-table tbody td{padding:9px 10px}.ang-card-body{grid-template-columns:1fr;gap:12px}}
 @media(max-width:900px){.root{padding:24px 20px 80px}.hdr{flex-direction:column;align-items:stretch}.kpi-strip{grid-template-columns:1fr}.detail-grid{grid-template-columns:1fr}.ctx-card{grid-template-columns:1fr 1fr}.opex-flt-select{min-width:200px}.tambah-fld-lbl{width:140px;min-width:140px}.hfld-label{width:160px;min-width:160px}.aefld-label{width:140px;min-width:140px}}
 `;
-
 const PAGE_SIZE = 5;
-
 function Pagination({ total, page, onPage, label }) {
   const totalPages = Math.ceil(total / PAGE_SIZE);
   if (totalPages <= 1) return null;
@@ -1102,7 +1087,6 @@ function Pagination({ total, page, onPage, label }) {
     </div>
   );
 }
-
 function Toast({ msg, onDone }) {
   useEffect(() => {
     const t = setTimeout(onDone, 2400);
@@ -1115,7 +1099,6 @@ function Toast({ msg, onDone }) {
     </div>
   );
 }
-
 function Confirm({ msg, onConfirm, onCancel }) {
   return (
     <div className="overlay" onClick={onCancel}>
@@ -1162,12 +1145,10 @@ function Confirm({ msg, onConfirm, onCancel }) {
     </div>
   );
 }
-
 function CatPill({ cat }) {
   const cls = ["Server", "Network", "Security"].includes(cat) ? cat : "default";
   return <span className={`cat-pill ${cls}`}>{cat || "—"}</span>;
 }
-
 function PctRing({ pct }) {
   const meta = pctMeta(pct);
   const r = 16,
@@ -1213,7 +1194,6 @@ function PctRing({ pct }) {
     </div>
   );
 }
-
 function HFld({ label, req, children }) {
   return (
     <div className="hfld">
@@ -1258,7 +1238,6 @@ function MHFld({ label, req, green, children }) {
     </div>
   );
 }
-
 // ══════ BREADCRUMB ══════
 function Breadcrumb({ items }) {
   return (
@@ -1325,7 +1304,6 @@ function Breadcrumb({ items }) {
     </div>
   );
 }
-
 // ══════ TAMBAH PEKERJAAN PAGE ══════
 function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
   const [form, setForm] = useState({
@@ -1353,7 +1331,6 @@ function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
       : sisaAnggaran === 0
         ? "sisa-warn"
         : "sisa-over";
-
   const handleSave = () => {
     if (!form.nm_pekerjaan) return;
     const nilaiKontrak = parseFloat(form.nilai_kontrak) || 0;
@@ -1379,7 +1356,6 @@ function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
       tgl_bamk: form.tgl_bamk,
     });
   };
-
   return (
     <div className="tambah-page">
       <div className="tambah-page-hdr">
@@ -1398,7 +1374,6 @@ function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
         Kolom bertanda <span style={{ color: "var(--red)" }}>*</span> wajib
         diisi
       </p>
-
       <div className="tambah-sec">
         <div className="tambah-sec-hdr">
           <Icon d={I.database} size={13} /> Pos Anggaran CAPEX
@@ -1426,7 +1401,6 @@ function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
           </TFld>
         </div>
       </div>
-
       <div className="tambah-sec">
         <div className="tambah-sec-hdr">
           <Icon d={I.fileText} size={13} /> Informasi Pekerjaan
@@ -1508,7 +1482,6 @@ function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
           </TFld>
         </div>
       </div>
-
       <div className="tambah-sec">
         <div className="tambah-sec-hdr">
           <Icon d={I.tag} size={13} /> Referensi Dokumen
@@ -1555,7 +1528,6 @@ function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
           </TFld>
         </div>
       </div>
-
       <div className="edit-footer">
         <div>
           <span style={{ fontSize: "0.75rem", color: "var(--ink3)" }}>
@@ -1606,7 +1578,6 @@ function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
     </div>
   );
 }
-
 // ══════ MODAL: TAMBAH OPEX ══════
 function TambahOpexModal({ onClose, onSave }) {
   const currentYear = new Date().getFullYear();
@@ -1638,7 +1609,6 @@ function TambahOpexModal({ onClose, onSave }) {
     });
   };
   const nilaiPreview = parseFloat(form.nilai_anggaran_tahunan) || 0;
-
   return (
     <div className="overlay" onClick={onClose}>
       <div
@@ -1788,13 +1758,13 @@ function TambahOpexModal({ onClose, onSave }) {
     </div>
   );
 }
-
 // ══════ ASSET TABLE PAGE ══════
 function AssetTablePage({
   anggaran,
   project,
   onBack,
   onEntryNew,
+  onEditAsset,
   onSaveAssets,
   showToast,
 }) {
@@ -1846,7 +1816,6 @@ function AssetTablePage({
     project.nilai_kontrak > 0
       ? Math.round((totalAll / project.nilai_kontrak) * 100)
       : 0;
-
   return (
     <div className="asset-page">
       <Breadcrumb
@@ -1929,12 +1898,12 @@ function AssetTablePage({
           [
             "Anggaran",
             anggaran.nama?.substring(0, 48) +
-              (anggaran.nama?.length > 48 ? "…" : ""),
+            (anggaran.nama?.length > 48 ? "…" : ""),
           ],
           [
             "Pekerjaan",
             project.nm_pekerjaan?.substring(0, 36) +
-              (project.nm_pekerjaan?.length > 36 ? "…" : ""),
+            (project.nm_pekerjaan?.length > 36 ? "…" : ""),
           ],
           ["No. Kontrak", project.no_kontrak || "—"],
           [
@@ -2099,6 +2068,13 @@ function AssetTablePage({
                   <td className="td-actions">
                     <div className="td-act-row">
                       <button
+                        className="abtn"
+                        onClick={() => onEditAsset(a)}
+                        title="Edit"
+                      >
+                        <Icon d={I.edit} size={11} />
+                      </button>
+                      <button
                         className="abtn del"
                         onClick={() =>
                           setConfirm({
@@ -2152,7 +2128,6 @@ function AssetTablePage({
     </div>
   );
 }
-
 // ══════ REALISASI TABLE PAGE ══════
 function RealisasiTablePage({
   ang,
@@ -2178,7 +2153,6 @@ function RealisasiTablePage({
   const totalAll = transactions.reduce((s, t) => s + (t.jumlah || 0), 0);
   const pagu = ang.nilai_anggaran_tahunan || 0;
   const sisa = pagu - totalAll;
-
   return (
     <div className="asset-page">
       <div className="asset-page-hdr">
@@ -2196,7 +2170,7 @@ function RealisasiTablePage({
                 marginBottom: 3,
               }}
             >
-              Riwayat Realisasi OPEX
+              Riwayat Pekerjaan OPEX
             </h2>
             <p
               style={{
@@ -2205,7 +2179,7 @@ function RealisasiTablePage({
                 fontWeight: 500,
               }}
             >
-              {transactions.length} transaksi · {ang.nama?.substring(0, 55)}
+              {transactions.length} pekerjaan · {ang.nama?.substring(0, 55)}
             </p>
           </div>
         </div>
@@ -2220,7 +2194,7 @@ function RealisasiTablePage({
           ["Pos Anggaran", ang.nama?.substring(0, 48)],
           ["Kode Master", ang.kd_anggaran_master || "—", null, true],
           ["Pagu Anggaran", pagu > 0 ? fmt(pagu) : "—", "var(--blue)"],
-          ["Total Realisasi", fmt(totalAll), "var(--amber)"],
+          ["Total Pekerjaan", fmt(totalAll), "var(--amber)"],
           [
             "Sisa Anggaran",
             `${fmt(Math.abs(sisa))}${sisa < 0 ? " (melebihi)" : ""}`,
@@ -2262,7 +2236,7 @@ function RealisasiTablePage({
               <th className="th-no">No</th>
               <th>Tanggal</th>
               <th>No. Invoice</th>
-              <th>Keterangan Realisasi</th>
+              <th>Keterangan Pekerjaan</th>
               <th>Lampiran</th>
               <th>Jumlah (IDR)</th>
               <th className="th-actions">Aksi</th>
@@ -2276,8 +2250,8 @@ function RealisasiTablePage({
                     <Icon d={I.fileText} size={36} style={{ opacity: 0.2 }} />
                     <span style={{ fontWeight: 600 }}>
                       {transactions.length === 0
-                        ? "Belum ada riwayat realisasi."
-                        : "Tidak ada transaksi yang cocok."}
+                        ? "Belum ada pekerjaan"
+                        : "Tidak ada pekerjaan yang cocok."}
                     </span>
                     {transactions.length === 0 && (
                       <button
@@ -2285,7 +2259,7 @@ function RealisasiTablePage({
                         style={{ marginTop: 4 }}
                         onClick={onEntryNew}
                       >
-                        <Icon d={I.plus} size={12} /> Tambah Transaksi Pertama
+                        <Icon d={I.plus} size={12} /> Tambah Pekerjaan Pertama
                       </button>
                     )}
                   </div>
@@ -2356,7 +2330,7 @@ function RealisasiTablePage({
                   colSpan={5}
                   style={{ fontWeight: 700, fontSize: "0.75rem" }}
                 >
-                  Total {filtered.length} transaksi
+                  Total {filtered.length} pekerjaan
                 </td>
                 <td className="tfoot-total">{fmt(totalFiltered)}</td>
                 <td />
@@ -2368,7 +2342,6 @@ function RealisasiTablePage({
     </div>
   );
 }
-
 // ══════ CAPEX PEKERJAAN CARD (Level 2) ══════
 function PekerjaanCard({ proj, anggaran, onEdit, onAssetTable, onDelete }) {
   const [open, setOpen] = useState(false);
@@ -2379,7 +2352,6 @@ function PekerjaanCard({ proj, anggaran, onEdit, onAssetTable, onDelete }) {
     proj.nilai_kontrak > 0
       ? Math.round((assetTotal / proj.nilai_kontrak) * 100)
       : 0;
-
   return (
     <div className={`jcard ${open ? "open-cap" : ""}`}>
       <div className="jcard-inner">
@@ -2539,7 +2511,6 @@ function PekerjaanCard({ proj, anggaran, onEdit, onAssetTable, onDelete }) {
     </div>
   );
 }
-
 // ══════ OPEX CARD ══════
 function OpexCard({
   ang,
@@ -2561,7 +2532,6 @@ function OpexCard({
   const masterInfo = BUDGET_MASTERS.find(
     (m) => m.kd_anggaran_master === ang.kd_anggaran_master,
   );
-
   return (
     <div className={`jcard ${open ? "open-opx" : ""}`}>
       <div className="jcard-inner">
@@ -2609,8 +2579,8 @@ function OpexCard({
                 >
                   <Icon d={I.table} size={12} />
                   {ang.transaksi?.length > 0
-                    ? `${ang.transaksi.length} Transaksi`
-                    : "Lihat Riwayat"}
+                    ? `${ang.transaksi.length} Pekerjaan`
+                    : "Pekerjaan"}
                 </button>
               </div>
               <div className="chev">
@@ -2659,7 +2629,7 @@ function OpexCard({
                 </div>
                 <div className="d-panel">
                   <div className="d-title">
-                    Riwayat Realisasi
+                    Daftar Pekerjaan
                     <button
                       className="inline-link"
                       onClick={() => onRealisasiTable(ang)}
@@ -2669,7 +2639,7 @@ function OpexCard({
                   </div>
                   {!ang.transaksi || ang.transaksi.length === 0 ? (
                     <div className="d-empty">
-                      Belum ada realisasi.
+                      Belum ada pekerjaan.
                       <div style={{ marginTop: 10 }}>
                         <button
                           className="btn btn-green"
@@ -2719,7 +2689,6 @@ function OpexCard({
     </div>
   );
 }
-
 // ══════ EDIT OPEX INLINE ══════
 function EditOpexInline({ ang, onSave, onCancel }) {
   const [form, setForm] = useState({
@@ -2836,7 +2805,6 @@ function EditOpexInline({ ang, onSave, onCancel }) {
     </div>
   );
 }
-
 // ══════ EDIT PROJECT PAGE ══════
 function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
   const [form, setForm] = useState({ ...project });
@@ -2859,7 +2827,6 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
     showToast("Pekerjaan berhasil diperbarui");
     onBack();
   };
-
   return (
     <div className="subpage">
       <div className="subpage-hdr">
@@ -2997,62 +2964,29 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
     </div>
   );
 }
-
-// ══════ ASSET ENTRY PAGE ══════
+// ══════ ASSET ENTRY PAGE (NEW ONLY) ══════
 function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
-  // Assets stored at anggaran level
-  const existingAssets = anggaran.assets || [];
-  const [assets, setAssets] = useState(() => {
-    const mapped = existingAssets.map((a) => ({
-      ...a,
-      _af: false,
-      image: a.image || null,
-    }));
-    if (mapped.length === 0) {
-      mapped.push({
-        id: newId(),
-        asset_code: "",
-        serial_number: "",
-        name: "",
-        brand: "",
-        model: "",
-        category: "",
-        location: "",
-        procurement_date: "",
-        acquisition_value: "",
-        image: null,
-        _new: true,
-        _af: false,
-      });
-    }
-    return mapped;
-  });
+  const [assets, setAssets] = useState(() => [{
+    id: newId(),
+    asset_code: "",
+    serial_number: "",
+    name: "",
+    brand: "",
+    model: "",
+    category: "",
+    location: "",
+    procurement_date: "",
+    acquisition_value: "",
+    image: null,
+    _new: true,
+    _af: false,
+  }]);
   const [confirm, setConfirm] = useState(null);
   const fileInputRef = useRef(null);
   const [activeAssetId, setActiveAssetId] = useState(null);
 
-  const add = () =>
-    setAssets((p) => [
-      ...p,
-      {
-        id: newId(),
-        asset_code: "",
-        serial_number: "",
-        name: "",
-        brand: "",
-        model: "",
-        category: "",
-        location: "",
-        procurement_date: "",
-        acquisition_value: "",
-        image: null,
-        _new: true,
-        _af: false,
-      },
-    ]);
   const upd = (id, k, v) =>
     setAssets((p) => p.map((a) => (a.id === id ? { ...a, [k]: v } : a)));
-  const remove = (id) => setAssets((p) => p.filter((a) => a.id !== id));
 
   const triggerImageUpload = (id) => {
     setActiveAssetId(id);
@@ -3068,7 +3002,6 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
     setActiveAssetId(null);
     e.target.value = null;
   };
-
   const tryAF = (id, k, v) =>
     setAssets((p) =>
       p.map((a) => {
@@ -3096,7 +3029,6 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
         return u;
       }),
     );
-
   const total = assets.reduce(
     (s, a) => s + (parseFloat(a.acquisition_value) || 0),
     0,
@@ -3106,11 +3038,10 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
       ...a,
       acquisition_value: parseFloat(a.acquisition_value) || 0,
     }));
-    onSave(anggaran.id, cl);
+    onSave(anggaran.id, [...(anggaran.assets || []), ...cl]);
     showToast(`${cl.length} aset disimpan`);
     onBack();
   };
-
   const assetFields = [
     [
       "Kode Aset",
@@ -3169,7 +3100,7 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
       (id, v) => upd(id, "location", v),
     ],
   ];
-
+  const a = assets[0];
   return (
     <div className="subpage">
       <input
@@ -3184,7 +3115,7 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
           <Icon d={I.arrowLeft} size={14} /> Kembali
         </button>
         <div style={{ flex: 1 }}>
-          <h2>Kelola Aset Anggaran</h2>
+          <h2>Entry Aset Baru</h2>
         </div>
       </div>
       <div className="ctx-card">
@@ -3201,188 +3132,153 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
           <strong style={{ color: "var(--blue)" }}>{fmt(total)}</strong>
         </div>
       </div>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: "16px",
-        }}
-      >
-        <span style={{ fontSize: "0.95rem", fontWeight: 800 }}>
-          Daftar Aset
-        </span>
-        <button className="btn btn-prim" onClick={add}>
-          <Icon d={I.plus} size={12} /> Tambah Aset Baru
-        </button>
-      </div>
-      {assets.length === 0 && (
-        <div className="empty">Belum ada aset ditambahkan.</div>
-      )}
-      {assets.map((a, i) => (
-        <div key={a.id} className="acard">
-          <div className="acard-hdr">
-            <span className="asset-number-badge">ASET #{i + 1}</span>
-            {a._new && (
-              <span
-                style={{
-                  background: "var(--green-mid)",
-                  color: "var(--green)",
-                  borderRadius: 99,
-                  padding: "2px 8px",
-                  fontSize: "0.65rem",
-                  fontWeight: 800,
-                }}
-              >
-                Baru
-              </span>
-            )}
-            {a._af && (
-              <span
-                style={{
-                  background: "var(--green-lt)",
-                  color: "var(--green)",
-                  border: "1px solid var(--green-mid)",
-                  borderRadius: 99,
-                  padding: "2px 8px",
-                  fontSize: "0.65rem",
-                  fontWeight: 700,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 4,
-                }}
-              >
-                <Icon d={I.checkCirc} size={10} /> Auto-filled
-              </span>
-            )}
-            <button
-              className="abtn del"
-              style={{ marginLeft: "auto" }}
-              onClick={() =>
-                setConfirm({
-                  msg: `Hapus aset "#${i + 1}"?`,
-                  onConfirm: () => {
-                    remove(a.id);
-                    setConfirm(null);
-                  },
-                })
-              }
+      <div className="acard">
+        <div className="acard-hdr">
+          <span className="asset-number-badge">ASET BARU</span>
+          {a._new && (
+            <span
+              style={{
+                background: "var(--green-mid)",
+                color: "var(--green)",
+                borderRadius: 99,
+                padding: "2px 8px",
+                fontSize: "0.65rem",
+                fontWeight: 800,
+              }}
             >
-              <Icon d={I.trash} size={12} /> Hapus
-            </button>
-          </div>
-          <div className="acard-body">
-            <div className="acard-image-section">
-              <div
-                className="acard-image-box"
-                onClick={() => triggerImageUpload(a.id)}
+              Baru
+            </span>
+          )}
+          {a._af && (
+            <span
+              style={{
+                background: "var(--green-lt)",
+                color: "var(--green)",
+                border: "1px solid var(--green-mid)",
+                borderRadius: 99,
+                padding: "2px 8px",
+                fontSize: "0.65rem",
+                fontWeight: 700,
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+              }}
+            >
+              <Icon d={I.checkCirc} size={10} /> Auto-filled
+            </span>
+          )}
+        </div>
+        <div className="acard-body">
+          <div className="acard-image-section">
+            <div
+              className="acard-image-box"
+              onClick={() => triggerImageUpload(a.id)}
+            >
+              {a.image ? (
+                <div className="acard-image-preview-container">
+                  <img
+                    src={a.image}
+                    alt="Preview"
+                    className="acard-image-preview"
+                  />
+                  <button
+                    className="abtn clear"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      upd(a.id, "image", null);
+                    }}
+                  >
+                    Hapus
+                  </button>
+                </div>
+              ) : (
+                <div className="acard-image-upload-trigger">
+                  <Icon d={I.image} size={24} />
+                  <span>Unggah Foto</span>
+                </div>
+              )}
+            </div>
+            <div
+              style={{
+                flex: 1,
+                minWidth: 0,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+              }}
+            >
+              <p
+                style={{
+                  fontSize: "0.85rem",
+                  fontWeight: 700,
+                  color: "var(--ink)",
+                  marginBottom: 4,
+                }}
               >
-                {a.image ? (
-                  <div className="acard-image-preview-container">
-                    <img
-                      src={a.image}
-                      alt="Preview"
-                      className="acard-image-preview"
-                    />
-                    <button
-                      className="abtn clear"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        upd(a.id, "image", null);
-                      }}
-                    >
-                      Hapus
-                    </button>
-                  </div>
-                ) : (
-                  <div className="acard-image-upload-trigger">
-                    <Icon d={I.image} size={24} />
-                    <span>Unggah Foto</span>
-                  </div>
+                Dokumentasi Fisik Aset
+              </p>
+              <p
+                style={{
+                  fontSize: "0.75rem",
+                  color: "var(--ink4)",
+                  lineHeight: 1.4,
+                }}
+              >
+                Ketuk kotak di sebelah kiri untuk mengunggah foto fisik aset.
+                Mendukung JPG, PNG (maks. 5MB).
+              </p>
+            </div>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            {assetFields.map(([lbl, key, ph, req, hint, handler]) => (
+              <AEFld key={key} label={lbl} req={req}>
+                <input
+                  value={a[key] || ""}
+                  onChange={(e) => handler(a.id, e.target.value)}
+                  placeholder={ph}
+                />
+                {hint && <div className="aefld-hint">{hint}</div>}
+              </AEFld>
+            ))}
+            <AEFld label="Tgl. Pengadaan">
+              <input
+                type="date"
+                value={a.procurement_date || ""}
+                onChange={(e) =>
+                  upd(a.id, "procurement_date", e.target.value)
+                }
+              />
+            </AEFld>
+            <AEFld label="Nilai Perolehan (IDR)">
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "8px" }}
+              >
+                <input
+                  type="number"
+                  value={a.acquisition_value || ""}
+                  onChange={(e) =>
+                    upd(a.id, "acquisition_value", e.target.value)
+                  }
+                  placeholder="0"
+                  style={{ flex: 1 }}
+                />
+                {parseFloat(a.acquisition_value) > 0 && (
+                  <span
+                    className="aefld-hint"
+                    style={{
+                      color: "var(--blue)",
+                      fontWeight: 600,
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {fmt(parseFloat(a.acquisition_value))}
+                  </span>
                 )}
               </div>
-              <div
-                style={{
-                  flex: 1,
-                  minWidth: 0,
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "center",
-                }}
-              >
-                <p
-                  style={{
-                    fontSize: "0.85rem",
-                    fontWeight: 700,
-                    color: "var(--ink)",
-                    marginBottom: 4,
-                  }}
-                >
-                  Dokumentasi Fisik Aset
-                </p>
-                <p
-                  style={{
-                    fontSize: "0.75rem",
-                    color: "var(--ink4)",
-                    lineHeight: 1.4,
-                  }}
-                >
-                  Ketuk kotak di sebelah kiri untuk mengunggah foto fisik aset.
-                  Mendukung JPG, PNG (maks. 5MB).
-                </p>
-              </div>
-            </div>
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              {assetFields.map(([lbl, key, ph, req, hint, handler]) => (
-                <AEFld key={key} label={lbl} req={req}>
-                  <input
-                    value={a[key] || ""}
-                    onChange={(e) => handler(a.id, e.target.value)}
-                    placeholder={ph}
-                  />
-                  {hint && <div className="aefld-hint">{hint}</div>}
-                </AEFld>
-              ))}
-              <AEFld label="Tgl. Pengadaan">
-                <input
-                  type="date"
-                  value={a.procurement_date || ""}
-                  onChange={(e) =>
-                    upd(a.id, "procurement_date", e.target.value)
-                  }
-                />
-              </AEFld>
-              <AEFld label="Nilai Perolehan (IDR)">
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
-                >
-                  <input
-                    type="number"
-                    value={a.acquisition_value || ""}
-                    onChange={(e) =>
-                      upd(a.id, "acquisition_value", e.target.value)
-                    }
-                    placeholder="0"
-                    style={{ flex: 1 }}
-                  />
-                  {parseFloat(a.acquisition_value) > 0 && (
-                    <span
-                      className="aefld-hint"
-                      style={{
-                        color: "var(--blue)",
-                        fontWeight: 600,
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {fmt(parseFloat(a.acquisition_value))}
-                    </span>
-                  )}
-                </div>
-              </AEFld>
-            </div>
+            </AEFld>
           </div>
         </div>
-      ))}
+      </div>
       {assets.length > 0 && (
         <div className="edit-footer">
           <div>
@@ -3413,7 +3309,343 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
     </div>
   );
 }
+// ══════ EDIT ASSET PAGE (Matches Entry Page UI) ══════
+function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) {
+  const [assets, setAssets] = useState(() => [{
+    ...asset,
+    _new: false,
+    _af: false,
+    acquisition_value: asset.acquisition_value || "",
+    image: asset.image || null,
+  }]);
+  const [confirm, setConfirm] = useState(null);
+  const fileInputRef = useRef(null);
+  const [activeAssetId, setActiveAssetId] = useState(null);
 
+  const upd = (id, k, v) =>
+    setAssets((p) => p.map((a) => (a.id === id ? { ...a, [k]: v } : a)));
+  const triggerImageUpload = (id) => {
+    setActiveAssetId(id);
+    fileInputRef.current.click();
+  };
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file && file.type.startsWith("image/") && activeAssetId) {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (ev) => upd(activeAssetId, "image", ev.target.result);
+    }
+    setActiveAssetId(null);
+    e.target.value = null;
+  };
+  const tryAF = (id, k, v) =>
+    setAssets((p) =>
+      p.map((a) => {
+        if (a.id !== id) return a;
+        let u = { ...a, [k]: v, _af: false };
+        let lk = null;
+        if (k === "asset_code" && v) lk = ASSET_DB[v.trim()];
+        else if (k === "serial_number" && v) {
+          const c = SN_DB[v.trim()];
+          if (c) {
+            lk = ASSET_DB[c];
+            u.asset_code = c;
+          }
+        }
+        if (lk)
+          u = {
+            ...u,
+            name: lk.name,
+            brand: lk.brand,
+            model: lk.model,
+            category: lk.category,
+            location: lk.location,
+            _af: true,
+          };
+        return u;
+      }),
+    );
+  const total = assets.reduce(
+    (s, a) => s + (parseFloat(a.acquisition_value) || 0),
+    0,
+  );
+  const save = () => {
+    const cl = assets.map(({ _new, _af, ...a }) => ({
+      ...a,
+      acquisition_value: parseFloat(a.acquisition_value) || 0,
+    }));
+    const updatedList = (anggaran.assets || []).map((x) => x.id === cl[0].id ? cl[0] : x);
+    onSave(anggaran.id, updatedList);
+    showToast("Aset berhasil diperbarui");
+    onBack();
+  };
+  const assetFields = [
+    [
+      "Kode Aset",
+      "asset_code",
+      "cth. SPMT-KPT-DTC-SRV-01",
+      true,
+      "Ketik kode untuk auto-fill data aset",
+      (id, v) => tryAF(id, "asset_code", v),
+    ],
+    [
+      "Serial Number",
+      "serial_number",
+      "cth. DELL-KPT-SRV-001",
+      false,
+      null,
+      (id, v) => tryAF(id, "serial_number", v),
+    ],
+    [
+      "Nama Aset",
+      "name",
+      "Nama lengkap aset",
+      true,
+      null,
+      (id, v) => upd(id, "name", v),
+    ],
+    [
+      "Merek",
+      "brand",
+      "cth. Dell, Cisco, HP",
+      false,
+      null,
+      (id, v) => upd(id, "brand", v),
+    ],
+    [
+      "Model / Tipe",
+      "model",
+      "cth. PowerEdge R750",
+      false,
+      null,
+      (id, v) => upd(id, "model", v),
+    ],
+    [
+      "Kategori",
+      "category",
+      "cth. Server, Network, Security",
+      false,
+      null,
+      (id, v) => upd(id, "category", v),
+    ],
+    [
+      "Lokasi",
+      "location",
+      "cth. Kantor Pusat, Malahayati",
+      false,
+      null,
+      (id, v) => upd(id, "location", v),
+    ],
+  ];
+  const a = assets[0];
+  return (
+    <div className="subpage">
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleImageChange}
+        accept="image/*"
+        style={{ display: "none" }}
+      />
+      <div className="subpage-hdr">
+        <button className="btn btn-outline" onClick={onBack}>
+          <Icon d={I.arrowLeft} size={14} /> Kembali
+        </button>
+        <div style={{ flex: 1 }}>
+          <h2>Edit Aset</h2>
+        </div>
+      </div>
+      <div className="ctx-card">
+        <div className="ctx-item">
+          <span>Anggaran</span>
+          <strong>{anggaran.nama?.substring(0, 40)}...</strong>
+        </div>
+        <div className="ctx-item">
+          <span>Pekerjaan</span>
+          <strong>{project?.nm_pekerjaan?.substring(0, 36) || "—"}</strong>
+        </div>
+        <div className="ctx-item">
+          <span>Total Nilai Aset</span>
+          <strong style={{ color: "var(--blue)" }}>{fmt(total)}</strong>
+        </div>
+      </div>
+      <div className="acard">
+        <div className="acard-hdr">
+          <span className="asset-number-badge">EDIT ASET</span>
+          {a._new && (
+            <span
+              style={{
+                background: "var(--green-mid)",
+                color: "var(--green)",
+                borderRadius: 99,
+                padding: "2px 8px",
+                fontSize: "0.65rem",
+                fontWeight: 800,
+              }}
+            >
+              Baru
+            </span>
+          )}
+          {a._af && (
+            <span
+              style={{
+                background: "var(--green-lt)",
+                color: "var(--green)",
+                border: "1px solid var(--green-mid)",
+                borderRadius: 99,
+                padding: "2px 8px",
+                fontSize: "0.65rem",
+                fontWeight: 700,
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+              }}
+            >
+              <Icon d={I.checkCirc} size={10} /> Auto-filled
+            </span>
+          )}
+        </div>
+        <div className="acard-body">
+          <div className="acard-image-section">
+            <div
+              className="acard-image-box"
+              onClick={() => triggerImageUpload(a.id)}
+            >
+              {a.image ? (
+                <div className="acard-image-preview-container">
+                  <img
+                    src={a.image}
+                    alt="Preview"
+                    className="acard-image-preview"
+                  />
+                  <button
+                    className="abtn clear"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      upd(a.id, "image", null);
+                    }}
+                  >
+                    Hapus
+                  </button>
+                </div>
+              ) : (
+                <div className="acard-image-upload-trigger">
+                  <Icon d={I.image} size={24} />
+                  <span>Unggah Foto</span>
+                </div>
+              )}
+            </div>
+            <div
+              style={{
+                flex: 1,
+                minWidth: 0,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+              }}
+            >
+              <p
+                style={{
+                  fontSize: "0.85rem",
+                  fontWeight: 700,
+                  color: "var(--ink)",
+                  marginBottom: 4,
+                }}
+              >
+                Dokumentasi Fisik Aset
+              </p>
+              <p
+                style={{
+                  fontSize: "0.75rem",
+                  color: "var(--ink4)",
+                  lineHeight: 1.4,
+                }}
+              >
+                Ketuk kotak di sebelah kiri untuk mengunggah foto fisik aset.
+                Mendukung JPG, PNG (maks. 5MB).
+              </p>
+            </div>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            {assetFields.map(([lbl, key, ph, req, hint, handler]) => (
+              <AEFld key={key} label={lbl} req={req}>
+                <input
+                  value={a[key] || ""}
+                  onChange={(e) => handler(a.id, e.target.value)}
+                  placeholder={ph}
+                />
+                {hint && <div className="aefld-hint">{hint}</div>}
+              </AEFld>
+            ))}
+            <AEFld label="Tgl. Pengadaan">
+              <input
+                type="date"
+                value={a.procurement_date || ""}
+                onChange={(e) =>
+                  upd(a.id, "procurement_date", e.target.value)
+                }
+              />
+            </AEFld>
+            <AEFld label="Nilai Perolehan (IDR)">
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "8px" }}
+              >
+                <input
+                  type="number"
+                  value={a.acquisition_value || ""}
+                  onChange={(e) =>
+                    upd(a.id, "acquisition_value", e.target.value)
+                  }
+                  placeholder="0"
+                  style={{ flex: 1 }}
+                />
+                {parseFloat(a.acquisition_value) > 0 && (
+                  <span
+                    className="aefld-hint"
+                    style={{
+                      color: "var(--blue)",
+                      fontWeight: 600,
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {fmt(parseFloat(a.acquisition_value))}
+                  </span>
+                )}
+              </div>
+            </AEFld>
+          </div>
+        </div>
+      </div>
+      {assets.length > 0 && (
+        <div className="edit-footer">
+          <div>
+            <span style={{ fontSize: "0.75rem", color: "var(--ink3)" }}>
+              Total Nilai Semua Aset
+            </span>
+            <strong style={{ color: "var(--blue)", display: "block" }}>
+              {fmt(total)}
+            </strong>
+          </div>
+          <div style={{ display: "flex", gap: 12 }}>
+            <button className="btn btn-outline" onClick={onBack}>
+              Batal
+            </button>
+            <button className="btn btn-prim" onClick={save}>
+              <Icon d={I.save} size={14} /> Simpan Perubahan
+            </button>
+          </div>
+        </div>
+      )}
+      {confirm && (
+        <Confirm
+          msg={confirm.msg}
+          onConfirm={confirm.onConfirm}
+          onCancel={() => setConfirm(null)}
+        />
+      )}
+    </div>
+  );
+}
 // ══════ REALISASI PAGE ══════
 function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
   const isEdit = !!editData;
@@ -3421,13 +3653,13 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
     isEdit
       ? { ...editData, jumlah: editData.jumlah || "" }
       : {
-          tanggal: "",
-          keterangan: "",
-          no_invoice: "",
-          aset: "",
-          lampiran: "",
-          jumlah: "",
-        },
+        tanggal: "",
+        keterangan: "",
+        no_invoice: "",
+        aset: "",
+        lampiran: "",
+        jumlah: "",
+      },
   );
   const up = (k, v) => setForm((f) => ({ ...f, [k]: v }));
   const pagu = ang.nilai_anggaran_tahunan || 0;
@@ -3441,14 +3673,13 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
     const j = parseFloat(String(form.jumlah).replace(/[^\d.]/g, "")) || 0;
     const list = isEdit
       ? ang.transaksi.map((t) =>
-          t.id === editData.id ? { ...form, jumlah: j, id: editData.id } : t,
-        )
+        t.id === editData.id ? { ...form, jumlah: j, id: editData.id } : t,
+      )
       : [...(ang.transaksi || []), { ...form, jumlah: j, id: newId() }];
     onSave(ang.id, list);
     showToast(isEdit ? "Realisasi diperbarui" : "Realisasi ditambahkan");
     onBack();
   };
-
   return (
     <div className="subpage">
       <div className="subpage-hdr">
@@ -3456,7 +3687,7 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
           <Icon d={I.arrowLeft} size={14} /> Kembali
         </button>
         <div style={{ flex: 1 }}>
-          <h2>{isEdit ? "Edit Realisasi" : "Tambah Realisasi"}</h2>
+          <h2>{isEdit ? "Edit Realisasi" : "Tambah Pekerjaan"}</h2>
         </div>
       </div>
       <div
@@ -3500,7 +3731,7 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
             <Icon d={isEdit ? I.edit : I.plus} size={14} />
           </div>
           <div>
-            <h3>{isEdit ? "Edit Transaksi" : "Data Transaksi"}</h3>
+            <h3>{isEdit ? "Edit Transaksi" : "Data Pekerjaan"}</h3>
           </div>
         </div>
         <div className="sec-card-body">
@@ -3515,7 +3746,7 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
             <input
               value={form.keterangan}
               onChange={(e) => up("keterangan", e.target.value)}
-              placeholder="Deskripsi realisasi..."
+              placeholder="Deskripsi pekerjaan..."
             />
           </HFld>
           <HFld label="No. Invoice">
@@ -3549,7 +3780,7 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
       <div className="edit-footer">
         <div>
           <span style={{ fontSize: "0.75rem", color: "var(--ink3)" }}>
-            Jumlah Transaksi Input
+            Jumlah Pekerjaan Input
           </span>
           <div
             style={{ fontSize: "1rem", fontWeight: 800, color: "var(--green)" }}
@@ -3576,7 +3807,6 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
     </div>
   );
 }
-
 // ══════ LEVEL 1: ANGGARAN CARD ══════
 function AnggaranCard({ ang, onSelect, onDelete }) {
   const assetTotal = (ang.assets || []).reduce(
@@ -3590,7 +3820,6 @@ function AnggaranCard({ ang, onSelect, onDelete }) {
   const serapan =
     ang.nilai_kad > 0 ? Math.round((assetTotal / ang.nilai_kad) * 100) : 0;
   const meta = pctMeta(serapan);
-
   // Hitung total semua RKAP entries (termasuk awal) dari history_anggaran
   const totalRkapEntries = (ang.history_anggaran || []).reduce(
     (s, h) => s + (h.nilai_rkap || 0), 0
@@ -3598,7 +3827,6 @@ function AnggaranCard({ ang, onSelect, onDelete }) {
   const nilaiKadBatas = ang.nilai_kad || 0;
   const sisaRkap = Math.max(0, nilaiKadBatas - totalRkapEntries);
   const rkapPct = nilaiKadBatas > 0 ? Math.min(100, Math.round((totalRkapEntries / nilaiKadBatas) * 100)) : 0;
-
   return (
     <div className="ang-card" onClick={() => onSelect(ang)}>
       <div className="ang-card-inner">
@@ -3723,7 +3951,6 @@ function AnggaranCard({ ang, onSelect, onDelete }) {
     </div>
   );
 }
-
 // ══════ LEVEL 2: DAFTAR PEKERJAAN (per Anggaran) ══════
 function PekerjaanListPage({
   anggaran,
@@ -3740,7 +3967,6 @@ function PekerjaanListPage({
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [confirm, setConfirm] = useState(null);
-
   const projects = anggaran.projects || [];
   const filtered = useMemo(
     () =>
@@ -3756,7 +3982,6 @@ function PekerjaanListPage({
     () => filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
     [filtered, page],
   );
-
   const assetCount = (anggaran.assets || []).length;
   const assetTotal = (anggaran.assets || []).reduce(
     (s, a) => s + (a.acquisition_value || 0),
@@ -3767,7 +3992,6 @@ function PekerjaanListPage({
       ? projects.reduce((s, p) => s + (p.nilai_kontrak || 0), 0)
       : 0;
   const totalRab = projects.reduce((s, p) => s + (p.nilai_rab || 0), 0);
-
   return (
     <div style={{ animation: "fadeUp .15s ease-out" }}>
       <Breadcrumb
@@ -3781,7 +4005,6 @@ function PekerjaanListPage({
           },
         ]}
       />
-
       {/* Context banner for selected anggaran */}
       <div
         style={{
@@ -3802,7 +4025,7 @@ function PekerjaanListPage({
           [
             "Nama Anggaran",
             anggaran.nama.substring(0, 40) +
-              (anggaran.nama.length > 40 ? "…" : ""),
+            (anggaran.nama.length > 40 ? "…" : ""),
           ],
           ["Tahun", String(anggaran.thnAnggaran)],
           [
@@ -3842,7 +4065,6 @@ function PekerjaanListPage({
           </div>
         ))}
       </div>
-
       {/* Toolbar */}
       <div className="toolbar">
         <button className="btn btn-outline" onClick={onBack}>
@@ -3876,7 +4098,6 @@ function PekerjaanListPage({
           <Icon d={I.plus} size={14} /> Tambah Pekerjaan
         </button>
       </div>
-
       {/* KPI strip */}
       <div className="kpi-strip" style={{ marginBottom: 16 }}>
         {[
@@ -3910,7 +4131,6 @@ function PekerjaanListPage({
           </div>
         ))}
       </div>
-
       {filtered.length === 0 ? (
         <div className="empty">
           {projects.length === 0
@@ -4063,7 +4283,6 @@ function PekerjaanListPage({
     </div>
   );
 }
-
 // ══════ MAIN APP ══════
 export default function BudgetManagement({ forcedType }) {
   const [typeFilter, setTypeFilter] = useState(forcedType || "all");
@@ -4080,7 +4299,6 @@ export default function BudgetManagement({ forcedType }) {
   const [capexPage, setCapexPage] = useState(1);
   const [opexPage, setOpexPage] = useState(1);
   const [showAddOpex, setShowAddOpex] = useState(false);
-
   // ── CAPEX 3-level navigation state ──
   // capexLevel: "list" | "pekerjaan" | "detail"
   const [capexLevel, setCapexLevel] = useState("list");
@@ -4088,13 +4306,10 @@ export default function BudgetManagement({ forcedType }) {
   const [capexAngPage, setCapexAngPage] = useState(1);
   const [capexAngSearch, setCapexAngSearch] = useState("");
   const [capexAngTahun, setCapexAngTahun] = useState("all");
-
   useEffect(() => {
     if (forcedType) setTypeFilter(forcedType);
   }, [forcedType]);
-
   const showToast = (msg) => setToast(msg);
-
   const yearOpts = useMemo(() => {
     const all = Array.from(
       new Set([
@@ -4104,7 +4319,6 @@ export default function BudgetManagement({ forcedType }) {
     ).sort();
     return ["all", ...all.map(String)];
   }, [capexData, opexData]);
-
   const filteredOpex = useMemo(
     () =>
       opexData.filter((ang) => {
@@ -4123,7 +4337,6 @@ export default function BudgetManagement({ forcedType }) {
       }),
     [opexData, tahun, opexKdFilter, opexSearch],
   );
-
   const activeKdList = useMemo(() => {
     const allKd = opexData
       .filter((a) => tahun === "all" || String(a.thn_anggaran) === tahun)
@@ -4132,7 +4345,6 @@ export default function BudgetManagement({ forcedType }) {
       Array.from(new Set(allKd)).includes(m.kd_anggaran_master),
     );
   }, [opexData, tahun]);
-
   // Filtered anggaran for CAPEX level 1
   const filteredAnggaran = useMemo(
     () =>
@@ -4152,7 +4364,6 @@ export default function BudgetManagement({ forcedType }) {
       }),
     [capexData, capexAngTahun, capexAngSearch],
   );
-
   const paginatedAnggaran = useMemo(
     () =>
       filteredAnggaran.slice(
@@ -4161,7 +4372,6 @@ export default function BudgetManagement({ forcedType }) {
       ),
     [filteredAnggaran, capexAngPage],
   );
-
   useEffect(() => {
     setAngFilter("all");
     setOpexKdFilter("all");
@@ -4178,15 +4388,12 @@ export default function BudgetManagement({ forcedType }) {
   useEffect(() => {
     setCapexAngPage(1);
   }, [capexAngSearch, capexAngTahun]);
-
   const paginatedOpex = useMemo(() => {
     const s = (opexPage - 1) * PAGE_SIZE;
     return filteredOpex.slice(s, s + PAGE_SIZE);
   }, [filteredOpex, opexPage]);
-
   // Get latest anggaran data
   const getLatestAnggaran = (id) => capexData.find((a) => a.id === id);
-
   // KPI cards
   const kpiCards = useMemo(() => {
     const capexFiltered = capexData.filter((a) => {
@@ -4242,7 +4449,6 @@ export default function BudgetManagement({ forcedType }) {
         s + (a.transaksi || []).reduce((ts, t) => ts + (t.jumlah || 0), 0),
       0,
     );
-
     if (typeFilter === "capex") {
       return [
         {
@@ -4281,7 +4487,7 @@ export default function BudgetManagement({ forcedType }) {
         {
           cls: "amber",
           icon: I.trendUp,
-          lbl: "Total Realisasi",
+          lbl: "Total Pekerjaan",
           val: fmt(opexRealisasi),
         },
         {
@@ -4313,7 +4519,6 @@ export default function BudgetManagement({ forcedType }) {
       },
     ];
   }, [capexData, filteredOpex, typeFilter, capexAngTahun, filteredAnggaran]);
-
   // Data mutations
   const saveOpexTrx = (id, trx) =>
     setOpexData((p) =>
@@ -4330,7 +4535,6 @@ export default function BudgetManagement({ forcedType }) {
         setConfirm(null);
       },
     });
-
   const saveProject = (id, u) =>
     setCapexData((p) =>
       p.map((ang) => ({
@@ -4340,7 +4544,6 @@ export default function BudgetManagement({ forcedType }) {
         ),
       })),
     );
-
   // Save assets at anggaran level
   const saveAssetsToAnggaran = (anggaranId, assets) => {
     setCapexData((p) =>
@@ -4351,21 +4554,19 @@ export default function BudgetManagement({ forcedType }) {
       prev?.id === anggaranId ? { ...prev, assets } : prev,
     );
   };
-
   const deleteProject = (projId, angId) => {
     setCapexData((p) =>
       p.map((ang) =>
         ang.id === angId
           ? {
-              ...ang,
-              projects: (ang.projects || []).filter((pr) => pr.id !== projId),
-            }
+            ...ang,
+            projects: (ang.projects || []).filter((pr) => pr.id !== projId),
+          }
           : ang,
       ),
     );
     showToast("Pekerjaan dihapus");
   };
-
   const addProjectToAnggaran = (angId, proj) => {
     setCapexData((p) =>
       p.map((a) =>
@@ -4378,7 +4579,6 @@ export default function BudgetManagement({ forcedType }) {
         : prev,
     );
   };
-
   const deleteAnggaran = (id) =>
     setConfirm({
       msg: "Hapus anggaran CAPEX ini beserta semua pekerjaan dan asetnya?",
@@ -4388,7 +4588,6 @@ export default function BudgetManagement({ forcedType }) {
         setConfirm(null);
       },
     });
-
   // Sync selectedAnggaran with capexData mutations
   useEffect(() => {
     if (selectedAnggaran) {
@@ -4396,7 +4595,6 @@ export default function BudgetManagement({ forcedType }) {
       if (latest) setSelectedAnggaran(latest);
     }
   }, [capexData]);
-
   const sharedWrap = (children) => (
     <>
       <style>{CSS}</style>
@@ -4406,7 +4604,6 @@ export default function BudgetManagement({ forcedType }) {
       </div>
     </>
   );
-
   // ── Sub-pages (OPEX & shared) ──
   if (page?.type === "editProject")
     return sharedWrap(
@@ -4454,6 +4651,7 @@ export default function BudgetManagement({ forcedType }) {
           }
         }}
         onEntryNew={() => setPage({ ...page, type: "assetEntry" })}
+        onEditAsset={(asset) => setPage({ ...page, type: "assetEdit", asset })}
         onSaveAssets={saveAssetsToAnggaran}
         showToast={showToast}
       />,
@@ -4465,6 +4663,19 @@ export default function BudgetManagement({ forcedType }) {
       <AssetEntryPage
         anggaran={latestAng}
         project={page.project}
+        onBack={() => setPage({ ...page, type: "assetTable" })}
+        onSave={saveAssetsToAnggaran}
+        showToast={showToast}
+      />,
+    );
+  }
+  if (page?.type === "assetEdit") {
+    const latestAng = getLatestAnggaran(page.anggaranId) || page.anggaran;
+    return sharedWrap(
+      <EditAssetPage
+        anggaran={latestAng}
+        project={page.project}
+        asset={page.asset}
         onBack={() => setPage({ ...page, type: "assetTable" })}
         onSave={saveAssetsToAnggaran}
         showToast={showToast}
@@ -4496,13 +4707,13 @@ export default function BudgetManagement({ forcedType }) {
           }
           onDeleteRow={(id) =>
             setConfirm({
-              msg: "Hapus transaksi realisasi ini?",
+              msg: "Hapus pekerjaan ini?",
               onConfirm: () => {
                 saveOpexTrx(
                   angNow.id,
                   angNow.transaksi.filter((trx) => trx.id !== id),
                 );
-                showToast("Transaksi dihapus");
+                showToast("Pekerjaan dihapus");
                 setConfirm(null);
               },
             })
@@ -4535,7 +4746,6 @@ export default function BudgetManagement({ forcedType }) {
       />,
     );
   }
-
   // ── CAPEX Level 2: Daftar Pekerjaan per Anggaran ──
   if (
     capexLevel === "pekerjaan" &&
@@ -4599,14 +4809,12 @@ export default function BudgetManagement({ forcedType }) {
       </>,
     );
   }
-
   const showCapex = typeFilter !== "opex";
   const showOpex = typeFilter !== "capex";
   const showBoth = typeFilter === "all";
   const activeOpexFilter = BUDGET_MASTERS.find(
     (m) => m.kd_anggaran_master === opexKdFilter,
   );
-
   const headerTitle =
     forcedType === "capex"
       ? "Input Pekerjaan CAPEX"
@@ -4619,7 +4827,6 @@ export default function BudgetManagement({ forcedType }) {
       : forcedType === "opex"
         ? "Daftar dan realisasi anggaran OPEX"
         : "Monitoring CAPEX & OPEX berdasarkan anggaran";
-
   return (
     <>
       <style>{CSS}</style>
@@ -4650,7 +4857,6 @@ export default function BudgetManagement({ forcedType }) {
             </div>
           )}
         </div>
-
         <div className="kpi-strip">
           {kpiCards.map(({ cls, icon, lbl, val, pct }) => (
             <div key={lbl} className={`kpi ${cls}`}>
@@ -4675,7 +4881,6 @@ export default function BudgetManagement({ forcedType }) {
             </div>
           ))}
         </div>
-
         {/* ── CAPEX: Level 1 — Daftar Anggaran ── */}
         {showCapex && (
           <>
@@ -4782,7 +4987,6 @@ export default function BudgetManagement({ forcedType }) {
             )}
           </>
         )}
-
         {/* ── OPEX section ── */}
         {showOpex && (
           <>
@@ -4940,7 +5144,6 @@ export default function BudgetManagement({ forcedType }) {
           </>
         )}
       </div>
-
       {confirm && (
         <Confirm
           msg={confirm.msg}
