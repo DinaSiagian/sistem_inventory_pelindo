@@ -812,12 +812,12 @@ body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:var(--bg);c
 .jc-title{font-size:0.85rem;font-weight:700;color:var(--ink);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .jc-meta{display:flex;flex-direction:column;gap:4px;font-size:0.75rem;color:var(--ink3);font-weight:500}
 .jc-meta span{display:flex;align-items:center;gap:6px}
-.jc-fin{display:flex;align-items:center;justify-content:flex-end;gap:20px}
-.amt-blk{display:flex;flex-direction:column;gap:2px;text-align:right}
+.jc-fin{display:flex;align-items:center;justify-content:flex-start;gap:24px}
+.amt-blk{display:flex;flex-direction:column;gap:2px;text-align:left;min-width:140px}
 .amt-lbl{font-size:0.65rem;color:var(--ink4);font-weight:600;text-transform:uppercase;letter-spacing:0.5px}
 .amt-val{font-size:0.9rem;font-weight:800}
 .amt-val.blue{color:var(--blue)}.amt-val.amber{color:var(--amber)}.amt-val.red{color:var(--red)}.amt-val.green{color:var(--green)}
-.fin-div{width:1px;height:28px;background:var(--border)}
+.fin-div{width:1px;height:32px;background:var(--border);margin:0 4px}
 .jc-actions{display:flex;align-items:center;gap:16px;justify-content:flex-end}
 .ring-wrap{display:flex;align-items:center;gap:8px}
 .ring{position:relative;width:36px;height:36px;display:flex;align-items:center;justify-content:center}
@@ -2546,12 +2546,7 @@ function OpexCard({
               </div>
               <p className="jc-title">{ang.nama}</p>
             </div>
-            <div className="jc-meta">
-              <span>
-                <Icon d={I.database} size={12} />
-                {masterInfo?.nm_anggaran_master || ang.nama}
-              </span>
-            </div>
+            {/* HAPUS BAGIAN INI - Judul duplikat sudah dihilangkan */}
             <div className="jc-fin">
               <div className="amt-blk">
                 <span className="amt-lbl">Pagu Anggaran</span>
@@ -2984,10 +2979,8 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
   const [confirm, setConfirm] = useState(null);
   const fileInputRef = useRef(null);
   const [activeAssetId, setActiveAssetId] = useState(null);
-
   const upd = (id, k, v) =>
     setAssets((p) => p.map((a) => (a.id === id ? { ...a, [k]: v } : a)));
-
   const triggerImageUpload = (id) => {
     setActiveAssetId(id);
     fileInputRef.current.click();
@@ -3321,7 +3314,6 @@ function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) 
   const [confirm, setConfirm] = useState(null);
   const fileInputRef = useRef(null);
   const [activeAssetId, setActiveAssetId] = useState(null);
-
   const upd = (id, k, v) =>
     setAssets((p) => p.map((a) => (a.id === id ? { ...a, [k]: v } : a)));
   const triggerImageUpload = (id) => {
@@ -4620,13 +4612,13 @@ export default function BudgetManagement({ forcedType }) {
       <TambahPekerjaanPage
         anggaran={page.anggaran}
         onBack={() => {
-          setPage(null);
           setCapexLevel("pekerjaan");
+          setPage(null);
         }}
         onSave={(proj) => {
           addProjectToAnggaran(page.anggaran.id, proj);
-          setPage(null);
           setCapexLevel("pekerjaan");
+          setPage(null);
           showToast("Pekerjaan CAPEX berhasil ditambahkan");
         }}
       />,
@@ -4646,8 +4638,8 @@ export default function BudgetManagement({ forcedType }) {
             setSelectedAnggaran(latestAng);
             setPage(null);
           } else {
-            setPage(null);
             setCapexLevel("pekerjaan");
+            setPage(null);
           }
         }}
         onEntryNew={() => setPage({ ...page, type: "assetEntry" })}

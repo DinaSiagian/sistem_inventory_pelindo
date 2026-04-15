@@ -20,12 +20,14 @@
   align-items: flex-end;
   margin-bottom: 30px;
 }
+
 .dashboard-title {
   color: #002b5c;
   margin: 0;
   font-size: 1.8rem;
   font-weight: 700;
 }
+
 .dashboard-subtitle {
   color: #7f8c8d;
   margin: 5px 0 0;
@@ -41,6 +43,7 @@
   gap: 20px;
   margin-bottom: 30px;
 }
+
 .stats-card {
   background: white;
   padding: 20px;
@@ -52,9 +55,11 @@
   border-left-width: 5px;
   border-left-style: solid;
 }
+
 .stats-card:hover {
   transform: translateY(-3px);
 }
+
 .stats-icon-wrapper {
   width: 50px;
   height: 50px;
@@ -66,12 +71,14 @@
   margin-right: 15px;
   flex-shrink: 0;
 }
+
 .stats-content h3 {
   margin: 0 0 5px 0;
   color: #2c3e50;
   font-size: 1.5rem;
   font-weight: 700;
 }
+
 .stats-content p {
   margin: 0;
   color: #7f8c8d;
@@ -80,6 +87,7 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
+
 .stats-sub {
   font-size: 0.75rem;
   font-weight: 600;
@@ -96,6 +104,7 @@
   gap: 20px;
   margin-bottom: 30px;
 }
+
 .dashboard-card {
   background: white;
   padding: 25px;
@@ -106,6 +115,7 @@
   display: flex;
   flex-direction: column;
 }
+
 .card-header {
   display: flex;
   justify-content: space-between;
@@ -113,12 +123,14 @@
   align-items: flex-start;
   flex-shrink: 0;
 }
+
 .section-title {
   margin: 0;
   color: #2c3e50;
   font-size: 1.1rem;
   font-weight: 700;
 }
+
 .section-subtitle {
   font-size: 0.78rem;
   color: #95a5a6;
@@ -144,9 +156,11 @@
   scrollbar-width: thin;
   scrollbar-color: #d0d7e2 transparent;
 }
+
 .capex-bar-scroll-wrap::-webkit-scrollbar {
   height: 4px;
 }
+
 .capex-bar-scroll-wrap::-webkit-scrollbar-thumb {
   background: #d0d7e2;
   border-radius: 2px;
@@ -161,6 +175,7 @@
   gap: 2px;
   /* minWidth di-set via inline style berdasarkan jumlah tahun */
 }
+
 .capex-stacked-segment {
   position: relative;
   height: 100%;
@@ -169,11 +184,13 @@
   border-radius: 4px;
   transition: opacity 0.2s;
 }
+
 .capex-stacked-segment--active {
   outline: 2px solid #004494;
   outline-offset: 1px;
   z-index: 1;
 }
+
 .capex-stacked-fill {
   position: absolute;
   left: 0;
@@ -182,6 +199,7 @@
   border-radius: 4px;
   transition: width 0.8s ease;
 }
+
 .capex-stacked-labels {
   display: flex;
   margin-top: 5px;
@@ -201,9 +219,11 @@
   scrollbar-width: thin;
   scrollbar-color: #d0d7e2 transparent;
 }
+
 .capex-year-rows::-webkit-scrollbar {
   width: 4px;
 }
+
 .capex-year-rows::-webkit-scrollbar-thumb {
   background: #d0d7e2;
   border-radius: 2px;
@@ -218,9 +238,11 @@
   border: 1px solid #f1f2f6;
   transition: background 0.2s;
 }
+
 .capex-year-row:hover {
   background: #f5f7fb;
 }
+
 .capex-year-row--active {
   background: #eef4ff !important;
   border-color: #c7d9f8 !important;
@@ -238,6 +260,7 @@
   flex-shrink: 0;
   margin-top: auto;
 }
+
 .capex-footer-item {
   flex: 1;
   display: flex;
@@ -245,6 +268,7 @@
   gap: 2px;
   align-items: center;
 }
+
 .capex-footer-item span {
   font-size: 0.68rem;
   color: #95a5a6;
@@ -252,10 +276,12 @@
   text-transform: uppercase;
   letter-spacing: 0.4px;
 }
+
 .capex-footer-item strong {
   font-size: 0.88rem;
   font-weight: 800;
 }
+
 .capex-footer-divider {
   width: 1px;
   height: 30px;
@@ -272,16 +298,19 @@
   margin-bottom: 12px;
   flex-shrink: 0;
 }
+
 .current-value {
   margin: 0;
   margin-right: 8px;
   font-size: 1.8rem;
   font-weight: 800;
 }
+
 .target-value {
   font-size: 0.9rem;
   color: #7f8c8d;
 }
+
 .progress-bar-bg {
   width: 100%;
   height: 10px;
@@ -291,11 +320,13 @@
   margin-bottom: 12px;
   flex-shrink: 0;
 }
+
 .progress-fill {
   height: 100%;
   border-radius: 5px;
   transition: width 0.8s ease-in-out;
 }
+
 .budget-summary-text {
   font-size: 0.85rem;
   color: #7f8c8d;
@@ -316,9 +347,11 @@
   scrollbar-width: thin;
   scrollbar-color: #d0d7e2 transparent;
 }
+
 .opex-breakdown::-webkit-scrollbar {
   width: 4px;
 }
+
 .opex-breakdown::-webkit-scrollbar-thumb {
   background: #d0d7e2;
   border-radius: 2px;
@@ -330,6 +363,7 @@
   justify-content: space-between;
   gap: 8px;
 }
+
 .opex-breakdown-name {
   font-size: 0.78rem;
   color: #555;
@@ -349,6 +383,7 @@
   gap: 20px;
   margin-bottom: 30px;
 }
+
 .chart-container {
   width: 100%;
   height: 300px;
@@ -364,6 +399,7 @@
   margin-bottom: 20px;
   flex-shrink: 0;
 }
+
 .alert-badge {
   margin-left: 10px;
   background: #ffecb3;
@@ -373,6 +409,7 @@
   font-size: 0.75rem;
   font-weight: 800;
 }
+
 .alert-item {
   display: flex;
   align-items: flex-start;
@@ -382,10 +419,12 @@
   margin-bottom: 10px;
   transition: background-color 0.2s;
 }
+
 .alert-item:hover {
   background-color: #fafafa;
   border-color: #e0e0e0;
 }
+
 .alert-icon-circle {
   min-width: 35px;
   height: 35px;
@@ -396,18 +435,21 @@
   margin-right: 15px;
   margin-top: 2px;
 }
+
 .alert-content h4 {
   margin: 0 0 4px;
   font-size: 0.95rem;
   color: #2c3e50;
   font-weight: 700;
 }
+
 .alert-content p {
   margin: 0;
   font-size: 0.85rem;
   color: #666;
   line-height: 1.4;
 }
+
 .alert-action-btn {
   margin-left: auto;
   background: white;
@@ -421,39 +463,49 @@
   transition: all 0.2s;
   white-space: nowrap;
 }
+
 .alert-action-btn:hover {
   background: #f0f7ff;
   color: #004494;
   border-color: #004494;
-/* =========================================
+
+  /* =========================================
    RESPONSIVE
    ========================================= */
-@media (max-width: 1100px) {
-  .budget-grid {
-    grid-template-columns: 1fr;
+  @media (max-width: 1100px) {
+    .budget-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .chart-grid {
+      grid-template-columns: 1fr;
+    }
   }
-  .chart-grid {
-    grid-template-columns: 1fr;
+
+  @media (max-width: 768px) {
+    .dashboard-wrapper {
+      padding: 16px;
+    }
+
+    .dashboard-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .capex-year-row {
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .capex-footer-summary {
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .capex-footer-divider {
+      width: 100%;
+      height: 1px;
+    }
   }
 }
-@media (max-width: 768px) {
-  .dashboard-wrapper {
-    padding: 16px;
-  }
-  .dashboard-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-  .capex-year-row {
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-  .capex-footer-summary {
-    flex-direction: column;
-    gap: 8px;
-  }
-  .capex-footer-divider {
-    width: 100%;
-    height: 1px;
-  }

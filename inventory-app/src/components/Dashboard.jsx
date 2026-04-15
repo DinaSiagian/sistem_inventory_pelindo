@@ -905,12 +905,12 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("aset"); // "aset" | "anggaran"
   const [filterTren, setFilterTren] = useState("bulanan");
   const [tahunAnggaran, setTahunAnggaran] = useState("2026");
-  const [modal, setModal] = useState(null); 
+  const [modal, setModal] = useState(null);
 
   const dataTren = filterTren === "harian" ? dataPeminjamanHarian : dataPeminjamanBulanan;
   const opexTahunIni = mockOpexPerTahun[tahunAnggaran] ?? [];
   const allAlerts = useMemo(() => calculateAlerts(opexTahunIni), [tahunAnggaran]);
-  
+
   // Filter alerts based on active tab
   const tabAlerts = allAlerts.filter(a => a.tab === activeTab);
   const highCount = tabAlerts.filter((a) => a.priority === "high").length;
@@ -919,7 +919,7 @@ const Dashboard = () => {
     <>
       <style>{css}</style>
       <div className="db-wrap">
-        
+
         {/* ── 1. HEADER & QUICK ACTION ── */}
         <div className="db-header">
           <div>
@@ -942,14 +942,14 @@ const Dashboard = () => {
 
         {/* ── 2. TAB NAVIGATION ── */}
         <div className="tab-container">
-          <button 
-            className={`tab-btn ${activeTab === 'aset' ? 'active' : ''}`} 
+          <button
+            className={`tab-btn ${activeTab === 'aset' ? 'active' : ''}`}
             onClick={() => setActiveTab('aset')}
           >
             Overview Aset
           </button>
-          <button 
-            className={`tab-btn ${activeTab === 'anggaran' ? 'active' : ''}`} 
+          <button
+            className={`tab-btn ${activeTab === 'anggaran' ? 'active' : ''}`}
             onClick={() => setActiveTab('anggaran')}
           >
             Overview Anggaran
@@ -958,7 +958,7 @@ const Dashboard = () => {
 
         {/* ── 3. CONTENT AREA ── */}
         <div style={{ animation: 'fadeIn 0.3s ease' }} key={activeTab}>
-          
+
           {/* CONTENT: ASET */}
           {activeTab === 'aset' && (
             <>
@@ -1067,7 +1067,7 @@ const Dashboard = () => {
                 {tabAlerts.length === 0 ? "Semua Normal ✓" : `${tabAlerts.length} Perlu Tindakan`}
               </span>
             </div>
-            
+
             {tabAlerts.length === 0 ? (
               <div style={{ textAlign: "center", padding: "30px 0", color: "#94a3b8", fontSize: "0.95rem", fontWeight: 500 }}>
                 Tidak ada alert. Semua kondisi normal.
