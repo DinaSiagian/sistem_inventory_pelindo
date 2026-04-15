@@ -4491,340 +4491,340 @@ function OpexModule({ masterList, setMasterList }) {
           </div>
 
           {filteredMasters.length === 0 ? (
+            <div
+              style={{
+                background: "white",
+                border: "1px solid #e2e8f0",
+                borderRadius: 10,
+                padding: "48px 24px",
+                textAlign: "center",
+                color: "#94a3b8",
+                fontSize: "0.88rem",
+              }}
+            >
+              Tidak ada anggaran master{" "}
+              {filterNama && filterNama !== "SEMUA" ? `dengan nama "${filterNama}"` : ""}{" "}
+              pada rentang tahun yang dipilih.
+            </div>
+          ) : (
+            <>
               <div
                 style={{
                   background: "white",
                   border: "1px solid #e2e8f0",
                   borderRadius: 10,
-                  padding: "48px 24px",
-                  textAlign: "center",
-                  color: "#94a3b8",
-                  fontSize: "0.88rem",
+                  overflow: "hidden",
                 }}
               >
-                Tidak ada anggaran master{" "}
-                {filterNama && filterNama !== "SEMUA" ? `dengan nama "${filterNama}"` : ""}{" "}
-                pada rentang tahun yang dipilih.
+                <div style={{ overflowX: "auto" }}>
+                  <table style={{ ...S.tbl, border: "none" }}>
+                    <thead>
+                      <tr>
+                        {[
+                          "NO",
+                          "NAMA ANGGARAN",
+                          "KODE",
+                          "TAHUN",
+                          "NILAI ANGGARAN",
+                          "ANGGARAN TOTAL",
+                          "AKSI",
+                        ].map((h, i) => (
+                          <th
+                            key={h}
+                            style={{
+                              ...S.th,
+                              ...(i === 0 && {
+                                width: 48,
+                                textAlign: "center",
+                              }),
+                              ...(i === 2 && {
+                                width: 90,
+                                textAlign: "center",
+                              }),
+                              ...(i === 3 && {
+                                width: 80,
+                                textAlign: "center",
+                              }),
+                              ...(i === 4 && {
+                                width: 140,
+                                textAlign: "right",
+                              }),
+                              ...(i === 5 && {
+                                width: 140,
+                                textAlign: "right",
+                              }),
+                              ...(i === 6 && {
+                                width: 130,
+                                textAlign: "center",
+                              }),
+                            }}
+                          >
+                            {h}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {paginatedWithIdx.map(({ m, globalIdx }) => {
+                        const totalR = (m.realisasi_tahunan || []).reduce(
+                          (s, r) =>
+                            s +
+                            (r.realisasi_murni || 0) +
+                            (r.realisasi_bymhd || 0),
+                          0,
+                        );
+                        const pct =
+                          m.nilai_anggaran > 0
+                            ? Math.round((totalR / m.nilai_anggaran) * 100)
+                            : 0;
+                        return (
+                          <tr
+                            key={m.id}
+                            style={{ background: "white", cursor: "default" }}
+                          >
+                            <td
+                              style={{
+                                ...S.td,
+                                textAlign: "center",
+                                fontWeight: 700,
+                                fontSize: "0.78rem",
+                                color: "#94a3b8",
+                              }}
+                            >
+                              {globalIdx + 1}
+                            </td>
+                            <td style={S.td}>
+                              <div
+                                style={{
+                                  fontWeight: 600,
+                                  color: "#1e293b",
+                                  lineHeight: 1.4,
+                                  fontSize: "0.88rem",
+                                }}
+                              >
+                                {m.nama}
+                              </div>
+                            </td>
+                            <td style={{ ...S.td, textAlign: "center" }}>
+                              <span
+                                style={{
+                                  fontFamily: "monospace",
+                                  background: "#f1f5f9",
+                                  color: "#475569",
+                                  padding: "3px 8px",
+                                  borderRadius: 4,
+                                  fontWeight: 700,
+                                  fontSize: "0.8rem",
+                                }}
+                              >
+                                {m.kd}
+                              </span>
+                            </td>
+                            <td
+                              style={{
+                                ...S.td,
+                                textAlign: "center",
+                                color: "#64748b",
+                                fontWeight: 600,
+                              }}
+                            >
+                              {m.thn_anggaran}
+                            </td>
+                            <td style={{ ...S.td, textAlign: "right" }}>
+                              <span
+                                style={{ fontWeight: 700, color: "#1e293b" }}
+                              >
+                                {fmt(m.nilai_anggaran)}
+                              </span>
+                            </td>
+                            <td style={{ ...S.td, textAlign: "right" }}>
+                              <span
+                                style={{
+                                  fontWeight: 700,
+                                  color: pctColor(pct),
+                                }}
+                              >
+                                {fmt(totalR)}
+                              </span>
+                            </td>
+                            <td style={{ ...S.td, textAlign: "center" }}>
+                              <div
+                                style={{
+                                  display: "flex",
+                                  gap: 6,
+                                  justifyContent: "center",
+                                }}
+                              >
+                                <button
+                                  style={{
+                                    ...S.abtn,
+                                    padding: "6px 10px",
+                                    background: "#eff6ff",
+                                    borderColor: "#bfdbfe",
+                                  }}
+                                  title="Lihat Detail Anggaran"
+                                  onClick={() => setDetailMaster(m)}
+                                >
+                                  <Eye
+                                    size={13}
+                                    style={{ color: "#2563eb" }}
+                                  />
+                                </button>
+
+                                <button
+                                  style={{
+                                    ...S.abtn,
+                                    padding: "6px 10px",
+                                    background: "#fef2f2",
+                                    borderColor: "#fecaca",
+                                  }}
+                                  onClick={() => handleDeleteMaster(m.id)}
+                                >
+                                  <Trash2
+                                    size={13}
+                                    style={{ color: "#ef4444" }}
+                                  />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                    <tfoot>
+                      <tr style={{ background: "#f0fdf4" }}>
+                        <td
+                          colSpan={5}
+                          style={{
+                            ...S.td,
+                            textAlign: "right",
+                            fontWeight: 700,
+                            color: "#15803d",
+                            fontSize: "0.75rem",
+                            letterSpacing: "0.4px",
+                            textTransform: "uppercase",
+                          }}
+                        >
+                          Total Anggaran Dikeluarkan
+                        </td>
+                        <td
+                          style={{
+                            ...S.td,
+                            textAlign: "right",
+                            fontWeight: 800,
+                            color: "#15803d",
+                            fontSize: "0.88rem",
+                          }}
+                        >
+                          {fmt(
+                            filteredMasters.reduce((sum, m) => {
+                              return (
+                                sum +
+                                (m.realisasi_tahunan || []).reduce(
+                                  (s, r) =>
+                                    s +
+                                    (r.realisasi_murni || 0) +
+                                    (r.realisasi_bymhd || 0),
+                                  0,
+                                )
+                              );
+                            }, 0),
+                          )}
+                        </td>
+                        <td style={S.td} />
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
               </div>
-            ) : (
-              <>
+
+              {totalPages > 1 && (
                 <div
                   style={{
                     background: "white",
                     border: "1px solid #e2e8f0",
                     borderRadius: 10,
-                    overflow: "hidden",
+                    padding: "12px 18px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
                   }}
                 >
-                  <div style={{ overflowX: "auto" }}>
-                    <table style={{ ...S.tbl, border: "none" }}>
-                      <thead>
-                        <tr>
-                          {[
-                            "NO",
-                            "NAMA ANGGARAN",
-                            "KODE",
-                            "TAHUN",
-                            "NILAI ANGGARAN",
-                            "ANGGARAN TOTAL",
-                            "AKSI",
-                          ].map((h, i) => (
-                            <th
-                              key={h}
-                              style={{
-                                ...S.th,
-                                ...(i === 0 && {
-                                  width: 48,
-                                  textAlign: "center",
-                                }),
-                                ...(i === 2 && {
-                                  width: 90,
-                                  textAlign: "center",
-                                }),
-                                ...(i === 3 && {
-                                  width: 80,
-                                  textAlign: "center",
-                                }),
-                                ...(i === 4 && {
-                                  width: 140,
-                                  textAlign: "right",
-                                }),
-                                ...(i === 5 && {
-                                  width: 140,
-                                  textAlign: "right",
-                                }),
-                                ...(i === 6 && {
-                                  width: 130,
-                                  textAlign: "center",
-                                }),
-                              }}
-                            >
-                              {h}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {paginatedWithIdx.map(({ m, globalIdx }) => {
-                          const totalR = (m.realisasi_tahunan || []).reduce(
-                            (s, r) =>
-                              s +
-                              (r.realisasi_murni || 0) +
-                              (r.realisasi_bymhd || 0),
-                            0,
-                          );
-                          const pct =
-                            m.nilai_anggaran > 0
-                              ? Math.round((totalR / m.nilai_anggaran) * 100)
-                              : 0;
-                          return (
-                            <tr
-                              key={m.id}
-                              style={{ background: "white", cursor: "default" }}
-                            >
-                              <td
-                                style={{
-                                  ...S.td,
-                                  textAlign: "center",
-                                  fontWeight: 700,
-                                  fontSize: "0.78rem",
-                                  color: "#94a3b8",
-                                }}
-                              >
-                                {globalIdx + 1}
-                              </td>
-                              <td style={S.td}>
-                                <div
-                                  style={{
-                                    fontWeight: 600,
-                                    color: "#1e293b",
-                                    lineHeight: 1.4,
-                                    fontSize: "0.88rem",
-                                  }}
-                                >
-                                  {m.nama}
-                                </div>
-                              </td>
-                              <td style={{ ...S.td, textAlign: "center" }}>
-                                <span
-                                  style={{
-                                    fontFamily: "monospace",
-                                    background: "#f1f5f9",
-                                    color: "#475569",
-                                    padding: "3px 8px",
-                                    borderRadius: 4,
-                                    fontWeight: 700,
-                                    fontSize: "0.8rem",
-                                  }}
-                                >
-                                  {m.kd}
-                                </span>
-                              </td>
-                              <td
-                                style={{
-                                  ...S.td,
-                                  textAlign: "center",
-                                  color: "#64748b",
-                                  fontWeight: 600,
-                                }}
-                              >
-                                {m.thn_anggaran}
-                              </td>
-                              <td style={{ ...S.td, textAlign: "right" }}>
-                                <span
-                                  style={{ fontWeight: 700, color: "#1e293b" }}
-                                >
-                                  {fmt(m.nilai_anggaran)}
-                                </span>
-                              </td>
-                              <td style={{ ...S.td, textAlign: "right" }}>
-                                <span
-                                  style={{
-                                    fontWeight: 700,
-                                    color: pctColor(pct),
-                                  }}
-                                >
-                                  {fmt(totalR)}
-                                </span>
-                              </td>
-                              <td style={{ ...S.td, textAlign: "center" }}>
-                                <div
-                                  style={{
-                                    display: "flex",
-                                    gap: 6,
-                                    justifyContent: "center",
-                                  }}
-                                >
-                                  <button
-                                    style={{
-                                      ...S.abtn,
-                                      padding: "6px 10px",
-                                      background: "#eff6ff",
-                                      borderColor: "#bfdbfe",
-                                    }}
-                                    title="Lihat Detail Anggaran"
-                                    onClick={() => setDetailMaster(m)}
-                                  >
-                                    <Eye
-                                      size={13}
-                                      style={{ color: "#2563eb" }}
-                                    />
-                                  </button>
-
-                                  <button
-                                    style={{
-                                      ...S.abtn,
-                                      padding: "6px 10px",
-                                      background: "#fef2f2",
-                                      borderColor: "#fecaca",
-                                    }}
-                                    onClick={() => handleDeleteMaster(m.id)}
-                                  >
-                                    <Trash2
-                                      size={13}
-                                      style={{ color: "#ef4444" }}
-                                    />
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                      <tfoot>
-                        <tr style={{ background: "#f0fdf4" }}>
-                          <td
-                            colSpan={5}
-                            style={{
-                              ...S.td,
-                              textAlign: "right",
-                              fontWeight: 700,
-                              color: "#15803d",
-                              fontSize: "0.75rem",
-                              letterSpacing: "0.4px",
-                              textTransform: "uppercase",
-                            }}
-                          >
-                            Total Anggaran Dikeluarkan
-                          </td>
-                          <td
-                            style={{
-                              ...S.td,
-                              textAlign: "right",
-                              fontWeight: 800,
-                              color: "#15803d",
-                              fontSize: "0.88rem",
-                            }}
-                          >
-                            {fmt(
-                              filteredMasters.reduce((sum, m) => {
-                                return (
-                                  sum +
-                                  (m.realisasi_tahunan || []).reduce(
-                                    (s, r) =>
-                                      s +
-                                      (r.realisasi_murni || 0) +
-                                      (r.realisasi_bymhd || 0),
-                                    0,
-                                  )
-                                );
-                              }, 0),
-                            )}
-                          </td>
-                          <td style={S.td} />
-                        </tr>
-                      </tfoot>
-                    </table>
+                  <div style={{ fontSize: "0.8rem", color: "#64748b" }}>
+                    Menampilkan{" "}
+                    <b>
+                      {(currentPage - 1) * PAGE_SIZE + 1}–
+                      {Math.min(
+                        currentPage * PAGE_SIZE,
+                        filteredMasters.length,
+                      )}
+                    </b>{" "}
+                    dari <b>{filteredMasters.length}</b>
+                  </div>
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 6 }}
+                  >
+                    <button
+                      style={{
+                        ...S.abtn,
+                        padding: "6px 12px",
+                        opacity: currentPage === 1 ? 0.4 : 1,
+                      }}
+                      disabled={currentPage === 1}
+                      onClick={() => setCurrentPage((p) => p - 1)}
+                    >
+                      <ChevronRight
+                        size={14}
+                        style={{
+                          transform: "rotate(180deg)",
+                          color: "#475569",
+                        }}
+                      />
+                    </button>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                      (pg) => (
+                        <button
+                          key={pg}
+                          onClick={() => setCurrentPage(pg)}
+                          style={{
+                            width: 32,
+                            height: 32,
+                            borderRadius: 6,
+                            border:
+                              pg === currentPage
+                                ? "2px solid #16a34a"
+                                : "1px solid #e2e8f0",
+                            background:
+                              pg === currentPage ? "#16a34a" : "white",
+                            color: pg === currentPage ? "white" : "#475569",
+                            fontWeight: pg === currentPage ? 700 : 500,
+                            fontSize: "0.82rem",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          {pg}
+                        </button>
+                      ),
+                    )}
+                    <button
+                      style={{
+                        ...S.abtn,
+                        padding: "6px 12px",
+                        opacity: currentPage === totalPages ? 0.4 : 1,
+                      }}
+                      disabled={currentPage === totalPages}
+                      onClick={() => setCurrentPage((p) => p + 1)}
+                    >
+                      <ChevronRight size={14} style={{ color: "#475569" }} />
+                    </button>
                   </div>
                 </div>
-
-                {totalPages > 1 && (
-                  <div
-                    style={{
-                      background: "white",
-                      border: "1px solid #e2e8f0",
-                      borderRadius: 10,
-                      padding: "12px 18px",
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
-                  >
-                    <div style={{ fontSize: "0.8rem", color: "#64748b" }}>
-                      Menampilkan{" "}
-                      <b>
-                        {(currentPage - 1) * PAGE_SIZE + 1}–
-                        {Math.min(
-                          currentPage * PAGE_SIZE,
-                          filteredMasters.length,
-                        )}
-                      </b>{" "}
-                      dari <b>{filteredMasters.length}</b>
-                    </div>
-                    <div
-                      style={{ display: "flex", alignItems: "center", gap: 6 }}
-                    >
-                      <button
-                        style={{
-                          ...S.abtn,
-                          padding: "6px 12px",
-                          opacity: currentPage === 1 ? 0.4 : 1,
-                        }}
-                        disabled={currentPage === 1}
-                        onClick={() => setCurrentPage((p) => p - 1)}
-                      >
-                        <ChevronRight
-                          size={14}
-                          style={{
-                            transform: "rotate(180deg)",
-                            color: "#475569",
-                          }}
-                        />
-                      </button>
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                        (pg) => (
-                          <button
-                            key={pg}
-                            onClick={() => setCurrentPage(pg)}
-                            style={{
-                              width: 32,
-                              height: 32,
-                              borderRadius: 6,
-                              border:
-                                pg === currentPage
-                                  ? "2px solid #16a34a"
-                                  : "1px solid #e2e8f0",
-                              background:
-                                pg === currentPage ? "#16a34a" : "white",
-                              color: pg === currentPage ? "white" : "#475569",
-                              fontWeight: pg === currentPage ? 700 : 500,
-                              fontSize: "0.82rem",
-                              cursor: "pointer",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                            }}
-                          >
-                            {pg}
-                          </button>
-                        ),
-                      )}
-                      <button
-                        style={{
-                          ...S.abtn,
-                          padding: "6px 12px",
-                          opacity: currentPage === totalPages ? 0.4 : 1,
-                        }}
-                        disabled={currentPage === totalPages}
-                        onClick={() => setCurrentPage((p) => p + 1)}
-                      >
-                        <ChevronRight size={14} style={{ color: "#475569" }} />
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
+              )}
+            </>
+          )}
         </>
       )}
     </div>
@@ -5014,16 +5014,16 @@ const CapexFormModal = React.memo(function CapexFormModal({
               disabled={!data.nm_anggaran || ((parseFloat(data.nilai_rkap) || 0) > (parseFloat(data.nilai_kad) || 0))}
               onClick={onSave}
             >
-            {title.includes("Edit") ? (
-              <>
-                <Save size={14} /> Simpan Perubahan
-              </>
-            ) : (
-              <>
-                <Plus size={14} /> Tambahkan
-              </>
-            )}
-          </button>
+              {title.includes("Edit") ? (
+                <>
+                  <Save size={14} /> Simpan Perubahan
+                </>
+              ) : (
+                <>
+                  <Plus size={14} /> Tambahkan
+                </>
+              )}
+            </button>
           </div>
         </div>
       </div>
@@ -5044,15 +5044,22 @@ function CapexEditAnggaranModal({ capexId, anggaran, capex, onSave, onClose }) {
       return setError("Semua field harus diisi!");
     }
     const newNilai = parseFloat(nilaiRkap) || 0;
+    if (newNilai <= 0) {
+      return setError("Nilai RKAP harus lebih dari 0!");
+    }
     const anggaranList = capex.anggaran_tahunan || [];
-    const totalExistingExcludingThis = anggaranList
+    // Total child rows lain (tidak termasuk yang sedang diedit)
+    const totalOtherChilds = anggaranList
       .filter((a) => a.id !== anggaran.id)
       .reduce((sum, a) => sum + (a.nilai_anggaran || 0), 0);
-    const totalWithThis = totalExistingExcludingThis + newNilai;
+    // Nilai RKAP awal dari parent row juga dihitung karena ikut memakai KAD
+    const parentRkap = capex.nilai_rkap || 0;
+    const totalWithThis = parentRkap + totalOtherChilds + newNilai;
     const kad = capex.nilai_kad || 0;
     if (totalWithThis > kad) {
+      const sisaKad = Math.max(0, kad - parentRkap - totalOtherChilds);
       return setError(
-        `Anggaran tidak boleh melebihi Nilai KAD!`,
+        `Tidak dapat menyimpan! Total anggaran melebihi Nilai KAD.`,
       );
     }
     onSave(capexId, anggaran.id, {
@@ -5275,14 +5282,14 @@ function CapexModule({ capexList, setCapexList }) {
     // Buat entri history_anggaran awal jika ada nilai RKAP
     const initialHistory = rkap > 0
       ? [{
-          id: uid(),
-          tgl: today,
-          thn_rkap_awal: parseInt(newCapex.thn_rkap_awal),
-          thn_rkap_akhir: parseInt(newCapex.thn_rkap_akhir),
-          thn_anggaran: parseInt(newCapex.thn_anggaran),
-          nilai_kad: kad,
-          nilai_rkap: rkap,
-        }]
+        id: uid(),
+        tgl: today,
+        thn_rkap_awal: parseInt(newCapex.thn_rkap_awal),
+        thn_rkap_akhir: parseInt(newCapex.thn_rkap_akhir),
+        thn_anggaran: parseInt(newCapex.thn_anggaran),
+        nilai_kad: kad,
+        nilai_rkap: rkap,
+      }]
       : [];
     setCapexList((p) => [
       ...p,
@@ -5320,14 +5327,14 @@ function CapexModule({ capexList, setCapexList }) {
         const shouldAddHistory = newRkap > 0 && newRkap !== oldRkap;
         const newHistoryEntry = shouldAddHistory
           ? [{
-              id: uid(),
-              tgl: today,
-              thn_rkap_awal: parseInt(editTarget.thn_rkap_awal),
-              thn_rkap_akhir: parseInt(editTarget.thn_rkap_akhir),
-              thn_anggaran: parseInt(editTarget.thn_anggaran),
-              nilai_kad: newKad,
-              nilai_rkap: newRkap,
-            }]
+            id: uid(),
+            tgl: today,
+            thn_rkap_awal: parseInt(editTarget.thn_rkap_awal),
+            thn_rkap_akhir: parseInt(editTarget.thn_rkap_akhir),
+            thn_anggaran: parseInt(editTarget.thn_anggaran),
+            nilai_kad: newKad,
+            nilai_rkap: newRkap,
+          }]
           : [];
         return {
           ...c,
@@ -5382,25 +5389,25 @@ function CapexModule({ capexList, setCapexList }) {
           c.id !== capexId
             ? c
             : {
-                ...c,
-                nilai_kad: nilaiKad,
-                anggaran_tahunan: [...(c.anggaran_tahunan || []), anggaran_item],
-                history_anggaran: [...(c.history_anggaran || []), entry],
-              },
+              ...c,
+              nilai_kad: nilaiKad,
+              anggaran_tahunan: [...(c.anggaran_tahunan || []), anggaran_item],
+              history_anggaran: [...(c.history_anggaran || []), entry],
+            },
         ),
       );
       toast_("Entri anggaran berhasil disimpan.");
       setInputAnggaranCapex((prev) =>
         prev?.id === capexId
           ? {
-              ...prev,
-              nilai_kad: nilaiKad,
-              anggaran_tahunan: [
-                ...(prev.anggaran_tahunan || []),
-                anggaran_item,
-              ],
-              history_anggaran: [...(prev.history_anggaran || []), entry],
-            }
+            ...prev,
+            nilai_kad: nilaiKad,
+            anggaran_tahunan: [
+              ...(prev.anggaran_tahunan || []),
+              anggaran_item,
+            ],
+            history_anggaran: [...(prev.history_anggaran || []), entry],
+          }
           : prev,
       );
     },
