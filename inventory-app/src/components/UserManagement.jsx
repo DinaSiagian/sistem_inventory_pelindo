@@ -868,10 +868,10 @@ const mockLogs = [
 const fmt = (d) =>
   d
     ? new Date(d).toLocaleDateString("id-ID", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      })
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    })
     : "—";
 const getInitials = (name) =>
   name
@@ -1454,33 +1454,33 @@ function UserFormView({ user, onBack, onSave }) {
   const [form, setForm] = useState(
     user
       ? {
-          name: user.name,
-          nip: user.nip || "",
-          username: user.username,
-          email: user.email,
-          phone: user.phone || "",
-          role_code: user.role_code,
-          entity_code: user.entity_code,
-          branch_code: user.branch_code || "",
-          division_code: user.division_code || "",
-          is_active: user.is_active,
-          password: "",
-          confirm_password: "",
-        }
+        name: user.name,
+        nip: user.nip || "",
+        username: user.username,
+        email: user.email,
+        phone: user.phone || "",
+        role_code: user.role_code,
+        entity_code: user.entity_code,
+        branch_code: user.branch_code || "",
+        division_code: user.division_code || "",
+        is_active: user.is_active,
+        password: "",
+        confirm_password: "",
+      }
       : {
-          name: "",
-          nip: "",
-          username: "",
-          email: "",
-          phone: "",
-          role_code: "user",
-          entity_code: "",
-          branch_code: "",
-          division_code: "",
-          is_active: true,
-          password: "",
-          confirm_password: "",
-        },
+        name: "",
+        nip: "",
+        username: "",
+        email: "",
+        phone: "",
+        role_code: "user",
+        entity_code: "",
+        branch_code: "",
+        division_code: "",
+        is_active: true,
+        password: "",
+        confirm_password: "",
+      },
   );
   const [showPass, setShowPass] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -1608,10 +1608,10 @@ function UserFormView({ user, onBack, onSave }) {
                 style={
                   form.role_code === val
                     ? {
-                        borderColor: cfg.color,
-                        background: cfg.bg,
-                        color: cfg.color,
-                      }
+                      borderColor: cfg.color,
+                      background: cfg.bg,
+                      color: cfg.color,
+                    }
                     : {}
                 }
               >
@@ -2475,27 +2475,27 @@ const UserManagement = () => {
         {(filterEntity !== "semua" ||
           filterBranch !== "semua" ||
           filterDivision !== "semua") && (
-          <div className="um-filter-chips">
-            {filterEntity !== "semua" && (
-              <span className="um-chip">
-                {filterEntity}{" "}
-                <button onClick={() => handleFilterEntity("semua")}>×</button>
-              </span>
-            )}
-            {filterBranch !== "semua" && (
-              <span className="um-chip">
-                {getBranchName(filterBranch)}{" "}
-                <button onClick={() => handleFilterBranch("semua")}>×</button>
-              </span>
-            )}
-            {filterDivision !== "semua" && (
-              <span className="um-chip">
-                {getDivisionName(filterDivision)}{" "}
-                <button onClick={() => setFilterDivision("semua")}>×</button>
-              </span>
-            )}
-          </div>
-        )}
+            <div className="um-filter-chips">
+              {filterEntity !== "semua" && (
+                <span className="um-chip">
+                  {filterEntity}{" "}
+                  <button onClick={() => handleFilterEntity("semua")}>×</button>
+                </span>
+              )}
+              {filterBranch !== "semua" && (
+                <span className="um-chip">
+                  {getBranchName(filterBranch)}{" "}
+                  <button onClick={() => handleFilterBranch("semua")}>×</button>
+                </span>
+              )}
+              {filterDivision !== "semua" && (
+                <span className="um-chip">
+                  {getDivisionName(filterDivision)}{" "}
+                  <button onClick={() => setFilterDivision("semua")}>×</button>
+                </span>
+              )}
+            </div>
+          )}
         <div className="um-count">{filtered.length} user</div>
       </div>
 
