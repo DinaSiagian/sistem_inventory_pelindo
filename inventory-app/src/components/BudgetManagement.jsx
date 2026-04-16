@@ -2144,8 +2144,7 @@ function RealisasiTablePage({
       transactions.filter(
         (t) =>
           !searchQ ||
-          t.keterangan?.toLowerCase().includes(searchQ.toLowerCase()) ||
-          t.no_invoice?.toLowerCase().includes(searchQ.toLowerCase()),
+          t.keterangan?.toLowerCase().includes(searchQ.toLowerCase()),
       ),
     [transactions, searchQ],
   );
@@ -2222,7 +2221,7 @@ function RealisasiTablePage({
           <div className="at-filter">
             <Icon d={I.search} size={13} />
             <input
-              placeholder="Cari keterangan atau no. invoice…"
+              placeholder="Cari keterangan…"
               value={searchQ}
               onChange={(e) => setSearchQ(e.target.value)}
             />
@@ -2235,9 +2234,7 @@ function RealisasiTablePage({
             <tr>
               <th className="th-no">No</th>
               <th>Tanggal</th>
-              <th>No. Invoice</th>
               <th>Keterangan Pekerjaan</th>
-              <th>Lampiran</th>
               <th>Jumlah (IDR)</th>
               <th className="th-actions">Aksi</th>
             </tr>
@@ -2245,7 +2242,7 @@ function RealisasiTablePage({
           <tbody>
             {filtered.length === 0 ? (
               <tr className="table-empty-row">
-                <td colSpan={7}>
+                <td colSpan={5}>
                   <div className="table-empty-inner">
                     <Icon d={I.fileText} size={36} style={{ opacity: 0.2 }} />
                     <span style={{ fontWeight: 600 }}>
@@ -2273,30 +2270,7 @@ function RealisasiTablePage({
                     <span className="td-date">{fmtDate(t.tanggal)}</span>
                   </td>
                   <td>
-                    <span className="td-sn" style={{ color: "var(--ink)" }}>
-                      {t.no_invoice || "—"}
-                    </span>
-                  </td>
-                  <td>
                     <span className="td-name-text">{t.keterangan || "—"}</span>
-                  </td>
-                  <td>
-                    {t.lampiran ? (
-                      <span
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: 4,
-                          fontSize: "0.7rem",
-                          color: "var(--ink3)",
-                        }}
-                      >
-                        <Icon d={I.fileText} size={11} />
-                        {t.lampiran}
-                      </span>
-                    ) : (
-                      <span style={{ color: "var(--ink4)" }}>—</span>
-                    )}
                   </td>
                   <td>
                     <span
@@ -2327,7 +2301,7 @@ function RealisasiTablePage({
             <tfoot>
               <tr>
                 <td
-                  colSpan={5}
+                  colSpan={3}
                   style={{ fontWeight: 700, fontSize: "0.75rem" }}
                 >
                   Total {filtered.length} pekerjaan
@@ -2650,7 +2624,6 @@ function OpexCard({
                       {ang.transaksi.slice(0, 3).map((t) => (
                         <div key={t.id} className="ri-item">
                           <div className="ri-info">
-                            <span className="r-id">{t.no_invoice || "—"}</span>
                             <div>
                               <p className="r-ket">{t.keterangan}</p>
                               <p className="r-date">{fmtDate(t.tanggal)}</p>
@@ -3647,9 +3620,7 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
       : {
         tanggal: "",
         keterangan: "",
-        no_invoice: "",
         aset: "",
-        lampiran: "",
         jumlah: "",
       },
   );
@@ -3739,13 +3710,6 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
               value={form.keterangan}
               onChange={(e) => up("keterangan", e.target.value)}
               placeholder="Deskripsi pekerjaan..."
-            />
-          </HFld>
-          <HFld label="No. Invoice">
-            <input
-              value={form.no_invoice}
-              onChange={(e) => up("no_invoice", e.target.value)}
-              placeholder="cth. INV/2026/001"
             />
           </HFld>
           <HFld label="Jumlah (IDR)" req>

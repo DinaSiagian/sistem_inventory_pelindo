@@ -93,6 +93,7 @@
 .bi-step.active {
   opacity: 1;
 }
+
 .bi-step.done {
   opacity: 0.7;
 }
@@ -168,11 +169,9 @@
   right: 0;
   width: 120px;
   height: 120px;
-  background: radial-gradient(
-    circle,
-    rgba(29, 78, 216, 0.08) 0%,
-    transparent 70%
-  );
+  background: radial-gradient(circle,
+      rgba(29, 78, 216, 0.08) 0%,
+      transparent 70%);
   border-radius: 50%;
   transform: translate(40%, -40%);
   transition: all 0.3s;
@@ -460,9 +459,11 @@
 .text-red {
   color: #dc2626 !important;
 }
+
 .text-green {
   color: #10b981 !important;
 }
+
 .text-blue {
   color: #1d4ed8 !important;
 }
@@ -1230,6 +1231,7 @@
   padding: 14px 16px;
   background: #f8faff;
 }
+
 .bi-invoice-section-title {
   display: flex;
   align-items: center;
@@ -1241,6 +1243,7 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
+
 .bi-invoice-optional-badge {
   background: #e0f2fe;
   color: #0369a1;
@@ -1252,6 +1255,7 @@
   letter-spacing: 0;
   margin-left: 4px;
 }
+
 .bi-optional-note {
   font-size: 0.68rem;
   color: #94a3b8;
@@ -1270,33 +1274,39 @@
   transition: all 0.2s;
   cursor: pointer;
 }
+
 .bi-file-drop:hover,
 .bi-file-drop.drag-over {
   border-color: #1d4ed8;
   background: #eff6ff;
 }
+
 .bi-file-drop-inner {
   display: flex;
   align-items: center;
   gap: 8px;
   pointer-events: none;
 }
+
 .bi-file-drop-text {
   font-size: 0.73rem;
   color: #475569;
   font-weight: 500;
 }
+
 .bi-file-drop-hint {
   font-size: 0.65rem;
   color: #94a3b8;
   margin-left: auto;
 }
+
 .bi-file-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
   margin-top: 7px;
 }
+
 .bi-file-chip {
   display: inline-flex;
   align-items: center;
@@ -1310,18 +1320,21 @@
   font-weight: 600;
   max-width: 220px;
 }
+
 .bi-file-chip-name {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: 120px;
 }
+
 .bi-file-chip-size {
   color: #94a3b8;
   font-weight: 400;
   font-size: 0.62rem;
   flex-shrink: 0;
 }
+
 .bi-file-chip-del {
   display: flex;
   align-items: center;
@@ -1334,6 +1347,7 @@
   flex-shrink: 0;
   line-height: 1;
 }
+
 .bi-file-chip-del:hover {
   color: #dc2626;
 }
@@ -1388,4 +1402,3 @@
     grid-template-columns: 1fr;
   }
 }
-
