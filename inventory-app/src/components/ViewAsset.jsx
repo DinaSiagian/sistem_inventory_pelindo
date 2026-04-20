@@ -486,8 +486,8 @@ const SPEC_TEMPLATES_BY_CATEGORY = {
     { spec_label: "Konektivitas", default_unit: "-", input_type: "text" },
   ],
   Lainnya: [
-      { spec_label: "Spesifikasi Utama", default_unit: "-", input_type: "text" },
-      { spec_label: "Keterangan Tambahan", default_unit: "-", input_type: "text" }
+    { spec_label: "Spesifikasi Utama", default_unit: "-", input_type: "text" },
+    { spec_label: "Keterangan Tambahan", default_unit: "-", input_type: "text" }
   ],
   "IT Equipment": [
     {
@@ -1539,10 +1539,10 @@ function AssetHistoryTab({ assetCode, allBorrows }) {
   const fmtDate = (d) =>
     d
       ? new Date(d).toLocaleDateString("id-ID", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-        })
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })
       : "—";
   const history = useMemo(
     () =>
@@ -1682,7 +1682,7 @@ function AssetHistoryTab({ assetCode, allBorrows }) {
             {history.map((h, idx) => {
               const cond =
                 conditionConfig[
-                  h.is_returned ? h.return_condition : h.condition
+                h.is_returned ? h.return_condition : h.condition
                 ];
               return (
                 <tr
@@ -2363,10 +2363,10 @@ const ViewAsset = () => {
   const fmtDate = (d) =>
     d
       ? new Date(d).toLocaleDateString("id-ID", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-        })
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })
       : "—";
   const statusClass = (s) =>
     s === "Tersedia"
@@ -2511,7 +2511,7 @@ const ViewAsset = () => {
         formData.id_pekerjaan ||
         (formData.kd_anggaran
           ? OPEX_ANGGARAN.find((o) => o.kd_anggaran === formData.kd_anggaran)
-              ?.id_pekerjaan || null
+            ?.id_pekerjaan || null
           : null),
       procurementDate: formData.procurementDate,
       photo: formPhoto,
@@ -2568,7 +2568,7 @@ const ViewAsset = () => {
       editData.id_pekerjaan ||
       (editData.kd_anggaran
         ? OPEX_ANGGARAN.find((o) => o.kd_anggaran === editData.kd_anggaran)
-            ?.id_pekerjaan || null
+          ?.id_pekerjaan || null
         : null);
     const cleanSpecs = editSpecsData.specs.map(({ _unitMode, ...s }) => s);
     const cleanCustom = editSpecsData.customSpecs.map(
@@ -2579,13 +2579,13 @@ const ViewAsset = () => {
     const updated = assets.map((a) =>
       a.id === selectedAsset.id
         ? {
-            ...a,
-            ...saveData,
-            value: parseFloat(editData.value) || 0,
-            photo: editPhoto,
-            specs: cleanSpecs,
-            customSpecs: cleanCustom,
-          }
+          ...a,
+          ...saveData,
+          value: parseFloat(editData.value) || 0,
+          photo: editPhoto,
+          specs: cleanSpecs,
+          customSpecs: cleanCustom,
+        }
         : a,
     );
     setAssets(updated);
@@ -2677,11 +2677,11 @@ const ViewAsset = () => {
   const renderListView = () => {
     const autoNomor = canGenerate
       ? getNextNomor(
-          formData.entitasCode,
-          formData.branchCode,
-          formData.zonaCode,
-          formData.subzonaCode,
-        )
+        formData.entitasCode,
+        formData.branchCode,
+        formData.zonaCode,
+        formData.subzonaCode,
+      )
       : null;
     const codePreview = canGenerate
       ? `${formData.entitasCode}-${formData.branchCode}-${formData.zonaCode}-${formData.subzonaCode}-${autoNomor}`
@@ -3438,8 +3438,8 @@ const ViewAsset = () => {
                             const tpl = a.specs
                               ? a.specs.map((t) => ({ ...t, _unitMode: "pick" }))
                               : (SPEC_TEMPLATES_BY_CATEGORY[a.category] || []).map(
-                                  (t) => ({ ...t, value: "", _unitMode: "pick" })
-                                );
+                                (t) => ({ ...t, value: "", _unitMode: "pick" })
+                              );
                             setTemplateSpecs(tpl);
                             setShowSuggestions(false);
                           }}
@@ -3458,16 +3458,16 @@ const ViewAsset = () => {
                         .toLowerCase()
                         .includes(formData.cekEksisting.toLowerCase())
                     ).length === 0 && (
-                      <div
-                        style={{
-                          padding: "8px 12px",
-                          fontSize: "14px",
-                          color: "#94a3b8",
-                        }}
-                      >
-                        Tidak ada data yang cocok
-                      </div>
-                    )}
+                        <div
+                          style={{
+                            padding: "8px 12px",
+                            fontSize: "14px",
+                            color: "#94a3b8",
+                          }}
+                        >
+                          Tidak ada data yang cocok
+                        </div>
+                      )}
                   </div>
                 )}
               </div>
@@ -3576,12 +3576,12 @@ const ViewAsset = () => {
                             prev.map((s, idx) =>
                               idx === i
                                 ? {
-                                    ...s,
-                                    default_unit:
-                                      val === "__custom__" ? "" : val,
-                                    _unitMode:
-                                      val === "__custom__" ? "custom" : "pick",
-                                  }
+                                  ...s,
+                                  default_unit:
+                                    val === "__custom__" ? "" : val,
+                                  _unitMode:
+                                    val === "__custom__" ? "custom" : "pick",
+                                }
                                 : s,
                             ),
                           );
@@ -3743,12 +3743,12 @@ const ViewAsset = () => {
                             prev.map((s, idx) =>
                               idx === i
                                 ? {
-                                    ...s,
-                                    default_unit:
-                                      val === "__custom__" ? "" : val,
-                                    _unitMode:
-                                      val === "__custom__" ? "custom" : "pick",
-                                  }
+                                  ...s,
+                                  default_unit:
+                                    val === "__custom__" ? "" : val,
+                                  _unitMode:
+                                    val === "__custom__" ? "custom" : "pick",
+                                }
                                 : s,
                             ),
                           );
@@ -4095,29 +4095,29 @@ const ViewAsset = () => {
                   {getAnggaranByTahun(editData.thn_anggaran).filter(
                     (a) => a.jenis === "CAPEX",
                   ).length > 0 && (
-                    <optgroup label="CAPEX">
-                      {getAnggaranByTahun(editData.thn_anggaran)
-                        .filter((a) => a.jenis === "CAPEX")
-                        .map((a) => (
-                          <option key={a.kd_anggaran} value={a.kd_anggaran}>
-                            {a.nm_anggaran}
-                          </option>
-                        ))}
-                    </optgroup>
-                  )}
+                      <optgroup label="CAPEX">
+                        {getAnggaranByTahun(editData.thn_anggaran)
+                          .filter((a) => a.jenis === "CAPEX")
+                          .map((a) => (
+                            <option key={a.kd_anggaran} value={a.kd_anggaran}>
+                              {a.nm_anggaran}
+                            </option>
+                          ))}
+                      </optgroup>
+                    )}
                   {getAnggaranByTahun(editData.thn_anggaran).filter(
                     (a) => a.jenis === "OPEX",
                   ).length > 0 && (
-                    <optgroup label="OPEX">
-                      {getAnggaranByTahun(editData.thn_anggaran)
-                        .filter((a) => a.jenis === "OPEX")
-                        .map((a) => (
-                          <option key={a.kd_anggaran} value={a.kd_anggaran}>
-                            {a.nm_anggaran}
-                          </option>
-                        ))}
-                    </optgroup>
-                  )}
+                      <optgroup label="OPEX">
+                        {getAnggaranByTahun(editData.thn_anggaran)
+                          .filter((a) => a.jenis === "OPEX")
+                          .map((a) => (
+                            <option key={a.kd_anggaran} value={a.kd_anggaran}>
+                              {a.nm_anggaran}
+                            </option>
+                          ))}
+                      </optgroup>
+                    )}
                 </select>
               </TableRow>
             )}
@@ -4212,11 +4212,11 @@ const ViewAsset = () => {
                         specs: prev.specs.map((s, idx) =>
                           idx === i
                             ? {
-                                ...s,
-                                default_unit: val === "__custom__" ? "" : val,
-                                _unitMode:
-                                  val === "__custom__" ? "custom" : "pick",
-                              }
+                              ...s,
+                              default_unit: val === "__custom__" ? "" : val,
+                              _unitMode:
+                                val === "__custom__" ? "custom" : "pick",
+                            }
                             : s,
                         ),
                       }));
@@ -4385,11 +4385,11 @@ const ViewAsset = () => {
                         customSpecs: prev.customSpecs.map((s, idx) =>
                           idx === i
                             ? {
-                                ...s,
-                                default_unit: val === "__custom__" ? "" : val,
-                                _unitMode:
-                                  val === "__custom__" ? "custom" : "pick",
-                              }
+                              ...s,
+                              default_unit: val === "__custom__" ? "" : val,
+                              _unitMode:
+                                val === "__custom__" ? "custom" : "pick",
+                            }
                             : s,
                         ),
                       }));
