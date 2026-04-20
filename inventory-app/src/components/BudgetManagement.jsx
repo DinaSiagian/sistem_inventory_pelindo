@@ -77,10 +77,10 @@ const fmt = (n) =>
 const fmtDate = (d) =>
   d
     ? new Date(d).toLocaleDateString("id-ID", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      })
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    })
     : "—";
 const newId = () =>
   `id-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -270,46 +270,30 @@ const mkAssets = () => [
   },
 ];
 // ══════ INIT DATA ══════
-// Structure: capexData = array of Anggaran, each Anggaran has projects[], each project has assets[]
 const INIT_CAPEX = [
   {
     id: "CAP-2440013",
     kode: "2440013",
-    nama: "Penyiapan Infrastruktur IT Kantor Pusat & Branch",
-    nilai_kad: 0,
-    thnAwal: 2024,
-    thnAkhir: 2024,
-    thnAnggaran: 2024,
+    nama: "Penyiapan Infrastruktur IT (Kantor Pusat, Pelindo Place, Pelindo Tower, Malahayati, Lhokseumawe, Bima, Badas, Parepare, Gresik, Tanjung Emas, Mekar Putih, Meulaboh, Kuala Langsa dan Bumiharjo) PT Pelindo Multi Terminal",
+    nilai_kad: 5500000000,
+    thn_rkap_awal: 2024,
+    thn_rkap_akhir: 2026,
     type: "capex",
-    assets: mkAssets(), // Anggaran-level assets
+    assets: mkAssets(),
+    history_anggaran: [
+      { id: "H1", tahun: 2024, nilai_rkap: 2000000000 },
+      { id: "H2", tahun: 2025, nilai_rkap: 2000000000 },
+      { id: "H3", tahun: 2026, nilai_rkap: 1500000000 },
+    ],
     projects: [
       {
         id: "PKJ-2440013-001",
-        nm_pekerjaan: "Penyiapan Infrastruktur IT PT Pelindo Multi Terminal",
-        nilai_rab: 0,
-        nilai_kontrak: 2650000000,
-        no_pr: "",
-        no_po: "8260000074",
+        nm_pekerjaan: "Penyiapan Infrastruktur IT Tahap 1",
+        nilai_rab: 2000000000,
+        nilai_kontrak: 1950000000,
         no_kontrak: "SI.01/10/9/2/PPTI/TEKI/PLMT-24",
         tgl_kontrak: "2024-09-10",
         durasi_kontrak: 90,
-        no_sp3: "",
-        tgl_sp3: "2024-09-06",
-        tgl_bamk: "2024-09-06",
-      },
-      {
-        id: "PKJ-2440013-002",
-        nm_pekerjaan: "Optimasi dan Konfigurasi Infrastruktur Jaringan",
-        nilai_rab: 250000000,
-        nilai_kontrak: 300000000,
-        no_pr: "8260000100",
-        no_po: "6440000200",
-        no_kontrak: "SI.01/11/9/1/PPTI/TEKI/PLMT-24",
-        tgl_kontrak: "2024-09-15",
-        durasi_kontrak: 60,
-        no_sp3: "",
-        tgl_sp3: "2024-09-10",
-        tgl_bamk: "2024-09-12",
       },
     ],
   },
@@ -318,293 +302,75 @@ const INIT_CAPEX = [
     kode: "2440014",
     nama: "Penyediaan Network di Branch SPMT",
     nilai_kad: 3200000000,
-    thnAwal: 2024,
-    thnAkhir: 2024,
-    thnAnggaran: 2024,
+    thn_rkap_awal: 2024,
+    thn_rkap_akhir: 2024,
     type: "capex",
-    assets: [
-      {
-        id: newId(),
-        asset_code: "SPMT-MLH-DTC-PKR-02",
-        serial_number: "CSC-MLH-CSW-001",
-        name: "Core Switch Malahayati",
-        brand: "Cisco",
-        model: "Catalyst 9300-48P",
-        category: "Network",
-        location: "Malahayati",
-        procurement_date: "2024-08-15",
-        acquisition_value: 320000000,
-        image: null,
-      },
-      {
-        id: newId(),
-        asset_code: "SPMT-MLH-DTC-SRV-01",
-        serial_number: "DELL-MLH-SRV-001",
-        name: "Server Malahayati",
-        brand: "Dell",
-        model: "PowerEdge R750",
-        category: "Server",
-        location: "Malahayati",
-        procurement_date: "2024-08-15",
-        acquisition_value: 400000000,
-        image: null,
-      },
-      {
-        id: newId(),
-        asset_code: "SPMT-MLH-DTC-FWL-01",
-        serial_number: "FGT-MLH-FWL-001",
-        name: "Firewall Malahayati",
-        brand: "Fortinet",
-        model: "FortiGate 200F",
-        category: "Security",
-        location: "Malahayati",
-        procurement_date: "2024-08-15",
-        acquisition_value: 280000000,
-        image: null,
-      },
-    ],
-    projects: [
-      {
-        id: "PKJ-2440014-001",
-        nm_pekerjaan: "Penyediaan Network di Branch SPMT",
-        nilai_rab: 1600000000,
-        nilai_kontrak: 1500000000,
-        no_pr: "",
-        no_po: "6440000025",
-        no_kontrak: "SI.01/15/8/5/PPTI/TEKI/PLMT-24",
-        tgl_kontrak: "2024-08-15",
-        durasi_kontrak: 90,
-        no_sp3: "",
-        tgl_sp3: "2024-08-02",
-        tgl_bamk: "2024-08-09",
-      },
-      {
-        id: "PKJ-2440014-002",
-        nm_pekerjaan: "Instalasi dan Testing Network Infrastructure",
-        nilai_rab: 400000000,
-        nilai_kontrak: 500000000,
-        no_pr: "8260000110",
-        no_po: "6440000220",
-        no_kontrak: "SI.01/16/8/2/PPTI/TEKI/PLMT-24",
-        tgl_kontrak: "2024-08-20",
-        durasi_kontrak: 45,
-        no_sp3: "",
-        tgl_sp3: "2024-08-15",
-        tgl_bamk: "2024-08-18",
-      },
-    ],
+    assets: [],
+    projects: [],
   },
   {
     id: "CAP-2440015",
     kode: "2440015",
     nama: "Implementasi dan Standarisasi IT Infrastruktur",
-    nilai_kad: 1500000000,
-    thnAwal: 2024,
-    thnAkhir: 2024,
-    thnAnggaran: 2024,
+    nilai_kad: 2500000000,
+    thn_rkap_awal: 2024,
+    thn_rkap_akhir: 2024,
     type: "capex",
     assets: [],
     projects: [
       {
         id: "PKJ-2440015-001",
-        nm_pekerjaan:
-          "Pekerjaan Implementasi dan Standarisasi IT Infrastruktur (Planning & Control, CCTV dan SD-WAN Branch Malahayati, Lhokseumawe, Lembar, ParePare dan Garongkong) PT Pelindo Multi Terminal",
-        nilai_rab: 0,
-        nilai_kontrak: 1250000000,
-        no_pr: "",
-        no_po: "6440000026",
+        nm_pekerjaan: "Pekerjaan Implementasi dan Standarisasi IT Infrastruktur PT Pelindo Multi Terminal",
+        nilai_rab: 1000000000,
+        nilai_kontrak: 900000000,
         no_kontrak: "SI.01/12/8/2/PPTI/TEKI/PLMT-24",
         tgl_kontrak: "2024-08-12",
-        durasi_kontrak: 90,
-        no_sp3: "",
-        tgl_sp3: "2024-08-02",
-        tgl_bamk: "2024-08-06",
-      },
-      {
-        id: "PKJ-2440015-002",
-        nm_pekerjaan:
-          "Pekerjaan Implementasi dan Standarisasi IT Infrastruktur (Gate System Branch Malahayati, Lhokseumawe, Lembar, ParePare dan Garongkong)",
-        nilai_rab: 0,
-        nilai_kontrak: 850000000,
-        no_pr: "",
-        no_po: "6440000027",
-        no_kontrak: "SI.01/14/8/3/PPTI/TEKI/PLMT-24",
-        tgl_kontrak: "2024-08-14",
-        durasi_kontrak: 90,
-        no_sp3: "",
-        tgl_sp3: "2024-08-05",
-        tgl_bamk: "2024-08-10",
-      },
-      {
-        id: "PKJ-2440015-003",
-        nm_pekerjaan: "Integrasi Sistem dan Dokumentasi Teknis",
-        nilai_rab: 150000000,
-        nilai_kontrak: 200000000,
-        no_pr: "8260000120",
-        no_po: "6440000230",
-        no_kontrak: "SI.01/17/8/3/PPTI/TEKI/PLMT-24",
-        tgl_kontrak: "2024-08-22",
-        durasi_kontrak: 30,
-        no_sp3: "",
-        tgl_sp3: "2024-08-18",
-        tgl_bamk: "2024-08-20",
       },
     ],
   },
   {
     id: "CAP-2440020",
     kode: "2440020",
-    nama: "Revisi Capex (Pemeliharaan Infrastruktur)",
-    nilai_kad: 500000000,
-    thnAwal: 2024,
-    thnAkhir: 2024,
-    thnAnggaran: 2024,
+    nama: "Revisi Capex (Pemenuhan Kebutuhan Gate dan PNC Transformasi pada Branch SPMT)",
+    nilai_kad: 1500000000,
+    thn_rkap_awal: 2024,
+    thn_rkap_akhir: 2025,
     type: "capex",
     assets: [],
-    projects: [
-      {
-        id: "PKJ-2440020-001",
-        nm_pekerjaan: "Pemeliharaan dan Upgrade Perangkat Infrastruktur",
-        nilai_rab: 200000000,
-        nilai_kontrak: 300000000,
-        no_pr: "8260000130",
-        no_po: "6440000240",
-        no_kontrak: "SI.01/18/8/4/PPTI/TEKI/PLMT-24",
-        tgl_kontrak: "2024-08-25",
-        durasi_kontrak: 45,
-        no_sp3: "",
-        tgl_sp3: "2024-08-20",
-        tgl_bamk: "2024-08-22",
-      },
+    history_anggaran: [
+      { id: "H4", tahun: 2024, nilai_rkap: 750000000 },
+      { id: "H5", tahun: 2025, nilai_rkap: 750000000 },
     ],
+    projects: [],
   },
   {
     id: "CAP-2540011",
     kode: "2540011",
-    nama: "Penyediaan Kebutuhan Perangkat Jaringan, SIEM & Gate System",
+    nama: "Transformasi dan Digitalisasi PT Pelindo Multi Terminal",
     nilai_kad: 4500000000,
-    thnAwal: 2025,
-    thnAkhir: 2025,
-    thnAnggaran: 2025,
+    thn_rkap_awal: 2025,
+    thn_rkap_akhir: 2026,
     type: "capex",
     assets: [],
-    projects: [
-      {
-        id: "PKJ-2540011-001",
-        nm_pekerjaan:
-          "Penyediaan Kebutuhan Perangkat Jaringan, Security Information and Management (SIEM) dan Perangkat Pendukung Gate System PT Pelindo Multi Terminal",
-        nilai_rab: 0,
-        nilai_kontrak: 4200000000,
-        no_pr: "8260001121",
-        no_po: "6440000839",
-        no_kontrak: "PD.01/28/10/1/PPTI/TEKI/PLMT-25",
-        tgl_kontrak: "2025-10-28",
-        durasi_kontrak: 60,
-        no_sp3: "PD.01/23/10/2/PGDN/SDMU/PLMT-25",
-        tgl_sp3: "2025-10-23",
-        tgl_bamk: "2025-10-02",
-      },
-      {
-        id: "PKJ-2540011-002",
-        nm_pekerjaan: "Konfigurasi dan Testing SIEM System",
-        nilai_rab: 300000000,
-        nilai_kontrak: 250000000,
-        no_pr: "8260001122",
-        no_po: "6440000840",
-        no_kontrak: "PD.01/29/10/2/PPTI/TEKI/PLMT-25",
-        tgl_kontrak: "2025-10-30",
-        durasi_kontrak: 30,
-        no_sp3: "PD.01/24/10/2/PGDN/SDMU/PLMT-25",
-        tgl_sp3: "2025-10-25",
-        tgl_bamk: "2025-10-05",
-      },
+    history_anggaran: [
+      { id: "H6", tahun: 2025, nilai_rkap: 2500000000 },
+      { id: "H7", tahun: 2026, nilai_rkap: 2000000000 },
     ],
+    projects: [],
   },
   {
     id: "CAP-2540012",
     kode: "2540012",
-    nama: "Penyediaan Kebutuhan Transformasi dan Digitalisasi Terminal",
+    nama: "Pengembangan Sistem Manajemen Aset Pelindo (RKAP Lanjutan)",
     nilai_kad: 3500000000,
-    thnAwal: 2025,
-    thnAkhir: 2025,
-    thnAnggaran: 2025,
+    thn_rkap_awal: 2026,
+    thn_rkap_akhir: 2026,
     type: "capex",
     assets: [],
-    projects: [
-      {
-        id: "PKJ-2540012-001",
-        nm_pekerjaan:
-          "Penyediaan Kebutuhan Transformasi dan Digitalisasi (CCTV dan Public Announcer Traffic Monitoring pada Gate) Branch Belawan, Dumai, Malahayati, Lhokseumawe",
-        nilai_rab: 0,
-        nilai_kontrak: 3100000000,
-        no_pr: "8260001150",
-        no_po: "6440000850",
-        no_kontrak: "PD.02/15/11/1/PPTI/TEKI/PLMT-25",
-        tgl_kontrak: "2025-11-15",
-        durasi_kontrak: 90,
-        no_sp3: "PD.02/10/11/2/PGDN/SDMU/PLMT-25",
-        tgl_sp3: "2025-11-10",
-        tgl_bamk: "2025-11-01",
-      },
-      {
-        id: "PKJ-2540012-002",
-        nm_pekerjaan: "Instalasi CCTV dan PA System Integration",
-        nilai_rab: 400000000,
-        nilai_kontrak: 350000000,
-        no_pr: "8260001151",
-        no_po: "6440000851",
-        no_kontrak: "PD.02/16/11/2/PPTI/TEKI/PLMT-25",
-        tgl_kontrak: "2025-11-18",
-        durasi_kontrak: 60,
-        no_sp3: "PD.02/11/11/2/PGDN/SDMU/PLMT-25",
-        tgl_sp3: "2025-11-12",
-        tgl_bamk: "2025-11-05",
-      },
-    ],
-  },
-  {
-    id: "CAP-2540013",
-    kode: "2540013",
-    nama: "Pengadaan Perangkat End User Computing (EUC)",
-    nilai_kad: 1500000000,
-    thnAwal: 2025,
-    thnAkhir: 2025,
-    thnAnggaran: 2025,
-    type: "capex",
-    assets: [],
-    projects: [
-      {
-        id: "PKJ-2540013-001",
-        nm_pekerjaan:
-          "Pengadaan Laptop, PC Desktop, dan Perangkat Peripheral untuk Kantor Pusat dan Branch Baru",
-        nilai_rab: 1400000000,
-        nilai_kontrak: 1350000000,
-        no_pr: "8260001201",
-        no_po: "6440000912",
-        no_kontrak: "PD.03/05/03/1/PPTI/TEKI/PLMT-25",
-        tgl_kontrak: "2025-03-05",
-        durasi_kontrak: 45,
-        no_sp3: "PD.03/01/03/2/PGDN/SDMU/PLMT-25",
-        tgl_sp3: "2025-03-01",
-        tgl_bamk: "2025-02-20",
-      },
-      {
-        id: "PKJ-2540013-002",
-        nm_pekerjaan: "Setup dan Deployment End User Devices",
-        nilai_rab: 100000000,
-        nilai_kontrak: 120000000,
-        no_pr: "8260001202",
-        no_po: "6440000913",
-        no_kontrak: "PD.03/06/03/2/PPTI/TEKI/PLMT-25",
-        tgl_kontrak: "2025-03-08",
-        durasi_kontrak: 30,
-        no_sp3: "PD.03/02/03/2/PGDN/SDMU/PLMT-25",
-        tgl_sp3: "2025-03-03",
-        tgl_bamk: "2025-02-25",
-      },
-    ],
+    projects: [],
   },
 ];
+// ══════ DUMMY DATA OPEX (Disesuaikan dengan Permintaan) ══════
 const INIT_OPEX = [
   {
     id: "OPX-1",
@@ -615,22 +381,30 @@ const INIT_OPEX = [
     type: "opex",
     transaksi: [
       {
-        id: newId(),
+        id: "TRX-OPEX-001",
         tanggal: "2026-02-10",
         keterangan: "Lisensi Antivirus Kaspersky",
         no_invoice: "INV/2026/015",
-        aset: "",
-        lampiran: "",
+        asset_code: "SPMT-KPT-SFT-KASP-01",
+        category: "Software",
+        model: "Kaspersky Endpoint",
+        serial_number: "SN-KASP-001",
+        location: "Kantor Pusat",
         jumlah: 8500000,
+        acquisition_value: 8500000,
       },
       {
-        id: newId(),
+        id: "TRX-OPEX-002",
         tanggal: "2026-01-15",
         keterangan: "Pembayaran Lisensi Microsoft Office 365",
         no_invoice: "INV/2026/001",
-        aset: "AST-OPX-0001",
-        lampiran: "",
+        asset_code: "SPMT-KPT-SFT-O365-01",
+        category: "Software",
+        model: "Office 365 Business",
+        serial_number: "SN-O365-001",
+        location: "Kantor Pusat",
         jumlah: 15000000,
+        acquisition_value: 15000000,
       },
     ],
   },
@@ -647,7 +421,7 @@ const INIT_OPEX = [
         tanggal: "2026-01-05",
         keterangan: "Tagihan MPLS Januari 2026",
         no_invoice: "INV/2026/002",
-        aset: "",
+        asset_code: "",
         lampiran: "",
         jumlah: 24000000,
       },
@@ -1055,7 +829,6 @@ body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:var(--bg);c
 .anggaran-info-bar .ai-val-s.sisa-over{color:var(--red)}
 .opex-inline-preview{display:inline-flex;align-items:center;padding:6px 11px;background:var(--green-lt);border:1px solid var(--green-mid);border-radius:7px;font-size:0.78rem;font-weight:700;color:var(--green);white-space:nowrap;flex-shrink:0;min-width:fit-content}
 .req-note-small{font-size:0.7rem;color:var(--ink4);padding:0 0 10px;font-style:italic}
-/* ── CAPEX ANGGARAN CARD (Level 1) ── */
 .ang-card{background:var(--surf);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh);transition:transform .15s,box-shadow .15s;cursor:pointer}
 .ang-card:hover{transform:translateY(-2px);box-shadow:var(--sh-md);border-color:var(--blue-mid)}
 .ang-card-inner{display:flex}
@@ -1069,7 +842,23 @@ body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:var(--bg);c
 .ang-card-fin{display:flex;align-items:center;justify-content:flex-end;gap:18px}
 .ang-card-actions{display:flex;align-items:center;gap:8px}
 .ang-card-chevron{color:var(--blue);display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:var(--blue-lt);border:1px solid var(--blue-mid)}
-@keyframes slideDown{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.yr-tag.multi {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--blue-lt);
+  color: var(--blue);
+  border: 1px solid var(--blue-mid);
+  padding: 2px 8px;
+  transition: all 0.2s;
+}
+.yr-tag.multi:hover {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+@keyframes slideDown{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fadeOvl{from{opacity:0}to{opacity:1}}
 @keyframes modalUp{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
@@ -1149,44 +938,30 @@ function Toast({ msg, onDone }) {
 }
 function Confirm({ msg, onConfirm, onCancel }) {
   return (
-    <div className="overlay" onClick={onCancel}>
-      <div className="cbox" onClick={(e) => e.stopPropagation()}>
+    <div className="overlay" style={{ animation: "fadeOvl .2s" }}>
+      <div className="cbox" style={{ animation: "modalUp .2s ease-out" }}>
         <div
           style={{
             width: 48,
             height: 48,
-            background: "#fff7ed",
-            borderRadius: "50%",
+            borderRadius: 12,
+            background: "var(--red-lt)",
+            color: "var(--red)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            color: "#ea580c",
+            marginBottom: 8,
           }}
         >
           <Icon d={I.warning} size={24} />
         </div>
-        <p style={{ fontSize: "0.9rem", fontWeight: 600, color: "var(--ink)" }}>
-          {msg}
-        </p>
-        <div style={{ display: "flex", gap: 8, width: "100%" }}>
-          <button
-            className="btn btn-outline"
-            style={{ flex: 1, justifyContent: "center" }}
-            onClick={onCancel}
-          >
+        <p style={{ fontWeight: 700, color: "var(--ink)", textAlign: 'center' }}>{msg}</p>
+        <div style={{ display: "flex", gap: 10, width: "100%" }}>
+          <button className="btn btn-outline" onClick={onCancel} style={{ flex: 1, justifyContent: 'center' }}>
             Batal
           </button>
-          <button
-            className="btn"
-            style={{
-              flex: 1,
-              justifyContent: "center",
-              background: "var(--red)",
-              color: "#fff",
-            }}
-            onClick={onConfirm}
-          >
-            <Icon d={I.trash} size={14} /> Hapus
+          <button className="btn btn-red" onClick={onConfirm} style={{ flex: 1, justifyContent: 'center' }}>
+            Ya, Hapus
           </button>
         </div>
       </div>
@@ -1286,7 +1061,6 @@ function MHFld({ label, req, green, children }) {
     </div>
   );
 }
-// ══════ BREADCRUMB ══════
 function Breadcrumb({ items }) {
   return (
     <div
@@ -1382,7 +1156,6 @@ function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
   const handleSave = () => {
     if (!form.nm_pekerjaan) return;
     const nilaiKontrak = parseFloat(form.nilai_kontrak) || 0;
-    // Validasi: nilai kontrak tidak boleh melebihi nilai KAD
     if (nilaiKontrak > anggaran.nilai_kad) {
       alert(
         `Nilai Kontrak tidak boleh melebihi Nilai KAD (${fmt(anggaran.nilai_kad)})`,
@@ -1806,377 +1579,7 @@ function TambahOpexModal({ onClose, onSave }) {
     </div>
   );
 }
-// ══════ ASSET TABLE PAGE ══════
-function AssetTablePage({
-  anggaran,
-  project,
-  onBack,
-  onEntryNew,
-  onEditAsset,
-  onSaveAssets,
-  showToast,
-}) {
-  // Assets are stored at the anggaran level, not per-project
-  const [searchQ, setSearchQ] = useState("");
-  const [catFilter, setCatFilter] = useState("all");
-  const [locFilter, setLocFilter] = useState("all");
-  const [confirm, setConfirm] = useState(null);
-  const assets = anggaran.assets || [];
-  const cats = useMemo(
-    () => [
-      "all",
-      ...Array.from(new Set(assets.map((a) => a.category).filter(Boolean))),
-    ],
-    [assets],
-  );
-  const locs = useMemo(
-    () => [
-      "all",
-      ...Array.from(new Set(assets.map((a) => a.location).filter(Boolean))),
-    ],
-    [assets],
-  );
-  const filtered = useMemo(
-    () =>
-      assets.filter((a) => {
-        if (catFilter !== "all" && a.category !== catFilter) return false;
-        if (locFilter !== "all" && a.location !== locFilter) return false;
-        if (searchQ) {
-          const q = searchQ.toLowerCase();
-          return (
-            a.name?.toLowerCase().includes(q) ||
-            a.asset_code?.toLowerCase().includes(q) ||
-            a.serial_number?.toLowerCase().includes(q) ||
-            a.brand?.toLowerCase().includes(q) ||
-            a.model?.toLowerCase().includes(q)
-          );
-        }
-        return true;
-      }),
-    [assets, catFilter, locFilter, searchQ],
-  );
-  const totalFiltered = filtered.reduce(
-    (s, a) => s + (a.acquisition_value || 0),
-    0,
-  );
-  const totalAll = assets.reduce((s, a) => s + (a.acquisition_value || 0), 0);
-  const pct =
-    project.nilai_kontrak > 0
-      ? Math.round((totalAll / project.nilai_kontrak) * 100)
-      : 0;
-  return (
-    <div className="asset-page">
-      <Breadcrumb
-        items={[
-          {
-            label: "Daftar Anggaran",
-            onClick: () => onBack("root"),
-            icon: I.layers,
-          },
-          {
-            label:
-              anggaran.nama.substring(0, 30) +
-              (anggaran.nama.length > 30 ? "…" : ""),
-            onClick: () => onBack("anggaran"),
-            icon: I.briefcase,
-          },
-          {
-            label:
-              project.nm_pekerjaan.substring(0, 30) +
-              (project.nm_pekerjaan.length > 30 ? "…" : ""),
-            onClick: () => onBack("project"),
-            icon: I.fileText,
-          },
-          { label: "Daftar Aset", icon: I.package },
-        ]}
-      />
-      <div className="asset-page-hdr">
-        <div className="asset-page-hdr-left">
-          <button className="btn btn-outline" onClick={() => onBack("project")}>
-            <Icon d={I.arrowLeft} size={12} /> Kembali
-          </button>
-          <div>
-            <h2
-              style={{
-                fontSize: "1.2rem",
-                fontWeight: 800,
-                letterSpacing: "-0.5px",
-                color: "var(--ink)",
-                marginBottom: 3,
-              }}
-            >
-              Daftar Aset
-            </h2>
-            <p
-              style={{
-                fontSize: "0.75rem",
-                color: "var(--ink4)",
-                fontWeight: 500,
-              }}
-            >
-              {assets.length} aset · Anggaran: {anggaran.kode}
-            </p>
-          </div>
-        </div>
-        <div className="asset-page-hdr-right">
-          <button
-            className="btn btn-excel"
-            onClick={() => {
-              if (!filtered.length) {
-                showToast("Tidak ada data untuk diekspor");
-                return;
-              }
-              exportAssetsToExcel(
-                filtered,
-                project.nm_pekerjaan,
-                project.no_kontrak,
-              );
-              showToast(`${filtered.length} aset berhasil diekspor ke Excel`);
-            }}
-          >
-            <Icon d={I.download} size={13} /> Export Excel
-          </button>
-          <button className="btn btn-prim" onClick={onEntryNew}>
-            <Icon d={I.plus} size={13} /> Entry Aset Baru
-          </button>
-        </div>
-      </div>
-      <div className="asset-ctx-banner">
-        {[
-          [
-            "Anggaran",
-            anggaran.nama?.substring(0, 48) +
-              (anggaran.nama?.length > 48 ? "…" : ""),
-          ],
-          [
-            "Pekerjaan",
-            project.nm_pekerjaan?.substring(0, 36) +
-              (project.nm_pekerjaan?.length > 36 ? "…" : ""),
-          ],
-          ["No. Kontrak", project.no_kontrak || "—"],
-          [
-            "Nilai KAD",
-            anggaran.nilai_kad > 0 ? fmt(anggaran.nilai_kad) : "—",
-            "var(--blue)",
-          ],
-          ["Nilai Kontrak", fmt(totalAll), "var(--red)"],
-          ["Serapan", `${pct}%`, pctColor(pct)],
-        ].map(([lbl, val, color]) => (
-          <div key={lbl} className="asset-ctx-item">
-            <span>{lbl}</span>
-            <strong style={color ? { color } : {}}>
-              {lbl === "No. Kontrak" ? (
-                <code
-                  style={{ fontFamily: "var(--mono)", fontSize: "0.82rem" }}
-                >
-                  {val}
-                </code>
-              ) : (
-                val
-              )}
-            </strong>
-          </div>
-        ))}
-      </div>
-      <div className="asset-toolbar">
-        <div className="asset-toolbar-left">
-          <div className="at-filter">
-            <Icon d={I.search} size={13} />
-            <input
-              placeholder="Cari nama, kode, S/N, merek…"
-              value={searchQ}
-              onChange={(e) => setSearchQ(e.target.value)}
-            />
-          </div>
-        </div>
-        <div className="asset-toolbar-right">
-          <div className="at-filter">
-            <Icon d={I.filter} size={13} />
-            <select
-              value={catFilter}
-              onChange={(e) => setCatFilter(e.target.value)}
-            >
-              <option value="all">Semua Kategori</option>
-              {cats
-                .filter((c) => c !== "all")
-                .map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-            </select>
-          </div>
-          <div className="at-filter">
-            <Icon d={I.mapPin} size={13} />
-            <select
-              value={locFilter}
-              onChange={(e) => setLocFilter(e.target.value)}
-            >
-              <option value="all">Semua Lokasi</option>
-              {locs
-                .filter((l) => l !== "all")
-                .map((l) => (
-                  <option key={l} value={l}>
-                    {l}
-                  </option>
-                ))}
-            </select>
-          </div>
-        </div>
-      </div>
-      <div className="asset-table-wrap">
-        <table className="asset-table">
-          <thead>
-            <tr>
-              <th className="th-no">No</th>
-              <th>Nama Aset</th>
-              <th>Kode Aset</th>
-              <th>Serial Number</th>
-              <th>Kategori</th>
-              <th>Lokasi</th>
-              <th>Tgl. Pengadaan</th>
-              <th>Nilai Perolehan</th>
-              <th className="th-actions">Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.length === 0 ? (
-              <tr className="table-empty-row">
-                <td colSpan={9}>
-                  <div className="table-empty-inner">
-                    <Icon d={I.package} size={36} style={{ opacity: 0.2 }} />
-                    <span style={{ fontWeight: 600, fontSize: "0.85rem" }}>
-                      {assets.length === 0
-                        ? "Belum ada aset terdaftar."
-                        : "Tidak ada aset yang cocok."}
-                    </span>
-                    {assets.length === 0 && (
-                      <button
-                        className="btn btn-prim"
-                        style={{ marginTop: 4 }}
-                        onClick={onEntryNew}
-                      >
-                        <Icon d={I.plus} size={12} /> Tambah Aset Pertama
-                      </button>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ) : (
-              filtered.map((a, i) => (
-                <tr key={a.id}>
-                  <td className="td-no">{i + 1}</td>
-                  <td>
-                    <div className="td-asset-name">
-                      <div className="td-thumb">
-                        {a.image ? (
-                          <img src={a.image} alt={a.name} />
-                        ) : (
-                          <div className="td-thumb-empty">
-                            <Icon d={I.image} size={16} />
-                          </div>
-                        )}
-                      </div>
-                      <div className="td-name-block">
-                        <span className="td-name-text">{a.name || "—"}</span>
-                        <span className="td-name-sub">
-                          {[a.brand, a.model].filter(Boolean).join(" · ") ||
-                            "—"}
-                        </span>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <span className="td-code">{a.asset_code || "—"}</span>
-                  </td>
-                  <td>
-                    <span className="td-sn">{a.serial_number || "—"}</span>
-                  </td>
-                  <td>
-                    <CatPill cat={a.category} />
-                  </td>
-                  <td>
-                    <div className="td-loc">
-                      <Icon
-                        d={I.mapPin}
-                        size={11}
-                        style={{ color: "var(--ink4)", flexShrink: 0 }}
-                      />
-                      {a.location || "—"}
-                    </div>
-                  </td>
-                  <td>
-                    <span className="td-date">
-                      {fmtDate(a.procurement_date)}
-                    </span>
-                  </td>
-                  <td>
-                    <span className="td-value">{fmt(a.acquisition_value)}</span>
-                  </td>
-                  <td className="td-actions">
-                    <div className="td-act-row">
-                      <button
-                        className="abtn"
-                        onClick={() => onEditAsset(a)}
-                        title="Edit"
-                      >
-                        <Icon d={I.edit} size={11} />
-                      </button>
-                      <button
-                        className="abtn del"
-                        onClick={() =>
-                          setConfirm({
-                            msg: "Hapus aset ini?",
-                            onConfirm: () => {
-                              onSaveAssets(
-                                anggaran.id,
-                                assets.filter((x) => x.id !== a.id),
-                              );
-                              showToast("Aset dihapus");
-                              setConfirm(null);
-                            },
-                          })
-                        }
-                      >
-                        <Icon d={I.trash} size={11} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-          {filtered.length > 0 && (
-            <tfoot>
-              <tr>
-                <td
-                  colSpan={7}
-                  style={{
-                    fontWeight: 700,
-                    color: "var(--blue)",
-                    fontSize: "0.75rem",
-                  }}
-                >
-                  Total {filtered.length} aset
-                </td>
-                <td className="tfoot-total">{fmt(totalFiltered)}</td>
-                <td />
-              </tr>
-            </tfoot>
-          )}
-        </table>
-      </div>
-      {confirm && (
-        <Confirm
-          msg={confirm.msg}
-          onConfirm={confirm.onConfirm}
-          onCancel={() => setConfirm(null)}
-        />
-      )}
-    </div>
-  );
-}
-// ══════ REALISASI TABLE PAGE ══════
+// ══════ REALISASI TABLE PAGE (OPEX) ══════
 function RealisasiTablePage({
   ang,
   onBack,
@@ -2209,6 +1612,12 @@ function RealisasiTablePage({
   const sisa = pagu - totalAll;
   return (
     <div className="asset-page">
+      <Breadcrumb
+        items={[
+          { label: "Daftar Anggaran OPEX", onClick: onBack, icon: I.layers },
+          { label: ang.nama, icon: I.monitor },
+        ]}
+      />
       <div className="asset-page-hdr">
         <div className="asset-page-hdr-left">
           <button className="btn btn-outline" onClick={onBack}>
@@ -2233,7 +1642,7 @@ function RealisasiTablePage({
                 fontWeight: 500,
               }}
             >
-              {transactions.length} aset · {ang.nama?.substring(0, 55)}
+              {transactions.length} aset · {ang.nama}
             </p>
           </div>
         </div>
@@ -2243,15 +1652,16 @@ function RealisasiTablePage({
           </button>
         </div>
       </div>
+      {/* Summary Card Perbaikan */}
       <div className="asset-ctx-banner opex-theme">
         {[
-          ["Pos Anggaran", ang.nama?.substring(0, 48)],
+          ["Pos Anggaran", ang.nama],
           ["Kode Master", ang.kd_anggaran_master || "—", null, true],
           ["Pagu Anggaran", pagu > 0 ? fmt(pagu) : "—", "var(--blue)"],
-          ["Total Nilai Aset", fmt(totalAll), "var(--amber)"],
+          ["Total Realisasi", fmt(totalAll), "var(--amber)"],
           [
             "Sisa Anggaran",
-            `${fmt(Math.abs(sisa))}${sisa < 0 ? " (melebihi)" : ""}`,
+            `${fmt(Math.max(0, sisa))}${sisa < 0 ? " (melebihi)" : ""}`,
             sisa >= 0 ? "var(--green)" : "var(--red)",
           ],
         ].map(([lbl, val, color, mono]) => (
@@ -2288,13 +1698,13 @@ function RealisasiTablePage({
           <thead>
             <tr>
               <th className="th-no">No</th>
-              <th>Kategori</th>
-              <th>Tipe</th>
+              <th>Nama / Keterangan</th>
+              <th>Tipe Aset</th>
               <th>Kode Aset</th>
               <th>Serial Number</th>
               <th>Lokasi</th>
               <th>Tanggal</th>
-              <th>Nilai (IDR)</th>
+              <th style={{ textAlign: "right" }}>Nilai (IDR)</th>
               <th className="th-actions">Aksi</th>
             </tr>
           </thead>
@@ -2306,8 +1716,8 @@ function RealisasiTablePage({
                     <Icon d={I.package} size={36} style={{ opacity: 0.2 }} />
                     <span style={{ fontWeight: 600 }}>
                       {transactions.length === 0
-                        ? "Belum ada aset OPEX terdaftar."
-                        : "Tidak ada aset yang cocok."}
+                        ? "Belum ada aset/realisasi OPEX terdaftar."
+                        : "Tidak ada data yang cocok."}
                     </span>
                     {transactions.length === 0 && (
                       <button
@@ -2326,26 +1736,35 @@ function RealisasiTablePage({
                 <tr key={t.id}>
                   <td className="td-no">{i + 1}</td>
                   <td>
+                    <span className="td-name-text">{t.keterangan || "—"}</span>
+                  </td>
+                  <td>
                     <CatPill
                       cat={t.category || ASSET_DB[t.asset_code]?.category}
                     />
                   </td>
-                  <td>{t.model || ASSET_DB[t.asset_code]?.model || "—"}</td>
                   <td>
-                    <span className="td-code">{t.asset_code || "—"}</span>
+                    <span className="td-sn">{t.asset_code || "—"}</span>
                   </td>
                   <td>
                     <span className="td-sn">{t.serial_number || "—"}</span>
                   </td>
                   <td>
-                    {t.location || ASSET_DB[t.asset_code]?.location || "—"}
+                    <div className="td-loc">
+                      <Icon
+                        d={I.mapPin}
+                        size={11}
+                        style={{ color: "var(--ink4)", flexShrink: 0 }}
+                      />
+                      {t.location || ASSET_DB[t.asset_code]?.location || "—"}
+                    </div>
                   </td>
                   <td>
                     <span className="td-date">
                       {fmtDate(t.tanggal || t.procurement_date)}
                     </span>
                   </td>
-                  <td>
+                  <td style={{ textAlign: "right" }}>
                     <span
                       className="td-value"
                       style={{ color: "var(--amber)" }}
@@ -2375,11 +1794,20 @@ function RealisasiTablePage({
               <tr>
                 <td
                   colSpan={7}
-                  style={{ fontWeight: 700, fontSize: "0.75rem" }}
+                  style={{
+                    fontWeight: 700,
+                    fontSize: "0.75rem",
+                    color: "var(--green)",
+                  }}
                 >
                   Total {filtered.length} aset
                 </td>
-                <td className="tfoot-total">{fmt(totalFiltered)}</td>
+                <td
+                  className="tfoot-total"
+                  style={{ textAlign: "right", color: "var(--green)" }}
+                >
+                  {fmt(totalFiltered)}
+                </td>
                 <td />
               </tr>
             </tfoot>
@@ -2389,170 +1817,321 @@ function RealisasiTablePage({
     </div>
   );
 }
-// ══════ CAPEX PEKERJAAN CARD (Level 2) ══════
-function PekerjaanCard({ proj, anggaran, onEdit, onAssetTable, onDelete }) {
-  const [open, setOpen] = useState(false);
-  // Assets are at the anggaran level
-  const assets = anggaran.assets || [];
-  const assetTotal = assets.reduce((s, a) => s + (a.acquisition_value || 0), 0);
-  const pct =
-    proj.nilai_kontrak > 0
-      ? Math.round((assetTotal / proj.nilai_kontrak) * 100)
-      : 0;
+// ══════ REALISASI / ENTRY PAGE OPEX ══════
+function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
+  const isEdit = !!editData;
+  // PERBAIKAN: Inisialisasi state robust & dynamic options agar auto-fill bekerja 100% di OPEX
+  const [form, setForm] = useState(() => {
+    if (isEdit && editData) {
+      const code = editData.asset_code || "";
+      const cat = editData.category || ASSET_DB[code]?.category || "";
+      const mod = editData.model || ASSET_DB[code]?.model || "";
+      const loc = editData.location || ASSET_DB[code]?.location || "";
+      const sn =
+        editData.serial_number ||
+        Object.entries(SN_DB).find(([s, c]) => c === code)?.[0] ||
+        "";
+      return {
+        category: cat,
+        model: mod,
+        asset_code: code,
+        serial_number: sn,
+        location: loc,
+        procurement_date: editData.procurement_date || editData.tanggal || "",
+        acquisition_value: String(
+          editData.acquisition_value ?? editData.jumlah ?? "",
+        ),
+      };
+    }
+    return {
+      category: "",
+      model: "",
+      asset_code: "",
+      serial_number: "",
+      location: "",
+      procurement_date: "",
+      acquisition_value: "",
+    };
+  });
+  const up = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+  const handleCat = (cat) => {
+    up("category", cat);
+    up("model", "");
+    up("asset_code", "");
+    up("serial_number", "");
+    up("location", "");
+  };
+  const handleMod = (mod) => {
+    up("model", mod);
+    up("asset_code", "");
+    up("serial_number", "");
+    up("location", "");
+  };
+  const handleCode = (code) => {
+    up("asset_code", code);
+    if (code && ASSET_DB[code]) {
+      up("location", ASSET_DB[code].location || "");
+      up(
+        "serial_number",
+        Object.entries(SN_DB).find(([s, c]) => c === code)?.[0] || "",
+      );
+    } else {
+      up("location", "");
+      up("serial_number", "");
+    }
+  };
+  // PERBAIKAN: Opsi dropdown menyertakan nilai form saat ini agar <select> bisa menampilkan value yang terisi otomatis
+  const availCats = Array.from(
+    new Set([...Object.values(ASSET_DB).map((x) => x.category), form.category]),
+  ).filter(Boolean);
+  const availMods = form.category
+    ? Array.from(
+      new Set([
+        ...Object.values(ASSET_DB)
+          .filter((x) => x.category === form.category)
+          .map((x) => x.model),
+        form.model,
+      ]),
+    ).filter(Boolean)
+    : [];
+  const availCodes =
+    form.category && form.model
+      ? Array.from(
+        new Set([
+          ...Object.entries(ASSET_DB)
+            .filter(
+              ([_, x]) =>
+                x.category === form.category && x.model === form.model,
+            )
+            .map(([c]) => c),
+          form.asset_code,
+        ]),
+      ).filter(Boolean)
+      : [];
+  const pagu = ang.nilai_anggaran_tahunan || 0;
+  const prev = (ang.transaksi || [])
+    .filter((t) => !isEdit || t.id !== editData.id)
+    .reduce(
+      (s, t) => s + (parseFloat(t.jumlah || t.acquisition_value) || 0),
+      0,
+    );
+  const amount =
+    parseFloat(String(form.acquisition_value).replace(/[^\d.]/g, "")) || 0;
+  const sisa = pagu - prev - amount;
+  const save = () => {
+    if (!form.asset_code || !form.procurement_date || !amount) {
+      showToast("Lengkapi Kode Aset, Tanggal, dan Nilai");
+      return;
+    }
+    const val = amount;
+    const newItem = {
+      id: isEdit ? editData.id : newId(),
+      category: form.category,
+      model: form.model,
+      asset_code: form.asset_code,
+      serial_number: form.serial_number,
+      location: form.location,
+      procurement_date: form.procurement_date,
+      tanggal: form.procurement_date,
+      acquisition_value: val,
+      jumlah: val,
+      keterangan: ASSET_DB[form.asset_code]?.name || form.asset_code,
+      aset: form.asset_code,
+    };
+    const list = isEdit
+      ? ang.transaksi.map((t) =>
+        t.id === editData.id ? { ...t, ...newItem } : t,
+      )
+      : [...(ang.transaksi || []), newItem];
+    onSave(ang.id, list);
+    showToast(isEdit ? "Aset OPEX diperbarui" : "Aset OPEX ditambahkan");
+    onBack();
+  };
   return (
-    <div className={`jcard ${open ? "open-cap" : ""}`}>
-      <div className="jcard-inner">
-        <div className="jcard-accent cap" />
-        <div className="jcard-content">
-          <div className="jcard-top" onClick={() => setOpen((v) => !v)}>
-            <div className="jc-info">
-              <div className="jc-tags">
-                <span className="badge capex">CAPEX</span>
-                <span className="yr-tag">{anggaran.thnAnggaran}</span>
-                <code className="code-tag">{anggaran.kode}</code>
-              </div>
-              <p className="jc-title">{proj.nm_pekerjaan}</p>
-            </div>
-            <div className="jc-meta">
-              <span>
-                <Icon d={I.calendar} size={12} />
-                {fmtDate(proj.tgl_kontrak)}
-              </span>
-              {proj.durasi_kontrak > 0 && (
-                <span>
-                  <Icon d={I.clock} size={12} />
-                  {proj.durasi_kontrak} hari kerja
+    <div className="subpage">
+      <div className="subpage-hdr">
+        <button className="btn btn-outline" onClick={onBack}>
+          <Icon d={I.arrowLeft} size={14} /> Kembali
+        </button>
+        <div style={{ flex: 1 }}>
+          <h2>{isEdit ? "Edit Aset OPEX" : "Entry Aset OPEX Baru"}</h2>
+        </div>
+      </div>
+      <div
+        className="ctx-card"
+        style={{
+          borderColor: "var(--green)",
+          background: "var(--green-lt)",
+          borderLeft: "4px solid var(--green)",
+        }}
+      >
+        <div className="ctx-item">
+          <span>Pos Anggaran</span>
+          <strong style={{ color: "var(--ink)" }}>{ang.nama}</strong>
+        </div>
+        <div className="ctx-item">
+          <span>Pagu Anggaran</span>
+          <strong style={{ color: "var(--blue)" }}>{fmt(pagu)}</strong>
+        </div>
+        <div className="ctx-item">
+          <span>Nilai Input</span>
+          <strong style={{ color: "var(--amber)" }}>{fmt(amount)}</strong>
+        </div>
+        <div className="ctx-item">
+          <span>Sisa Setelah Input</span>
+          <strong
+            className={sisa >= 0 ? "green" : "red"}
+            style={{ color: sisa >= 0 ? "var(--green)" : "var(--red)" }}
+          >
+            {fmt(Math.max(0, sisa))}
+            {sisa < 0 && " (melebihi)"}
+          </strong>
+        </div>
+      </div>
+      <div className="sec-card">
+        <div className="sec-card-hdr">
+          <div
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 8,
+              background: "var(--green-lt)",
+              color: "var(--green)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Icon d={isEdit ? I.edit : I.plus} size={14} />
+          </div>
+          <h3>Data Aset OPEX</h3>
+        </div>
+        <div className="sec-card-body">
+          <AEFld label="Jenis Aset" req={true}>
+            <select
+              value={form.category || ""}
+              onChange={(e) => handleCat(e.target.value)}
+            >
+              <option value="">— Pilih Jenis Aset —</option>
+              {availCats.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+          </AEFld>
+          {form.category && (
+            <AEFld label="Tipe Aset" req={true}>
+              <select
+                value={form.model || ""}
+                onChange={(e) => handleMod(e.target.value)}
+              >
+                <option value="">— Pilih Tipe —</option>
+                {availMods.map((mod) => (
+                  <option key={mod} value={mod}>
+                    {mod}
+                  </option>
+                ))}
+              </select>
+            </AEFld>
+          )}
+          {form.model && (
+            <AEFld label="Kode Aset" req={true}>
+              <select
+                value={form.asset_code || ""}
+                onChange={(e) => handleCode(e.target.value)}
+              >
+                <option value="">— Pilih Kode Aset —</option>
+                {availCodes.map((code) => (
+                  <option key={code} value={code}>
+                    {code}
+                  </option>
+                ))}
+              </select>
+            </AEFld>
+          )}
+          <AEFld label="Serial Number">
+            <input
+              value={form.serial_number || ""}
+              readOnly
+              disabled
+              style={{
+                background: "#f8fafc",
+                color: "var(--ink4)",
+                cursor: "not-allowed",
+              }}
+            />
+          </AEFld>
+          <AEFld label="Lokasi">
+            <input
+              value={form.location || ""}
+              readOnly
+              disabled
+              style={{
+                background: "#f8fafc",
+                color: "var(--ink4)",
+                cursor: "not-allowed",
+              }}
+            />
+          </AEFld>
+          <AEFld label="Tgl. Pengadaan" req={true}>
+            <input
+              type="date"
+              value={form.procurement_date || ""}
+              onChange={(e) => up("procurement_date", e.target.value)}
+            />
+          </AEFld>
+          <AEFld label="Nilai Perolehan (IDR)" req={true}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <input
+                type="number"
+                value={form.acquisition_value || ""}
+                onChange={(e) => up("acquisition_value", e.target.value)}
+                placeholder="0"
+                style={{ flex: 1 }}
+              />
+              {amount > 0 && (
+                <span
+                  className="aefld-hint"
+                  style={{
+                    color: "var(--green)",
+                    fontWeight: 600,
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {fmt(amount)}
                 </span>
               )}
             </div>
-            <div className="jc-fin">
-              <div className="amt-blk">
-                <span className="amt-lbl">Nilai Kontrak</span>
-                <span className="amt-val blue">{fmt(assetTotal)}</span>
-              </div>
-              <div className="fin-div" />
-              <div className="amt-blk">
-                <span className="amt-lbl">Nilai RAB</span>
-                <span className="amt-val amber">{fmt(proj.nilai_rab)}</span>
-              </div>
-            </div>
-            <div className="jc-actions">
-              <PctRing pct={pct} />
-              <div className="act-btns" onClick={(e) => e.stopPropagation()}>
-                <button className="abtn" onClick={() => onEdit(proj)}>
-                  <Icon d={I.edit} size={12} /> Edit
-                </button>
-                <button
-                  className="abtn blue"
-                  onClick={() => onAssetTable(proj)}
-                >
-                  <Icon d={I.table} size={12} />
-                  {assets.length > 0 ? `${assets.length} Aset` : "Lihat Aset"}
-                </button>
-              </div>
-              <div className="chev">
-                <Icon d={open ? I.chevUp : I.chevDown} size={14} />
-              </div>
-            </div>
+          </AEFld>
+        </div>
+      </div>
+      <div className="edit-footer">
+        <div>
+          <span style={{ fontSize: "0.75rem", color: "var(--ink3)" }}>
+            Nilai Aset Input
+          </span>
+          <div
+            style={{ fontSize: "1rem", fontWeight: 800, color: "var(--green)" }}
+          >
+            {fmt(amount)}
           </div>
-          {open && (
-            <div className="jcard-detail">
-              <div className="detail-grid">
-                <div className="d-panel">
-                  <div className="d-title">Informasi Kontrak</div>
-                  <div className="d-rows">
-                    {[
-                      ["No. Kontrak", proj.no_kontrak, true],
-                      ["No. PO", proj.no_po, true],
-                      ["No. PR", proj.no_pr, true],
-                      ["Tgl. Kontrak", fmtDate(proj.tgl_kontrak)],
-                      proj.durasi_kontrak > 0 && [
-                        "Durasi",
-                        `${proj.durasi_kontrak} hari`,
-                      ],
-                      ["Tgl. SP3", fmtDate(proj.tgl_sp3)],
-                      ["BAMK", fmtDate(proj.tgl_bamk)],
-                      proj.nilai_rab > 0 && ["Nilai RAB", fmt(proj.nilai_rab)],
-                    ]
-                      .filter(Boolean)
-                      .map((item) => {
-                        const [lbl, val, isCode] = item;
-                        return (
-                          val &&
-                          val !== "—" && (
-                            <div key={lbl} className="d-row">
-                              <span className="lbl">{lbl}</span>
-                              <span className="val">
-                                {isCode ? <code>{val}</code> : val}
-                              </span>
-                            </div>
-                          )
-                        );
-                      })}
-                  </div>
-                </div>
-                <div className="d-panel">
-                  <div className="d-title">
-                    Aset Anggaran
-                    <button
-                      className="inline-link"
-                      onClick={() => onAssetTable(proj)}
-                    >
-                      <Icon d={I.eye} size={11} /> Lihat & Edit Aset →
-                    </button>
-                  </div>
-                  {assets.length === 0 ? (
-                    <div className="d-empty">
-                      Belum ada aset di anggaran ini.
-                      <div style={{ marginTop: 10 }}>
-                        <button
-                          className="btn btn-prim"
-                          style={{ fontSize: "0.75rem", padding: "6px 14px" }}
-                          onClick={() => onAssetTable(proj)}
-                        >
-                          <Icon d={I.plus} size={11} /> Entry Aset
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="ai-list">
-                      {assets.slice(0, 3).map((a) => (
-                        <div key={a.id} className="ai-item">
-                          <div className="ai-info">
-                            <code className="a-code">{a.asset_code}</code>
-                            <div>
-                              <p className="a-name">{a.name}</p>
-                              <p className="a-loc">
-                                <Icon d={I.mapPin} size={10} />
-                                {a.location}
-                              </p>
-                            </div>
-                          </div>
-                          <span className="a-val">
-                            {fmt(a.acquisition_value)}
-                          </span>
-                        </div>
-                      ))}
-                      {assets.length > 3 && (
-                        <div style={{ textAlign: "center", paddingTop: 4 }}>
-                          <button
-                            className="inline-link"
-                            onClick={() => onAssetTable(proj)}
-                          >
-                            + {assets.length - 3} aset lainnya →
-                          </button>
-                        </div>
-                      )}
-                      <div className="panel-total blue">
-                        <span>Total Nilai</span>
-                        <strong>{fmt(assetTotal)}</strong>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
+        </div>
+        <div style={{ display: "flex", gap: 12 }}>
+          <button className="btn btn-outline" onClick={onBack}>
+            Batal
+          </button>
+          <button
+            className="btn btn-green"
+            onClick={save}
+            disabled={!form.asset_code || !form.procurement_date || !amount}
+            style={{
+              opacity:
+                !form.asset_code || !form.procurement_date || !amount ? 0.5 : 1,
+            }}
+          >
+            <Icon d={I.save} size={12} /> {isEdit ? "Perbarui" : "Simpan"}
+          </button>
         </div>
       </div>
     </div>
@@ -2576,9 +2155,6 @@ function OpexCard({
   const pagu = ang.nilai_anggaran_tahunan || 0;
   const sisa = pagu - totalReal;
   const pct = pagu > 0 ? Math.round((totalReal / pagu) * 100) : 0;
-  const masterInfo = BUDGET_MASTERS.find(
-    (m) => m.kd_anggaran_master === ang.kd_anggaran_master,
-  );
   return (
     <div className={`jcard ${open ? "open-opx" : ""}`}>
       <div className="jcard-inner">
@@ -2593,7 +2169,6 @@ function OpexCard({
               </div>
               <p className="jc-title">{ang.nama}</p>
             </div>
-            {/* HAPUS BAGIAN INI - Judul duplikat sudah dihilangkan */}
             <div className="jc-fin">
               <div className="amt-blk">
                 <span className="amt-lbl">Pagu Anggaran</span>
@@ -2601,7 +2176,7 @@ function OpexCard({
               </div>
               <div className="fin-div" />
               <div className="amt-blk">
-                <span className="amt-lbl">Nilai Pekerjaan</span>
+                <span className="amt-lbl">Total Realisasi</span>
                 <span className="amt-val amber">{fmt(totalReal)}</span>
               </div>
               <div className="fin-div" />
@@ -2621,8 +2196,8 @@ function OpexCard({
                 >
                   <Icon d={I.table} size={12} />
                   {ang.transaksi?.length > 0
-                    ? `${ang.transaksi.length} Pekerjaan`
-                    : "Pekerjaan"}
+                    ? `${ang.transaksi.length} Aset`
+                    : "Aset"}
                 </button>
               </div>
               <div className="chev">
@@ -2651,10 +2226,10 @@ function OpexCard({
                       ["Kode Master", ang.kd_anggaran_master, true],
                       ["Tahun Anggaran", ang.thn_anggaran],
                       ["Total Anggaran (Pagu)", fmt(pagu), false, "blue"],
-                      ["Total Nilai Pekerjaan", fmt(totalReal), false, "amber"],
+                      ["Total Realisasi", fmt(totalReal), false, "amber"],
                       [
                         "Sisa Anggaran",
-                        `${fmt(Math.abs(sisa))}${sisa < 0 ? " (melebihi)" : ""}`,
+                        `${fmt(Math.max(0, sisa))}${sisa < 0 ? " (melebihi)" : ""}`,
                         false,
                         sisa >= 0 ? "green" : "red",
                       ],
@@ -2669,9 +2244,10 @@ function OpexCard({
                     ))}
                   </div>
                 </div>
+                {/* Perbaikan Daftar Pekerjaan OPEX */}
                 <div className="d-panel">
                   <div className="d-title">
-                    Daftar Pekerjaan
+                    Daftar Aset OPEX
                     <button
                       className="inline-link"
                       onClick={() => onRealisasiTable(ang)}
@@ -2681,14 +2257,14 @@ function OpexCard({
                   </div>
                   {!ang.transaksi || ang.transaksi.length === 0 ? (
                     <div className="d-empty">
-                      Belum ada pekerjaan.
+                      Belum ada aset/realisasi.
                       <div style={{ marginTop: 10 }}>
                         <button
                           className="btn btn-green"
                           style={{ fontSize: "0.75rem", padding: "6px 14px" }}
                           onClick={() => onRealisasiEntry(ang)}
                         >
-                          <Icon d={I.plus} size={11} /> Tambah Pekerjaan
+                          <Icon d={I.plus} size={11} /> Tambah Aset Pertama
                         </button>
                       </div>
                     </div>
@@ -2698,8 +2274,17 @@ function OpexCard({
                         <div key={t.id} className="ri-item">
                           <div className="ri-info">
                             <div>
-                              <p className="r-ket">{t.keterangan}</p>
-                              <p className="r-date">{fmtDate(t.tanggal)}</p>
+                              <p className="r-ket">
+                                {t.keterangan || "Aset OPEX"}
+                              </p>
+                              <p className="r-date">
+                                <Icon
+                                  d={I.calendar}
+                                  size={10}
+                                  style={{ marginRight: 4 }}
+                                />
+                                {fmtDate(t.tanggal)}
+                              </p>
                             </div>
                           </div>
                           <span className="r-val">{fmt(t.jumlah)}</span>
@@ -2852,7 +2437,6 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
   const up = (k, v) => setForm((f) => ({ ...f, [k]: v }));
   const handleSave = () => {
     const nilaiKontrak = parseFloat(form.nilai_kontrak) || 0;
-    // Validasi: nilai kontrak tidak boleh melebihi nilai KAD
     if (nilaiKontrak > anggaran.nilai_kad) {
       showToast(
         `Nilai Kontrak tidak boleh melebihi Nilai KAD (${fmt(anggaran.nilai_kad)})`,
@@ -3268,7 +2852,7 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
     </div>
   );
 }
-// ══════ EDIT ASSET PAGE (Matches Entry Page UI) ══════
+// ══════ EDIT ASSET PAGE ══════
 function EditAssetPage({
   anggaran,
   project,
@@ -3277,18 +2861,35 @@ function EditAssetPage({
   onSave,
   showToast,
 }) {
-  const [assets, setAssets] = useState(() => [
-    {
-      ...asset,
-      _new: false,
-      _af: false,
-      acquisition_value: asset.acquisition_value || "",
-    },
-  ]);
+  // PERBAIKAN: Inisialisasi state dengan fallback ke ASSET_DB agar Jenis/Tipe/Kode Aset otomatis terisi saat edit
+  const [assets, setAssets] = useState(() => {
+    const code = asset.asset_code || "";
+    const dbInfo = ASSET_DB[code] || {};
+    const snFromDB =
+      Object.entries(SN_DB).find(([s, c]) => c === code)?.[0] || "";
+    return [
+      {
+        ...asset,
+        _new: false,
+        _af: false,
+        category: asset.category || dbInfo.category || "",
+        model: asset.model || dbInfo.model || "",
+        asset_code: code,
+        serial_number: asset.serial_number || snFromDB,
+        location: asset.location || dbInfo.location || "",
+        procurement_date: asset.procurement_date || "",
+        acquisition_value: asset.acquisition_value ?? "",
+      },
+    ];
+  });
   const [confirm, setConfirm] = useState(null);
   const upd = (id, k, v) =>
     setAssets((p) => p.map((a) => (a.id === id ? { ...a, [k]: v } : a)));
   const a = assets[0];
+  const total = assets.reduce(
+    (s, aa) => s + (parseFloat(aa.acquisition_value) || 0),
+    0,
+  );
   return (
     <div className="subpage">
       <div className="subpage-hdr">
@@ -3351,16 +2952,105 @@ function EditAssetPage({
         </div>
         <div className="acard-body">
           <div style={{ display: "flex", flexDirection: "column" }}>
-            {assetFields.map(([lbl, key, ph, req, hint, handler]) => (
-              <AEFld key={key} label={lbl} req={req}>
-                <input
-                  value={a[key] || ""}
-                  onChange={(e) => handler(a.id, e.target.value)}
-                  placeholder={ph}
-                />
-                {hint && <div className="aefld-hint">{hint}</div>}
+            <AEFld label="Jenis Aset" req={true}>
+              <select
+                value={a.category || ""}
+                onChange={(e) => {
+                  upd(a.id, "category", e.target.value);
+                  upd(a.id, "model", "");
+                  upd(a.id, "asset_code", "");
+                  upd(a.id, "serial_number", "");
+                  upd(a.id, "location", "");
+                }}
+              >
+                <option value="">— Pilih Jenis Aset —</option>
+                {Array.from(
+                  new Set(Object.values(ASSET_DB).map((x) => x.category)),
+                ).map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+            </AEFld>
+            {a.category && (
+              <AEFld label="Tipe Aset" req={true}>
+                <select
+                  value={a.model || ""}
+                  onChange={(e) => {
+                    upd(a.id, "model", e.target.value);
+                    upd(a.id, "asset_code", "");
+                    upd(a.id, "serial_number", "");
+                    upd(a.id, "location", "");
+                  }}
+                >
+                  <option value="">— Pilih Tipe —</option>
+                  {Array.from(
+                    new Set(
+                      Object.values(ASSET_DB)
+                        .filter((x) => x.category === a.category)
+                        .map((x) => x.model),
+                    ),
+                  ).map((m) => (
+                    <option key={m} value={m}>
+                      {m}
+                    </option>
+                  ))}
+                </select>
               </AEFld>
-            ))}
+            )}
+            {a.model && (
+              <AEFld label="Kode Aset" req={true}>
+                <select
+                  value={a.asset_code || ""}
+                  onChange={(e) => {
+                    const code = e.target.value;
+                    upd(a.id, "asset_code", code);
+                    const sn =
+                      Object.entries(SN_DB).find(([s, c]) => c === code)?.[0] ||
+                      "";
+                    upd(a.id, "serial_number", sn);
+                    upd(a.id, "location", ASSET_DB[code]?.location || "");
+                  }}
+                >
+                  <option value="">— Pilih Kode Aset —</option>
+                  {Object.entries(ASSET_DB)
+                    .filter(
+                      ([code, x]) =>
+                        x.category === a.category && x.model === a.model,
+                    )
+                    .map(([code]) => (
+                      <option key={code} value={code}>
+                        {code}
+                      </option>
+                    ))}
+                </select>
+              </AEFld>
+            )}
+            <AEFld label="Serial Number">
+              <input
+                value={a.serial_number || ""}
+                readOnly
+                disabled
+                style={{
+                  background: "#f8fafc",
+                  color: "var(--ink4)",
+                  cursor: "not-allowed",
+                }}
+              />
+            </AEFld>
+            <AEFld label="Lokasi">
+              <input
+                value={a.location || ""}
+                readOnly
+                disabled
+                style={{
+                  background: "#f8fafc",
+                  color: "var(--ink4)",
+                  cursor: "not-allowed",
+                }}
+              />
+            </AEFld>
             <AEFld label="Tgl. Pengadaan">
               <input
                 type="date"
@@ -3412,7 +3102,14 @@ function EditAssetPage({
             <button className="btn btn-outline" onClick={onBack}>
               Batal
             </button>
-            <button className="btn btn-prim" onClick={save}>
+            <button
+              className="btn btn-prim"
+              onClick={() => {
+                onSave(anggaran.id, [...(anggaran.assets || []), assets[0]]);
+                showToast("Aset diperbarui");
+                onBack();
+              }}
+            >
               <Icon d={I.save} size={14} /> Simpan Perubahan
             </button>
           </div>
@@ -3428,340 +3125,241 @@ function EditAssetPage({
     </div>
   );
 }
-// ══════ REALISASI PAGE ══════
-function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
-  const isEdit = !!editData;
-  const [form, setForm] = useState(() => {
-    if (isEdit && editData) {
-      let cat = editData.category || "";
-      let mod = editData.model || "";
-      let sn = editData.serial_number || "";
-      let loc = editData.location || "";
-
-      if (editData.asset_code && ASSET_DB[editData.asset_code]) {
-        const info = ASSET_DB[editData.asset_code];
-        if (!cat) cat = info.category;
-        if (!mod) mod = info.model;
-        if (!loc) loc = info.location;
-      }
-      if (editData.asset_code && SN_DB) {
-        const snDb = Object.entries(SN_DB).find(
-          ([s, c]) => c === editData.asset_code,
-        )?.[0];
-        if (!sn) sn = snDb || "";
-      }
-
-      return {
-        category: cat,
-        model: mod,
-        asset_code: editData.asset_code || "",
-        serial_number: sn,
-        location: loc,
-        procurement_date: editData.procurement_date || editData.tanggal || "",
-        acquisition_value: editData.acquisition_value || editData.jumlah || "",
-        id: editData.id,
-      };
-    }
-    return {
-      category: "",
-      model: "",
-      asset_code: "",
-      serial_number: "",
-      location: "",
-      procurement_date: "",
-      acquisition_value: "",
-    };
-  });
-
-  const up = (k, v) => setForm((f) => ({ ...f, [k]: v }));
-  const handleCat = (cat) => {
-    up("category", cat);
-    up("model", "");
-    up("asset_code", "");
-    up("serial_number", "");
-    up("location", "");
+// ══════ FIX: ASSET TABLE PAGE (CAPEX) ══════
+function AssetTablePage({
+  anggaran,
+  project,
+  onBack,
+  onEntryNew,
+  onEditAsset,
+  onSaveAssets,
+  showToast,
+}) {
+  const [searchQ, setSearchQ] = useState("");
+  const [confirm, setConfirm] = useState(null);
+  const assets = anggaran.assets || [];
+  const filtered = useMemo(
+    () =>
+      assets.filter(
+        (a) =>
+          !searchQ ||
+          a.name?.toLowerCase().includes(searchQ.toLowerCase()) ||
+          a.asset_code?.toLowerCase().includes(searchQ.toLowerCase()),
+      ),
+    [assets, searchQ],
+  );
+  const total = filtered.reduce((s, a) => s + (a.acquisition_value || 0), 0);
+  const handleDelete = (id) => {
+    setConfirm({
+      msg: "Hapus aset ini?",
+      onConfirm: () => {
+        onSaveAssets(
+          anggaran.id,
+          assets.filter((a) => a.id !== id),
+        );
+        showToast("Aset dihapus");
+        setConfirm(null);
+      },
+    });
   };
-  const handleMod = (mod) => {
-    up("model", mod);
-    up("asset_code", "");
-    up("serial_number", "");
-    up("location", "");
-  };
-  const handleCode = (code) => {
-    up("asset_code", code);
-    if (code && ASSET_DB[code]) {
-      up("location", ASSET_DB[code].location || "");
-      up(
-        "serial_number",
-        Object.entries(SN_DB).find(([s, c]) => c === code)?.[0] || "",
-      );
-    } else {
-      up("location", "");
-      up("serial_number", "");
-    }
-  };
-
-  const pagu = ang.nilai_anggaran_tahunan || 0;
-  const prev = (ang.transaksi || [])
-    .filter((t) => !isEdit || t.id !== editData.id)
-    .reduce(
-      (s, t) => s + (parseFloat(t.jumlah || t.acquisition_value) || 0),
-      0,
-    );
-  const amount =
-    parseFloat(String(form.acquisition_value).replace(/[^\d.]/g, "")) || 0;
-  const sisa = pagu - prev - amount;
-
-  const save = () => {
-    if (!form.asset_code || !form.procurement_date || !amount) {
-      showToast("Lengkapi Kode Aset, Tanggal, dan Nilai");
-      return;
-    }
-    const val = amount;
-    const newItem = {
-      id: isEdit ? editData.id : newId(),
-      category: form.category,
-      model: form.model,
-      asset_code: form.asset_code,
-      serial_number: form.serial_number,
-      location: form.location,
-      procurement_date: form.procurement_date,
-      tanggal: form.procurement_date,
-      acquisition_value: val,
-      jumlah: val,
-      keterangan: ASSET_DB[form.asset_code]?.name || form.asset_code,
-      aset: form.asset_code,
-    };
-    const list = isEdit
-      ? ang.transaksi.map((t) =>
-          t.id === editData.id ? { ...t, ...newItem } : t,
-        )
-      : [...(ang.transaksi || []), newItem];
-    onSave(ang.id, list);
-    showToast(isEdit ? "Aset OPEX diperbarui" : "Aset OPEX ditambahkan");
-    onBack();
-  };
-
   return (
-    <div className="subpage">
-      <div className="subpage-hdr">
-        <button className="btn btn-outline" onClick={onBack}>
-          <Icon d={I.arrowLeft} size={14} /> Kembali
-        </button>
-        <div style={{ flex: 1 }}>
-          <h2>{isEdit ? "Edit Aset OPEX" : "Entry Aset OPEX Baru"}</h2>
-        </div>
-      </div>
-      <div
-        className="ctx-card"
-        style={{
-          borderColor: "var(--green)",
-          background: "var(--green-lt)",
-          borderLeft: "4px solid var(--green)",
-        }}
-      >
-        <div className="ctx-item">
-          <span>Pos Anggaran</span>
-          <strong style={{ color: "var(--ink)" }}>{ang.nama}</strong>
-        </div>
-        <div className="ctx-item">
-          <span>Pagu</span>
-          <strong style={{ color: "var(--blue)" }}>{fmt(pagu)}</strong>
-        </div>
-        <div className="ctx-item">
-          <span>Sisa Setelah Input</span>
-          <strong className={sisa >= 0 ? "green" : "red"}>
-            {fmt(Math.abs(sisa))}
-            {sisa < 0 && " (melebihi)"}
-          </strong>
-        </div>
-      </div>
-      <div className="sec-card">
-        <div className="sec-card-hdr">
-          <div
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: 8,
-              background: "var(--green-lt)",
-              color: "var(--green)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
+    <div className="asset-page">
+      <Breadcrumb
+        items={[
+          {
+            label: "Daftar Pekerjaan",
+            onClick: () => onBack("anggaran"),
+            icon: I.briefcase,
+          },
+          {
+            label:
+              project?.nm_pekerjaan?.substring(0, 30) + "..." || "Detail Aset",
+            icon: I.package,
+          },
+        ]}
+      />
+      <div className="asset-page-hdr">
+        <div className="asset-page-hdr-left">
+          <button
+            className="btn btn-outline"
+            onClick={() => onBack("anggaran")}
           >
-            <Icon d={isEdit ? I.edit : I.plus} size={14} />
-          </div>
-          <h3>Data Aset</h3>
-        </div>
-        <div className="sec-card-body">
-          <AEFld label="Jenis Aset" req={true}>
-            <select
-              value={form.category || ""}
-              onChange={(e) => handleCat(e.target.value)}
+            <Icon d={I.arrowLeft} size={12} /> Kembali
+          </button>
+          <div>
+            <h2
+              style={{
+                fontSize: "1.2rem",
+                fontWeight: 800,
+                letterSpacing: "-0.5px",
+                color: "var(--ink)",
+                marginBottom: 3,
+              }}
             >
-              <option value="">— Pilih Jenis Aset —</option>
-              {Array.from(
-                new Set(Object.values(ASSET_DB).map((x) => x.category)),
-              ).map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
-          </AEFld>
-          {form.category && (
-            <AEFld label="Tipe Aset" req={true}>
-              <select
-                value={form.model || ""}
-                onChange={(e) => handleMod(e.target.value)}
-              >
-                <option value="">— Pilih Tipe —</option>
-                {Array.from(
-                  new Set(
-                    Object.values(ASSET_DB)
-                      .filter((x) => x.category === form.category)
-                      .map((x) => x.model),
-                  ),
-                ).map((m) => (
-                  <option key={m} value={m}>
-                    {m}
-                  </option>
-                ))}
-              </select>
-            </AEFld>
-          )}
-          {form.model && (
-            <AEFld label="Kode Aset" req={true}>
-              <select
-                value={form.asset_code || ""}
-                onChange={(e) => handleCode(e.target.value)}
-              >
-                <option value="">— Pilih Kode Aset —</option>
-                {Object.entries(ASSET_DB)
-                  .filter(
-                    ([code, x]) =>
-                      x.category === form.category && x.model === form.model,
-                  )
-                  .map(([code]) => (
-                    <option key={code} value={code}>
-                      {code}
-                    </option>
-                  ))}
-              </select>
-            </AEFld>
-          )}
-          <AEFld label="Serial Number">
-            <input
-              value={form.serial_number || ""}
-              readOnly
-              disabled
+              Daftar Aset CAPEX
+            </h2>
+            <p
               style={{
-                background: "#f8fafc",
+                fontSize: "0.75rem",
                 color: "var(--ink4)",
-                cursor: "not-allowed",
+                fontWeight: 500,
               }}
-            />
-          </AEFld>
-          <AEFld label="Lokasi">
-            <input
-              value={form.location || ""}
-              readOnly
-              disabled
-              style={{
-                background: "#f8fafc",
-                color: "var(--ink4)",
-                cursor: "not-allowed",
-              }}
-            />
-          </AEFld>
-          <AEFld label="Tgl. Pengadaan" req={true}>
-            <input
-              type="date"
-              value={form.procurement_date || ""}
-              onChange={(e) => up("procurement_date", e.target.value)}
-            />
-          </AEFld>
-          <AEFld label="Nilai Perolehan (IDR)" req={true}>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <input
-                type="number"
-                value={form.acquisition_value || ""}
-                onChange={(e) => up("acquisition_value", e.target.value)}
-                placeholder="0"
-                style={{ flex: 1 }}
-              />
-              {amount > 0 && (
-                <span
-                  className="aefld-hint"
+            >
+              {assets.length} aset · {anggaran.nama}
+            </p>
+          </div>
+        </div>
+        <div className="asset-page-hdr-right">
+          <button className="btn btn-prim" onClick={onEntryNew}>
+            <Icon d={I.plus} size={13} /> Entry Aset Baru
+          </button>
+        </div>
+      </div>
+      <div className="asset-toolbar">
+        <div className="at-filter">
+          <Icon d={I.search} size={13} />
+          <input
+            placeholder="Cari nama atau kode aset..."
+            value={searchQ}
+            onChange={(e) => setSearchQ(e.target.value)}
+          />
+        </div>
+      </div>
+      <div className="asset-table-wrap">
+        <table className="asset-table">
+          <thead>
+            <tr>
+              <th className="th-no">No</th>
+              <th>Nama Aset</th>
+              <th>Kode Aset</th>
+              <th>Serial Number</th>
+              <th>Kategori</th>
+              <th>Lokasi</th>
+              <th>Tgl. Pengadaan</th>
+              <th style={{ textAlign: "right" }}>Nilai (IDR)</th>
+              <th className="th-actions">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.length === 0 ? (
+              <tr className="table-empty-row">
+                <td colSpan={9}>
+                  <div className="table-empty-inner">
+                    <Icon d={I.package} size={36} style={{ opacity: 0.2 }} />
+                    <span style={{ fontWeight: 600 }}>
+                      {assets.length === 0
+                        ? "Belum ada aset CAPEX terdaftar."
+                        : "Tidak ada data yang cocok."}
+                    </span>
+                    {assets.length === 0 && (
+                      <button
+                        className="btn btn-prim"
+                        style={{ marginTop: 4 }}
+                        onClick={onEntryNew}
+                      >
+                        <Icon d={I.plus} size={12} /> Tambah Aset Pertama
+                      </button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ) : (
+              filtered.map((a, i) => (
+                <tr key={a.id}>
+                  <td className="td-no">{i + 1}</td>
+                  <td>
+                    <span className="td-name-text">{a.name || "—"}</span>
+                  </td>
+                  <td>
+                    <span className="td-code">{a.asset_code || "—"}</span>
+                  </td>
+                  <td>
+                    <span className="td-sn">{a.serial_number || "—"}</span>
+                  </td>
+                  <td>
+                    <CatPill cat={a.category} />
+                  </td>
+                  <td>
+                    <div className="td-loc">
+                      <Icon
+                        d={I.mapPin}
+                        size={11}
+                        style={{ color: "var(--ink4)", flexShrink: 0 }}
+                      />
+                      {a.location || "—"}
+                    </div>
+                  </td>
+                  <td>
+                    <span className="td-date">
+                      {fmtDate(a.procurement_date)}
+                    </span>
+                  </td>
+                  <td style={{ textAlign: "right" }}>
+                    <span className="td-value">{fmt(a.acquisition_value)}</span>
+                  </td>
+                  <td className="td-actions">
+                    <div className="td-act-row">
+                      <button className="abtn" onClick={() => onEditAsset(a)}>
+                        <Icon d={I.edit} size={11} />
+                      </button>
+                      <button
+                        className="abtn del"
+                        onClick={() => handleDelete(a.id)}
+                      >
+                        <Icon d={I.trash} size={11} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+          {filtered.length > 0 && (
+            <tfoot>
+              <tr>
+                <td
+                  colSpan={7}
                   style={{
-                    color: "var(--green)",
-                    fontWeight: 600,
-                    whiteSpace: "nowrap",
+                    fontWeight: 700,
+                    fontSize: "0.75rem",
+                    color: "var(--blue)",
                   }}
                 >
-                  {fmt(amount)}
-                </span>
-              )}
-            </div>
-          </AEFld>
-        </div>
+                  Total {filtered.length} aset
+                </td>
+                <td
+                  className="tfoot-total"
+                  style={{ textAlign: "right", color: "var(--blue)" }}
+                >
+                  {fmt(total)}
+                </td>
+                <td />
+              </tr>
+            </tfoot>
+          )}
+        </table>
       </div>
-      <div className="edit-footer">
-        <div>
-          <span style={{ fontSize: "0.75rem", color: "var(--ink3)" }}>
-            Nilai Aset Input
-          </span>
-          <div
-            style={{ fontSize: "1rem", fontWeight: 800, color: "var(--green)" }}
-          >
-            {fmt(amount)}
-          </div>
-        </div>
-        <div style={{ display: "flex", gap: 12 }}>
-          <button className="btn btn-outline" onClick={onBack}>
-            Batal
-          </button>
-          <button
-            className="btn btn-green"
-            onClick={save}
-            disabled={!form.asset_code || !form.procurement_date || !amount}
-            style={{
-              opacity:
-                !form.asset_code || !form.procurement_date || !amount ? 0.5 : 1,
-            }}
-          >
-            <Icon d={I.save} size={12} /> {isEdit ? "Perbarui" : "Simpan"}
-          </button>
-        </div>
-      </div>
+      {confirm && (
+        <Confirm
+          msg={confirm.msg}
+          onConfirm={confirm.onConfirm}
+          onCancel={() => setConfirm(null)}
+        />
+      )}
     </div>
   );
 }
 // ══════ LEVEL 1: ANGGARAN CARD ══════
-function AnggaranCard({ ang, onSelect, onDelete }) {
+function AnggaranCard({ ang, onSelect, onShowRkap, onDelete }) {
   const assetTotal = (ang.assets || []).reduce(
     (s, a) => s + (a.acquisition_value || 0),
     0,
   );
-  const hasAssets = (ang.assets || []).length > 0;
-  const kontrakTotal = hasAssets
-    ? (ang.projects || []).reduce((s, p) => s + (p.nilai_kontrak || 0), 0)
-    : 0;
-  const serapan =
-    ang.nilai_kad > 0 ? Math.round((assetTotal / ang.nilai_kad) * 100) : 0;
-  const meta = pctMeta(serapan);
-  // Hitung total semua RKAP entries (termasuk awal) dari history_anggaran
-  const totalRkapEntries = (ang.history_anggaran || []).reduce(
-    (s, h) => s + (h.nilai_rkap || 0),
-    0,
-  );
   const nilaiKadBatas = ang.nilai_kad || 0;
-  const sisaRkap = Math.max(0, nilaiKadBatas - totalRkapEntries);
-  const rkapPct =
-    nilaiKadBatas > 0
-      ? Math.min(100, Math.round((totalRkapEntries / nilaiKadBatas) * 100))
-      : 0;
+  const serapan = ang.nilai_kad > 0 ? Math.round((assetTotal / ang.nilai_kad) * 100) : 0;
+  const meta = pctMeta(serapan);
+  const isMulti = ang.thn_rkap_awal !== ang.thn_rkap_akhir;
+
   return (
     <div className="ang-card" onClick={() => onSelect(ang)}>
       <div className="ang-card-inner">
@@ -3770,152 +3368,144 @@ function AnggaranCard({ ang, onSelect, onDelete }) {
           <div className="ang-card-info">
             <div className="ang-card-tags">
               <span className="badge capex">CAPEX</span>
-              <span className="yr-tag">{ang.thnAnggaran}</span>
+              <span 
+                className={`yr-tag ${isMulti ? 'multi' : ''}`}
+                onClick={(e) => {
+                  if (isMulti) {
+                    e.stopPropagation();
+                    onShowRkap(ang);
+                  }
+                }}
+              >
+                {isMulti ? `${ang.thn_rkap_awal} — ${ang.thn_rkap_akhir}` : ang.thn_rkap_awal}
+                {isMulti && <Icon d={I.chevRight} size={11} />}
+              </span>
               <code className="code-tag">{ang.kode}</code>
             </div>
             <p className="ang-card-title">{ang.nama}</p>
           </div>
+
           <div className="ang-card-meta">
-            <span>
-              <Icon d={I.briefcase} size={12} />
-              {ang.projects?.length || 0} pekerjaan
-            </span>
-            <span>
-              <Icon d={I.package} size={12} />
-              {ang.assets?.length || 0} aset terdaftar
-            </span>
+            <span><Icon d={I.briefcase} size={12} /> {ang.projects?.length || 0} pekerjaan</span>
+            <span><Icon d={I.package} size={12} /> {ang.assets?.length || 0} aset terdaftar</span>
           </div>
+
           <div className="ang-card-fin">
             <div className="amt-blk">
               <span className="amt-lbl">Nilai KAD</span>
-              <span className="amt-val blue">
-                {ang.nilai_kad > 0 ? fmt(ang.nilai_kad) : "—"}
+              <span className="amt-val blue">{fmt(ang.nilai_kad)}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="ang-card-actions" style={{ padding: '0 18px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div className="ring-wrap">
+              <div className="ring">
+                <svg width="30" height="30" viewBox="0 0 36 36">
+                  <circle cx="18" cy="18" r="16" fill="none" stroke="#e2e8f0" strokeWidth="4" />
+                  <circle cx="18" cy="18" r="16" fill="none" stroke={pctColor(serapan)} strokeWidth="4" 
+                    strokeDasharray={`${(Math.min(serapan, 100) / 100) * 2 * Math.PI * 16} ${2 * Math.PI * 16}`}
+                    strokeDashoffset={2 * Math.PI * 16 * 0.25} strokeLinecap="round" />
+                </svg>
+                <span className="ring-lbl" style={{ fontSize: '0.6rem' }}>{serapan}%</span>
+              </div>
+              <span className="status-pill" style={{ background: meta.bg, color: meta.fg, borderColor: meta.border, fontSize: '0.6rem', padding: '1px 6px' }}>
+                {meta.label}
               </span>
             </div>
-            <div className="fin-div" />
-            {totalRkapEntries > 0 ? (
-              <div className="amt-blk">
-                <span className="amt-lbl">RKAP Terisi</span>
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 2 }}
-                >
-                  <span
-                    className={`amt-val ${sisaRkap <= 0 ? "red" : totalRkapEntries > 0 ? "amber" : ""}`}
-                    style={{ fontSize: "0.82rem" }}
-                  >
-                    {fmt(totalRkapEntries)}
-                    <span
-                      style={{
-                        fontSize: "0.65rem",
-                        fontWeight: 600,
-                        color: "var(--ink4)",
-                        marginLeft: 4,
-                      }}
-                    >
-                      / {fmt(nilaiKadBatas)}
-                    </span>
-                  </span>
-                  {/* Mini progress bar */}
-                  <div
-                    style={{
-                      height: 3,
-                      background: "var(--border)",
-                      borderRadius: 99,
-                      overflow: "hidden",
-                      width: 80,
-                    }}
-                  >
-                    <div
-                      style={{
-                        height: "100%",
-                        borderRadius: 99,
-                        width: `${rkapPct}%`,
-                        background:
-                          sisaRkap <= 0
-                            ? "var(--red)"
-                            : totalRkapEntries > 0
-                              ? "var(--amber)"
-                              : "var(--border)",
-                        transition: "width 0.4s ease",
-                      }}
-                    />
-                  </div>
-                  {sisaRkap <= 0 && (
-                    <span
-                      style={{
-                        fontSize: "0.6rem",
-                        fontWeight: 700,
-                        color: "var(--red)",
-                      }}
-                    >
-                      PENUH ✓
-                    </span>
-                  )}
-                  {sisaRkap > 0 && (
-                    <span style={{ fontSize: "0.6rem", color: "var(--ink4)" }}>
-                      Sisa: {fmt(sisaRkap)}
-                    </span>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="amt-blk">
-                <span className="amt-lbl">Nilai Kontrak</span>
-                <span className="amt-val red">{fmt(kontrakTotal)}</span>
-              </div>
-            )}
           </div>
-          <div
-            className="ang-card-actions"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {ang.nilai_kad > 0 && (
-              <div className="ring-wrap">
-                <div className="ring">
-                  <svg width="36" height="36" viewBox="0 0 36 36">
-                    <circle
-                      cx="18"
-                      cy="18"
-                      r={16}
-                      fill="none"
-                      stroke="#e2e8f0"
-                      strokeWidth="4"
-                    />
-                    <circle
-                      cx="18"
-                      cy="18"
-                      r={16}
-                      fill="none"
-                      stroke={pctColor(serapan)}
-                      strokeWidth="4"
-                      strokeDasharray={`${(Math.min(serapan, 100) / 100) * 2 * Math.PI * 16} ${2 * Math.PI * 16}`}
-                      strokeDashoffset={2 * Math.PI * 16 * 0.25}
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  <span className="ring-lbl">{serapan}%</span>
-                </div>
-                <span
-                  className="status-pill"
-                  style={{
-                    background: meta.bg,
-                    color: meta.fg,
-                    borderColor: meta.border,
-                  }}
-                >
-                  {meta.label}
-                </span>
-              </div>
-            )}
-            <div
-              className="ang-card-chevron"
-              onClick={() => onSelect(ang)}
-              style={{ cursor: "pointer" }}
-            >
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="abtn blue" onClick={(e) => { e.stopPropagation(); onSelect(ang); }}>
+              Pekerjaan
+            </button>
+            <button className="abtn del" onClick={(e) => { e.stopPropagation(); onDelete(ang.id); }}>
+              <Icon d={I.trash} size={14} />
+            </button>
+            <div className="ang-card-chevron">
               <Icon d={I.chevRight} size={16} />
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+// ══════ LEVEL 1.5: DETAIL RKAP TAHUNAN ══════
+function RkapDetailPage({ anggaran, onBack }) {
+  const totalRkap = (anggaran.history_anggaran || []).reduce((s, h) => s + (h.nilai_rkap || 0), 0);
+  const diff = anggaran.nilai_kad - totalRkap;
+
+  return (
+    <div style={{ animation: "fadeUp .15s ease-out" }}>
+      <Breadcrumb
+        items={[
+          { label: "Daftar Anggaran", onClick: onBack, icon: I.layers },
+          {
+            label: "Detail RKAP Tahunan",
+            icon: I.calendar,
+          },
+        ]}
+      />
+      
+      <div style={{ background: 'var(--surf)', borderRadius: 'var(--r-md)', border: '1px solid var(--border)', padding: '24px', boxShadow: 'var(--sh-sm)', marginBottom: 24 }}>
+        <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div>
+            <h2 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--ink)', lineHeight: 1.2 }}>{anggaran.nama}</h2>
+            <div style={{ display: 'flex', gap: 10, marginTop: 6 }}>
+              <span className="badge blue" style={{ fontSize: '0.68rem', fontWeight: 700 }}>{anggaran.kode}</span>
+              <span className="badge capex" style={{ fontSize: '0.68rem', fontWeight: 700 }}>KAD: {fmt(anggaran.nilai_kad)}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="asset-table-wrap">
+          <table className="asset-table">
+            <thead>
+              <tr>
+                <th className="th-no">No</th>
+                <th>Tahun Anggaran</th>
+                <th style={{ textAlign: 'right' }}>Nilai RKAP</th>
+                <th style={{ textAlign: 'center' }}>%</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(anggaran.history_anggaran || []).map((h, i) => {
+                const percent = (h.nilai_rkap / anggaran.nilai_kad) * 100;
+                return (
+                  <tr key={h.id}>
+                    <td className="td-no">{i + 1}</td>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <Icon d={I.calendar} size={13} style={{ color: "var(--blue)" }} />
+                        <span style={{ fontWeight: 600 }}>Tahun Anggaran {h.tahun}</span>
+                      </div>
+                    </td>
+                    <td style={{ textAlign: 'right', fontWeight: 800, color: 'var(--blue)', fontFamily: 'var(--mono)' }}>
+                      {fmt(h.nilai_rkap)}
+                    </td>
+                    <td style={{ textAlign: 'center', fontWeight: 800, color: 'var(--ink2)' }}>
+                      {percent.toFixed(1)}%
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+            <tfoot>
+              <tr style={{ background: 'var(--bg)', fontStyle: 'normal' }}>
+                <td colSpan={2} style={{ textAlign: 'right', fontWeight: 800, color: 'var(--ink2)', padding: '12px' }}>TOTAL TERISI</td>
+                <td style={{ textAlign: 'right', fontWeight: 900, color: 'var(--blue)', padding: '12px', fontSize: '0.95rem' }}>{fmt(totalRkap)}</td>
+                <td style={{ textAlign: 'center', fontWeight: 800, color: 'var(--ink)', padding: '12px' }}>{((totalRkap / anggaran.nilai_kad) * 100).toFixed(1)}%</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <button className="btn btn-prim" onClick={onBack}>
+          Kembali ke Daftar
+        </button>
       </div>
     </div>
   );
@@ -3936,16 +3526,33 @@ function PekerjaanListPage({
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [confirm, setConfirm] = useState(null);
+  const [filterYear, setFilterYear] = useState("all");
   const projects = anggaran.projects || [];
+  const isMulti = anggaran.thn_rkap_awal !== anggaran.thn_rkap_akhir;
+  const availableYears = Array.from(
+    { length: anggaran.thn_rkap_akhir - anggaran.thn_rkap_awal + 1 },
+    (_, i) => anggaran.thn_rkap_awal + i,
+  );
+  const filteredByYear = useMemo(
+    () =>
+      filterYear === "all"
+        ? projects
+        : projects.filter(
+          (p) =>
+            p.tgl_kontrak &&
+            String(new Date(p.tgl_kontrak).getFullYear()) === String(filterYear),
+        ),
+    [projects, filterYear],
+  );
   const filtered = useMemo(
     () =>
-      projects.filter(
+      filteredByYear.filter(
         (p) =>
           !search ||
           p.nm_pekerjaan?.toLowerCase().includes(search.toLowerCase()) ||
           p.no_kontrak?.toLowerCase().includes(search.toLowerCase()),
       ),
-    [projects, search],
+    [filteredByYear, search],
   );
   const paginated = useMemo(
     () => filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
@@ -3956,11 +3563,8 @@ function PekerjaanListPage({
     (s, a) => s + (a.acquisition_value || 0),
     0,
   );
-  const totalKontrak =
-    assetCount > 0
-      ? projects.reduce((s, p) => s + (p.nilai_kontrak || 0), 0)
-      : 0;
-  const totalRab = projects.reduce((s, p) => s + (p.nilai_rab || 0), 0);
+  const totalKontrak = filteredByYear.reduce((s, p) => s + (p.nilai_kontrak || 0), 0);
+  const totalRab = filteredByYear.reduce((s, p) => s + (p.nilai_rab || 0), 0);
   return (
     <div style={{ animation: "fadeUp .15s ease-out" }}>
       <Breadcrumb
@@ -3974,7 +3578,6 @@ function PekerjaanListPage({
           },
         ]}
       />
-      {/* Context banner for selected anggaran */}
       <div
         style={{
           background: "var(--surf)",
@@ -3994,9 +3597,10 @@ function PekerjaanListPage({
           [
             "Nama Anggaran",
             anggaran.nama.substring(0, 40) +
-              (anggaran.nama.length > 40 ? "…" : ""),
+            (anggaran.nama.length > 40 ? "…" : ""),
           ],
-          ["Tahun", String(anggaran.thnAnggaran)],
+          ["RKAP Awal", String(anggaran.thn_rkap_awal)],
+          ["RKAP Akhir", String(anggaran.thn_rkap_akhir)],
           [
             "Nilai KAD",
             anggaran.nilai_kad > 0 ? fmt(anggaran.nilai_kad) : "—",
@@ -4034,15 +3638,80 @@ function PekerjaanListPage({
           </div>
         ))}
       </div>
-      {/* Toolbar */}
+
+      {/* POSISI DIPINDAHKAN: KPI Strip sekarang di atas Toolbar */}
+      <div className="kpi-strip" style={{ marginBottom: 16 }}>
+        {[
+          {
+            cls: "blue",
+            icon: I.briefcase,
+            lbl: "Total Pekerjaan",
+            val: filteredByYear.length,
+            sub: `(Sisa: ${fmt(anggaran.nilai_kad - totalKontrak)})`,
+          },
+          {
+            cls: "amber",
+            icon: I.fileText,
+            lbl: "Nilai RAB",
+            val: fmt(totalRab),
+          },
+          {
+            cls: "amber",
+            icon: I.fileText,
+            lbl: "Nilai Kontrak",
+            val: fmt(totalKontrak),
+          },
+        ].map(({ cls, icon, lbl, val, sub }) => (
+          <div key={lbl} className={`kpi ${cls}`}>
+            <div className="kpi-ico">
+              <Icon d={icon} size={20} />
+            </div>
+            <div className="kpi-body">
+              <div className="kpi-lbl">{lbl}</div>
+              <div className="kpi-val">{val}</div>
+              {sub && <div style={{ fontSize: "0.68rem", fontWeight: 700, marginTop: 2, opacity: 0.8 }}>{sub}</div>}
+            </div>
+          </div>
+        ))}
+      </div>
+
       <div className="toolbar">
         <button className="btn btn-outline" onClick={onBack}>
           <Icon d={I.arrowLeft} size={13} /> Kembali
         </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, flex: 1 }}>
+          <div style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--ink2)", whiteSpace: "nowrap" }}>
+            {isMulti
+              ? `Input Pekerjaan CAPEX Tahun ${anggaran.thn_rkap_awal} hingga ${anggaran.thn_rkap_akhir}`
+              : `Input Pekerjaan CAPEX Tahun ${anggaran.thn_rkap_awal}`}
+          </div>
+          <div className="flt-box" style={{ background: "var(--blue-lt)", borderColor: "var(--blue-mid)" }}>
+            <Icon d={I.calendar} size={13} style={{ color: "var(--blue)" }} />
+            {isMulti ? (
+              <select
+                className="flt-select"
+                value={filterYear}
+                onChange={(e) => setFilterYear(e.target.value)}
+                style={{ color: "var(--blue)", fontWeight: 700 }}
+              >
+                <option value="all">Semua Tahun Kontrak</option>
+                {availableYears.map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--blue)", padding: "0 8px" }}>
+                RKAP: {anggaran.thn_rkap_awal}
+              </span>
+            )}
+          </div>
+        </div>
         <div className="srch">
           <Icon d={I.search} size={14} />
           <input
-            placeholder="Cari nama pekerjaan atau nomor kontrak..."
+            placeholder="Cari nama pekerjaan..."
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
@@ -4058,48 +3727,11 @@ function PekerjaanListPage({
             opacity: anggaran.nilai_kad === 0 ? 0.5 : 1,
             cursor: anggaran.nilai_kad === 0 ? "not-allowed" : "pointer",
           }}
-          title={
-            anggaran.nilai_kad === 0
-              ? "Silakan isi Nilai KAD terlebih dahulu"
-              : ""
-          }
         >
           <Icon d={I.plus} size={14} /> Tambah Pekerjaan
         </button>
       </div>
-      {/* KPI strip */}
-      <div className="kpi-strip" style={{ marginBottom: 16 }}>
-        {[
-          {
-            cls: "blue",
-            icon: I.briefcase,
-            lbl: "Total Pekerjaan",
-            val: projects.length,
-          },
-          {
-            cls: "amber",
-            icon: I.fileText,
-            lbl: "Nilai RAB",
-            val: fmt(totalRab),
-          },
-          {
-            cls: "amber",
-            icon: I.fileText,
-            lbl: "Nilai Kontrak",
-            val: fmt(totalKontrak),
-          },
-        ].map(({ cls, icon, lbl, val }) => (
-          <div key={lbl} className={`kpi ${cls}`}>
-            <div className="kpi-ico">
-              <Icon d={icon} size={20} />
-            </div>
-            <div className="kpi-body">
-              <div className="kpi-lbl">{lbl}</div>
-              <div className="kpi-val">{val}</div>
-            </div>
-          </div>
-        ))}
-      </div>
+
       {filtered.length === 0 ? (
         <div className="empty">
           {projects.length === 0
@@ -4127,7 +3759,7 @@ function PekerjaanListPage({
                   <th>Tgl. Kontrak</th>
                   <th style={{ textAlign: "right" }}>Nilai Kontrak</th>
                   <th style={{ textAlign: "right" }}>Nilai RAB</th>
-                  <th style={{ textAlign: "center" }}>Aset</th>
+                  <th style={{ textAlign: "center" }}>%</th>
                   <th className="th-actions">Aksi</th>
                 </tr>
               </thead>
@@ -4149,10 +3781,7 @@ function PekerjaanListPage({
                   </tr>
                 ) : (
                   paginated.map((proj, i) => {
-                    const assets = anggaran.assets || [];
-                    const assetCount = assets.length;
-                    const displayedKontrak =
-                      assetCount > 0 ? proj.nilai_kontrak || 0 : 0;
+                    const percent = proj.nilai_rab > 0 ? (proj.nilai_kontrak / proj.nilai_rab) * 100 : 0;
                     return (
                       <tr key={proj.id}>
                         <td className="td-no">
@@ -4178,7 +3807,7 @@ function PekerjaanListPage({
                             className="td-value"
                             style={{ color: "var(--red)" }}
                           >
-                            {fmt(displayedKontrak)}
+                            {fmt(proj.nilai_kontrak || 0)}
                           </span>
                         </td>
                         <td>
@@ -4190,9 +3819,13 @@ function PekerjaanListPage({
                           </span>
                         </td>
                         <td
-                          style={{ textAlign: "center", color: "var(--ink2)" }}
+                          style={{ 
+                            textAlign: "center", 
+                            fontWeight: 800,
+                            color: pctColor(percent)
+                          }}
                         >
-                          {assetCount} aset
+                          {percent.toFixed(1)}%
                         </td>
                         <td className="td-actions">
                           <div className="td-act-row">
@@ -4268,25 +3901,27 @@ export default function BudgetManagement({ forcedType }) {
   const [capexPage, setCapexPage] = useState(1);
   const [opexPage, setOpexPage] = useState(1);
   const [showAddOpex, setShowAddOpex] = useState(false);
-  // ── CAPEX 3-level navigation state ──
-  // capexLevel: "list" | "pekerjaan" | "detail"
   const [capexLevel, setCapexLevel] = useState("list");
   const [selectedAnggaran, setSelectedAnggaran] = useState(null);
   const [capexAngPage, setCapexAngPage] = useState(1);
   const [capexAngSearch, setCapexAngSearch] = useState("");
-  const [capexAngTahun, setCapexAngTahun] = useState("all");
+  // REVISI: Mengganti single year filter dengan range filter (Dari - s/d)
+  const [capexThnFrom, setCapexThnFrom] = useState("all");
+  const [capexThnTo, setCapexThnTo] = useState("all");
+
   useEffect(() => {
     if (forcedType) setTypeFilter(forcedType);
   }, [forcedType]);
   const showToast = (msg) => setToast(msg);
   const yearOpts = useMemo(() => {
-    const all = Array.from(
-      new Set([
-        ...capexData.map((a) => a.thnAnggaran),
-        ...opexData.map((a) => a.thn_anggaran),
-      ]),
-    ).sort();
-    return ["all", ...all.map(String)];
+    const all = new Set();
+    capexData.forEach((a) => {
+      for (let y = a.thn_rkap_awal; y <= a.thn_rkap_akhir; y++) {
+        all.add(y);
+      }
+    });
+    opexData.forEach((a) => all.add(a.thn_anggaran));
+    return ["all", ...Array.from(all).sort().map(String)];
   }, [capexData, opexData]);
   const filteredOpex = useMemo(
     () =>
@@ -4314,24 +3949,23 @@ export default function BudgetManagement({ forcedType }) {
       Array.from(new Set(allKd)).includes(m.kd_anggaran_master),
     );
   }, [opexData, tahun]);
-  // Filtered anggaran for CAPEX level 1
   const filteredAnggaran = useMemo(
     () =>
       capexData.filter((a) => {
-        if (capexAngTahun !== "all" && String(a.thnAnggaran) !== capexAngTahun)
-          return false;
+        // REVISI: Filter berdasarkan range RKAP Awal & Akhir
+        if (capexThnFrom !== "all" && a.thn_rkap_akhir < parseInt(capexThnFrom)) return false;
+        if (capexThnTo !== "all" && a.thn_rkap_awal > parseInt(capexThnTo)) return false;
         if (
           capexAngSearch &&
           !a.nama?.toLowerCase().includes(capexAngSearch.toLowerCase()) &&
           !a.kode?.toLowerCase().includes(capexAngSearch.toLowerCase())
         )
           return false;
-        // Filter: jika ada aset tapi nilai_kad = 0, jangan tampilkan
         const hasAssets = (a.assets || []).length > 0;
         if (hasAssets && a.nilai_kad === 0) return false;
         return true;
       }),
-    [capexData, capexAngTahun, capexAngSearch],
+    [capexData, capexThnFrom, capexThnTo, capexAngSearch],
   );
   const paginatedAnggaran = useMemo(
     () =>
@@ -4356,18 +3990,16 @@ export default function BudgetManagement({ forcedType }) {
   }, [opexKdFilter, opexSearch]);
   useEffect(() => {
     setCapexAngPage(1);
-  }, [capexAngSearch, capexAngTahun]);
+  }, [capexAngSearch, capexThnFrom, capexThnTo]);
   const paginatedOpex = useMemo(() => {
     const s = (opexPage - 1) * PAGE_SIZE;
     return filteredOpex.slice(s, s + PAGE_SIZE);
   }, [filteredOpex, opexPage]);
-  // Get latest anggaran data
   const getLatestAnggaran = (id) => capexData.find((a) => a.id === id);
-  // KPI cards
   const kpiCards = useMemo(() => {
     const capexFiltered = capexData.filter((a) => {
-      if (capexAngTahun !== "all" && String(a.thnAnggaran) !== capexAngTahun)
-        return false;
+      if (capexThnFrom !== "all" && a.thn_rkap_akhir < parseInt(capexThnFrom)) return false;
+      if (capexThnTo !== "all" && a.thn_rkap_awal > parseInt(capexThnTo)) return false;
       const hasAssets = (a.assets || []).length > 0;
       if (hasAssets && a.nilai_kad === 0) return false;
       return true;
@@ -4402,12 +4034,6 @@ export default function BudgetManagement({ forcedType }) {
         ),
       0,
     );
-    const capexKadPct =
-      capexKad > 0 ? Math.round((capexAset / capexKad) * 100) : 0;
-    const capexAsetPct =
-      capexKad > 0 ? Math.round((capexAset / capexKad) * 100) : 0;
-    const capexKontrakPct =
-      capexKontrak > 0 ? Math.round((capexAset / capexKontrak) * 100) : 0;
     const opexCount = opexFiltered.length;
     const opexPagu = opexFiltered.reduce(
       (s, a) => s + (a.nilai_anggaran_tahunan || 0),
@@ -4418,7 +4044,7 @@ export default function BudgetManagement({ forcedType }) {
         s + (a.transaksi || []).reduce((ts, t) => ts + (t.jumlah || 0), 0),
       0,
     );
-    if (typeFilter === "capex") {
+    if (typeFilter === "capex")
       return [
         {
           cls: "blue",
@@ -4444,8 +4070,7 @@ export default function BudgetManagement({ forcedType }) {
               : "—",
         },
       ];
-    }
-    if (typeFilter === "opex") {
+    if (typeFilter === "opex")
       return [
         {
           cls: "blue",
@@ -4466,7 +4091,6 @@ export default function BudgetManagement({ forcedType }) {
           val: fmt(opexPagu),
         },
       ];
-    }
     return [
       {
         cls: "blue",
@@ -4487,8 +4111,7 @@ export default function BudgetManagement({ forcedType }) {
         val: fmt(opexPagu),
       },
     ];
-  }, [capexData, filteredOpex, typeFilter, capexAngTahun, filteredAnggaran]);
-  // Data mutations
+  }, [capexData, filteredOpex, typeFilter, capexThnFrom, capexThnTo, filteredAnggaran]);
   const saveOpexTrx = (id, trx) =>
     setOpexData((p) =>
       p.map((a) => (a.id === id ? { ...a, transaksi: trx } : a)),
@@ -4513,12 +4136,10 @@ export default function BudgetManagement({ forcedType }) {
         ),
       })),
     );
-  // Save assets at anggaran level
   const saveAssetsToAnggaran = (anggaranId, assets) => {
     setCapexData((p) =>
       p.map((ang) => (ang.id === anggaranId ? { ...ang, assets } : ang)),
     );
-    // Update selectedAnggaran if needed
     setSelectedAnggaran((prev) =>
       prev?.id === anggaranId ? { ...prev, assets } : prev,
     );
@@ -4528,9 +4149,9 @@ export default function BudgetManagement({ forcedType }) {
       p.map((ang) =>
         ang.id === angId
           ? {
-              ...ang,
-              projects: (ang.projects || []).filter((pr) => pr.id !== projId),
-            }
+            ...ang,
+            projects: (ang.projects || []).filter((pr) => pr.id !== projId),
+          }
           : ang,
       ),
     );
@@ -4557,7 +4178,6 @@ export default function BudgetManagement({ forcedType }) {
         setConfirm(null);
       },
     });
-  // Sync selectedAnggaran with capexData mutations
   useEffect(() => {
     if (selectedAnggaran) {
       const latest = capexData.find((a) => a.id === selectedAnggaran.id);
@@ -4573,7 +4193,6 @@ export default function BudgetManagement({ forcedType }) {
       </div>
     </>
   );
-  // ── Sub-pages (OPEX & shared) ──
   if (page?.type === "editProject")
     return sharedWrap(
       <EditProjectPage
@@ -4654,49 +4273,40 @@ export default function BudgetManagement({ forcedType }) {
   if (page?.type === "realisasiTable") {
     const angNow = opexData.find((a) => a.id === page.ang.id) || page.ang;
     return sharedWrap(
-      <>
-        <RealisasiTablePage
-          ang={angNow}
-          onBack={() => setPage(null)}
-          onEntryNew={() =>
-            setPage({
-              type: "realisasi",
-              ang: angNow,
-              editData: null,
-              returnToTable: true,
-            })
-          }
-          onEditRow={(t) =>
-            setPage({
-              type: "realisasi",
-              ang: angNow,
-              editData: t,
-              returnToTable: true,
-            })
-          }
-          onDeleteRow={(id) =>
-            setConfirm({
-              msg: "Hapus pekerjaan ini?",
-              onConfirm: () => {
-                saveOpexTrx(
-                  angNow.id,
-                  angNow.transaksi.filter((trx) => trx.id !== id),
-                );
-                showToast("Pekerjaan dihapus");
-                setConfirm(null);
-              },
-            })
-          }
-          showToast={showToast}
-        />
-        {confirm && (
-          <Confirm
-            msg={confirm.msg}
-            onConfirm={confirm.onConfirm}
-            onCancel={() => setConfirm(null)}
-          />
-        )}
-      </>,
+      <RealisasiTablePage
+        ang={angNow}
+        onBack={() => setPage(null)}
+        onEntryNew={() =>
+          setPage({
+            type: "realisasi",
+            ang: angNow,
+            editData: null,
+            returnToTable: true,
+          })
+        }
+        onEditRow={(t) =>
+          setPage({
+            type: "realisasi",
+            ang: angNow,
+            editData: t,
+            returnToTable: true,
+          })
+        }
+        onDeleteRow={(id) =>
+          setConfirm({
+            msg: "Hapus pekerjaan ini?",
+            onConfirm: () => {
+              saveOpexTrx(
+                angNow.id,
+                angNow.transaksi.filter((trx) => trx.id !== id),
+              );
+              showToast("Pekerjaan dihapus");
+              setConfirm(null);
+            },
+          })
+        }
+        showToast={showToast}
+      />,
     );
   }
   if (page?.type === "realisasi") {
@@ -4715,7 +4325,6 @@ export default function BudgetManagement({ forcedType }) {
       />,
     );
   }
-  // ── CAPEX Level 2: Daftar Pekerjaan per Anggaran ──
   if (
     capexLevel === "pekerjaan" &&
     selectedAnggaran &&
@@ -4801,58 +4410,63 @@ export default function BudgetManagement({ forcedType }) {
       <style>{CSS}</style>
       <div className="root">
         {toast && <Toast msg={toast} onDone={() => setToast(null)} />}
-        <div className="hdr">
-          <div>
-            <h1>{headerTitle}</h1>
-            <p>{headerSubtitle}</p>
+        {capexLevel === "list" && (
+          <div className="hdr">
+            <div>
+              <h1>{headerTitle}</h1>
+              <p>{headerSubtitle}</p>
+            </div>
+            {!forcedType && (
+              <div className="hdr-right">
+                <div className="type-tabs">
+                  {[
+                    ["all", "all", I.layers, "Semua"],
+                    ["capex", "", I.briefcase, "CAPEX"],
+                    ["opex", "", I.monitor, "OPEX"],
+                  ].map(([val, cls, icon, lbl]) => (
+                    <button
+                      key={val}
+                      className={`type-tab ${cls} ${typeFilter === val ? "on" : ""}`}
+                      onClick={() => setTypeFilter(val)}
+                    >
+                      <Icon d={icon} size={14} /> {lbl}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
-          {!forcedType && (
-            <div className="hdr-right">
-              <div className="type-tabs">
-                {[
-                  ["all", "all", I.layers, "Semua"],
-                  ["capex", "", I.briefcase, "CAPEX"],
-                  ["opex", "", I.monitor, "OPEX"],
-                ].map(([val, cls, icon, lbl]) => (
-                  <button
-                    key={val}
-                    className={`type-tab ${cls} ${typeFilter === val ? "on" : ""}`}
-                    onClick={() => setTypeFilter(val)}
-                  >
-                    <Icon d={icon} size={14} /> {lbl}
-                  </button>
-                ))}
+        )}
+        {capexLevel === "list" && (
+          <div className="kpi-strip">
+            {kpiCards.map(({ cls, icon, lbl, val, pct }) => (
+              <div key={lbl} className={`kpi ${cls}`}>
+                <div className="kpi-ico">
+                  <Icon d={icon} size={20} />
+                </div>
+                <div className="kpi-body">
+                  <div className="kpi-lbl">{lbl}</div>
+                  <div className="kpi-val">{val}</div>
+                  {pct && (
+                    <div
+                      style={{
+                        fontSize: "0.75rem",
+                        color: "var(--ink4)",
+                        marginTop: 4,
+                      }}
+                    >
+                      {pct}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
-        </div>
-        <div className="kpi-strip">
-          {kpiCards.map(({ cls, icon, lbl, val, pct }) => (
-            <div key={lbl} className={`kpi ${cls}`}>
-              <div className="kpi-ico">
-                <Icon d={icon} size={20} />
-              </div>
-              <div className="kpi-body">
-                <div className="kpi-lbl">{lbl}</div>
-                <div className="kpi-val">{val}</div>
-                {pct && (
-                  <div
-                    style={{
-                      fontSize: "0.75rem",
-                      color: "var(--ink4)",
-                      marginTop: 4,
-                    }}
-                  >
-                    {pct}
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-        {/* ── CAPEX: Level 1 — Daftar Anggaran ── */}
+            ))}
+          </div>
+        )}
         {showCapex && (
           <>
+            {capexLevel === "list" && (
+              <>
             {showBoth && (
               <div className="section-label">
                 <div className="section-label-line" />
@@ -4894,37 +4508,25 @@ export default function BudgetManagement({ forcedType }) {
                 </p>
               </div>
             )}
-            <div className="toolbar">
+            <div className="toolbar" style={{ flexWrap: "wrap", gap: "8px" }}>
               <div className="flt-box">
                 <Icon d={I.calendar} size={14} />
-                <select
-                  className="flt-select"
-                  value={capexAngTahun}
-                  onChange={(e) => {
-                    setCapexAngTahun(e.target.value);
-                    setCapexAngPage(1);
-                  }}
-                >
-                  <option value="all">Semua Tahun</option>
-                  {yearOpts
-                    .filter((y) => y !== "all")
-                    .map((y) => (
-                      <option key={y} value={y}>
-                        {y}
-                      </option>
-                    ))}
+                <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--ink3)", marginRight: 4 }}>RKAP Dari</span>
+                <select className="flt-select" value={capexThnFrom} onChange={(e) => { setCapexThnFrom(e.target.value); setCapexAngPage(1); }} style={{ maxWidth: 90 }}>
+                  <option value="all">Semua</option>
+                  {yearOpts.filter((y) => y !== "all").map((y) => (<option key={y} value={y}>{y}</option>))}
+                </select>
+              </div>
+              <div className="flt-box">
+                <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--ink3)", marginRight: 4 }}>s/d</span>
+                <select className="flt-select" value={capexThnTo} onChange={(e) => { setCapexThnTo(e.target.value); setCapexAngPage(1); }} style={{ maxWidth: 90 }}>
+                  <option value="all">Semua</option>
+                  {yearOpts.filter((y) => y !== "all").map((y) => (<option key={y} value={y}>{y}</option>))}
                 </select>
               </div>
               <div className="srch">
                 <Icon d={I.search} size={14} />
-                <input
-                  placeholder="Cari nama atau kode anggaran..."
-                  value={capexAngSearch}
-                  onChange={(e) => {
-                    setCapexAngSearch(e.target.value);
-                    setCapexAngPage(1);
-                  }}
-                />
+                <input placeholder="Cari nama atau kode anggaran..." value={capexAngSearch} onChange={(e) => { setCapexAngSearch(e.target.value); setCapexAngPage(1); }} />
               </div>
             </div>
             {filteredAnggaran.length === 0 ? (
@@ -4942,6 +4544,10 @@ export default function BudgetManagement({ forcedType }) {
                         setSelectedAnggaran(a);
                         setCapexLevel("pekerjaan");
                       }}
+                      onShowRkap={(a) => {
+                        setSelectedAnggaran(a);
+                        setCapexLevel("rkap_detail");
+                      }}
                       onDelete={deleteAnggaran}
                     />
                   ))}
@@ -4952,11 +4558,18 @@ export default function BudgetManagement({ forcedType }) {
                   onPage={setCapexAngPage}
                   label="pos anggaran"
                 />
+                  </>
+                )}
               </>
+            )}
+            {capexLevel === "rkap_detail" && selectedAnggaran && (
+              <RkapDetailPage
+                anggaran={selectedAnggaran}
+                onBack={() => setCapexLevel("list")}
+              />
             )}
           </>
         )}
-        {/* ── OPEX section ── */}
         {showOpex && (
           <>
             {showBoth && (
