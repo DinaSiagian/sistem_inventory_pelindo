@@ -311,7 +311,7 @@ const INIT_CAPEX_FORM = [
 
 const yearOpts = (() => {
   const a = [];
-  for (let y = CURRENT_YEAR + 1; y >= 2021; y--) a.push(y);
+  for (let y = CURRENT_YEAR + 2; y >= 2021; y--) a.push(y);
   return a;
 })();
 
@@ -828,10 +828,7 @@ function InlineHistoryTable({ row, mode = "opex", onUpdateHistoryRecord, onDelet
                           borderColor: "#fde68a",
                         }}
                         onClick={() => {
-                          if (h.is_initial) {
-                            alert("Tidak bisa edit riwayat Input Awal");
-                            return;
-                          }
+
                           setEditHistoryId(h.id);
                           setEditFormH({
                             tipe: h.tipe,
@@ -851,10 +848,7 @@ function InlineHistoryTable({ row, mode = "opex", onUpdateHistoryRecord, onDelet
                           borderColor: "#fecaca",
                         }}
                         onClick={() => {
-                          if (h.is_initial) {
-                            alert("Tidak bisa hapus riwayat Input Awal");
-                            return;
-                          }
+
                           if (onDeleteHistoryRecord) {
                             onDeleteHistoryRecord(h.id);
                           }
@@ -940,10 +934,15 @@ function InlineHistoryTable({ row, mode = "opex", onUpdateHistoryRecord, onDelet
                   style={{ ...S.inp, maxWidth: 240 }}
                 >
                   <option value="">Pilih tipe</option>
+                  <option value="initial">Input Awal</option>
                   <option value="penambahan">Penambahan</option>
                   <option value="pengurangan">Pengurangan</option>
-                  <option value="bymhd">BYMHD</option>
-                  <option value="transfer">Transfer</option>
+                  {mode === "opex" && (
+                    <>
+                      <option value="bymhd">BYMHD</option>
+                      <option value="transfer">Transfer</option>
+                    </>
+                  )}
                 </select>
               </ModalFormRow>
               <ModalFormRow label="Nilai (Rp)" required>
@@ -1285,12 +1284,8 @@ function RealisasiSection({ master, setMasters, toast_ }) {
             let newMurni = r.realisasi_murni,
               newBymhd = r.realisasi_bymhd || 0;
             if (tipe === "pengurangan") newMurni -= nilai;
-            else if (
-              tipe === "penambahan" ||
-              tipe === "bymhd" ||
-              tipe === "transfer"
-            )
-              newBymhd += nilai;
+            else if (tipe === "penambahan") newMurni += nilai;
+            else if (tipe === "bymhd" || tipe === "transfer") newBymhd += nilai;
             return {
               ...r,
               realisasi_murni: newMurni,
@@ -1406,10 +1401,23 @@ function RealisasiSection({ master, setMasters, toast_ }) {
         if (m.id !== master.id) return m;
         return {
           ...m,
-          realisasi_tahunan: (m.realisasi_tahunan || []).map((r) => ({
-            ...r,
-            history: (r.history || []).filter((h) => h.id !== historyId),
-          })),
+          realisasi_tahunan: (m.realisasi_tahunan || []).map((r) => {
+            const newHistory = (r.history || []).filter((h) => h.id !== historyId);
+            let newMurni = 0, newBymhd = 0;
+            newHistory.forEach((h) => {
+              const isInitial = h.is_initial || h.tipe === "initial";
+              if (isInitial) newMurni += h.nilai;
+              else if (h.tipe === "penambahan") newMurni += h.nilai;
+              else if (h.tipe === "pengurangan") newMurni -= h.nilai;
+              else if (h.tipe === "bymhd" || h.tipe === "transfer") newBymhd += h.nilai;
+            });
+            return {
+              ...r,
+              history: newHistory,
+              realisasi_murni: Math.max(0, newMurni),
+              realisasi_bymhd: Math.max(0, newBymhd),
+            };
+          }),
         };
       }),
     );
@@ -1593,17 +1601,7 @@ function RealisasiSection({ master, setMasters, toast_ }) {
               {list.length} tahun
             </span>
           </div>
-          <button
-            style={{
-              ...S.btn,
-              background: "#16a34a",
-              padding: "6px 12px",
-              fontSize: "0.75rem",
-            }}
-            onClick={() => setShowForm(true)}
-          >
-            <Plus size={12} /> Input Anggaran Baru
-          </button>
+
         </div>
 
         <table style={{ ...S.tbl, border: "none" }}>
@@ -1848,14 +1846,20 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
     let real = 0, bymhd = 0;
     (history || []).forEach((h) => {
       if (h.is_initial || h.tipe === "initial") real += h.nilai;
-      else if (h.tipe === "penambahan") bymhd += h.nilai;
+      else if (h.tipe === "penambahan") real += h.nilai;
       else if (h.tipe === "pengurangan") real -= h.nilai;
+      else if (h.tipe === "bymhd" || h.tipe === "transfer") bymhd += h.nilai;
     });
     return { real, bymhd, total: real + bymhd };
   };
 
   const handleSaveNew = () => {
     setFormError(null);
+    const thnInput = parseInt(form.thn);
+    if (capex.anggaran_tahunan && capex.anggaran_tahunan.some((r) => r.thn === thnInput)) {
+      setFormError(`Tahun anggaran ${thnInput} sudah ada pada anggaran ini.`);
+      return;
+    }
     const nilaiInput = parseFloat(form.nilai_anggaran) || 0;
     if (nilaiInput <= 0) {
       setFormError("Nilai anggaran harus lebih dari 0!");
@@ -1982,12 +1986,25 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
         if (c.id !== capex.id) return c;
         return {
           ...c,
-          anggaran_tahunan: (c.anggaran_tahunan || []).map((r) => ({
-            ...r,
-            history: (r.history || []).map((h) =>
+          anggaran_tahunan: (c.anggaran_tahunan || []).map((r) => {
+            const historyIdx = (r.history || []).findIndex((h) => h.id === historyId);
+            if (historyIdx === -1) return r;
+            const newHistory = r.history.map((h) =>
               h.id === historyId ? { ...h, ...updates } : h,
-            ),
-          })),
+            );
+            let newNilai = 0;
+            newHistory.forEach((h) => {
+              const isInitial = h.is_initial || h.tipe === "initial";
+              if (isInitial) newNilai += h.nilai;
+              else if (h.tipe === "penambahan") newNilai += h.nilai;
+              else if (h.tipe === "pengurangan") newNilai -= h.nilai;
+            });
+            return {
+              ...r,
+              history: newHistory,
+              nilai_anggaran: Math.max(0, newNilai),
+            };
+          }),
         };
       }),
     );
@@ -2000,10 +2017,21 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
         if (c.id !== capex.id) return c;
         return {
           ...c,
-          anggaran_tahunan: (c.anggaran_tahunan || []).map((r) => ({
-            ...r,
-            history: (r.history || []).filter((h) => h.id !== historyId),
-          })),
+          anggaran_tahunan: (c.anggaran_tahunan || []).map((r) => {
+            const newHistory = (r.history || []).filter((h) => h.id !== historyId);
+            let newNilai = 0;
+            newHistory.forEach((h) => {
+              const isInitial = h.is_initial || h.tipe === "initial";
+              if (isInitial) newNilai += h.nilai;
+              else if (h.tipe === "penambahan") newNilai += h.nilai;
+              else if (h.tipe === "pengurangan") newNilai -= h.nilai;
+            });
+            return {
+              ...r,
+              history: newHistory,
+              nilai_anggaran: Math.max(0, newNilai),
+            };
+          }),
         };
       }),
     );
@@ -2131,7 +2159,10 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
                     setForm((f) => ({ ...f, thn: e.target.value }))
                   }
                 >
-                  {yearOpts.map((y) => (
+                  {Array.from(
+                    { length: Math.abs(capex.thn_rkap_akhir - capex.thn_rkap_awal) + 1 },
+                    (_, i) => Math.max(capex.thn_rkap_awal, capex.thn_rkap_akhir) - i
+                  ).map((y) => (
                     <option key={y} value={y}>
                       {y}
                     </option>
@@ -2239,23 +2270,27 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
             </div>
           )}
         </div>
-        <button
-          style={{
-            ...S.btn,
-            background: nilaiRkapBatas > 0 && sisaRkapTersedia <= 0 ? "#9ca3af" : "#2563eb",
-            padding: "6px 12px",
-            fontSize: "0.75rem",
-            cursor: nilaiRkapBatas > 0 && sisaRkapTersedia <= 0 ? "not-allowed" : "pointer",
-            opacity: nilaiRkapBatas > 0 && sisaRkapTersedia <= 0 ? 0.6 : 1,
-          }}
-          onClick={() => {
-            if (nilaiRkapBatas > 0 && sisaRkapTersedia <= 0) return;
-            setShowForm(true);
-          }}
-          title={nilaiRkapBatas > 0 && sisaRkapTersedia <= 0 ? "Anggaran RKAP sudah penuh" : ""}
-        >
-          <Plus size={12} /> Input Anggaran
-        </button>
+        
+        {capex.thn_rkap_awal != capex.thn_rkap_akhir && (
+          <button
+            style={{
+              ...S.btn,
+              background: nilaiRkapBatas > 0 && sisaRkapTersedia <= 0 ? "#9ca3af" : "#2563eb",
+              padding: "6px 12px",
+              fontSize: "0.75rem",
+              cursor: nilaiRkapBatas > 0 && sisaRkapTersedia <= 0 ? "not-allowed" : "pointer",
+              opacity: nilaiRkapBatas > 0 && sisaRkapTersedia <= 0 ? 0.6 : 1,
+            }}
+            onClick={() => {
+              if (nilaiRkapBatas > 0 && sisaRkapTersedia <= 0) return;
+              setShowForm(true);
+              setForm(f => ({ ...f, thn: Math.max(capex.thn_rkap_awal, capex.thn_rkap_akhir) }));
+            }}
+            title={nilaiRkapBatas > 0 && sisaRkapTersedia <= 0 ? "Anggaran RKAP sudah penuh" : ""}
+          >
+            <Plus size={12} /> Input Anggaran
+          </button>
+        )}
       </div>
 
       {/* CARD 1: Tabel Daftar Anggaran */}
@@ -2661,8 +2696,8 @@ function CapexInputAnggaranPage({ capex, onBack, onSave }) {
   );
   const [nilaiKad, setNilaiKad] = useState(capex.nilai_kad || "");
   const [nilaiRkap, setNilaiRkap] = useState("");
-  // Tahun Anggaran selalu mengikuti RKAP Akhir (disabled / fixed)
-  const thnAnggaran = parseInt(thnRkapAkhir) || CURRENT_YEAR;
+  // Tahun Anggaran dibuat dropdown sesuai opsi multi-years
+  const [thnAnggaran, setThnAnggaran] = useState(parseInt(thnRkapAkhir) || CURRENT_YEAR);
   const [error, setError] = useState(null);
 
   const awal = parseInt(thnRkapAwal) || 0,
@@ -2839,9 +2874,20 @@ function CapexInputAnggaranPage({ capex, onBack, onSave }) {
           </div>
         </ModalFormRow>
         <ModalFormRow label="Tahun Anggaran" required>
-          <span style={{ fontWeight: 700, color: "#1e293b", fontSize: "0.9rem" }}>
-            {thnAnggaran}
-          </span>
+          <select
+            style={{ ...S.inp, maxWidth: 280, fontWeight: 700 }}
+            value={thnAnggaran}
+            onChange={(e) => setThnAnggaran(e.target.value)}
+          >
+            {Array.from(
+              { length: Math.abs(parseInt(thnRkapAkhir) - parseInt(thnRkapAwal)) + 1 },
+              (_, i) => Math.max(parseInt(thnRkapAwal), parseInt(thnRkapAkhir)) - i
+            ).map((y) => (
+              <option key={y} value={y}>
+                {y}
+              </option>
+            ))}
+          </select>
         </ModalFormRow>
         <ModalFormRow label="Nilai RKAP (Rp)" required noBorder>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -3623,33 +3669,27 @@ function OpexModule({ masterList, setMasterList }) {
       toast_("Master anggaran tidak ditemukan.");
       return;
     }
+    const thnInput = parseInt(formTahunan.thn);
+    if (selectedMaster.realisasi_tahunan && selectedMaster.realisasi_tahunan.some((r) => r.thn === thnInput)) {
+      toast_(`Tahun anggaran ${thnInput} sudah ada pada master ini.`);
+      return;
+    }
     const today = new Date().toISOString().split("T")[0];
+    const realMurni = parseFloat(formTahunan.nilai_anggaran) || 0;
     const payload = {
       id: uid(),
-      thn: parseInt(formTahunan.thn),
-      realisasi_murni: parseFloat(formTahunan.realisasi_murni) || 0,
-      realisasi_bymhd: parseFloat(formTahunan.realisasi_bymhd) || 0,
+      thn: thnInput,
+      realisasi_murni: realMurni,
+      realisasi_bymhd: 0,
       history: [
         {
           id: uid(),
           tgl: today,
           tipe: "initial",
-          nilai: parseFloat(formTahunan.realisasi_murni) || 0,
+          nilai: realMurni,
           keterangan: "Input awal murni",
           is_initial: true,
         },
-        ...(parseFloat(formTahunan.realisasi_bymhd) > 0
-          ? [
-            {
-              id: uid(),
-              tgl: today,
-              tipe: "bymhd",
-              nilai: parseFloat(formTahunan.realisasi_bymhd) || 0,
-              keterangan: "Input awal BYMHD",
-              is_initial: false,
-            },
-          ]
-          : []),
       ],
     };
     setMasters((prev) =>
@@ -3870,9 +3910,15 @@ function OpexModule({ masterList, setMasterList }) {
                 <select
                   style={S.inp}
                   value={formTahunan.masterNama}
-                  onChange={(e) =>
-                    setFormTahunan((f) => ({ ...f, masterNama: e.target.value }))
-                  }
+                  onChange={(e) => {
+                    const selNama = e.target.value;
+                    const mObj = masters.find((m) => m.nama === selNama);
+                    setFormTahunan((f) => ({
+                      ...f,
+                      masterNama: selNama,
+                      nilai_anggaran: mObj && mObj.nilai_anggaran > 0 ? mObj.nilai_anggaran : "",
+                    }));
+                  }}
                 >
                   <option value="">— Pilih Anggaran Master —</option>
                   {masters.map((m) => (
@@ -4533,29 +4579,40 @@ function OpexModule({ masterList, setMasterList }) {
                             key={h}
                             style={{
                               ...S.th,
+                              whiteSpace: "nowrap",
                               ...(i === 0 && {
-                                width: 48,
+                                width: "4%",
                                 textAlign: "center",
+                                minWidth: 50,
+                              }),
+                              ...(i === 1 && {
+                                width: "30%",
+                                minWidth: 250,
                               }),
                               ...(i === 2 && {
-                                width: 90,
+                                width: "16%",
                                 textAlign: "center",
+                                minWidth: 140,
                               }),
                               ...(i === 3 && {
-                                width: 80,
+                                width: "8%",
                                 textAlign: "center",
+                                minWidth: 80,
                               }),
                               ...(i === 4 && {
-                                width: 140,
+                                width: "17%",
                                 textAlign: "right",
+                                minWidth: 160,
                               }),
                               ...(i === 5 && {
-                                width: 140,
+                                width: "17%",
                                 textAlign: "right",
+                                minWidth: 160,
                               }),
                               ...(i === 6 && {
-                                width: 130,
+                                width: "8%",
                                 textAlign: "center",
+                                minWidth: 100,
                               }),
                             }}
                           >
@@ -5856,7 +5913,7 @@ function CapexModule({ capexList, setCapexList }) {
                       c.thn_anggaran === parseInt(filterCapexTahun),
                   )
                   .flatMap((c, idx) => {
-                    const isLebih = c.thn_rkap_akhir > CURRENT_YEAR;
+                    const isLebih = c.thn_rkap_awal != c.thn_rkap_akhir;
                     const rows = [
                       <tr
                         key={c.id}
