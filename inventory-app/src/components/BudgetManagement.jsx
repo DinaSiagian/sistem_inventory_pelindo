@@ -153,6 +153,48 @@ const ASSET_DB = {
     category: "Security",
     location: "Kantor Pusat",
   },
+  "SPMT-KPT-USR-LPT-01": {
+    name: "Laptop Operasional ASUS ROG 1",
+    brand: "ASUS",
+    model: "ROG Strix G15",
+    category: "Laptop",
+    location: "Kantor Pusat",
+  },
+  "SPMT-KPT-USR-LPT-02": {
+    name: "Laptop Operasional ASUS ROG 2",
+    brand: "ASUS",
+    model: "ROG Strix G15",
+    category: "Laptop",
+    location: "Kantor Pusat",
+  },
+  "SPMT-KPT-USR-LPT-03": {
+    name: "Laptop Operasional ASUS ROG 3",
+    brand: "ASUS",
+    model: "ROG Strix G15",
+    category: "Laptop",
+    location: "Malahayati",
+  },
+  "SPMT-MLH-SCT-CCTV-01": {
+    name: "CCTV Gerbang Utama Malahayati",
+    brand: "Hikvision",
+    model: "Dome 2MP",
+    category: "CCTV",
+    location: "Malahayati",
+  },
+  "SPMT-MLH-SCT-CCTV-02": {
+    name: "CCTV Gudang Malahayati",
+    brand: "Hikvision",
+    model: "Dome 2MP",
+    category: "CCTV",
+    location: "Malahayati",
+  },
+  "SPMT-TBK-SCT-CCTV-01": {
+    name: "CCTV Lobi Tanjung Balai Karimun",
+    brand: "Hikvision",
+    model: "Dome 2MP",
+    category: "CCTV",
+    location: "Tanjung Balai Karimun",
+  },
 };
 const SN_DB = {
   "DELL-KPT-SRV-001": "SPMT-KPT-DTC-SRV-01",
@@ -160,6 +202,12 @@ const SN_DB = {
   "CSC-MLH-CSW-001": "SPMT-MLH-DTC-PKR-02",
   "CSC-TBK-CSW-001": "SPMT-TBK-DTC-PKR-01",
   "FGT-KPT-FWL-001": "SPMT-KPT-DTC-PKR-02",
+  "ASUS-ROG-001": "SPMT-KPT-USR-LPT-01",
+  "ASUS-ROG-002": "SPMT-KPT-USR-LPT-02",
+  "ASUS-ROG-003": "SPMT-KPT-USR-LPT-03",
+  "HIK-D2M-001": "SPMT-MLH-SCT-CCTV-01",
+  "HIK-D2M-002": "SPMT-MLH-SCT-CCTV-02",
+  "HIK-D2M-003": "SPMT-TBK-SCT-CCTV-01",
 };
 const BUDGET_MASTERS = [
   {
@@ -2945,56 +2993,13 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
     location: "",
     procurement_date: "",
     acquisition_value: "",
-    image: null,
+    acquisition_value: "",
     _new: true,
     _af: false,
   }]);
   const [confirm, setConfirm] = useState(null);
-  const fileInputRef = useRef(null);
-  const [activeAssetId, setActiveAssetId] = useState(null);
   const upd = (id, k, v) =>
     setAssets((p) => p.map((a) => (a.id === id ? { ...a, [k]: v } : a)));
-  const triggerImageUpload = (id) => {
-    setActiveAssetId(id);
-    fileInputRef.current.click();
-  };
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file && file.type.startsWith("image/") && activeAssetId) {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = (ev) => upd(activeAssetId, "image", ev.target.result);
-    }
-    setActiveAssetId(null);
-    e.target.value = null;
-  };
-  const tryAF = (id, k, v) =>
-    setAssets((p) =>
-      p.map((a) => {
-        if (a.id !== id) return a;
-        let u = { ...a, [k]: v, _af: false };
-        let lk = null;
-        if (k === "asset_code" && v) lk = ASSET_DB[v.trim()];
-        else if (k === "serial_number" && v) {
-          const c = SN_DB[v.trim()];
-          if (c) {
-            lk = ASSET_DB[c];
-            u.asset_code = c;
-          }
-        }
-        if (lk)
-          u = {
-            ...u,
-            name: lk.name,
-            brand: lk.brand,
-            model: lk.model,
-            category: lk.category,
-            location: lk.location,
-            _af: true,
-          };
-        return u;
-      }),
-    );
   const total = assets.reduce(
     (s, a) => s + (parseFloat(a.acquisition_value) || 0),
     0,
@@ -3008,74 +3013,9 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
     showToast(`${cl.length} aset disimpan`);
     onBack();
   };
-  const assetFields = [
-    [
-      "Kode Aset",
-      "asset_code",
-      "cth. SPMT-KPT-DTC-SRV-01",
-      true,
-      "Ketik kode untuk auto-fill data aset",
-      (id, v) => tryAF(id, "asset_code", v),
-    ],
-    [
-      "Serial Number",
-      "serial_number",
-      "cth. DELL-KPT-SRV-001",
-      false,
-      null,
-      (id, v) => tryAF(id, "serial_number", v),
-    ],
-    [
-      "Nama Aset",
-      "name",
-      "Nama lengkap aset",
-      true,
-      null,
-      (id, v) => upd(id, "name", v),
-    ],
-    [
-      "Merek",
-      "brand",
-      "cth. Dell, Cisco, HP",
-      false,
-      null,
-      (id, v) => upd(id, "brand", v),
-    ],
-    [
-      "Model / Tipe",
-      "model",
-      "cth. PowerEdge R750",
-      false,
-      null,
-      (id, v) => upd(id, "model", v),
-    ],
-    [
-      "Kategori",
-      "category",
-      "cth. Server, Network, Security",
-      false,
-      null,
-      (id, v) => upd(id, "category", v),
-    ],
-    [
-      "Lokasi",
-      "location",
-      "cth. Kantor Pusat, Malahayati",
-      false,
-      null,
-      (id, v) => upd(id, "location", v),
-    ],
-  ];
   const a = assets[0];
   return (
     <div className="subpage">
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={handleImageChange}
-        accept="image/*"
-        style={{ display: "none" }}
-      />
       <div className="subpage-hdr">
         <button className="btn btn-outline" onClick={onBack}>
           <Icon d={I.arrowLeft} size={14} /> Kembali
@@ -3135,77 +3075,67 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
           )}
         </div>
         <div className="acard-body">
-          <div className="acard-image-section">
-            <div
-              className="acard-image-box"
-              onClick={() => triggerImageUpload(a.id)}
-            >
-              {a.image ? (
-                <div className="acard-image-preview-container">
-                  <img
-                    src={a.image}
-                    alt="Preview"
-                    className="acard-image-preview"
-                  />
-                  <button
-                    className="abtn clear"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      upd(a.id, "image", null);
-                    }}
-                  >
-                    Hapus
-                  </button>
-                </div>
-              ) : (
-                <div className="acard-image-upload-trigger">
-                  <Icon d={I.image} size={24} />
-                  <span>Unggah Foto</span>
-                </div>
-              )}
-            </div>
-            <div
-              style={{
-                flex: 1,
-                minWidth: 0,
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-              }}
-            >
-              <p
-                style={{
-                  fontSize: "0.85rem",
-                  fontWeight: 700,
-                  color: "var(--ink)",
-                  marginBottom: 4,
-                }}
-              >
-                Dokumentasi Fisik Aset
-              </p>
-              <p
-                style={{
-                  fontSize: "0.75rem",
-                  color: "var(--ink4)",
-                  lineHeight: 1.4,
-                }}
-              >
-                Ketuk kotak di sebelah kiri untuk mengunggah foto fisik aset.
-                Mendukung JPG, PNG (maks. 5MB).
-              </p>
-            </div>
-          </div>
           <div style={{ display: "flex", flexDirection: "column" }}>
-            {assetFields.map(([lbl, key, ph, req, hint, handler]) => (
-              <AEFld key={key} label={lbl} req={req}>
-                <input
-                  value={a[key] || ""}
-                  onChange={(e) => handler(a.id, e.target.value)}
-                  placeholder={ph}
-                />
-                {hint && <div className="aefld-hint">{hint}</div>}
+            <AEFld label="Jenis Aset" req={true}>
+              <select
+                value={a.category || ""}
+                onChange={(e) => {
+                  upd(a.id, "category", e.target.value);
+                  upd(a.id, "model", "");
+                  upd(a.id, "asset_code", "");
+                  upd(a.id, "serial_number", "");
+                  upd(a.id, "location", "");
+                }}
+              >
+                <option value="">— Pilih Jenis Aset —</option>
+                {Array.from(new Set(Object.values(ASSET_DB).map(x => x.category))).map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </AEFld>
+            {a.category && (
+              <AEFld label="Tipe Aset" req={true}>
+                <select
+                  value={a.model || ""}
+                  onChange={(e) => {
+                    upd(a.id, "model", e.target.value);
+                    upd(a.id, "asset_code", "");
+                    upd(a.id, "serial_number", "");
+                    upd(a.id, "location", "");
+                  }}
+                >
+                  <option value="">— Pilih Tipe —</option>
+                  {Array.from(new Set(Object.values(ASSET_DB).filter(x => x.category === a.category).map(x => x.model))).map(m => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
               </AEFld>
-            ))}
+            )}
+            {a.model && (
+              <AEFld label="Kode Aset" req={true}>
+                <select
+                  value={a.asset_code || ""}
+                  onChange={(e) => {
+                    const code = e.target.value;
+                    upd(a.id, "asset_code", code);
+                    const sn = Object.entries(SN_DB).find(([s, c]) => c === code)?.[0] || "";
+                    upd(a.id, "serial_number", sn);
+                    upd(a.id, "location", ASSET_DB[code]?.location || "");
+                  }}
+                >
+                  <option value="">— Pilih Kode Aset —</option>
+                  {Object.entries(ASSET_DB).filter(([code, x]) => x.category === a.category && x.model === a.model).map(([code]) => (
+                    <option key={code} value={code}>{code}</option>
+                  ))}
+                </select>
+              </AEFld>
+            )}
+            <AEFld label="Serial Number">
+              <input value={a.serial_number || ""} readOnly disabled style={{ background: "#f8fafc", color: "var(--ink4)", cursor: "not-allowed" }} />
+            </AEFld>
+            <AEFld label="Lokasi">
+              <input value={a.location || ""} readOnly disabled style={{ background: "#f8fafc", color: "var(--ink4)", cursor: "not-allowed" }} />
+            </AEFld>
             <AEFld label="Tgl. Pengadaan">
               <input
                 type="date"
@@ -3282,136 +3212,14 @@ function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) 
     _new: false,
     _af: false,
     acquisition_value: asset.acquisition_value || "",
-    image: asset.image || null,
   }]);
   const [confirm, setConfirm] = useState(null);
-  const fileInputRef = useRef(null);
-  const [activeAssetId, setActiveAssetId] = useState(null);
   const upd = (id, k, v) =>
     setAssets((p) => p.map((a) => (a.id === id ? { ...a, [k]: v } : a)));
-  const triggerImageUpload = (id) => {
-    setActiveAssetId(id);
-    fileInputRef.current.click();
-  };
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file && file.type.startsWith("image/") && activeAssetId) {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = (ev) => upd(activeAssetId, "image", ev.target.result);
-    }
-    setActiveAssetId(null);
-    e.target.value = null;
-  };
-  const tryAF = (id, k, v) =>
-    setAssets((p) =>
-      p.map((a) => {
-        if (a.id !== id) return a;
-        let u = { ...a, [k]: v, _af: false };
-        let lk = null;
-        if (k === "asset_code" && v) lk = ASSET_DB[v.trim()];
-        else if (k === "serial_number" && v) {
-          const c = SN_DB[v.trim()];
-          if (c) {
-            lk = ASSET_DB[c];
-            u.asset_code = c;
-          }
-        }
-        if (lk)
-          u = {
-            ...u,
-            name: lk.name,
-            brand: lk.brand,
-            model: lk.model,
-            category: lk.category,
-            location: lk.location,
-            _af: true,
-          };
-        return u;
-      }),
-    );
-  const total = assets.reduce(
-    (s, a) => s + (parseFloat(a.acquisition_value) || 0),
-    0,
-  );
-  const save = () => {
-    const cl = assets.map(({ _new, _af, ...a }) => ({
-      ...a,
-      acquisition_value: parseFloat(a.acquisition_value) || 0,
-    }));
-    const updatedList = (anggaran.assets || []).map((x) => x.id === cl[0].id ? cl[0] : x);
-    onSave(anggaran.id, updatedList);
-    showToast("Aset berhasil diperbarui");
-    onBack();
-  };
-  const assetFields = [
-    [
-      "Kode Aset",
-      "asset_code",
-      "cth. SPMT-KPT-DTC-SRV-01",
-      true,
-      "Ketik kode untuk auto-fill data aset",
-      (id, v) => tryAF(id, "asset_code", v),
-    ],
-    [
-      "Serial Number",
-      "serial_number",
-      "cth. DELL-KPT-SRV-001",
-      false,
-      null,
-      (id, v) => tryAF(id, "serial_number", v),
-    ],
-    [
-      "Nama Aset",
-      "name",
-      "Nama lengkap aset",
-      true,
-      null,
-      (id, v) => upd(id, "name", v),
-    ],
-    [
-      "Merek",
-      "brand",
-      "cth. Dell, Cisco, HP",
-      false,
-      null,
-      (id, v) => upd(id, "brand", v),
-    ],
-    [
-      "Model / Tipe",
-      "model",
-      "cth. PowerEdge R750",
-      false,
-      null,
-      (id, v) => upd(id, "model", v),
-    ],
-    [
-      "Kategori",
-      "category",
-      "cth. Server, Network, Security",
-      false,
-      null,
-      (id, v) => upd(id, "category", v),
-    ],
-    [
-      "Lokasi",
-      "location",
-      "cth. Kantor Pusat, Malahayati",
-      false,
-      null,
-      (id, v) => upd(id, "location", v),
-    ],
-  ];
+
   const a = assets[0];
   return (
     <div className="subpage">
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={handleImageChange}
-        accept="image/*"
-        style={{ display: "none" }}
-      />
       <div className="subpage-hdr">
         <button className="btn btn-outline" onClick={onBack}>
           <Icon d={I.arrowLeft} size={14} /> Kembali
@@ -3471,66 +3279,7 @@ function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) 
           )}
         </div>
         <div className="acard-body">
-          <div className="acard-image-section">
-            <div
-              className="acard-image-box"
-              onClick={() => triggerImageUpload(a.id)}
-            >
-              {a.image ? (
-                <div className="acard-image-preview-container">
-                  <img
-                    src={a.image}
-                    alt="Preview"
-                    className="acard-image-preview"
-                  />
-                  <button
-                    className="abtn clear"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      upd(a.id, "image", null);
-                    }}
-                  >
-                    Hapus
-                  </button>
-                </div>
-              ) : (
-                <div className="acard-image-upload-trigger">
-                  <Icon d={I.image} size={24} />
-                  <span>Unggah Foto</span>
-                </div>
-              )}
-            </div>
-            <div
-              style={{
-                flex: 1,
-                minWidth: 0,
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-              }}
-            >
-              <p
-                style={{
-                  fontSize: "0.85rem",
-                  fontWeight: 700,
-                  color: "var(--ink)",
-                  marginBottom: 4,
-                }}
-              >
-                Dokumentasi Fisik Aset
-              </p>
-              <p
-                style={{
-                  fontSize: "0.75rem",
-                  color: "var(--ink4)",
-                  lineHeight: 1.4,
-                }}
-              >
-                Ketuk kotak di sebelah kiri untuk mengunggah foto fisik aset.
-                Mendukung JPG, PNG (maks. 5MB).
-              </p>
-            </div>
-          </div>
+
           <div style={{ display: "flex", flexDirection: "column" }}>
             {assetFields.map(([lbl, key, ph, req, hint, handler]) => (
               <AEFld key={key} label={lbl} req={req}>

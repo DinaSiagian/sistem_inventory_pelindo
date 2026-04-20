@@ -358,6 +358,22 @@ const MOCK_ALL_BORROWS = [
 ];
 
 const CATEGORY_IMAGES = {
+  Laptop:
+    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
+  CCTV:
+    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
+  Router:
+    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
+  "PC Desktop":
+    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
+  Server:
+    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
+  Switch:
+    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
+  Printer:
+    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
+  Lainnya:
+    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
   "IT Equipment":
     "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
   Kendaraan:
@@ -432,6 +448,47 @@ const SPEC_UNIT_OPTIONS = [
 ];
 
 const SPEC_TEMPLATES_BY_CATEGORY = {
+  Laptop: [
+    { spec_label: "Processor", default_unit: "GHz", input_type: "text" },
+    { spec_label: "RAM", default_unit: "GB RAM", input_type: "number" },
+    { spec_label: "Storage", default_unit: "GB", input_type: "number" },
+    { spec_label: "Resolusi Layar", default_unit: "inch", input_type: "text" },
+  ],
+  CCTV: [
+    { spec_label: "Resolusi", default_unit: "MP", input_type: "text" },
+    { spec_label: "Lensa", default_unit: "mm", input_type: "text" },
+    { spec_label: "Jangkauan IR", default_unit: "m", input_type: "number" },
+  ],
+  Router: [
+    { spec_label: "Kecepatan", default_unit: "Mbps", input_type: "number" },
+    { spec_label: "Port", default_unit: "-", input_type: "text" },
+    { spec_label: "Frekuensi", default_unit: "GHz", input_type: "text" },
+  ],
+  "PC Desktop": [
+    { spec_label: "Processor", default_unit: "GHz", input_type: "text" },
+    { spec_label: "RAM", default_unit: "GB RAM", input_type: "number" },
+    { spec_label: "Storage", default_unit: "GB", input_type: "number" },
+  ],
+  Server: [
+    { spec_label: "Processor", default_unit: "GHz", input_type: "text" },
+    { spec_label: "RAM", default_unit: "GB", input_type: "number" },
+    { spec_label: "Storage", default_unit: "TB", input_type: "number" },
+    { spec_label: "Power Supply", default_unit: "W", input_type: "number" },
+  ],
+  Switch: [
+    { spec_label: "Jumlah Port", default_unit: "-", input_type: "number" },
+    { spec_label: "Kecepatan", default_unit: "Mbps", input_type: "number" },
+    { spec_label: "Manageable", default_unit: "-", input_type: "text" },
+  ],
+  Printer: [
+    { spec_label: "Tipe Printer", default_unit: "-", input_type: "text" },
+    { spec_label: "Fungsi", default_unit: "-", input_type: "text" },
+    { spec_label: "Konektivitas", default_unit: "-", input_type: "text" },
+  ],
+  Lainnya: [
+      { spec_label: "Spesifikasi Utama", default_unit: "-", input_type: "text" },
+      { spec_label: "Keterangan Tambahan", default_unit: "-", input_type: "text" }
+  ],
   "IT Equipment": [
     {
       spec_label: "Processor (CPU)",
@@ -2002,7 +2059,8 @@ const ViewAsset = () => {
     {
       id: "SPMT-BLW-LPG-DMG-01",
       name: "CCTV Hikvision DS-2CD2143G2-I",
-      category: "IT Equipment",
+      category: "CCTV",
+      tipeAset: "Hikvision DS-2CD2143G2-I",
       status: "Tersedia",
       entitas: "Pelindo Multi Terminal",
       branch: "Belawan",
@@ -2050,7 +2108,8 @@ const ViewAsset = () => {
     {
       id: "SPMT-LHK-DTC-PKR-01",
       name: "Server Dell PowerEdge R740",
-      category: "IT Equipment",
+      category: "Server",
+      tipeAset: "Dell PowerEdge R740",
       status: "Tersedia",
       entitas: "Pelindo Multi Terminal",
       branch: "Lhokseumawe",
@@ -2133,9 +2192,10 @@ const ViewAsset = () => {
       customSpecs: [],
     },
     {
-      id: "SPMT-MLH-DTC-PKR-01",
-      name: "Cisco Switch Catalyst 2960X",
-      category: "IT Equipment",
+      id: "SPMT-BLP-DTC-PKR-01",
+      name: "Switch Cisco Catalyst 9300L",
+      category: "Switch",
+      tipeAset: "Cisco Catalyst 9300L",
       status: "Tersedia",
       entitas: "Pelindo Multi Terminal",
       branch: "Malahayati",
@@ -2191,9 +2251,12 @@ const ViewAsset = () => {
   const [filterProject, setFilterProject] = useState("");
 
   const [formPhoto, setFormPhoto] = useState(null);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [formData, setFormData] = useState({
     assetId: "",
+    cekEksisting: "",
     name: "",
+    tipeAset: "",
     entitas: "",
     entitasCode: "",
     branch: "",
@@ -2403,7 +2466,9 @@ const ViewAsset = () => {
   const resetForm = () => {
     setFormData({
       assetId: "",
+      cekEksisting: "",
       name: "",
+      tipeAset: "",
       entitas: "",
       entitasCode: "",
       branch: "",
@@ -2434,7 +2499,7 @@ const ViewAsset = () => {
     }
     const newAsset = {
       id: formData.assetId,
-      name: formData.name,
+      name: formData.name || formData.tipeAset || "-",
       category: formData.category,
       status: formData.status,
       entitas: formData.entitas,
@@ -3299,160 +3364,142 @@ const ViewAsset = () => {
             <Icon.Tag /> Informasi Utama
           </h3>
           <ModernTable>
-            <TableRow label="Nama Aset" required>
-              <input
-                type="text"
-                placeholder="Contoh: CCTV Hikvision BL 01"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData((p) => ({ ...p, name: e.target.value }))
-                }
-                style={modernInputStyle}
-              />
+            <TableRow label="Cek Eksisting (Opsional)">
+              <div style={{ position: "relative" }}>
+                <input
+                  type="text"
+                  placeholder="Ketik untuk mencari dari entry sebelumnya..."
+                  value={formData.cekEksisting}
+                  onChange={(e) => {
+                    setFormData((p) => ({ ...p, cekEksisting: e.target.value }));
+                    setShowSuggestions(true);
+                  }}
+                  onFocus={() => setShowSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                  style={modernInputStyle}
+                />
+                {showSuggestions && formData.cekEksisting && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "100%",
+                      left: 0,
+                      right: 0,
+                      background: "#fff",
+                      border: "1px solid #cbd5e1",
+                      borderRadius: "6px",
+                      marginTop: "4px",
+                      maxHeight: "200px",
+                      overflowY: "auto",
+                      zIndex: 10,
+                      boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                    }}
+                  >
+                    {assets
+                      .filter((a) =>
+                        (a.name || a.tipeAset || "")
+                          .toLowerCase()
+                          .includes(formData.cekEksisting.toLowerCase())
+                      )
+                      .map((a) => (
+                        <div
+                          key={a.id}
+                          style={{
+                            padding: "8px 12px",
+                            cursor: "pointer",
+                            borderBottom: "1px solid #f1f5f9",
+                            fontSize: "14px",
+                            color: "#334155",
+                          }}
+                          onMouseDown={() => {
+                            const eCode = a.id ? a.id.split("-")[0] : "";
+                            const bCode = a.id ? a.id.split("-")[1] : "";
+                            const zCode = a.id ? a.id.split("-")[2] : "";
+                            const szCode = a.id ? a.id.split("-")[3] : "";
+                            const zonaName = ZONA_LIST.find((z) => z.code === zCode)?.name || "";
+                            const subzonaName = SUBZONA_LIST.find((s) => s.code === szCode)?.name || "";
+
+                            setFormData((p) => ({
+                              ...p,
+                              cekEksisting: a.tipeAset || a.name || "",
+                              category: a.category || "",
+                              tipeAset: a.tipeAset || a.name || "",
+                              entitas: a.entitas || "",
+                              entitasCode: eCode,
+                              branch: a.branch || "",
+                              branchCode: bCode,
+                              zona: zonaName,
+                              zonaCode: zCode,
+                              subzona: subzonaName,
+                              subzonaCode: szCode,
+                              nomorAset: "",
+                              assetId: "",
+                            }));
+                            const tpl = a.specs
+                              ? a.specs.map((t) => ({ ...t, _unitMode: "pick" }))
+                              : (SPEC_TEMPLATES_BY_CATEGORY[a.category] || []).map(
+                                  (t) => ({ ...t, value: "", _unitMode: "pick" })
+                                );
+                            setTemplateSpecs(tpl);
+                            setShowSuggestions(false);
+                          }}
+                          onMouseEnter={(e) =>
+                            (e.currentTarget.style.background = "#f8fafc")
+                          }
+                          onMouseLeave={(e) =>
+                            (e.currentTarget.style.background = "transparent")
+                          }
+                        >
+                          {a.tipeAset || a.name} - {a.category}
+                        </div>
+                      ))}
+                    {assets.filter((a) =>
+                      (a.name || a.tipeAset || "")
+                        .toLowerCase()
+                        .includes(formData.cekEksisting.toLowerCase())
+                    ).length === 0 && (
+                      <div
+                        style={{
+                          padding: "8px 12px",
+                          fontSize: "14px",
+                          color: "#94a3b8",
+                        }}
+                      >
+                        Tidak ada data yang cocok
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </TableRow>
-            <TableRow label="Kategori" required>
+            <TableRow label="Jenis Aset" required>
               <select
                 value={formData.category}
                 onChange={handleCategoryChange}
                 style={modernSelectStyle}
               >
-                <option value="">— Pilih Kategori —</option>
-                <option value="IT Equipment">IT Equipment</option>
-                <option value="Kendaraan">Kendaraan Operasional</option>
-                <option value="Alat Berat">Alat Berat (HMC/RTG)</option>
-                <option value="Furniture">Furniture</option>
+                <option value="">— Pilih Jenis Aset —</option>
+                <option value="Laptop">Laptop</option>
+                <option value="CCTV">CCTV</option>
+                <option value="Router">Router</option>
+                <option value="PC Desktop">PC Desktop</option>
+                <option value="Server">Server</option>
+                <option value="Switch">Switch</option>
+                <option value="Printer">Printer</option>
+                <option value="Lainnya">IT Lainnya</option>
               </select>
             </TableRow>
-            <TableRow label="Tanggal Pengadaan">
+            <TableRow label="Tipe Aset" required>
               <input
-                type="date"
-                value={formData.procurementDate}
+                type="text"
+                placeholder="Contoh: ThinkPad T14, DS-2CD..."
+                value={formData.tipeAset}
                 onChange={(e) =>
-                  setFormData((p) => ({
-                    ...p,
-                    procurementDate: e.target.value,
-                  }))
+                  setFormData((p) => ({ ...p, tipeAset: e.target.value }))
                 }
                 style={modernInputStyle}
               />
             </TableRow>
-            <TableRow label="Status">
-              <select
-                value={formData.status}
-                onChange={(e) =>
-                  setFormData((p) => ({ ...p, status: e.target.value }))
-                }
-                style={modernSelectStyle}
-              >
-                <option>Tersedia</option>
-                <option>Dipinjam</option>
-                <option>Maintenance</option>
-              </select>
-            </TableRow>
-            <TableRow label="Nilai Aset (IDR)">
-              <input
-                type="number"
-                placeholder="0"
-                value={formData.value}
-                onChange={(e) =>
-                  setFormData((p) => ({ ...p, value: e.target.value }))
-                }
-                style={modernInputStyle}
-              />
-            </TableRow>
-            <TableRow label="Tahun Anggaran" required>
-              <select
-                value={formData.thn_anggaran}
-                onChange={(e) =>
-                  setFormData((p) => ({
-                    ...p,
-                    thn_anggaran: e.target.value,
-                    kd_anggaran: "",
-                    id_pekerjaan: "",
-                  }))
-                }
-                style={modernSelectStyle}
-              >
-                <option value="">— Pilih Tahun —</option>
-                {ALL_TAHUN_LIST.map((t) => (
-                  <option key={t} value={String(t)}>
-                    {t}
-                  </option>
-                ))}
-              </select>
-            </TableRow>
-            {formData.thn_anggaran && (
-              <TableRow label="Nama Anggaran" required>
-                <select
-                  value={formData.kd_anggaran}
-                  onChange={(e) =>
-                    setFormData((p) => ({
-                      ...p,
-                      kd_anggaran: e.target.value,
-                      id_pekerjaan: "",
-                    }))
-                  }
-                  style={modernSelectStyle}
-                >
-                  <option value="">— Pilih Anggaran —</option>
-                  {getAnggaranByTahun(formData.thn_anggaran).filter(
-                    (a) => a.jenis === "CAPEX",
-                  ).length > 0 && (
-                    <optgroup label="CAPEX">
-                      {getAnggaranByTahun(formData.thn_anggaran)
-                        .filter((a) => a.jenis === "CAPEX")
-                        .map((a) => (
-                          <option key={a.kd_anggaran} value={a.kd_anggaran}>
-                            {a.nm_anggaran}
-                          </option>
-                        ))}
-                    </optgroup>
-                  )}
-                  {getAnggaranByTahun(formData.thn_anggaran).filter(
-                    (a) => a.jenis === "OPEX",
-                  ).length > 0 && (
-                    <optgroup label="OPEX">
-                      {getAnggaranByTahun(formData.thn_anggaran)
-                        .filter((a) => a.jenis === "OPEX")
-                        .map((a) => (
-                          <option key={a.kd_anggaran} value={a.kd_anggaran}>
-                            {a.nm_anggaran}
-                          </option>
-                        ))}
-                    </optgroup>
-                  )}
-                </select>
-              </TableRow>
-            )}
-            {formData.kd_anggaran &&
-              CAPEX_ANGGARAN.find(
-                (a) => a.kd_anggaran === formData.kd_anggaran,
-              ) && (
-                <TableRow label="Nama Pekerjaan" required>
-                  <select
-                    value={formData.id_pekerjaan}
-                    onChange={(e) =>
-                      setFormData((p) => ({
-                        ...p,
-                        id_pekerjaan: e.target.value,
-                      }))
-                    }
-                    style={modernSelectStyle}
-                  >
-                    <option value="">— Pilih Pekerjaan —</option>
-                    {CAPEX_ANGGARAN.find(
-                      (a) => a.kd_anggaran === formData.kd_anggaran,
-                    ).pekerjaan.map((p) => (
-                      <option
-                        key={p.id_pekerjaan}
-                        value={String(p.id_pekerjaan)}
-                      >
-                        {p.nm_pekerjaan}
-                      </option>
-                    ))}
-                  </select>
-                </TableRow>
-              )}
           </ModernTable>
 
           <h3
