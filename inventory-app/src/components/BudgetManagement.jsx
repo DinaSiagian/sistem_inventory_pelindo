@@ -3861,8 +3861,8 @@ function PekerjaanListPage({
                   <th>Nama Pekerjaan</th>
                   <th>No. Kontrak</th>
                   <th>Tgl. Kontrak</th>
-                  <th style={{ textAlign: "right" }}>Nilai Kontrak</th>
                   <th style={{ textAlign: "right" }}>Nilai RAB</th>
+                  <th style={{ textAlign: "right" }}>Nilai Kontrak</th>
                   <th style={{ textAlign: "center" }}>Aset</th>
                   <th className="th-actions">Aksi</th>
                 </tr>
@@ -3912,17 +3912,17 @@ function PekerjaanListPage({
                         <td>
                           <span
                             className="td-value"
-                            style={{ color: "var(--red)" }}
+                            style={{ color: "var(--amber)" }}
                           >
-                            {fmt(displayedKontrak)}
+                            {fmt(proj.nilai_rab || 0)}
                           </span>
                         </td>
                         <td>
                           <span
                             className="td-value"
-                            style={{ color: "var(--amber)" }}
+                            style={{ color: "var(--red)" }}
                           >
-                            {fmt(proj.nilai_rab || 0)}
+                            {fmt(displayedKontrak)}
                           </span>
                         </td>
                         <td
