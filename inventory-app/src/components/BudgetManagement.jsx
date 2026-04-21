@@ -67,6 +67,7 @@ const I = {
   trendUp: "M23 6l-9.5 9.5-5-5L1 18M17 6h6v6",
   wallet:
     "M21 12V7H5a2 2 0 0 1 0-4h14v4M3 5v14a2 2 0 0 0 2 2h16v-5M3 5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2M21 12a2 2 0 0 1 0 4h-4a2 2 0 0 1 0-4h4z",
+  trendingUp: "M23 6l-9.5 9.5-5-5L1 18M17 6h6v6",
 };
 const fmt = (n) =>
   new Intl.NumberFormat("id-ID", {
@@ -561,6 +562,7 @@ const CSS = `
 --r:8px;--r-lg:12px;
 --sh:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
 --sh-md:0 4px 12px rgba(0,0,0,.08);--sh-lg:0 20px 48px rgba(0,0,0,.14);
+--div:rgba(0,0,0,0.08);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:13px;-webkit-font-smoothing:antialiased;line-height:1.5}
@@ -707,9 +709,8 @@ body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:var(--bg);c
 .asset-page-hdr-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .asset-ctx-banner{background:var(--surf);border:1px solid var(--border);border-left:4px solid var(--blue);border-radius:var(--r-lg);padding:14px 20px;margin-bottom:20px;display:flex;gap:32px;flex-wrap:wrap;box-shadow:var(--sh)}
 .asset-ctx-banner.opex-theme{border-left-color:var(--green)}
-.asset-ctx-item{display:flex;flex-direction:column;gap:3px}
-.asset-ctx-item span{font-size:0.65rem;font-weight:800;text-transform:uppercase;color:var(--ink4);letter-spacing:0.5px}
-.asset-ctx-item strong{font-size:0.88rem;font-weight:700;color:var(--ink)}
+.asset-ctx-item{display:flex;flex-direction:column;gap:5px}.asset-ctx-item span{font-size:.62rem;font-weight:700;text-transform:uppercase;color:var(--ink4);letter-spacing:.6px}.asset-ctx-item strong{font-size:.92rem;font-weight:700;color:var(--ink);line-height:1.2}.asset-ctx-item strong.blue{color:var(--blue)}.asset-ctx-item strong.amber{color:var(--amber)}.asset-ctx-item strong.red{color:var(--red)}
+.asset-ctx-divider{width:1px;height:28px;background:var(--div);align-self:center;margin:0 12px}
 .asset-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap}
 .asset-toolbar-left,.asset-toolbar-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .at-filter{display:flex;align-items:center;gap:8px;background:var(--surf);border:1px solid var(--border);border-radius:var(--r);padding:7px 12px;box-shadow:var(--sh);transition:border-color .2s}
@@ -3565,6 +3566,8 @@ function PekerjaanListPage({
   );
   const totalKontrak = filteredByYear.reduce((s, p) => s + (p.nilai_kontrak || 0), 0);
   const totalRab = filteredByYear.reduce((s, p) => s + (p.nilai_rab || 0), 0);
+  const totalPercent = totalRab > 0 ? (totalKontrak / totalRab) * 100 : 0;
+
   return (
     <div style={{ animation: "fadeUp .15s ease-out" }}>
       <Breadcrumb
@@ -3578,29 +3581,34 @@ function PekerjaanListPage({
           },
         ]}
       />
+
+      <div style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 10, animation: "fadeUp .2s ease-out" }}>
+        <code className="code-tag" style={{ fontSize: "0.78rem", color: "var(--blue)", background: "var(--blue-lt)", padding: "3px 8px", borderRadius: 5, fontWeight: 700 }}>
+          {anggaran.kode}
+        </code>
+        <h2 style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--ink)" }}>
+          {anggaran.nama}
+        </h2>
+      </div>
+
       <div
         style={{
           background: "var(--surf)",
           border: "1px solid var(--blue-mid)",
           borderLeft: "4px solid var(--blue)",
           borderRadius: "var(--r-lg)",
-          padding: "14px 20px",
+          padding: "18px 24px",
           marginBottom: 20,
           display: "flex",
-          gap: 28,
+          gap: 40,
+          alignItems: "center",
           flexWrap: "wrap",
           boxShadow: "var(--sh)",
         }}
       >
         {[
-          ["Kode Anggaran", anggaran.kode, true],
-          [
-            "Nama Anggaran",
-            anggaran.nama.substring(0, 40) +
-            (anggaran.nama.length > 40 ? "…" : ""),
-          ],
-          ["RKAP Awal", String(anggaran.thn_rkap_awal)],
-          ["RKAP Akhir", String(anggaran.thn_rkap_akhir)],
+          ["Tahun RKAP", `${anggaran.thn_rkap_awal} — ${anggaran.thn_rkap_akhir}`],
+          "DIV",
           [
             "Nilai KAD",
             anggaran.nilai_kad > 0 ? fmt(anggaran.nilai_kad) : "—",
@@ -3608,72 +3616,50 @@ function PekerjaanListPage({
             "var(--blue)",
           ],
           ["Nilai RAB", fmt(totalRab), false, "var(--amber)"],
+          "DIV",
+          ["Nilai Kontrak", fmt(totalKontrak), false, totalKontrak > anggaran.nilai_kad ? "var(--red)" : "var(--blue)"],
+          ["% Kontrak", `${totalPercent.toFixed(1)}%`, false, "var(--ink2)"],
+          "DIV",
           [
-            "Nilai Kontrak",
-            fmt(totalKontrak),
-            false,
-            totalKontrak > anggaran.nilai_kad ? "var(--red)" : "var(--red)",
+            "Total / Sisa",
+            (
+              <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                <span>{filteredByYear.length} Pos</span>
+                <span style={{ fontSize: "0.82rem", color: "var(--amber)", fontWeight: 700 }}>
+                  ({fmt(anggaran.nilai_kad - totalKontrak)})
+                </span>
+              </div>
+            ),
           ],
-        ].map(([lbl, val, isCode, color]) => (
-          <div key={lbl} className="asset-ctx-item">
-            <span>{lbl}</span>
-            <strong style={color ? { color } : {}}>
-              {isCode ? (
-                <code
-                  style={{
-                    fontFamily: "var(--mono)",
-                    fontSize: "0.82rem",
-                    color: "var(--blue)",
-                    background: "var(--blue-lt)",
-                    padding: "2px 6px",
-                    borderRadius: 4,
-                  }}
-                >
-                  {val}
-                </code>
-              ) : (
-                val
-              )}
-            </strong>
-          </div>
-        ))}
+        ].map((item) => {
+          if (item === "DIV") return <div key={Math.random()} className="asset-ctx-divider" />;
+          const [lbl, val, isCode, color] = item;
+          return (
+            <div key={lbl} className="asset-ctx-item">
+              <span>{lbl}</span>
+              <strong className={color || ""} style={color ? { color } : {}}>
+                {isCode ? (
+                  <code
+                    style={{
+                      fontFamily: "var(--mono)",
+                      fontSize: "0.85rem",
+                      color: "var(--blue)",
+                      background: "var(--blue-lt)",
+                      padding: "2px 6px",
+                      borderRadius: 4,
+                    }}
+                  >
+                    {val}
+                  </code>
+                ) : (
+                  val
+                )}
+              </strong>
+            </div>
+          );
+        })}
       </div>
 
-      {/* POSISI DIPINDAHKAN: KPI Strip sekarang di atas Toolbar */}
-      <div className="kpi-strip" style={{ marginBottom: 16 }}>
-        {[
-          {
-            cls: "blue",
-            icon: I.briefcase,
-            lbl: "Total Pekerjaan",
-            val: filteredByYear.length,
-            sub: `(Sisa: ${fmt(anggaran.nilai_kad - totalKontrak)})`,
-          },
-          {
-            cls: "amber",
-            icon: I.fileText,
-            lbl: "Nilai RAB",
-            val: fmt(totalRab),
-          },
-          {
-            cls: "amber",
-            icon: I.fileText,
-            lbl: "Nilai Kontrak",
-            val: fmt(totalKontrak),
-          },
-        ].map(({ cls, icon, lbl, val, sub }) => (
-          <div key={lbl} className={`kpi ${cls}`}>
-            <div className="kpi-ico">
-              <Icon d={icon} size={20} />
-            </div>
-            <div className="kpi-body">
-              <div className="kpi-lbl">{lbl}</div>
-              <div className="kpi-val">{val}</div>
-              {sub && <div style={{ fontSize: "0.68rem", fontWeight: 700, marginTop: 2, opacity: 0.8 }}>{sub}</div>}
-            </div>
-          </div>
-        ))}
-      </div>
 
       <div className="toolbar">
         <button className="btn btn-outline" onClick={onBack}>
@@ -4341,7 +4327,6 @@ export default function BudgetManagement({ forcedType }) {
                 ? "Input Pekerjaan CAPEX"
                 : "Anggaran & Pekerjaan"}
             </h1>
-            <p>Daftar Pekerjaan — {latestAng.nama}</p>
           </div>
         </div>
         <PekerjaanListPage
