@@ -385,6 +385,50 @@ const SVG = {
       <circle cx="12" cy="19" r="1" fill="currentColor" />
     </svg>
   ),
+  sitemap: (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="8" y="2" width="8" height="4" rx="1" />
+      <rect x="1" y="16" width="6" height="4" rx="1" />
+      <rect x="9" y="16" width="6" height="4" rx="1" />
+      <rect x="17" y="16" width="6" height="4" rx="1" />
+      <path d="M4 16v-4h16v4" />
+      <line x1="12" y1="6" x2="12" y2="12" />
+    </svg>
+  ),
+  layers: (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <polygon points="12 2 2 7 12 12 22 7 12 2" />
+      <polyline points="2 17 12 22 22 17" />
+      <polyline points="2 12 12 17 22 12" />
+    </svg>
+  ),
+  settings: (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </svg>
+  ),
 };
 
 function Ico({ n, size = 14, style = {} }) {
@@ -409,20 +453,131 @@ function Ico({ n, size = 14, style = {} }) {
   );
 }
 
-// ─── MASTER DATA ──────────────────────────────────────────────
-const entityList = [
+// ─── PAGINATION COMPONENT ─────────────────────────────────────
+function Pagination({
+  page,
+  totalPages,
+  total,
+  perPage,
+  onPageChange,
+  accentColor = "#2563eb",
+  accentBg = "#dbeafe",
+  accentRing = "rgba(37,99,235,.08)",
+}) {
+  if (totalPages <= 1) return null;
+  const from = Math.min((page - 1) * perPage + 1, total);
+  const to = Math.min(page * perPage, total);
+
+  const pages = [];
+  if (totalPages <= 7) {
+    for (let i = 1; i <= totalPages; i++) pages.push(i);
+  } else {
+    pages.push(1);
+    if (page > 3) pages.push("...");
+    for (
+      let i = Math.max(2, page - 1);
+      i <= Math.min(totalPages - 1, page + 1);
+      i++
+    )
+      pages.push(i);
+    if (page < totalPages - 2) pages.push("...");
+    pages.push(totalPages);
+  }
+
+  const btnStyle = (active) => ({
+    minWidth: 28,
+    height: 28,
+    borderRadius: 6,
+    border: `1.5px solid ${active ? accentColor : "#e2e8f0"}`,
+    background: active ? accentColor : "#fff",
+    cursor: active ? "default" : "pointer",
+    fontSize: ".72rem",
+    fontWeight: 600,
+    color: active ? "#fff" : "#64748b",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "0 5px",
+    fontFamily: "inherit",
+    transition: "all .12s",
+  });
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: ".6rem .9rem",
+        borderTop: "1px solid #f1f5f9",
+        background: "#fafbff",
+        flexWrap: "wrap",
+        gap: ".4rem",
+      }}
+    >
+      <span style={{ fontSize: ".72rem", color: "#64748b" }}>
+        {from}–{to} dari {total} data
+      </span>
+      <div style={{ display: "flex", gap: ".3rem", alignItems: "center" }}>
+        <button
+          style={{
+            ...btnStyle(false),
+            opacity: page === 1 ? 0.4 : 1,
+            cursor: page === 1 ? "not-allowed" : "pointer",
+          }}
+          onClick={() => page > 1 && onPageChange(page - 1)}
+          disabled={page === 1}
+        >
+          ‹
+        </button>
+        {pages.map((p, i) =>
+          p === "..." ? (
+            <span
+              key={`e${i}`}
+              style={{ fontSize: ".72rem", color: "#94a3b8", padding: "0 2px" }}
+            >
+              …
+            </span>
+          ) : (
+            <button
+              key={p}
+              style={btnStyle(p === page)}
+              onClick={() => p !== page && onPageChange(p)}
+            >
+              {p}
+            </button>
+          ),
+        )}
+        <button
+          style={{
+            ...btnStyle(false),
+            opacity: page === totalPages ? 0.4 : 1,
+            cursor: page === totalPages ? "not-allowed" : "pointer",
+          }}
+          onClick={() => page < totalPages && onPageChange(page + 1)}
+          disabled={page === totalPages}
+        >
+          ›
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── MASTER DATA (state-managed) ──────────────────────────────
+const INITIAL_ENTITY_LIST = [
   { entity_code: "PMT", name: "PT Pelindo Multi Terminal" },
   { entity_code: "PTP", name: "PT Pelabuhan Indonesia" },
   { entity_code: "IKT", name: "Indonesia Kendaraan Terminal" },
 ];
-const branchList = [
+const INITIAL_BRANCH_LIST = [
   { branch_code: "PMT-JKT", entity_code: "PMT", name: "Jakarta" },
   { branch_code: "PMT-SBY", entity_code: "PMT", name: "Surabaya" },
   { branch_code: "PMT-MDN", entity_code: "PMT", name: "Medan" },
   { branch_code: "PTP-JKT", entity_code: "PTP", name: "Jakarta" },
   { branch_code: "IKT-JKT", entity_code: "IKT", name: "Jakarta" },
 ];
-const divisionList = [
+const INITIAL_DIVISION_LIST = [
   {
     division_code: "PMT-JKT-OPS",
     branch_code: "PMT-JKT",
@@ -496,6 +651,7 @@ const divisionList = [
     name: "Teknologi Informasi",
   },
 ];
+
 const roleConfig = {
   superadmin: {
     label: "Super Admin",
@@ -868,10 +1024,10 @@ const mockLogs = [
 const fmt = (d) =>
   d
     ? new Date(d).toLocaleDateString("id-ID", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    })
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })
     : "—";
 const getInitials = (name) =>
   name
@@ -880,12 +1036,6 @@ const getInitials = (name) =>
     .join("")
     .slice(0, 2)
     .toUpperCase();
-const getEntityName = (code) =>
-  entityList.find((e) => e.entity_code === code)?.name || code;
-const getBranchName = (code) =>
-  branchList.find((b) => b.branch_code === code)?.name || code;
-const getDivisionName = (code) =>
-  divisionList.find((d) => d.division_code === code)?.name || code;
 
 // ─── CSS ──────────────────────────────────────────────────────
 const css = `
@@ -898,6 +1048,8 @@ const css = `
   --purple:#7c3aed;--purple-lt:#ede9fe;
   --warn:#d97706;--warn-lt:#fef3c7;
   --teal:#0f766e;--teal-dk:#0d9488;--teal-lt:#f0fdf4;--teal-ring:#99f6e4;
+  --indigo:#4338ca;--indigo-lt:#eef2ff;
+  --orange:#ea580c;--orange-lt:#fff7ed;
   --slate:#0f172a;--slate-6:#64748b;--slate-4:#94a3b8;
   --border:#e2e8f0;--bg:#f8fafc;
   --r:10px;--sh:0 1px 3px rgba(0,0,0,.05);--sh-md:0 3px 12px rgba(0,0,0,.09);
@@ -1028,7 +1180,7 @@ const css = `
 .um-role-opt.active{font-weight:700;}
 .um-role-opt svg{width:12px;height:12px;display:block;}
 .um-status-toggle{display:flex;gap:.4rem;}
-.um-status-btn{display:inline-flex;align-items:center;gap:.35rem;padding:.35rem .75rem;border-radius:99px;border:1.5px solid var(--border);cursor:pointer;font-size:.76rem;font-weight:600;background:#fff;color:var(--slate-6);font-family:inherit;transition:all .14s;}
+.um-status-btn{display:inline-flex;align-items:center;gap:.35rem;padding:.35rem .75rem;border-radius:99px;border:1.5px solid var(--border);cursor:pointer;font-size:.76rem;font-weight:600;background:#fff;color:var(--slate-6);font-family:inherit;transition:all .14rem;}
 .um-status-btn.active-green{background:var(--green-lt);color:var(--green);border-color:var(--green);}
 .um-status-btn.active-red{background:var(--red-lt);color:var(--red);border-color:var(--red);}
 .um-status-btn svg{width:12px;height:12px;display:block;}
@@ -1095,9 +1247,131 @@ const css = `
 .al-diff-col-label--new{background:var(--green-lt);color:#15803d;}
 .al-diff-content{background:#f8fafc;border-radius:7px;padding:.4rem .55rem;font-family:"Courier New",monospace;font-size:.68rem;color:#334155;white-space:pre-wrap;word-break:break-all;max-height:130px;overflow-y:auto;border:1px solid var(--border);}
 .al-diff-null{font-style:italic;color:var(--slate-4);}
+
+/* ── MASTER DATA MANAGEMENT SECTIONS ── */
+.md-section{margin-top:1rem;border-radius:12px;overflow:hidden;box-shadow:var(--sh);}
+.md-section--entity{border:1px solid #c7d2fe;}
+.md-section--branch{border:1px solid #bfdbfe;}
+.md-section--division{border:1px solid #bbf7d0;}
+
+.md-header{padding:.65rem 1rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;transition:background .15s;}
+.md-header--entity{background:linear-gradient(135deg,#eef2ff,#e0e7ff);border-bottom:1px solid #c7d2fe;}
+.md-header--entity:hover{background:linear-gradient(135deg,#e0e7ff,#c7d2fe);}
+.md-header--branch{background:linear-gradient(135deg,#eff6ff,#dbeafe);border-bottom:1px solid #bfdbfe;}
+.md-header--branch:hover{background:linear-gradient(135deg,#dbeafe,#bfdbfe);}
+.md-header--division{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-bottom:1px solid #bbf7d0;}
+.md-header--division:hover{background:linear-gradient(135deg,#dcfce7,#bbf7d0);}
+
+.md-header-left{display:flex;align-items:center;gap:.55rem;}
+.md-header-title--entity{font-size:.84rem;font-weight:700;color:var(--indigo);}
+.md-header-title--branch{font-size:.84rem;font-weight:700;color:var(--blue-dk);}
+.md-header-title--division{font-size:.84rem;font-weight:700;color:var(--green);}
+.md-header-count--entity{font-size:.68rem;font-weight:600;color:var(--indigo);background:#fff;border:1px solid #c7d2fe;border-radius:99px;padding:1px 8px;}
+.md-header-count--branch{font-size:.68rem;font-weight:600;color:var(--blue-dk);background:#fff;border:1px solid #bfdbfe;border-radius:99px;padding:1px 8px;}
+.md-header-count--division{font-size:.68rem;font-weight:600;color:var(--green);background:#fff;border:1px solid #bbf7d0;border-radius:99px;padding:1px 8px;}
+
+.md-body{background:#fff;}
+.md-toolbar{display:flex;align-items:center;gap:.55rem;padding:.65rem .9rem;flex-wrap:wrap;}
+.md-toolbar--entity{border-bottom:1px solid #eef2ff;}
+.md-toolbar--branch{border-bottom:1px solid #eff6ff;}
+.md-toolbar--division{border-bottom:1px solid #f0fdf4;}
+
+.md-search-wrap{flex:1;min-width:160px;display:flex;align-items:center;gap:.4rem;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:.36rem .65rem;transition:border-color .15s;}
+.md-search-wrap input{border:none;outline:none;font-size:.775rem;flex:1;color:var(--slate);background:transparent;font-family:inherit;}
+.md-search-wrap:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.08);}
+
+.md-filter-wrap{display:flex;align-items:center;gap:.35rem;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:.34rem .6rem;}
+.md-filter-wrap select{border:none;outline:none;font-size:.75rem;color:#334155;background:transparent;cursor:pointer;font-family:inherit;}
+
+.md-add-btn{display:inline-flex;align-items:center;gap:.3rem;padding:.34rem .75rem;border-radius:8px;font-size:.75rem;font-weight:600;border:none;cursor:pointer;transition:all .15s;font-family:inherit;margin-left:auto;}
+.md-add-btn--entity{background:var(--indigo-lt);color:var(--indigo);}
+.md-add-btn--entity:hover{background:#c7d2fe;color:#3730a3;}
+.md-add-btn--branch{background:var(--blue-lt);color:var(--blue-dk);}
+.md-add-btn--branch:hover{background:#bfdbfe;color:#1e40af;}
+.md-add-btn--division{background:var(--green-lt);color:var(--green);}
+.md-add-btn--division:hover{background:#bbf7d0;color:#15803d;}
+
+.md-table-wrap{overflow-x:auto;}
+.md-table{width:100%;border-collapse:collapse;font-size:.765rem;}
+.md-table--entity thead tr{background:linear-gradient(135deg,#3730a3,var(--indigo));}
+.md-table--branch thead tr{background:linear-gradient(135deg,#1e40af,var(--blue));}
+.md-table--division thead tr{background:linear-gradient(135deg,#15803d,var(--green));}
+.md-table thead th{color:#fff;padding:.5rem .8rem;text-align:left;font-weight:600;font-size:.7rem;white-space:nowrap;}
+.md-table tbody tr{border-bottom:1px solid #f8fafc;transition:background .12s;}
+.md-table tbody tr:last-child{border-bottom:none;}
+.md-table--entity tbody tr:hover{background:#eef2ff;}
+.md-table--branch tbody tr:hover{background:#eff6ff;}
+.md-table--division tbody tr:hover{background:#f0fdf4;}
+.md-table tbody td{padding:.5rem .8rem;vertical-align:middle;}
+.md-empty{text-align:center;color:var(--slate-4);padding:1.5rem!important;}
+
+.md-code-badge{font-family:"Courier New",monospace;font-size:.7rem;font-weight:700;padding:2px 7px;border-radius:4px;}
+.md-code-badge--entity{color:var(--indigo);background:var(--indigo-lt);}
+.md-code-badge--branch{color:var(--blue-dk);background:var(--blue-lt);}
+.md-code-badge--division{color:var(--green);background:var(--green-lt);}
+
+.md-name-text{font-size:.78rem;font-weight:600;color:#1e293b;}
+.md-parent-badge{font-size:.67rem;color:var(--slate-6);background:#f1f5f9;padding:1px 6px;border-radius:3px;font-family:"Courier New",monospace;}
+
+.md-action-row{display:flex;gap:.3rem;align-items:center;}
+.md-icon-btn{width:26px;height:26px;border-radius:6px;border:1.5px solid var(--border);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--slate-6);transition:all .14s;flex-shrink:0;}
+.md-icon-btn--edit:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-lt);}
+.md-icon-btn--del:hover{border-color:var(--red);color:var(--red);background:var(--red-lt);}
+
+/* ── INLINE MODAL ── */
+.md-modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.4);backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;z-index:500;padding:1rem;}
+.md-modal{background:#fff;border-radius:14px;width:100%;max-width:460px;box-shadow:0 12px 40px rgba(0,0,0,.15);overflow:hidden;}
+.md-modal-header{padding:.85rem 1.1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.md-modal-title{font-size:.88rem;font-weight:700;color:var(--slate);display:flex;align-items:center;gap:.4rem;}
+.md-modal-close{background:none;border:none;cursor:pointer;color:var(--slate-4);border-radius:6px;padding:.2rem;display:flex;align-items:center;justify-content:center;}
+.md-modal-close:hover{background:var(--bg);color:var(--slate-6);}
+.md-modal-body{padding:1rem 1.1rem;display:flex;flex-direction:column;gap:.65rem;}
+.md-modal-footer{padding:.8rem 1.1rem;border-top:1px solid var(--border);display:flex;gap:.45rem;justify-content:flex-end;}
+.md-modal-field{display:flex;flex-direction:column;gap:.25rem;}
+.md-modal-field label{font-size:.73rem;font-weight:600;color:#475569;display:flex;align-items:center;gap:4px;}
+
+/* ── FIX: input & select warna putih di dalam modal master data ── */
+.md-modal-field input,
+.md-modal-field select {
+  padding:.4rem .65rem;
+  border-radius:8px;
+  border:1.5px solid var(--border);
+  font-size:.78rem;
+  outline:none;
+  transition:border .15s;
+  font-family:inherit;
+  background:#ffffff !important;
+  color:#0f172a !important;
+  -webkit-text-fill-color:#0f172a !important;
+}
+.md-modal-field input:focus,
+.md-modal-field select:focus {
+  border-color:var(--blue);
+  box-shadow:0 0 0 3px rgba(37,99,235,.08);
+}
+.md-modal-field input:disabled,
+.md-modal-field select:disabled {
+  background:#f8fafc !important;
+  color:#94a3b8 !important;
+  -webkit-text-fill-color:#94a3b8 !important;
+  cursor:not-allowed;
+}
+.md-modal-field input::placeholder {
+  color:#94a3b8 !important;
+  -webkit-text-fill-color:#94a3b8 !important;
+}
+
+.md-modal-field-error{border-color:var(--red)!important;}
+.md-modal-err{font-size:.7rem;color:var(--red);}
+.md-del-confirm-icon{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto .65rem;}
+
+/* ── MASTER SECTIONS WRAPPER ── */
+.md-sections-wrapper{margin-top:1rem;}
+.md-sections-header{display:flex;align-items:center;gap:.5rem;margin-bottom:.6rem;}
+.md-sections-title{font-size:.82rem;font-weight:700;color:var(--slate-6);text-transform:uppercase;letter-spacing:.06em;}
 `;
 
-// ─── HELPERS ──────────────────────────────────────────────────
+// ─── DIFF POPOVER ─────────────────────────────────────────────
 function DiffPopover({ log, rect, onClose }) {
   const ref = useRef(null);
   React.useEffect(() => {
@@ -1150,7 +1424,7 @@ function DiffPopover({ log, rect, onClose }) {
 }
 
 // ─── ACTIVITY LOG ─────────────────────────────────────────────
-const LOGS_PER_PAGE = 8;
+const LOGS_PER_PAGE = 5;
 function ActivityLogSection({ logs, users }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -1399,42 +1673,15 @@ function ActivityLogSection({ logs, users }) {
               </tbody>
             </table>
           </div>
-          {totalPages > 1 && (
-            <div className="al-pagination">
-              <span className="al-page-info">
-                {Math.min((page - 1) * LOGS_PER_PAGE + 1, filtered.length)}–
-                {Math.min(page * LOGS_PER_PAGE, filtered.length)} dari{" "}
-                {filtered.length} log
-              </span>
-              <div className="al-page-btns">
-                <button
-                  className="al-page-btn"
-                  onClick={() => setPage((p) => p - 1)}
-                  disabled={page === 1}
-                >
-                  ‹
-                </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                  (p) => (
-                    <button
-                      key={p}
-                      className={`al-page-btn ${p === page ? "active" : ""}`}
-                      onClick={() => setPage(p)}
-                    >
-                      {p}
-                    </button>
-                  ),
-                )}
-                <button
-                  className="al-page-btn"
-                  onClick={() => setPage((p) => p + 1)}
-                  disabled={page === totalPages}
-                >
-                  ›
-                </button>
-              </div>
-            </div>
-          )}
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            total={filtered.length}
+            perPage={LOGS_PER_PAGE}
+            onPageChange={setPage}
+            accentColor="#0f766e"
+            accentBg="#ccfbf1"
+          />
         </div>
       )}
       {diff && (
@@ -1448,39 +1695,1081 @@ function ActivityLogSection({ logs, users }) {
   );
 }
 
+// ─── MASTER DATA MODAL ────────────────────────────────────────
+function MdModal({ title, iconName, iconColor, fields, onClose, onSave }) {
+  const [form, setForm] = useState(() => {
+    const init = {};
+    fields.forEach((f) => {
+      init[f.key] = f.defaultValue || "";
+    });
+    return init;
+  });
+  const [errors, setErrors] = useState({});
+
+  const validate = () => {
+    const e = {};
+    fields.forEach((f) => {
+      if (f.required && !form[f.key]?.trim()) e[f.key] = "Wajib diisi";
+    });
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
+
+  const handleSave = () => {
+    if (!validate()) return;
+    onSave(form);
+  };
+
+  return (
+    <div
+      className="md-modal-overlay"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div className="md-modal">
+        <div className="md-modal-header">
+          <div className="md-modal-title">
+            <Ico n={iconName} size={13} style={{ color: iconColor }} />
+            {title}
+          </div>
+          <button className="md-modal-close" onClick={onClose}>
+            <Ico n="times" size={14} />
+          </button>
+        </div>
+        <div className="md-modal-body">
+          {fields.map((f) => (
+            <div key={f.key} className="md-modal-field">
+              <label>
+                <Ico n={f.icon || "idCard"} size={11} /> {f.label}{" "}
+                {f.required && <span style={{ color: "#dc2626" }}>*</span>}
+              </label>
+              {f.type === "select" ? (
+                <select
+                  value={form[f.key]}
+                  onChange={(e) =>
+                    setForm({ ...form, [f.key]: e.target.value })
+                  }
+                  className={errors[f.key] ? "md-modal-field-error" : ""}
+                  disabled={f.disabled}
+                >
+                  <option value="">{f.placeholder || "-- Pilih --"}</option>
+                  {(f.options || []).map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type={f.type || "text"}
+                  value={form[f.key]}
+                  onChange={(e) =>
+                    setForm({ ...form, [f.key]: e.target.value })
+                  }
+                  placeholder={f.placeholder}
+                  className={errors[f.key] ? "md-modal-field-error" : ""}
+                  disabled={f.disabled}
+                />
+              )}
+              {errors[f.key] && (
+                <span className="md-modal-err">{errors[f.key]}</span>
+              )}
+              {f.hint && (
+                <span style={{ fontSize: ".68rem", color: "#94a3b8" }}>
+                  {f.hint}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+        <div className="md-modal-footer">
+          <button className="um-btn um-btn-secondary" onClick={onClose}>
+            Batal
+          </button>
+          <button className="um-btn um-btn-primary" onClick={handleSave}>
+            <Ico n="check" size={12} /> Simpan
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── DELETE CONFIRM MODAL ─────────────────────────────────────
+function MdDeleteModal({ itemName, onClose, onConfirm }) {
+  return (
+    <div
+      className="md-modal-overlay"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div className="md-modal" style={{ maxWidth: 380 }}>
+        <div
+          className="md-modal-body"
+          style={{ textAlign: "center", paddingTop: "1.25rem" }}
+        >
+          <div
+            className="md-del-confirm-icon"
+            style={{ background: "#fee2e2", color: "#dc2626" }}
+          >
+            <Ico n="trash" size={20} />
+          </div>
+          <div
+            style={{
+              fontSize: ".9rem",
+              fontWeight: 700,
+              color: "#0f172a",
+              marginBottom: ".35rem",
+            }}
+          >
+            Hapus Data?
+          </div>
+          <div style={{ fontSize: ".8rem", color: "#64748b" }}>
+            <strong>{itemName}</strong> akan dihapus secara permanen.
+          </div>
+        </div>
+        <div className="md-modal-footer" style={{ justifyContent: "center" }}>
+          <button className="um-btn um-btn-secondary" onClick={onClose}>
+            Batal
+          </button>
+          <button
+            className="um-btn um-btn-danger"
+            onClick={() => {
+              onConfirm();
+              onClose();
+            }}
+          >
+            <Ico n="trash" size={12} /> Hapus
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── ENTITY MANAGEMENT SECTION ───────────────────────────────
+const MD_PER_PAGE = 5;
+
+function EntitySection({ entityList, setEntityList }) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [modal, setModal] = useState(null);
+
+  const filtered = entityList.filter(
+    (e) =>
+      e.name.toLowerCase().includes(search.toLowerCase()) ||
+      e.entity_code.toLowerCase().includes(search.toLowerCase()),
+  );
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / MD_PER_PAGE));
+  const paginated = filtered.slice(
+    (page - 1) * MD_PER_PAGE,
+    page * MD_PER_PAGE,
+  );
+
+  React.useEffect(() => {
+    setPage(1);
+  }, [search]);
+
+  const handleAdd = (form) => {
+    const code = form.entity_code.trim().toUpperCase();
+    setEntityList((prev) => [
+      ...prev,
+      { entity_code: code, name: form.name.trim() },
+    ]);
+    setModal(null);
+  };
+
+  const handleEdit = (form) => {
+    setEntityList((prev) =>
+      prev.map((e) =>
+        e.entity_code === modal.item.entity_code
+          ? { ...e, name: form.name.trim() }
+          : e,
+      ),
+    );
+    setModal(null);
+  };
+
+  const handleDelete = (code) => {
+    setEntityList((prev) => prev.filter((e) => e.entity_code !== code));
+  };
+
+  return (
+    <div className="md-section md-section--entity">
+      <div
+        className="md-header md-header--entity"
+        onClick={() => setOpen((o) => !o)}
+      >
+        <div className="md-header-left">
+          <Ico n="building" size={15} style={{ color: "#4338ca" }} />
+          <span className="md-header-title--entity">Manajemen Entitas</span>
+          <span className="md-header-count--entity">
+            {entityList.length} entitas
+          </span>
+        </div>
+        <Ico
+          n={open ? "chevronUp" : "chevronDown"}
+          size={14}
+          style={{ color: "#4338ca" }}
+        />
+      </div>
+      {open && (
+        <div className="md-body">
+          <div className={`md-toolbar md-toolbar--entity`}>
+            <div className="md-search-wrap">
+              <Ico n="search" size={12} style={{ color: "#94a3b8" }} />
+              <input
+                placeholder="Cari kode atau nama entitas…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <span style={{ fontSize: ".72rem", color: "#64748b" }}>
+              {filtered.length} ditemukan
+            </span>
+            <button
+              className="md-add-btn md-add-btn--entity"
+              onClick={() => setModal({ type: "add" })}
+            >
+              <Ico n="plus" size={12} /> Tambah Entitas
+            </button>
+          </div>
+          <div className="md-table-wrap">
+            <table className="md-table md-table--entity">
+              <thead>
+                <tr>
+                  <th>Kode Entitas</th>
+                  <th>Nama Entitas</th>
+                  <th style={{ width: 70, textAlign: "center" }}>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginated.length === 0 ? (
+                  <tr>
+                    <td colSpan={3} className="md-empty">
+                      Tidak ada entitas ditemukan
+                    </td>
+                  </tr>
+                ) : (
+                  paginated.map((e) => (
+                    <tr key={e.entity_code}>
+                      <td>
+                        <span className="md-code-badge md-code-badge--entity">
+                          {e.entity_code}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="md-name-text">{e.name}</span>
+                      </td>
+                      <td>
+                        <div
+                          className="md-action-row"
+                          style={{ justifyContent: "center" }}
+                        >
+                          <button
+                            className="md-icon-btn md-icon-btn--edit"
+                            title="Edit"
+                            onClick={() => setModal({ type: "edit", item: e })}
+                          >
+                            <Ico n="edit" size={11} />
+                          </button>
+                          <button
+                            className="md-icon-btn md-icon-btn--del"
+                            title="Hapus"
+                            onClick={() =>
+                              setModal({ type: "delete", item: e })
+                            }
+                          >
+                            <Ico n="trash" size={11} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            total={filtered.length}
+            perPage={MD_PER_PAGE}
+            onPageChange={setPage}
+            accentColor="#4338ca"
+            accentBg="#eef2ff"
+          />
+        </div>
+      )}
+
+      {modal?.type === "add" && (
+        <MdModal
+          title="Tambah Entitas Baru"
+          iconName="building"
+          iconColor="#4338ca"
+          fields={[
+            {
+              key: "entity_code",
+              label: "Kode Entitas",
+              icon: "idCard",
+              placeholder: "Contoh: PMT",
+              required: true,
+              hint: "Kode unik singkatan entitas (akan diubah ke UPPERCASE)",
+            },
+            {
+              key: "name",
+              label: "Nama Entitas",
+              icon: "building",
+              placeholder: "Contoh: PT Pelindo Multi Terminal",
+              required: true,
+            },
+          ]}
+          onClose={() => setModal(null)}
+          onSave={handleAdd}
+        />
+      )}
+      {modal?.type === "edit" && (
+        <MdModal
+          title={`Edit Entitas — ${modal.item.entity_code}`}
+          iconName="building"
+          iconColor="#4338ca"
+          fields={[
+            {
+              key: "entity_code",
+              label: "Kode Entitas",
+              icon: "idCard",
+              defaultValue: modal.item.entity_code,
+              placeholder: "Kode entitas",
+              required: false,
+              disabled: true,
+              hint: "Kode entitas tidak dapat diubah",
+            },
+            {
+              key: "name",
+              label: "Nama Entitas",
+              icon: "building",
+              defaultValue: modal.item.name,
+              placeholder: "Nama entitas",
+              required: true,
+            },
+          ]}
+          onClose={() => setModal(null)}
+          onSave={handleEdit}
+        />
+      )}
+      {modal?.type === "delete" && (
+        <MdDeleteModal
+          itemName={`${modal.item.entity_code} — ${modal.item.name}`}
+          onClose={() => setModal(null)}
+          onConfirm={() => handleDelete(modal.item.entity_code)}
+        />
+      )}
+    </div>
+  );
+}
+
+// ─── BRANCH MANAGEMENT SECTION ────────────────────────────────
+function BranchSection({ branchList, setBranchList, entityList }) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [filterEntity, setFilterEntity] = useState("semua");
+  const [page, setPage] = useState(1);
+  const [modal, setModal] = useState(null);
+
+  const filtered = branchList.filter((b) => {
+    const q = search.toLowerCase();
+    const matchQ =
+      b.name.toLowerCase().includes(q) ||
+      b.branch_code.toLowerCase().includes(q);
+    const matchE = filterEntity === "semua" || b.entity_code === filterEntity;
+    return matchQ && matchE;
+  });
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / MD_PER_PAGE));
+  const paginated = filtered.slice(
+    (page - 1) * MD_PER_PAGE,
+    page * MD_PER_PAGE,
+  );
+
+  React.useEffect(() => {
+    setPage(1);
+  }, [search, filterEntity]);
+
+  const getEntityName = (code) =>
+    entityList.find((e) => e.entity_code === code)?.name || code;
+
+  const handleAdd = (form) => {
+    const code = form.branch_code.trim().toUpperCase();
+    setBranchList((prev) => [
+      ...prev,
+      {
+        branch_code: code,
+        entity_code: form.entity_code,
+        name: form.name.trim(),
+      },
+    ]);
+    setModal(null);
+  };
+
+  const handleEdit = (form) => {
+    setBranchList((prev) =>
+      prev.map((b) =>
+        b.branch_code === modal.item.branch_code
+          ? { ...b, name: form.name.trim(), entity_code: form.entity_code }
+          : b,
+      ),
+    );
+    setModal(null);
+  };
+
+  const handleDelete = (code) => {
+    setBranchList((prev) => prev.filter((b) => b.branch_code !== code));
+  };
+
+  const entityOptions = entityList.map((e) => ({
+    value: e.entity_code,
+    label: `${e.entity_code} — ${e.name}`,
+  }));
+
+  return (
+    <div className="md-section md-section--branch">
+      <div
+        className="md-header md-header--branch"
+        onClick={() => setOpen((o) => !o)}
+      >
+        <div className="md-header-left">
+          <Ico n="mapPin" size={15} style={{ color: "#1d4ed8" }} />
+          <span className="md-header-title--branch">
+            Manajemen Cabang / Branch
+          </span>
+          <span className="md-header-count--branch">
+            {branchList.length} cabang
+          </span>
+        </div>
+        <Ico
+          n={open ? "chevronUp" : "chevronDown"}
+          size={14}
+          style={{ color: "#1d4ed8" }}
+        />
+      </div>
+      {open && (
+        <div className="md-body">
+          <div className={`md-toolbar md-toolbar--branch`}>
+            <div className="md-search-wrap">
+              <Ico n="search" size={12} style={{ color: "#94a3b8" }} />
+              <input
+                placeholder="Cari kode atau nama cabang…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <div className="md-filter-wrap">
+              <Ico n="building" size={11} style={{ color: "#94a3b8" }} />
+              <select
+                value={filterEntity}
+                onChange={(e) => setFilterEntity(e.target.value)}
+              >
+                <option value="semua">Semua Entitas</option>
+                {entityList.map((e) => (
+                  <option key={e.entity_code} value={e.entity_code}>
+                    {e.entity_code}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <span style={{ fontSize: ".72rem", color: "#64748b" }}>
+              {filtered.length} ditemukan
+            </span>
+            <button
+              className="md-add-btn md-add-btn--branch"
+              onClick={() => setModal({ type: "add" })}
+            >
+              <Ico n="plus" size={12} /> Tambah Cabang
+            </button>
+          </div>
+          <div className="md-table-wrap">
+            <table className="md-table md-table--branch">
+              <thead>
+                <tr>
+                  <th>Kode Cabang</th>
+                  <th>Nama Cabang</th>
+                  <th>Entitas</th>
+                  <th style={{ width: 70, textAlign: "center" }}>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginated.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="md-empty">
+                      Tidak ada cabang ditemukan
+                    </td>
+                  </tr>
+                ) : (
+                  paginated.map((b) => (
+                    <tr key={b.branch_code}>
+                      <td>
+                        <span className="md-code-badge md-code-badge--branch">
+                          {b.branch_code}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="md-name-text">{b.name}</span>
+                      </td>
+                      <td>
+                        <div
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 2,
+                          }}
+                        >
+                          <span
+                            className="md-code-badge md-code-badge--entity"
+                            style={{ width: "fit-content" }}
+                          >
+                            {b.entity_code}
+                          </span>
+                          <span
+                            style={{ fontSize: ".67rem", color: "#64748b" }}
+                          >
+                            {getEntityName(b.entity_code)}
+                          </span>
+                        </div>
+                      </td>
+                      <td>
+                        <div
+                          className="md-action-row"
+                          style={{ justifyContent: "center" }}
+                        >
+                          <button
+                            className="md-icon-btn md-icon-btn--edit"
+                            title="Edit"
+                            onClick={() => setModal({ type: "edit", item: b })}
+                          >
+                            <Ico n="edit" size={11} />
+                          </button>
+                          <button
+                            className="md-icon-btn md-icon-btn--del"
+                            title="Hapus"
+                            onClick={() =>
+                              setModal({ type: "delete", item: b })
+                            }
+                          >
+                            <Ico n="trash" size={11} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            total={filtered.length}
+            perPage={MD_PER_PAGE}
+            onPageChange={setPage}
+            accentColor="#1d4ed8"
+            accentBg="#dbeafe"
+          />
+        </div>
+      )}
+
+      {modal?.type === "add" && (
+        <MdModal
+          title="Tambah Cabang Baru"
+          iconName="mapPin"
+          iconColor="#1d4ed8"
+          fields={[
+            {
+              key: "entity_code",
+              label: "Entitas",
+              icon: "building",
+              type: "select",
+              options: entityOptions,
+              placeholder: "-- Pilih Entitas --",
+              required: true,
+            },
+            {
+              key: "branch_code",
+              label: "Kode Cabang",
+              icon: "idCard",
+              placeholder: "Contoh: PMT-BDG",
+              required: true,
+              hint: "Kode unik cabang (akan diubah ke UPPERCASE)",
+            },
+            {
+              key: "name",
+              label: "Nama Cabang",
+              icon: "mapPin",
+              placeholder: "Contoh: Bandung",
+              required: true,
+            },
+          ]}
+          onClose={() => setModal(null)}
+          onSave={handleAdd}
+        />
+      )}
+      {modal?.type === "edit" && (
+        <MdModal
+          title={`Edit Cabang — ${modal.item.branch_code}`}
+          iconName="mapPin"
+          iconColor="#1d4ed8"
+          fields={[
+            {
+              key: "entity_code",
+              label: "Entitas",
+              icon: "building",
+              type: "select",
+              options: entityOptions,
+              defaultValue: modal.item.entity_code,
+              required: true,
+            },
+            {
+              key: "branch_code",
+              label: "Kode Cabang",
+              icon: "idCard",
+              defaultValue: modal.item.branch_code,
+              required: false,
+              disabled: true,
+              hint: "Kode cabang tidak dapat diubah",
+            },
+            {
+              key: "name",
+              label: "Nama Cabang",
+              icon: "mapPin",
+              defaultValue: modal.item.name,
+              placeholder: "Nama cabang",
+              required: true,
+            },
+          ]}
+          onClose={() => setModal(null)}
+          onSave={handleEdit}
+        />
+      )}
+      {modal?.type === "delete" && (
+        <MdDeleteModal
+          itemName={`${modal.item.branch_code} — ${modal.item.name}`}
+          onClose={() => setModal(null)}
+          onConfirm={() => handleDelete(modal.item.branch_code)}
+        />
+      )}
+    </div>
+  );
+}
+
+// ─── DIVISION MANAGEMENT SECTION ─────────────────────────────
+function DivisionSection({
+  divisionList,
+  setDivisionList,
+  entityList,
+  branchList,
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [filterEntity, setFilterEntity] = useState("semua");
+  const [filterBranch, setFilterBranch] = useState("semua");
+  const [page, setPage] = useState(1);
+  const [modal, setModal] = useState(null);
+
+  const availableBranches =
+    filterEntity === "semua"
+      ? branchList
+      : branchList.filter((b) => b.entity_code === filterEntity);
+
+  const filtered = divisionList.filter((d) => {
+    const q = search.toLowerCase();
+    const matchQ =
+      d.name.toLowerCase().includes(q) ||
+      d.division_code.toLowerCase().includes(q);
+    const matchE = filterEntity === "semua" || d.entity_code === filterEntity;
+    const matchB = filterBranch === "semua" || d.branch_code === filterBranch;
+    return matchQ && matchE && matchB;
+  });
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / MD_PER_PAGE));
+  const paginated = filtered.slice(
+    (page - 1) * MD_PER_PAGE,
+    page * MD_PER_PAGE,
+  );
+
+  React.useEffect(() => {
+    setPage(1);
+  }, [search, filterEntity, filterBranch]);
+
+  const getEntityName = (code) =>
+    entityList.find((e) => e.entity_code === code)?.name || code;
+  const getBranchName = (code) =>
+    branchList.find((b) => b.branch_code === code)?.name || code;
+
+  const handleAdd = (form) => {
+    const code = form.division_code.trim().toUpperCase();
+    const branch = branchList.find((b) => b.branch_code === form.branch_code);
+    setDivisionList((prev) => [
+      ...prev,
+      {
+        division_code: code,
+        branch_code: form.branch_code,
+        entity_code: branch?.entity_code || form.entity_code,
+        name: form.name.trim(),
+      },
+    ]);
+    setModal(null);
+  };
+
+  const handleEdit = (form) => {
+    const branch = branchList.find((b) => b.branch_code === form.branch_code);
+    setDivisionList((prev) =>
+      prev.map((d) =>
+        d.division_code === modal.item.division_code
+          ? {
+              ...d,
+              name: form.name.trim(),
+              branch_code: form.branch_code,
+              entity_code: branch?.entity_code || d.entity_code,
+            }
+          : d,
+      ),
+    );
+    setModal(null);
+  };
+
+  const handleDelete = (code) => {
+    setDivisionList((prev) => prev.filter((d) => d.division_code !== code));
+  };
+
+  const entityOptions = entityList.map((e) => ({
+    value: e.entity_code,
+    label: `${e.entity_code} — ${e.name}`,
+  }));
+  const branchOptions = branchList.map((b) => ({
+    value: b.branch_code,
+    label: `${b.branch_code} — ${b.name}`,
+  }));
+  const editBranchOptions = modal?.item
+    ? branchList
+        .filter(
+          (b) =>
+            b.entity_code ===
+            branchList.find((x) => x.branch_code === modal.item.branch_code)
+              ?.entity_code,
+        )
+        .map((b) => ({
+          value: b.branch_code,
+          label: `${b.branch_code} — ${b.name}`,
+        }))
+    : branchOptions;
+
+  return (
+    <div className="md-section md-section--division">
+      <div
+        className="md-header md-header--division"
+        onClick={() => setOpen((o) => !o)}
+      >
+        <div className="md-header-left">
+          <Ico n="sitemap" size={15} style={{ color: "#15803d" }} />
+          <span className="md-header-title--division">Manajemen Divisi</span>
+          <span className="md-header-count--division">
+            {divisionList.length} divisi
+          </span>
+        </div>
+        <Ico
+          n={open ? "chevronUp" : "chevronDown"}
+          size={14}
+          style={{ color: "#15803d" }}
+        />
+      </div>
+      {open && (
+        <div className="md-body">
+          <div
+            className={`md-toolbar md-toolbar--division`}
+            style={{ flexWrap: "wrap", gap: ".4rem" }}
+          >
+            <div className="md-search-wrap">
+              <Ico n="search" size={12} style={{ color: "#94a3b8" }} />
+              <input
+                placeholder="Cari kode atau nama divisi…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <div className="md-filter-wrap">
+              <Ico n="building" size={11} style={{ color: "#94a3b8" }} />
+              <select
+                value={filterEntity}
+                onChange={(e) => {
+                  setFilterEntity(e.target.value);
+                  setFilterBranch("semua");
+                }}
+              >
+                <option value="semua">Semua Entitas</option>
+                {entityList.map((e) => (
+                  <option key={e.entity_code} value={e.entity_code}>
+                    {e.entity_code}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div
+              className="md-filter-wrap"
+              style={{
+                opacity: filterEntity === "semua" ? 0.5 : 1,
+                pointerEvents: filterEntity === "semua" ? "none" : "auto",
+              }}
+            >
+              <Ico n="mapPin" size={11} style={{ color: "#94a3b8" }} />
+              <select
+                value={filterBranch}
+                onChange={(e) => setFilterBranch(e.target.value)}
+                disabled={filterEntity === "semua"}
+              >
+                <option value="semua">
+                  {filterEntity === "semua"
+                    ? "Pilih entitas dulu"
+                    : "Semua Cabang"}
+                </option>
+                {availableBranches.map((b) => (
+                  <option key={b.branch_code} value={b.branch_code}>
+                    {b.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <span style={{ fontSize: ".72rem", color: "#64748b" }}>
+              {filtered.length} ditemukan
+            </span>
+            <button
+              className="md-add-btn md-add-btn--division"
+              onClick={() => setModal({ type: "add" })}
+            >
+              <Ico n="plus" size={12} /> Tambah Divisi
+            </button>
+          </div>
+          <div className="md-table-wrap">
+            <table className="md-table md-table--division">
+              <thead>
+                <tr>
+                  <th>Kode Divisi</th>
+                  <th>Nama Divisi</th>
+                  <th>Cabang</th>
+                  <th>Entitas</th>
+                  <th style={{ width: 70, textAlign: "center" }}>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginated.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="md-empty">
+                      Tidak ada divisi ditemukan
+                    </td>
+                  </tr>
+                ) : (
+                  paginated.map((d) => (
+                    <tr key={d.division_code}>
+                      <td>
+                        <span className="md-code-badge md-code-badge--division">
+                          {d.division_code}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="md-name-text">{d.name}</span>
+                      </td>
+                      <td>
+                        <div
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 2,
+                          }}
+                        >
+                          <span
+                            className="md-code-badge md-code-badge--branch"
+                            style={{ width: "fit-content" }}
+                          >
+                            {d.branch_code}
+                          </span>
+                          <span
+                            style={{ fontSize: ".67rem", color: "#64748b" }}
+                          >
+                            {getBranchName(d.branch_code)}
+                          </span>
+                        </div>
+                      </td>
+                      <td>
+                        <span className="md-code-badge md-code-badge--entity">
+                          {d.entity_code}
+                        </span>
+                      </td>
+                      <td>
+                        <div
+                          className="md-action-row"
+                          style={{ justifyContent: "center" }}
+                        >
+                          <button
+                            className="md-icon-btn md-icon-btn--edit"
+                            title="Edit"
+                            onClick={() => setModal({ type: "edit", item: d })}
+                          >
+                            <Ico n="edit" size={11} />
+                          </button>
+                          <button
+                            className="md-icon-btn md-icon-btn--del"
+                            title="Hapus"
+                            onClick={() =>
+                              setModal({ type: "delete", item: d })
+                            }
+                          >
+                            <Ico n="trash" size={11} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            total={filtered.length}
+            perPage={MD_PER_PAGE}
+            onPageChange={setPage}
+            accentColor="#15803d"
+            accentBg="#dcfce7"
+          />
+        </div>
+      )}
+
+      {modal?.type === "add" && (
+        <MdModal
+          title="Tambah Divisi Baru"
+          iconName="sitemap"
+          iconColor="#15803d"
+          fields={[
+            {
+              key: "branch_code",
+              label: "Cabang / Branch",
+              icon: "mapPin",
+              type: "select",
+              options: branchOptions,
+              placeholder: "-- Pilih Cabang --",
+              required: true,
+            },
+            {
+              key: "division_code",
+              label: "Kode Divisi",
+              icon: "idCard",
+              placeholder: "Contoh: PMT-JKT-MKT",
+              required: true,
+              hint: "Kode unik divisi (akan diubah ke UPPERCASE)",
+            },
+            {
+              key: "name",
+              label: "Nama Divisi",
+              icon: "sitemap",
+              placeholder: "Contoh: Marketing",
+              required: true,
+            },
+          ]}
+          onClose={() => setModal(null)}
+          onSave={handleAdd}
+        />
+      )}
+      {modal?.type === "edit" && (
+        <MdModal
+          title={`Edit Divisi — ${modal.item.division_code}`}
+          iconName="sitemap"
+          iconColor="#15803d"
+          fields={[
+            {
+              key: "branch_code",
+              label: "Cabang / Branch",
+              icon: "mapPin",
+              type: "select",
+              options: editBranchOptions,
+              defaultValue: modal.item.branch_code,
+              required: true,
+            },
+            {
+              key: "division_code",
+              label: "Kode Divisi",
+              icon: "idCard",
+              defaultValue: modal.item.division_code,
+              required: false,
+              disabled: true,
+              hint: "Kode divisi tidak dapat diubah",
+            },
+            {
+              key: "name",
+              label: "Nama Divisi",
+              icon: "sitemap",
+              defaultValue: modal.item.name,
+              placeholder: "Nama divisi",
+              required: true,
+            },
+          ]}
+          onClose={() => setModal(null)}
+          onSave={handleEdit}
+        />
+      )}
+      {modal?.type === "delete" && (
+        <MdDeleteModal
+          itemName={`${modal.item.division_code} — ${modal.item.name}`}
+          onClose={() => setModal(null)}
+          onConfirm={() => handleDelete(modal.item.division_code)}
+        />
+      )}
+    </div>
+  );
+}
+
 // ─── FORM VIEW ────────────────────────────────────────────────
-function UserFormView({ user, onBack, onSave }) {
+function UserFormView({
+  user,
+  onBack,
+  onSave,
+  entityList,
+  branchList,
+  divisionList,
+}) {
   const isEdit = !!user;
   const [form, setForm] = useState(
     user
       ? {
-        name: user.name,
-        nip: user.nip || "",
-        username: user.username,
-        email: user.email,
-        phone: user.phone || "",
-        role_code: user.role_code,
-        entity_code: user.entity_code,
-        branch_code: user.branch_code || "",
-        division_code: user.division_code || "",
-        is_active: user.is_active,
-        password: "",
-        confirm_password: "",
-      }
+          name: user.name,
+          nip: user.nip || "",
+          username: user.username,
+          email: user.email,
+          phone: user.phone || "",
+          role_code: user.role_code,
+          entity_code: user.entity_code,
+          branch_code: user.branch_code || "",
+          division_code: user.division_code || "",
+          is_active: user.is_active,
+          password: "",
+          confirm_password: "",
+        }
       : {
-        name: "",
-        nip: "",
-        username: "",
-        email: "",
-        phone: "",
-        role_code: "user",
-        entity_code: "",
-        branch_code: "",
-        division_code: "",
-        is_active: true,
-        password: "",
-        confirm_password: "",
-      },
+          name: "",
+          nip: "",
+          username: "",
+          email: "",
+          phone: "",
+          role_code: "user",
+          entity_code: "",
+          branch_code: "",
+          division_code: "",
+          is_active: true,
+          password: "",
+          confirm_password: "",
+        },
   );
   const [showPass, setShowPass] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -1608,10 +2897,10 @@ function UserFormView({ user, onBack, onSave }) {
                 style={
                   form.role_code === val
                     ? {
-                      borderColor: cfg.color,
-                      background: cfg.bg,
-                      color: cfg.color,
-                    }
+                        borderColor: cfg.color,
+                        background: cfg.bg,
+                        color: cfg.color,
+                      }
                     : {}
                 }
               >
@@ -1823,8 +3112,23 @@ function UserFormView({ user, onBack, onSave }) {
 }
 
 // ─── DETAIL VIEW ──────────────────────────────────────────────
-function DetailUserView({ user, onBack, onEdit, onDelete, onReset }) {
+function DetailUserView({
+  user,
+  onBack,
+  onEdit,
+  onDelete,
+  onReset,
+  entityList,
+  branchList,
+  divisionList,
+}) {
   if (!user) return null;
+  const getEntityName = (code) =>
+    entityList.find((e) => e.entity_code === code)?.name || code;
+  const getBranchName = (code) =>
+    branchList.find((b) => b.branch_code === code)?.name || code;
+  const getDivisionName = (code) =>
+    divisionList.find((d) => d.division_code === code)?.name || code;
   const rc = roleConfig[user.role_code];
   return (
     <div className="um-detail-root">
@@ -1875,7 +3179,7 @@ function DetailUserView({ user, onBack, onEdit, onDelete, onReset }) {
                   <Ico n={rc.iconName} size={11} /> {rc.label}
                 </span>
                 <span
-                  className={`um-role-badge`}
+                  className="um-role-badge"
                   style={
                     user.is_active
                       ? { color: "#16a34a", background: "#dcfce7" }
@@ -2129,15 +3433,27 @@ function ActionDropdown({ user, onDetail, onEdit, onReset, onDelete }) {
 }
 
 // ─── MAIN COMPONENT ───────────────────────────────────────────
+const USERS_PER_PAGE = 5;
+
 const UserManagement = () => {
   const [users, setUsers] = useState(mockUsers);
   const [logs, setLogs] = useState(mockLogs);
   const logIdRef = useRef(mockLogs.length + 1);
 
-  // view: "list" | "detail" | "form" | "reset" | "delete"
+  const [entityList, setEntityList] = useState(INITIAL_ENTITY_LIST);
+  const [branchList, setBranchList] = useState(INITIAL_BRANCH_LIST);
+  const [divisionList, setDivisionList] = useState(INITIAL_DIVISION_LIST);
+
+  const getEntityName = (code) =>
+    entityList.find((e) => e.entity_code === code)?.name || code;
+  const getBranchName = (code) =>
+    branchList.find((b) => b.branch_code === code)?.name || code;
+  const getDivisionName = (code) =>
+    divisionList.find((d) => d.division_code === code)?.name || code;
+
   const [view, setView] = useState("list");
   const [selectedUser, setSelectedUser] = useState(null);
-  const [formUser, setFormUser] = useState(null); // null = tambah baru
+  const [formUser, setFormUser] = useState(null);
 
   const [search, setSearch] = useState("");
   const [filterRole, setFilterRole] = useState("semua");
@@ -2145,6 +3461,8 @@ const UserManagement = () => {
   const [filterBranch, setFilterBranch] = useState("semua");
   const [filterDivision, setFilterDivision] = useState("semua");
   const [filterStatus, setFilterStatus] = useState("semua");
+
+  const [userPage, setUserPage] = useState(1);
 
   const availableBranches =
     filterEntity === "semua"
@@ -2166,6 +3484,17 @@ const UserManagement = () => {
     setFilterBranch(val);
     setFilterDivision("semua");
   };
+
+  React.useEffect(() => {
+    setUserPage(1);
+  }, [
+    search,
+    filterRole,
+    filterEntity,
+    filterBranch,
+    filterDivision,
+    filterStatus,
+  ]);
 
   const recordActivity = useCallback(
     ({
@@ -2215,6 +3544,15 @@ const UserManagement = () => {
     );
   });
 
+  const userTotalPages = Math.max(
+    1,
+    Math.ceil(filtered.length / USERS_PER_PAGE),
+  );
+  const paginatedUsers = filtered.slice(
+    (userPage - 1) * USERS_PER_PAGE,
+    userPage * USERS_PER_PAGE,
+  );
+
   const stats = {
     total: users.length,
     superadmin: users.filter((u) => u.role_code === "superadmin").length,
@@ -2259,7 +3597,6 @@ const UserManagement = () => {
     );
   };
 
-  // Navigation helpers
   const goDetail = (u) => {
     setSelectedUser(u);
     setView("detail");
@@ -2285,7 +3622,6 @@ const UserManagement = () => {
     setView("detail");
   };
 
-  // ── SUB-VIEWS ──
   if (view === "form") {
     return (
       <UserFormView
@@ -2299,6 +3635,9 @@ const UserManagement = () => {
             setSelectedUser(saved);
           }
         }}
+        entityList={entityList}
+        branchList={branchList}
+        divisionList={divisionList}
       />
     );
   }
@@ -2312,6 +3651,9 @@ const UserManagement = () => {
         onEdit={() => goEdit(liveUser)}
         onReset={() => goReset(liveUser)}
         onDelete={() => goDelete(liveUser)}
+        entityList={entityList}
+        branchList={branchList}
+        divisionList={divisionList}
       />
     );
   }
@@ -2475,27 +3817,27 @@ const UserManagement = () => {
         {(filterEntity !== "semua" ||
           filterBranch !== "semua" ||
           filterDivision !== "semua") && (
-            <div className="um-filter-chips">
-              {filterEntity !== "semua" && (
-                <span className="um-chip">
-                  {filterEntity}{" "}
-                  <button onClick={() => handleFilterEntity("semua")}>×</button>
-                </span>
-              )}
-              {filterBranch !== "semua" && (
-                <span className="um-chip">
-                  {getBranchName(filterBranch)}{" "}
-                  <button onClick={() => handleFilterBranch("semua")}>×</button>
-                </span>
-              )}
-              {filterDivision !== "semua" && (
-                <span className="um-chip">
-                  {getDivisionName(filterDivision)}{" "}
-                  <button onClick={() => setFilterDivision("semua")}>×</button>
-                </span>
-              )}
-            </div>
-          )}
+          <div className="um-filter-chips">
+            {filterEntity !== "semua" && (
+              <span className="um-chip">
+                {filterEntity}{" "}
+                <button onClick={() => handleFilterEntity("semua")}>×</button>
+              </span>
+            )}
+            {filterBranch !== "semua" && (
+              <span className="um-chip">
+                {getBranchName(filterBranch)}{" "}
+                <button onClick={() => handleFilterBranch("semua")}>×</button>
+              </span>
+            )}
+            {filterDivision !== "semua" && (
+              <span className="um-chip">
+                {getDivisionName(filterDivision)}{" "}
+                <button onClick={() => setFilterDivision("semua")}>×</button>
+              </span>
+            )}
+          </div>
+        )}
         <div className="um-count">{filtered.length} user</div>
       </div>
 
@@ -2515,14 +3857,14 @@ const UserManagement = () => {
             </tr>
           </thead>
           <tbody>
-            {filtered.length === 0 ? (
+            {paginatedUsers.length === 0 ? (
               <tr>
                 <td colSpan={9} className="um-empty">
                   Tidak ada user yang cocok
                 </td>
               </tr>
             ) : (
-              filtered.map((u) => {
+              paginatedUsers.map((u) => {
                 const rc = roleConfig[u.role_code];
                 return (
                   <tr key={u.id}>
@@ -2609,6 +3951,36 @@ const UserManagement = () => {
             )}
           </tbody>
         </table>
+        <Pagination
+          page={userPage}
+          totalPages={userTotalPages}
+          total={filtered.length}
+          perPage={USERS_PER_PAGE}
+          onPageChange={setUserPage}
+        />
+      </div>
+
+      <div className="md-sections-wrapper">
+        <div className="md-sections-header">
+          <Ico n="settings" size={13} style={{ color: "#94a3b8" }} />
+          <span className="md-sections-title">Manajemen Data Master</span>
+        </div>
+        <EntitySection entityList={entityList} setEntityList={setEntityList} />
+        <div style={{ marginTop: ".6rem" }}>
+          <BranchSection
+            branchList={branchList}
+            setBranchList={setBranchList}
+            entityList={entityList}
+          />
+        </div>
+        <div style={{ marginTop: ".6rem" }}>
+          <DivisionSection
+            divisionList={divisionList}
+            setDivisionList={setDivisionList}
+            entityList={entityList}
+            branchList={branchList}
+          />
+        </div>
       </div>
 
       <ActivityLogSection logs={logs} users={users} />

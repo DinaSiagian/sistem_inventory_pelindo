@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FaUser,
@@ -12,6 +12,7 @@ import {
   FaArrowLeft,
   FaCheckCircle,
   FaSitemap,
+  FaSpinner,
 } from "react-icons/fa";
 import "./Auth.css";
 
@@ -19,116 +20,43 @@ import "./Auth.css";
 import logoPelindo from "../pictures/pelindo2.png";
 import batikImg from "../pictures/batik.png";
 
+// === IMPORT API SERVICE ===
+import { authAPI } from "../services/api";
+
 // ================================================================
-// DATA CASCADING: Entitas → Cabang → Divisi
-// Divisi masih placeholder — edit sesuai kebutuhan nyata
+// DATA CASCADING FALLBACK
 // ================================================================
-const DIVISI_PLACEHOLDER = [
-  "Operasional",
-  "Keuangan",
-  "SDM & Umum",
-  "IT & Sistem",
-  "HSE",
-  "Komersial",
+const DIVISI_FALLBACK = [
+  { division_code: "OPS", name: "Operasional" },
+  { division_code: "FIN", name: "Keuangan" },
+  { division_code: "HRD", name: "SDM & Umum" },
+  { division_code: "IT-SYS", name: "IT & Sistem" },
+  { division_code: "HSE", name: "HSE" },
+  { division_code: "COM", name: "Komersial" },
 ];
 
-const ENTITAS_DATA = {
+const ENTITAS_FALLBACK = {
   PTP: {
     label: "PT Pelabuhan Indonesia",
     cabang: {
-      BTN: { label: "Banten", divisi: DIVISI_PLACEHOLDER },
-      TPN: { label: "Tanjung Pandan", divisi: DIVISI_PLACEHOLDER },
-      TBR: { label: "Teluk Bayur", divisi: DIVISI_PLACEHOLDER },
-      BKL: { label: "Bengkulu", divisi: DIVISI_PLACEHOLDER },
-      PTK: { label: "Pontianak", divisi: DIVISI_PLACEHOLDER },
-      TJP: { label: "Tanjung Priok", divisi: DIVISI_PLACEHOLDER },
-      CRB: { label: "Cirebon", divisi: DIVISI_PLACEHOLDER },
-      PJG: { label: "Panjang", divisi: DIVISI_PLACEHOLDER },
-      PLB: { label: "Palembang", divisi: DIVISI_PLACEHOLDER },
-      JMB: { label: "Jambi", divisi: DIVISI_PLACEHOLDER },
+      BTN: { label: "Banten", divisi: DIVISI_FALLBACK },
+      TPN: { label: "Tanjung Pandan", divisi: DIVISI_FALLBACK },
+      TJP: { label: "Tanjung Priok", divisi: DIVISI_FALLBACK },
     },
   },
   SPMT: {
     label: "Pelindo Multi Terminal",
     cabang: {
-      BLW: { label: "Belawan", divisi: DIVISI_PLACEHOLDER },
-      GRK: { label: "Gresik", divisi: DIVISI_PLACEHOLDER },
-      LBR: { label: "Lembar Badas", divisi: DIVISI_PLACEHOLDER },
-      TJI: { label: "Tanjung Intan", divisi: DIVISI_PLACEHOLDER },
-      DMI: { label: "Dumai", divisi: DIVISI_PLACEHOLDER },
-      SBG: { label: "Sibolga", divisi: DIVISI_PLACEHOLDER },
-      JNR: { label: "Janirah", divisi: DIVISI_PLACEHOLDER },
-      BGD: { label: "Bagendang", divisi: DIVISI_PLACEHOLDER },
-      MLH: { label: "Malahayati", divisi: DIVISI_PLACEHOLDER },
-      LHK: { label: "Lhokseumawe", divisi: DIVISI_PLACEHOLDER },
-      TJE: { label: "Tanjung Emas", divisi: DIVISI_PLACEHOLDER },
-      BLP: { label: "Balikpapan", divisi: DIVISI_PLACEHOLDER },
-      BDS: { label: "Bima Badas", divisi: DIVISI_PLACEHOLDER },
-      GRG: { label: "Garongkong", divisi: DIVISI_PLACEHOLDER },
-      BMH: { label: "Bumihajo", divisi: DIVISI_PLACEHOLDER },
-      MLB: { label: "Meulaboh", divisi: DIVISI_PLACEHOLDER },
-      TJW: { label: "Tanjung Wangi", divisi: DIVISI_PLACEHOLDER },
-      MKS: { label: "Makassar", divisi: DIVISI_PLACEHOLDER },
-      BJM: { label: "Trisaki", divisi: DIVISI_PLACEHOLDER },
-      PRP: { label: "Parepare", divisi: DIVISI_PLACEHOLDER },
-      KLS: { label: "Kuala Langsa", divisi: DIVISI_PLACEHOLDER },
+      BLW: { label: "Belawan", divisi: DIVISI_FALLBACK },
+      DMI: { label: "Dumai", divisi: DIVISI_FALLBACK },
+      GRK: { label: "Gresik", divisi: DIVISI_FALLBACK },
     },
   },
   IKT: {
     label: "Indonesia Kendaraan Terminal",
-    cabang: {
-      JKT: { label: "Jakarta", divisi: DIVISI_PLACEHOLDER },
-    },
+    cabang: { JKT: { label: "Jakarta", divisi: DIVISI_FALLBACK } },
   },
 };
-
-// ================================================================
-// DUMMY USERS — nanti diganti koneksi ke backend MySQL
-// ================================================================
-const DUMMY_USERS = [
-  {
-    id: 1,
-    nama: "Joy Silalahi",
-    username: "joy.silalahi",
-    email: "joy@pelindo.co.id",
-    password: "admin123",
-    role: "admin",
-    nip: "199001010001",
-    telepon: "081234567890",
-    entitas: "SPMT",
-    cabang: "BLW",
-    divisi: "IT & Sistem",
-    avatar: "JS",
-  },
-  {
-    id: 2,
-    nama: "Budi Santoso",
-    username: "budi.santoso",
-    email: "budi@pelindo.co.id",
-    password: "user123",
-    role: "user",
-    nip: "199205152002",
-    telepon: "082345678901",
-    entitas: "SPMT",
-    cabang: "BLW",
-    divisi: "Operasional",
-    avatar: "BS",
-  },
-  {
-    id: 3,
-    nama: "Siti Rahayu",
-    username: "siti.rahayu",
-    email: "siti@pelindo.co.id",
-    password: "user456",
-    role: "user",
-    nip: "199308202003",
-    telepon: "083456789012",
-    entitas: "SPMT",
-    cabang: "DMI",
-    divisi: "Keuangan",
-    avatar: "SR",
-  },
-];
 
 // ================================================================
 // KOMPONEN AUTH
@@ -139,6 +67,14 @@ const Auth = () => {
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotSent, setForgotSent] = useState(false);
   const [loginError, setLoginError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [masterData, setMasterData] = useState({
+    entities: ENTITAS_FALLBACK,
+    roles: [
+      { role_code: "admin", name: "Administrator" },
+      { role_code: "user", name: "User / Pegawai" },
+    ],
+  });
 
   const [registerData, setRegisterData] = useState({
     nama: "",
@@ -156,86 +92,193 @@ const Auth = () => {
 
   const navigate = useNavigate();
 
-  // ── Cascading options ─────────────────────────────────────────
+  // Load Master Data
+  useEffect(() => {
+    if (!isLogin) loadMasterData();
+  }, [isLogin]);
+
+  const loadMasterData = async () => {
+    try {
+      const res = await authAPI.getMasterData();
+      if (res.data?.success) {
+        const transformedEntities = {};
+        res.data.data.entities?.forEach((ent) => {
+          const cabangObj = {};
+          ent.branches?.forEach((cab) => {
+            cabangObj[cab.branch_code] = {
+              label: cab.name,
+              divisi:
+                cab.divisions?.map((d) => ({
+                  division_code: d.division_code,
+                  name: d.name,
+                })) || DIVISI_FALLBACK,
+            };
+          });
+          transformedEntities[ent.entity_code] = {
+            label: ent.name,
+            cabang: cabangObj,
+          };
+        });
+        setMasterData({
+          entities:
+            Object.keys(transformedEntities).length > 0
+              ? transformedEntities
+              : ENTITAS_FALLBACK,
+          roles: res.data.data.roles?.map((r) => ({
+            role_code: r.role_code,
+            name: r.name,
+          })) || [
+            { role_code: "admin", name: "Administrator" },
+            { role_code: "user", name: "User / Pegawai" },
+          ],
+        });
+      }
+    } catch (err) {
+      console.warn("⚠️ Gagal load master data, menggunakan fallback:", err);
+    }
+  };
+
+  // Cascading options
   const cabangOptions = registerData.entitas
-    ? Object.entries(ENTITAS_DATA[registerData.entitas].cabang).map(
-        ([code, val]) => ({ code, label: val.label }),
-      )
+    ? Object.entries(
+        masterData.entities[registerData.entitas]?.cabang || {},
+      ).map(([code, val]) => ({ code, label: val.label }))
     : [];
 
   const divisiOptions =
     registerData.entitas && registerData.cabang
-      ? ENTITAS_DATA[registerData.entitas].cabang[registerData.cabang].divisi
+      ? masterData.entities[registerData.entitas]?.cabang[registerData.cabang]
+          ?.divisi || []
       : [];
 
-  const handleEntitasChange = (e) => {
+  const handleEntitasChange = (e) =>
     setRegisterData({
       ...registerData,
       entitas: e.target.value,
       cabang: "",
       divisi: "",
     });
-  };
-
-  const handleCabangChange = (e) => {
-    setRegisterData({
-      ...registerData,
-      cabang: e.target.value,
-      divisi: "",
-    });
-  };
-
+  const handleCabangChange = (e) =>
+    setRegisterData({ ...registerData, cabang: e.target.value, divisi: "" });
   const toggleMode = () => {
     setIsLogin(!isLogin);
+    setIsForgotPassword(false);
     setLoginError("");
+    setForgotSent(false);
   };
 
-  const handleForgotSubmit = (e) => {
+  const handleForgotSubmit = async (e) => {
     e.preventDefault();
-    setForgotSent(true);
+    setIsLoading(true);
+    try {
+      setForgotSent(true);
+    } catch {
+      setLoginError("Gagal mengirim instruksi reset. Coba lagi.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const backToLogin = () => {
     setIsForgotPassword(false);
     setForgotEmail("");
     setForgotSent(false);
+    setLoginError("");
   };
 
-  const handleSubmit = (e) => {
+  // Extract error message helper
+  const extractErrorMessage = (err) => {
+    console.error("🔥 AUTH ERROR DEBUG:", {
+      status: err.response?.status,
+      data: err.response?.data,
+      message: err.message,
+    });
+
+    if (err.response) {
+      const { status, data } = err.response;
+      if (data?.errors && typeof data.errors === "object") {
+        const firstField = Object.keys(data.errors)[0];
+        const firstMsg = data.errors[firstField];
+        return Array.isArray(firstMsg) ? firstMsg[0] : firstMsg;
+      }
+      if (data?.message) return data.message;
+      if (typeof data === "string") return data;
+      return `Error ${status}: ${data?.message || "Request gagal"}`;
+    }
+    if (err.request)
+      return "Tidak dapat terhubung ke server. Pastikan backend berjalan.";
+    return `Error: ${err.message || "Terjadi kesalahan"}`;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoginError("");
+    setIsLoading(true);
 
-    if (isLogin) {
-      const emailInput = e.target.email.value.trim();
-      const passwordInput = e.target.password.value;
+    try {
+      if (isLogin) {
+        // ── LOGIN ──
+        const emailInput = e.target.email.value.trim();
+        const passwordInput = e.target.password.value;
 
-      const found = DUMMY_USERS.find(
-        (u) => u.email === emailInput && u.password === passwordInput,
-      );
+        const res = await authAPI.login({
+          email: emailInput,
+          password: passwordInput,
+        });
 
-      if (!found) {
-        setLoginError("Email atau password salah. Silakan coba lagi.");
-        return;
-      }
+        if (res.data?.success) {
+          const { user, access_token } = res.data.data;
+          localStorage.setItem("token", access_token);
+          localStorage.setItem("user", JSON.stringify(user));
 
-      sessionStorage.setItem("currentUser", JSON.stringify(found));
-
-      if (found.role === "admin") {
-        navigate("/dashboard");
+          // ✅ Redirect langsung ke dashboard berdasarkan role
+          if (user.role_code === "admin") {
+            navigate("/dashboard");
+          } else {
+            navigate("/user/dashboard");
+          }
+        }
       } else {
-        navigate("/user/dashboard");
+        // ── REGISTER ──
+        if (registerData.password !== registerData.konfirmasi) {
+          setLoginError("Password dan konfirmasi password tidak cocok.");
+          setIsLoading(false);
+          return;
+        }
+
+        const res = await authAPI.register({
+          name: registerData.nama,
+          username: registerData.username,
+          email: e.target.email.value,
+          password: registerData.password,
+          password_confirmation: registerData.konfirmasi,
+          phone: registerData.telepon || null,
+          nip: registerData.nip || null,
+          role_code: registerData.role,
+          entity_code: registerData.entitas,
+          branches_code: registerData.cabang,
+          division_code: registerData.divisi || null,
+        });
+
+        if (res.data?.success) {
+          // ✅ TIDAK ADA ALERT - Langsung login & redirect
+          const { user, access_token } = res.data.data;
+          localStorage.setItem("token", access_token);
+          localStorage.setItem("user", JSON.stringify(user));
+
+          // ✅ Redirect langsung ke dashboard berdasarkan role
+          if (user.role_code === "admin") {
+            navigate("/dashboard");
+          } else {
+            navigate("/user/dashboard");
+          }
+        }
       }
-    } else {
-      if (registerData.password !== registerData.konfirmasi) {
-        setLoginError("Password dan konfirmasi password tidak cocok.");
-        return;
-      }
-      // TODO: kirim ke backend MySQL
-      alert(
-        `Registrasi berhasil!\nAkun untuk ${registerData.nama} (${registerData.role}) telah dibuat.\nSilakan login.`,
-      );
-      setIsLogin(true);
-      setLoginError("");
+    } catch (err) {
+      const errorMsg = extractErrorMessage(err);
+      setLoginError(errorMsg);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -261,7 +304,6 @@ const Auth = () => {
                         mengirimkan instruksi reset kata sandi.
                       </p>
                     </div>
-
                     <form
                       onSubmit={handleForgotSubmit}
                       className="auth-form fp-form"
@@ -276,21 +318,30 @@ const Auth = () => {
                             value={forgotEmail}
                             onChange={(e) => setForgotEmail(e.target.value)}
                             required
+                            disabled={isLoading}
                           />
                         </div>
                       </div>
-
                       <button
                         type="submit"
                         className="auth-button fp-submit-btn"
+                        disabled={isLoading}
                       >
-                        Kirim Instruksi Reset
+                        {isLoading ? (
+                          <>
+                            <FaSpinner className="spin-icon" /> Memproses...
+                          </>
+                        ) : (
+                          "Kirim Instruksi Reset"
+                        )}
                       </button>
                     </form>
-
-                    <button className="fp-back-link" onClick={backToLogin}>
-                      <FaArrowLeft size={11} />
-                      Kembali ke halaman login
+                    <button
+                      className="fp-back-link"
+                      onClick={backToLogin}
+                      disabled={isLoading}
+                    >
+                      <FaArrowLeft size={11} /> Kembali ke halaman login
                     </button>
                   </>
                 ) : (
@@ -302,8 +353,8 @@ const Auth = () => {
                     <p>Instruksi reset kata sandi telah dikirim ke</p>
                     <div className="fp-email-chip">{forgotEmail}</div>
                     <p className="fp-note">
-                      Tidak menemukan emailnya? Cek folder <strong>Spam</strong>{" "}
-                      atau <strong>Junk Mail</strong> Anda.
+                      Cek folder <strong>Spam</strong> atau{" "}
+                      <strong>Junk Mail</strong> Anda.
                     </p>
                     <button
                       className="auth-button fp-submit-btn"
@@ -344,6 +395,7 @@ const Auth = () => {
                               })
                             }
                             required
+                            disabled={isLoading}
                           />
                         </div>
                       </div>
@@ -364,7 +416,7 @@ const Auth = () => {
                                   nip: e.target.value,
                                 })
                               }
-                              required
+                              disabled={isLoading}
                             />
                           </div>
                         </div>
@@ -383,6 +435,7 @@ const Auth = () => {
                                 })
                               }
                               required
+                              disabled={isLoading}
                             />
                           </div>
                         </div>
@@ -403,7 +456,7 @@ const Auth = () => {
                                 telepon: e.target.value,
                               })
                             }
-                            required
+                            disabled={isLoading}
                           />
                         </div>
                       </div>
@@ -422,12 +475,19 @@ const Auth = () => {
                               })
                             }
                             required
+                            disabled={isLoading}
                           >
                             <option value="" disabled>
                               Pilih Role
                             </option>
-                            <option value="admin">Admin</option>
-                            <option value="user">User / Pegawai</option>
+                            {masterData.roles.map((role) => (
+                              <option
+                                key={role.role_code}
+                                value={role.role_code}
+                              >
+                                {role.name}
+                              </option>
+                            ))}
                           </select>
                         </div>
                       </div>
@@ -441,20 +501,23 @@ const Auth = () => {
                             value={registerData.entitas}
                             onChange={handleEntitasChange}
                             required
+                            disabled={isLoading}
                           >
                             <option value="" disabled>
                               Pilih Entitas
                             </option>
-                            {Object.entries(ENTITAS_DATA).map(([code, val]) => (
-                              <option key={code} value={code}>
-                                {val.label}
-                              </option>
-                            ))}
+                            {Object.entries(masterData.entities).map(
+                              ([code, val]) => (
+                                <option key={code} value={code}>
+                                  {val.label}
+                                </option>
+                              ),
+                            )}
                           </select>
                         </div>
                       </div>
 
-                      {/* Cabang — disabled sampai entitas dipilih */}
+                      {/* Cabang */}
                       <div className="form-group">
                         <label>Cabang / Branch</label>
                         <div className="input-wrapper">
@@ -463,7 +526,7 @@ const Auth = () => {
                             value={registerData.cabang}
                             onChange={handleCabangChange}
                             required
-                            disabled={!registerData.entitas}
+                            disabled={!registerData.entitas || isLoading}
                           >
                             <option value="" disabled>
                               {registerData.entitas
@@ -479,7 +542,7 @@ const Auth = () => {
                         </div>
                       </div>
 
-                      {/* Divisi — disabled sampai cabang dipilih */}
+                      {/* Divisi */}
                       <div className="form-group">
                         <label>Divisi</label>
                         <div className="input-wrapper">
@@ -492,8 +555,7 @@ const Auth = () => {
                                 divisi: e.target.value,
                               })
                             }
-                            required
-                            disabled={!registerData.cabang}
+                            disabled={!registerData.cabang || isLoading}
                           >
                             <option value="" disabled>
                               {registerData.cabang
@@ -501,8 +563,11 @@ const Auth = () => {
                                 : "Pilih Cabang dahulu"}
                             </option>
                             {divisiOptions.map((div) => (
-                              <option key={div} value={div}>
-                                {div}
+                              <option
+                                key={div.division_code}
+                                value={div.division_code}
+                              >
+                                {div.name}
                               </option>
                             ))}
                           </select>
@@ -521,6 +586,7 @@ const Auth = () => {
                         type="email"
                         placeholder="email@pelindo.co.id"
                         required
+                        disabled={isLoading}
                       />
                     </div>
                   </div>
@@ -535,6 +601,14 @@ const Auth = () => {
                         type="password"
                         placeholder="••••••••"
                         required
+                        disabled={isLoading}
+                        value={registerData.password}
+                        onChange={(e) =>
+                          setRegisterData({
+                            ...registerData,
+                            password: e.target.value,
+                          })
+                        }
                       />
                     </div>
                   </div>
@@ -556,6 +630,7 @@ const Auth = () => {
                             })
                           }
                           required
+                          disabled={isLoading}
                         />
                       </div>
                     </div>
@@ -565,12 +640,16 @@ const Auth = () => {
                   {isLogin && (
                     <div className="form-actions">
                       <label className="remember-me">
-                        <input type="checkbox" />
+                        <input type="checkbox" disabled={isLoading} />
                         <span>Ingat Saya</span>
                       </label>
                       <span
                         className="forgot-password"
-                        onClick={() => setIsForgotPassword(true)}
+                        onClick={() => !isLoading && setIsForgotPassword(true)}
+                        style={{
+                          cursor: isLoading ? "not-allowed" : "pointer",
+                          opacity: isLoading ? 0.6 : 1,
+                        }}
                       >
                         Lupa Password?
                       </span>
@@ -579,40 +658,31 @@ const Auth = () => {
 
                   {/* Error message */}
                   {loginError && (
-                    <div
-                      style={{
-                        background: "#fff0f0",
-                        border: "1px solid #ffcccc",
-                        borderRadius: "8px",
-                        padding: "10px 14px",
-                        color: "#cc0000",
-                        fontSize: "0.85rem",
-                        marginBottom: "8px",
-                      }}
-                    >
-                      {loginError}
-                    </div>
+                    <div className="error-alert">{loginError}</div>
                   )}
 
-                  <button type="submit" className="auth-button">
-                    {isLogin ? "Masuk Sekarang" : "Daftar Sekarang"}
+                  <button
+                    type="submit"
+                    className="auth-button"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <>
+                        <FaSpinner className="spin-icon" />{" "}
+                        {isLogin ? "Memproses Login..." : "Mendaftar..."}
+                      </>
+                    ) : isLogin ? (
+                      "Masuk Sekarang"
+                    ) : (
+                      "Daftar Sekarang"
+                    )}
                   </button>
                 </form>
 
-                {/* Hint akun dummy — hapus saat sudah pakai backend */}
+                {/* Demo Credentials */}
                 {isLogin && (
-                  <div
-                    style={{
-                      marginTop: "12px",
-                      padding: "10px 14px",
-                      background: "#f0f4ff",
-                      borderRadius: "8px",
-                      fontSize: "0.78rem",
-                      color: "#555",
-                      lineHeight: "1.6",
-                    }}
-                  >
-                    <strong>Demo Akun:</strong>
+                  <div className="demo-credentials">
+                    <strong>🔐 Demo Akun:</strong>
                     <br />
                     🔴 Admin: joy@pelindo.co.id / admin123
                     <br />
