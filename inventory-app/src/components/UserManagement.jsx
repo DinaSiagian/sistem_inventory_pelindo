@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
-import { masterDataAPI, userAPI } from "../services/api";
+import { masterDataAPI, userAPI, logAPI } from "../services/api";
 
 // ─── INLINE SVG ICONS ─────────────────────────────────────────
 const SVG = {
@@ -592,268 +592,14 @@ const ACTION_CONFIG = {
   RETURN_ASSET: { label: "Pengembalian Aset", color: "#0f766e", bg: "#ccfbf1" },
 };
 
-const CURRENT_USER_IP = "192.168.1.1";
-const CURRENT_USER_ID = 1;
-
-const mockLogs = [
-  {
-    log_id: 1,
-    user_id: 3,
-    action_type: "REGISTER",
-    table_name: "users",
-    record_id: 3,
-    old_value: null,
-    new_value: JSON.stringify({
-      username: "andi.pratama",
-      email: "andi.pratama@pelindo.co.id",
-    }),
-    ip_address: "192.168.1.10",
-    created_at: "2025-03-15T08:00:00",
-  },
-  {
-    log_id: 2,
-    user_id: 4,
-    action_type: "REGISTER",
-    table_name: "users",
-    record_id: 4,
-    old_value: null,
-    new_value: JSON.stringify({
-      username: "sari.dewi",
-      email: "sari.dewi@pelindo.co.id",
-    }),
-    ip_address: "192.168.1.25",
-    created_at: "2025-04-01T09:00:00",
-  },
-  {
-    log_id: 3,
-    user_id: 6,
-    action_type: "REGISTER",
-    table_name: "users",
-    record_id: 6,
-    old_value: null,
-    new_value: JSON.stringify({
-      username: "rini.handayani",
-      email: "rini.handayani@pelindo.co.id",
-    }),
-    ip_address: "192.168.1.30",
-    created_at: "2025-06-10T09:00:00",
-  },
-  {
-    log_id: 4,
-    user_id: 1,
-    action_type: "LOGIN",
-    table_name: "auth",
-    record_id: 1,
-    old_value: null,
-    new_value: JSON.stringify({
-      username: "joy.silalahi",
-      device: "Chrome/Windows",
-    }),
-    ip_address: "192.168.1.1",
-    created_at: "2026-03-04T08:32:00",
-  },
-  {
-    log_id: 5,
-    user_id: 1,
-    action_type: "LOGOUT",
-    table_name: "auth",
-    record_id: 1,
-    old_value: null,
-    new_value: JSON.stringify({ session_duration: "25m 10s" }),
-    ip_address: "192.168.1.1",
-    created_at: "2026-03-04T08:57:00",
-  },
-  {
-    log_id: 6,
-    user_id: 3,
-    action_type: "LOGIN",
-    table_name: "auth",
-    record_id: 3,
-    old_value: null,
-    new_value: JSON.stringify({
-      username: "andi.pratama",
-      device: "Chrome/Windows",
-    }),
-    ip_address: "192.168.1.10",
-    created_at: "2026-03-04T07:55:00",
-  },
-  {
-    log_id: 7,
-    user_id: 3,
-    action_type: "BORROW_ASSET",
-    table_name: "asset_loans",
-    record_id: 101,
-    old_value: null,
-    new_value: JSON.stringify({
-      asset_name: "Laptop Dell XPS 13",
-      loan_date: "2026-03-04",
-      due_date: "2026-03-11",
-    }),
-    ip_address: "192.168.1.10",
-    created_at: "2026-03-04T08:05:00",
-  },
-  {
-    log_id: 8,
-    user_id: 3,
-    action_type: "UPDATE_PROFILE",
-    table_name: "users",
-    record_id: 3,
-    old_value: JSON.stringify({ phone: "082100000000" }),
-    new_value: JSON.stringify({ phone: "082112345678" }),
-    ip_address: "192.168.1.10",
-    created_at: "2026-03-04T08:15:00",
-  },
-  {
-    log_id: 9,
-    user_id: 3,
-    action_type: "LOGOUT",
-    table_name: "auth",
-    record_id: 3,
-    old_value: null,
-    new_value: JSON.stringify({ session_duration: "30m 22s" }),
-    ip_address: "192.168.1.10",
-    created_at: "2026-03-04T08:25:22",
-  },
-  {
-    log_id: 10,
-    user_id: 4,
-    action_type: "LOGIN",
-    table_name: "auth",
-    record_id: 4,
-    old_value: null,
-    new_value: JSON.stringify({
-      username: "sari.dewi",
-      device: "Safari/MacOS",
-    }),
-    ip_address: "192.168.1.25",
-    created_at: "2026-03-04T08:30:00",
-  },
-  {
-    log_id: 11,
-    user_id: 4,
-    action_type: "RETURN_ASSET",
-    table_name: "asset_loans",
-    record_id: 98,
-    old_value: JSON.stringify({
-      status: "borrowed",
-      asset_name: "Proyektor Epson EB-X51",
-    }),
-    new_value: JSON.stringify({
-      status: "returned",
-      return_date: "2026-03-04",
-    }),
-    ip_address: "192.168.1.25",
-    created_at: "2026-03-04T08:45:00",
-  },
-  {
-    log_id: 12,
-    user_id: 4,
-    action_type: "CHANGE_PASSWORD",
-    table_name: "users",
-    record_id: 4,
-    old_value: null,
-    new_value: JSON.stringify({ action: "password_updated" }),
-    ip_address: "192.168.1.25",
-    created_at: "2026-03-04T08:50:00",
-  },
-  {
-    log_id: 13,
-    user_id: 4,
-    action_type: "LOGOUT",
-    table_name: "auth",
-    record_id: 4,
-    old_value: null,
-    new_value: JSON.stringify({ session_duration: "22m 05s" }),
-    ip_address: "192.168.1.25",
-    created_at: "2026-03-04T08:52:05",
-  },
-  {
-    log_id: 14,
-    user_id: 6,
-    action_type: "LOGIN",
-    table_name: "auth",
-    record_id: 6,
-    old_value: null,
-    new_value: JSON.stringify({
-      username: "rini.handayani",
-      device: "Firefox/Linux",
-    }),
-    ip_address: "192.168.1.30",
-    created_at: "2026-03-03T08:55:00",
-  },
-  {
-    log_id: 15,
-    user_id: 6,
-    action_type: "BORROW_ASSET",
-    table_name: "asset_loans",
-    record_id: 102,
-    old_value: null,
-    new_value: JSON.stringify({
-      asset_name: "Kamera Canon EOS M50",
-      loan_date: "2026-03-03",
-      due_date: "2026-03-10",
-    }),
-    ip_address: "192.168.1.30",
-    created_at: "2026-03-03T09:05:00",
-  },
-  {
-    log_id: 16,
-    user_id: 6,
-    action_type: "UPDATE_PROFILE",
-    table_name: "users",
-    record_id: 6,
-    old_value: JSON.stringify({ username: "rini.h" }),
-    new_value: JSON.stringify({ username: "rini.handayani" }),
-    ip_address: "192.168.1.30",
-    created_at: "2026-03-03T09:30:00",
-  },
-  {
-    log_id: 17,
-    user_id: 6,
-    action_type: "LOGOUT",
-    table_name: "auth",
-    record_id: 6,
-    old_value: null,
-    new_value: JSON.stringify({ session_duration: "1j 05m" }),
-    ip_address: "192.168.1.30",
-    created_at: "2026-03-03T10:00:00",
-  },
-  {
-    log_id: 18,
-    user_id: 2,
-    action_type: "LOGIN",
-    table_name: "auth",
-    record_id: 2,
-    old_value: null,
-    new_value: JSON.stringify({
-      username: "dina.siagian",
-      device: "Edge/Windows",
-    }),
-    ip_address: "192.168.1.2",
-    created_at: "2026-03-03T09:00:00",
-  },
-  {
-    log_id: 19,
-    user_id: 2,
-    action_type: "DELETE_ACCOUNT",
-    table_name: "users",
-    record_id: 2,
-    old_value: JSON.stringify({
-      name: "Dina Marlina Siagian",
-      reason: "resign",
-    }),
-    new_value: null,
-    ip_address: "192.168.1.2",
-    created_at: "2026-03-03T09:10:00",
-  },
-];
-
 const fmt = (d) =>
   d
-    ? new Date(d).toLocaleDateString("id-ID", {
+    ? new Date(d).toLocaleString("id-ID", {
         day: "2-digit",
         month: "short",
         year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
       })
     : "—";
 const getInitials = (name) =>
@@ -1774,6 +1520,7 @@ function EntitySection({ entityList, setEntityList }) {
                 placeholder="Cari kode atau nama entitas…"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
+                autoComplete="off"
               />
             </div>
             <span style={{ fontSize: ".72rem", color: "#64748b" }}>
@@ -2043,6 +1790,7 @@ function BranchSection({ branchList, setBranchList, entityList }) {
                 placeholder="Cari kode atau nama cabang…"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
+                autoComplete="off"
               />
             </div>
             <div className="md-filter-wrap">
@@ -2475,6 +2223,7 @@ function DivisionSection({
                 placeholder="Cari kode atau nama divisi…"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
+                autoComplete="off"
               />
             </div>
             <div className="md-filter-wrap">
@@ -2536,7 +2285,6 @@ function DivisionSection({
                   <th>Kode Divisi</th>
                   <th>Nama Divisi</th>
                   <th>Cabang</th>
-                  <th>Entitas</th>
                   <th style={{ width: 70, textAlign: "center" }}>Aksi</th>
                 </tr>
               </thead>
@@ -2578,11 +2326,6 @@ function DivisionSection({
                             {getBranchName(d.branch_code)}
                           </span>
                         </div>
-                      </td>
-                      <td>
-                        <span className="md-code-badge md-code-badge--entity">
-                          {d.entity_code}
-                        </span>
                       </td>
                       <td>
                         <div
@@ -3026,7 +2769,7 @@ function UserFormView({
       ...form,
       id: user?.id || Date.now(),
       created_at: user?.created_at || new Date().toISOString().split("T")[0],
-      last_login: user?.last_login || "ΓÇö",
+      last_login: user?.last_login || "—",
     });
     onBack();
   };
@@ -3158,7 +2901,7 @@ function UserFormView({
             <option value="">-- Pilih Entitas --</option>
             {entityList.map((e) => (
               <option key={e.entity_code} value={e.entity_code}>
-                {e.entity_code} ΓÇö {e.name}
+                {e.entity_code} — {e.name}
               </option>
             ))}
           </select>
@@ -3333,7 +3076,7 @@ function UserFormView({
   );
 }
 
-// ΓöÇΓöÇΓöÇ DETAIL VIEW ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+// ——— DETAIL VIEW ———
 function DetailUserView({
   user,
   onBack,
@@ -3421,7 +3164,7 @@ function DetailUserView({
             <div className="um-detail-item">
               <span className="um-detail-label">NIP</span>
               <span className="um-detail-val">
-                <code>{user.nip || "ΓÇö"}</code>
+                <code>{user.nip || "—"}</code>
               </span>
             </div>
             <div className="um-detail-item">
@@ -3436,7 +3179,7 @@ function DetailUserView({
             </div>
             <div className="um-detail-item">
               <span className="um-detail-label">No. Telepon</span>
-              <span className="um-detail-val">{user.phone || "ΓÇö"}</span>
+              <span className="um-detail-val">{user.phone || "—"}</span>
             </div>
             <div className="um-detail-item">
               <span className="um-detail-label">Entitas</span>
@@ -3453,7 +3196,7 @@ function DetailUserView({
             <div className="um-detail-item">
               <span className="um-detail-label">Divisi</span>
               <span className="um-detail-val">
-                {getDivisionName(user.division_code) || "ΓÇö"}
+                {getDivisionName(user.division_code) || "—"}
               </span>
             </div>
             <div className="um-detail-item">
@@ -3476,7 +3219,7 @@ function DetailUserView({
   );
 }
 
-// ΓöÇΓöÇΓöÇ RESET VIEW ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+// ——— RESET VIEW ———
 function ResetPassView({ user, onBack }) {
   const [done, setDone] = useState(false);
   if (!user) return null;
@@ -3541,7 +3284,7 @@ function ResetPassView({ user, onBack }) {
   );
 }
 
-// ΓöÇΓöÇΓöÇ DELETE VIEW ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+// ——— DELETE VIEW ———
 function DeleteUserView({ user, onBack, onConfirm }) {
   if (!user) return null;
   return (
@@ -3588,7 +3331,7 @@ function DeleteUserView({ user, onBack, onConfirm }) {
   );
 }
 
-// ΓöÇΓöÇΓöÇ DROPDOWN COMPONENT ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+// ——— DROPDOWN COMPONENT ———
 function ActionDropdown({ user, onDetail, onEdit, onReset, onDelete }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -3660,8 +3403,7 @@ const USERS_PER_PAGE = 5;
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
-  const [logs, setLogs] = useState(mockLogs);
-  const logIdRef = useRef(mockLogs.length + 1);
+  const [logs, setLogs] = useState([]);
 
   const [entityList, setEntityList] = useState([]);
   const [branchList, setBranchList] = useState([]);
@@ -3671,18 +3413,20 @@ const UserManagement = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [entRes, brRes, divRes, roleRes, userRes] = await Promise.all([
+        const [entRes, brRes, divRes, roleRes, userRes, logRes] = await Promise.all([
           masterDataAPI.getEntities(),
           masterDataAPI.getBranches(),
           masterDataAPI.getDivisions(),
           masterDataAPI.getRoles(),
           userAPI.getAll(),
+          logAPI.getAll(),
         ]);
         if (entRes.data?.success) setEntityList(entRes.data.data);
         if (brRes.data?.success) setBranchList(brRes.data.data);
         if (divRes.data?.success) setDivisionList(divRes.data.data);
         if (roleRes.data?.success) setRoleList(roleRes.data.data);
         if (userRes.data?.success) setUsers(userRes.data.data);
+        if (logRes.data?.success) setLogs(logRes.data.data);
       } catch (err) {
         console.error("Gagal mengambil data", err);
       }
@@ -3735,23 +3479,14 @@ const UserManagement = () => {
     setUserPage(1);
   }, [search, filterRole, filterEntity, filterBranch, filterDivision, filterStatus]);
 
-  const recordActivity = useCallback(
-    ({ action_type, table_name = "users", record_id = null, old_value = null, new_value = null }) => {
-      const entry = {
-        log_id: logIdRef.current++,
-        user_id: CURRENT_USER_ID,
-        action_type,
-        table_name,
-        record_id,
-        old_value: old_value ? (typeof old_value === "string" ? old_value : JSON.stringify(old_value)) : null,
-        new_value: new_value ? (typeof new_value === "string" ? new_value : JSON.stringify(new_value)) : null,
-        ip_address: CURRENT_USER_IP,
-        created_at: new Date().toISOString(),
-      };
-      queueMicrotask(() => setLogs((prev) => [entry, ...prev]));
-    },
-    [],
-  );
+  const fetchLogs = async () => {
+    try {
+      const res = await logAPI.getAll();
+      if (res.data?.success) setLogs(res.data.data);
+    } catch (err) {
+      console.error("Gagal refresh logs", err);
+    }
+  };
 
   const filtered = users.filter((u) => {
     const q = search.toLowerCase();
@@ -3790,7 +3525,7 @@ const UserManagement = () => {
         const res = await userAPI.update(saved.id, payload);
         if (res.data?.success) {
           setUsers((prev) => prev.map((u) => (u.id === saved.id ? res.data.data : u)));
-          recordActivity({ action_type: "UPDATE_PROFILE", table_name: "users", record_id: saved.id, old_value: { name: existing.name }, new_value: { name: saved.name } });
+          fetchLogs();
         }
       } else {
         const payload = {
@@ -3815,8 +3550,8 @@ const UserManagement = () => {
       const u = users.find((x) => x.id === id);
       const res = await userAPI.delete(id);
       if (res.data?.success) {
-        recordActivity({ action_type: "DELETE_ACCOUNT", table_name: "users", record_id: id, old_value: { name: u?.name } });
         setUsers((prev) => prev.filter((u) => u.id !== id));
+        fetchLogs();
       }
     } catch (err) {
       alert("Gagal menghapus user: " + (err.response?.data?.message || err.message));
@@ -3827,6 +3562,7 @@ const UserManagement = () => {
       const res = await userAPI.toggleStatus(id);
       if (res.data?.success) {
         setUsers((prev) => prev.map((u) => (u.id === id ? res.data.data : u)));
+        fetchLogs();
       }
     } catch (err) {
       alert("Gagal mengubah status user: " + (err.response?.data?.message || err.message));
@@ -3974,6 +3710,7 @@ const UserManagement = () => {
             placeholder="Cari nama, NIP, username, atau email…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            autoComplete="off"
           />
         </div>
         <div className="um-filter-wrap">
@@ -4172,7 +3909,7 @@ const UserManagement = () => {
                         {u.is_active ? "Aktif" : "Nonaktif"}
                       </button>
                     </td>
-                    <td className="um-last-login">{u.last_login}</td>
+                    <td className="um-last-login">{fmt(u.last_login)}</td>
                     <td style={{ textAlign: "center" }}>
                       <ActionDropdown
                         user={u}

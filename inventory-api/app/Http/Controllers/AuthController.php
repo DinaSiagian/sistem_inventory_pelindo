@@ -13,6 +13,9 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use Tymon\JWTAuth\Exceptions\TokenInvalidException;
+use App\Models\ActivityLog;
+use App\Models\LoginLog;
+use Carbon\Carbon;
 use Exception;
 
 class AuthController extends Controller
@@ -60,6 +63,18 @@ class AuthController extends Controller
 
             // ✅ Generate JWT token untuk user yang baru dibuat
             $token = JWTAuth::fromUser($user);
+
+            // Log activity: REGISTER
+            ActivityLog::create([
+                'user_id'     => $user->id,
+                'action_type' => 'REGISTER',
+                'table_name'  => 'users',
+                'record_id'   => (string) $user->id,
+                'old_value'   => null,
+                'new_value'   => json_encode($user),
+                'ip_address'  => $request->ip(),
+                'created_at'  => Carbon::now(),
+            ]);
 
             return response()->json([
                 'success' => true,
@@ -132,6 +147,29 @@ class AuthController extends Controller
 
             $user->load(['role', 'entity', 'branch', 'division']);
 
+            // Perbarui last_login di tabel users
+            $user->update(['last_login' => Carbon::now()]);
+
+            // Log activity: LOGIN
+            ActivityLog::create([
+                'user_id'     => $user->id,
+                'action_type' => 'LOGIN',
+                'table_name'  => 'users',
+                'record_id'   => (string) $user->id,
+                'old_value'   => null,
+                'new_value'   => json_encode(['username' => $user->username, 'device' => $request->header('User-Agent')]),
+                'ip_address'  => $request->ip(),
+                'created_at'  => Carbon::now(),
+            ]);
+
+            // Create login log
+            LoginLog::create([
+                'user_id'    => $user->id,
+                'login_time' => Carbon::now(),
+                'ip_address' => $request->ip(),
+                'device_info'=> $request->header('User-Agent'),
+            ]);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Login berhasil',
@@ -164,6 +202,27 @@ class AuthController extends Controller
         try {
             $token = JWTAuth::getToken();
             if ($token) {
+                $user = JWTAuth::toUser($token);
+                if ($user) {
+                    // Log activity: LOGOUT
+                    ActivityLog::create([
+                        'user_id'     => $user->id,
+                        'action_type' => 'LOGOUT',
+                        'table_name'  => 'users',
+                        'record_id'   => (string) $user->id,
+                        'old_value'   => null,
+                        'new_value'   => null,
+                        'ip_address'  => request()->ip(),
+                        'created_at'  => Carbon::now(),
+                    ]);
+
+                    // Update login log
+                    LoginLog::where('user_id', $user->id)
+                        ->whereNull('logout_time')
+                        ->orderBy('login_time', 'desc')
+                        ->first()
+                        ?->update(['logout_time' => Carbon::now()]);
+                }
                 JWTAuth::invalidate($token);
             }
             return response()->json([

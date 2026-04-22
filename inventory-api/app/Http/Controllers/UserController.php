@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\ActivityLog;
+use App\Models\LoginLog;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -22,6 +25,7 @@ class UserController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->get()
                 ->map(function ($u) {
+                    $this->setLastLoginActual($u);
                     return $this->formatUser($u);
                 });
 
@@ -98,10 +102,22 @@ class UserController extends Controller
 
             $user->load(['role', 'entity', 'branch', 'division']);
 
+            // Log activity: REGISTER
+            ActivityLog::create([
+                'user_id'     => JWTAuth::user()?->id,
+                'action_type' => 'REGISTER',
+                'table_name'  => 'users',
+                'record_id'   => (string) $user->id,
+                'old_value'   => null,
+                'new_value'   => json_encode($this->setLastLoginActual($user) ?? $this->formatUser($user)),
+                'ip_address'  => $request->ip(),
+                'created_at'  => Carbon::now(),
+            ]);
+
             return response()->json([
                 'success' => true,
                 'message' => 'User berhasil dibuat',
-                'data'    => $this->formatUser($user),
+                'data'    => ($this->setLastLoginActual($user) ?? true) ? $this->formatUser($user) : null,
             ], 201);
         } catch (Exception $e) {
             Log::error('UserController@store: ' . $e->getMessage());
@@ -158,13 +174,27 @@ class UserController extends Controller
                 $data['password'] = Hash::make($request->password);
             }
 
+            $oldUser = $this->formatUser($user);
             $user->update($data);
             $user->load(['role', 'entity', 'branch', 'division']);
+            $newUser = $this->formatUser($user);
+
+            // Log activity: UPDATE_PROFILE
+            ActivityLog::create([
+                'user_id'     => JWTAuth::user()?->id,
+                'action_type' => 'UPDATE_PROFILE',
+                'table_name'  => 'users',
+                'record_id'   => (string) $user->id,
+                'old_value'   => json_encode($oldUser),
+                'new_value'   => json_encode($newUser),
+                'ip_address'  => $request->ip(),
+                'created_at'  => Carbon::now(),
+            ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'User berhasil diperbarui',
-                'data'    => $this->formatUser($user),
+                'data'    => ($this->setLastLoginActual($user) ?? true) ? $this->formatUser($user) : null,
             ], 200);
         } catch (Exception $e) {
             Log::error('UserController@update: ' . $e->getMessage());
@@ -194,7 +224,20 @@ class UserController extends Controller
                 return response()->json(['success' => false, 'message' => 'User tidak ditemukan'], 404);
             }
 
+            $oldUser = $this->formatUser($user);
             $user->delete();
+
+            // Log activity: DELETE_ACCOUNT
+            ActivityLog::create([
+                'user_id'     => JWTAuth::user()?->id,
+                'action_type' => 'DELETE_ACCOUNT',
+                'table_name'  => 'users',
+                'record_id'   => (string) $id,
+                'old_value'   => json_encode($oldUser),
+                'new_value'   => null,
+                'ip_address'  => request()->ip(),
+                'created_at'  => Carbon::now(),
+            ]);
             return response()->json(['success' => true, 'message' => 'User berhasil dihapus'], 200);
         } catch (Exception $e) {
             Log::error('UserController@destroy: ' . $e->getMessage());
@@ -216,9 +259,25 @@ class UserController extends Controller
                 return response()->json(['success' => false, 'message' => 'User tidak ditemukan'], 404);
             }
 
+            $this->setLastLoginActual($user);
+            $oldUser = $this->formatUser($user);
             $user->is_active = !$user->is_active;
             $user->save();
             $user->load(['role', 'entity', 'branch', 'division']);
+            $this->setLastLoginActual($user);
+            $newUser = $this->formatUser($user);
+
+            // Log activity: UPDATE_PROFILE (Toggle Status)
+            ActivityLog::create([
+                'user_id'     => JWTAuth::user()?->id,
+                'action_type' => 'UPDATE_PROFILE',
+                'table_name'  => 'users',
+                'record_id'   => (string) $user->id,
+                'old_value'   => json_encode($oldUser),
+                'new_value'   => json_encode($newUser),
+                'ip_address'  => request()->ip(),
+                'created_at'  => now(),
+            ]);
 
             return response()->json([
                 'success' => true,
@@ -229,6 +288,17 @@ class UserController extends Controller
             Log::error('UserController@toggleStatus: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
+    }
+
+    /**
+     * Set dynamic last_login_actual from login_logs table
+     */
+    private function setLastLoginActual(User &$u)
+    {
+        $lastLog = LoginLog::where('user_id', $u->id)
+            ->orderBy('login_time', 'desc')
+            ->first();
+        $u->last_login_actual = $lastLog ? $lastLog->login_time : null;
     }
 
     /**
@@ -251,7 +321,7 @@ class UserController extends Controller
             'is_active'     => (bool) $user->is_active,
             'created_at'    => $user->created_at,
             'updated_at'    => $user->updated_at,
-            'last_login'    => null, // placeholder, tidak ada di DB saat ini
+            'last_login'    => $user->last_login_actual ?? $user->last_login,
         ];
     }
 }
