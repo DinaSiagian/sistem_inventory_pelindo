@@ -3563,6 +3563,8 @@ const UserManagement = () => {
       if (res.data?.success) {
         setUsers((prev) => prev.map((u) => (u.id === id ? res.data.data : u)));
         fetchLogs();
+        console.log(`Status user ${id} berhasil diubah:`, res.data.data.is_active);
+        alert(`Status user berhasil diubah menjadi ${res.data.data.is_active ? "AKTIF" : "NONAKTIF"}`);
       }
     } catch (err) {
       alert("Gagal mengubah status user: " + (err.response?.data?.message || err.message));

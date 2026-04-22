@@ -23,15 +23,11 @@ class UserController extends Controller
         try {
             $users = User::with(['role', 'entity', 'branch', 'division'])
                 ->orderBy('created_at', 'desc')
-                ->get()
-                ->map(function ($u) {
-                    $this->setLastLoginActual($u);
-                    return $this->formatUser($u);
-                });
+                ->get();
 
             return response()->json([
                 'success' => true,
-                'data'    => $users,
+                'data'    => $users->map(fn($u) => $this->formatUser($u)),
             ], 200);
         } catch (Exception $e) {
             Log::error('UserController@index: ' . $e->getMessage());
@@ -52,7 +48,10 @@ class UserController extends Controller
             if (!$user) {
                 return response()->json(['success' => false, 'message' => 'User tidak ditemukan'], 404);
             }
-            return response()->json(['success' => true, 'data' => $this->formatUser($user)], 200);
+            return response()->json([
+                'success' => true,
+                'data'    => $this->formatUser($user),
+            ], 200);
         } catch (Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
@@ -194,7 +193,7 @@ class UserController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'User berhasil diperbarui',
-                'data'    => ($this->setLastLoginActual($user) ?? true) ? $this->formatUser($user) : null,
+                'data'    => $this->formatUser($user),
             ], 200);
         } catch (Exception $e) {
             Log::error('UserController@update: ' . $e->getMessage());
@@ -259,24 +258,25 @@ class UserController extends Controller
                 return response()->json(['success' => false, 'message' => 'User tidak ditemukan'], 404);
             }
 
-            $this->setLastLoginActual($user);
             $oldUser = $this->formatUser($user);
             $user->is_active = !$user->is_active;
             $user->save();
+            
+            Log::info("User ID {$id} status toggled to: " . ($user->is_active ? 'Active' : 'Inactive'));
+
             $user->load(['role', 'entity', 'branch', 'division']);
-            $this->setLastLoginActual($user);
             $newUser = $this->formatUser($user);
 
-            // Log activity: UPDATE_PROFILE (Toggle Status)
+            // Log activity: UPDATE_STATUS
             ActivityLog::create([
                 'user_id'     => JWTAuth::user()?->id,
-                'action_type' => 'UPDATE_PROFILE',
+                'action_type' => 'UPDATE_STATUS',
                 'table_name'  => 'users',
                 'record_id'   => (string) $user->id,
                 'old_value'   => json_encode($oldUser),
                 'new_value'   => json_encode($newUser),
                 'ip_address'  => request()->ip(),
-                'created_at'  => now(),
+                'created_at'  => Carbon::now(),
             ]);
 
             return response()->json([
@@ -291,22 +291,26 @@ class UserController extends Controller
     }
 
     /**
-     * Set dynamic last_login_actual from login_logs table
+     * Get dynamic last_login_actual from login_logs table
      */
-    private function setLastLoginActual(User &$u)
+    private function getLastLoginActual(User $u)
     {
         $lastLog = LoginLog::where('user_id', $u->id)
             ->orderBy('login_time', 'desc')
             ->first();
-        $u->last_login_actual = $lastLog ? $lastLog->login_time : null;
+        return $lastLog ? $lastLog->login_time : null;
     }
 
     /**
      * Format user untuk konsistensi field di frontend
      * Frontend menggunakan `branch_code`, DB menyimpan sebagai `branches_code`
      */
-    private function formatUser(User $user): array
+    private function formatUser($user): array
     {
+        // Jika $user adalah array (dari format lain), handle gracefully
+        if (is_array($user)) return $user;
+        
+        $actual = $this->getLastLoginActual($user);
         return [
             'id'            => $user->id,
             'name'          => $user->name,
@@ -321,7 +325,7 @@ class UserController extends Controller
             'is_active'     => (bool) $user->is_active,
             'created_at'    => $user->created_at,
             'updated_at'    => $user->updated_at,
-            'last_login'    => $user->last_login_actual ?? $user->last_login,
+            'last_login'    => $actual ?? $user->last_login,
         ];
     }
 }

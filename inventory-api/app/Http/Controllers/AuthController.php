@@ -127,6 +127,15 @@ class AuthController extends Controller
 
             $credentials = $request->only('email', 'password');
 
+            // Check if user exists and is active before attempting login
+            $user = User::where('email', $credentials['email'])->first();
+            if ($user && !$user->is_active) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akun Anda telah dinonaktifkan. Silakan hubungi administrator.'
+                ], 403);
+            }
+
             // ✅ PENTING: Gunakan JWTAuth::attempt, BUKAN Auth::attempt
             if (!$token = JWTAuth::attempt($credentials)) {
                 return response()->json([
@@ -135,15 +144,8 @@ class AuthController extends Controller
                 ], 401);
             }
 
+            // Re-fetch user to ensure we have the correct instance
             $user = JWTAuth::user();
-            
-            if (!$user || !$user->is_active) {
-                JWTAuth::invalidate($token);
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Akun tidak aktif'
-                ], 403);
-            }
 
             $user->load(['role', 'entity', 'branch', 'division']);
 
@@ -184,7 +186,7 @@ class AuthController extends Controller
             Log::error('JWT Error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal membuat token. Pastikan JWT_SECRET ada di .env'
+                'message' => 'Terjadi kesalahan sistem pada layanan token. Mohon coba lagi nanti.'
             ], 500);
         } catch (Exception $e) {
             Log::error('Login Error: ' . $e->getMessage());
