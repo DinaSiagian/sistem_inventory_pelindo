@@ -71,5 +71,17 @@ $router->group(['prefix' => 'api'], function () use ($router) {
         $router->post('/master-data/roles', 'MasterDataController@storeRole');
         $router->put('/master-data/roles/{code}', 'MasterDataController@updateRole');
         $router->delete('/master-data/roles/{code}', 'MasterDataController@deleteRole');
+
+        // ── BUDGET: OPEX ───────────────────────────────────
+        $router->get('/budget/opex', 'BudgetController@indexOpex');
+        $router->post('/budget/opex', 'BudgetController@storeOpex');
+        $router->put('/budget/opex/{id}', 'BudgetController@updateOpex');
+        $router->delete('/budget/opex/{id}', 'BudgetController@destroyOpex');
+
+        // ── BUDGET: CAPEX ──────────────────────────────────
+        $router->get('/budget/capex', 'BudgetController@indexCapex');
+        $router->post('/budget/capex', 'BudgetController@storeCapex');
+        $router->put('/budget/capex/{kd}', 'BudgetController@updateCapex');
+        $router->delete('/budget/capex/{kd}', 'BudgetController@destroyCapex');
     });
 });

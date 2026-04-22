@@ -23,6 +23,7 @@ import {
   Pencil,
   PlusCircle,
 } from "lucide-react";
+import { budgetAPI } from "../services/budget";
 
 // ── UTILS ──────────────────────────────────────────────────────
 const fmt = (n) =>
@@ -3595,7 +3596,43 @@ function OpexMasterFormModal({ title, form, setForm, onSave, onClose }) {
 
 // ── OPEX MODULE ────────────────────────────────────────────────
 function OpexModule({ masterList, setMasterList }) {
-  const [masters, setMasters] = useState(INIT_OPEX_MASTERS);
+  const [masters, setMasters] = useState([]);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const prevMastersRef = React.useRef([]);
+
+  useEffect(() => {
+    budgetAPI.getOpex().then(res => {
+      if (res.data && res.data.success) {
+        setMasters(res.data.data);
+        prevMastersRef.current = res.data.data;
+      }
+      setIsInitialLoad(false);
+    }).catch(console.error);
+  }, []);
+
+  useEffect(() => {
+    if (isInitialLoad) return;
+    const prev = prevMastersRef.current;
+    const current = masters;
+    const prevMap = new Map(prev.map(p => [p.id, p]));
+    
+    current.forEach(item => {
+      const p = prevMap.get(item.id);
+      if (!p) {
+        budgetAPI.createOpex(item).catch(console.error);
+      } else if (JSON.stringify(p) !== JSON.stringify(item)) {
+        budgetAPI.updateOpex(p.db_id || item.id, item).catch(console.error);
+      }
+    });
+    
+    const currentIds = new Set(current.map(c => c.id));
+    prev.forEach(p => {
+      if (!currentIds.has(p.id) && p.db_id) budgetAPI.deleteOpex(p.db_id).catch(console.error);
+    });
+
+    prevMastersRef.current = current;
+  }, [masters, isInitialLoad]);
+
   const [toast, setToast] = useState(null);
   const [confirm, setConfirm] = useState(null);
   const [showMasterListPage, setShowMasterListPage] = useState(false);
@@ -3697,6 +3734,7 @@ function OpexModule({ masterList, setMasterList }) {
         m.id === selectedMaster.id
           ? {
             ...m,
+            nilai_anggaran: (parseFloat(m.nilai_anggaran) || 0) + realMurni,
             realisasi_tahunan: [...(m.realisasi_tahunan || []), payload],
           }
           : m,
@@ -5307,6 +5345,42 @@ function CapexEditAnggaranModal({ capexId, anggaran, capex, onSave, onClose }) {
 
 // ── CAPEX MODULE ───────────────────────────────────────────────
 function CapexModule({ capexList, setCapexList }) {
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const prevCapexRef = React.useRef([]);
+
+  useEffect(() => {
+    budgetAPI.getCapex().then(res => {
+      if (res.data && res.data.success) {
+        setCapexList(res.data.data);
+        prevCapexRef.current = res.data.data;
+      }
+      setIsInitialLoad(false);
+    }).catch(console.error);
+  }, [setCapexList]);
+
+  useEffect(() => {
+    if (isInitialLoad) return;
+    const prev = prevCapexRef.current;
+    const current = capexList;
+    const prevMap = new Map(prev.map(p => [p.id, p]));
+    
+    current.forEach(item => {
+      const p = prevMap.get(item.id);
+      if (!p) {
+        budgetAPI.createCapex(item).catch(console.error);
+      } else if (JSON.stringify(p) !== JSON.stringify(item)) {
+        budgetAPI.updateCapex(p.db_kd || item.kd_capex || item.id, item).catch(console.error);
+      }
+    });
+    
+    const currentIds = new Set(current.map(c => c.id));
+    prev.forEach(p => {
+      if (!currentIds.has(p.id) && p.db_kd) budgetAPI.deleteCapex(p.db_kd).catch(console.error);
+    });
+
+    prevCapexRef.current = current;
+  }, [capexList, isInitialLoad]);
+
   const [toast, setToast] = useState(null);
   const [confirm, setConfirm] = useState(null);
   const [editTarget, setEditTarget] = useState(null);
@@ -6247,6 +6321,9 @@ function CapexModule({ capexList, setCapexList }) {
                                             anggaran_tahunan: (
                                               pc.anggaran_tahunan || []
                                             ).filter((r) => r.id !== a.id),
+                                            history_anggaran: (
+                                              pc.history_anggaran || []
+                                            ).filter((h) => h.id !== a.id),
                                           }
                                           : pc,
                                       ),
@@ -6263,91 +6340,30 @@ function CapexModule({ capexList, setCapexList }) {
                           </tr>
                         )),
                       );
+                      
+                      const subTotalKad = (c.nilai_kad || 0) + c.anggaran_tahunan.reduce((s, a) => s + (a.nilai_kad || 0), 0);
+                      const subTotalRkap = (c.nilai_rkap || 0) + c.anggaran_tahunan.reduce((s, a) => s + (a.nilai_anggaran || 0), 0);
+                      
+                      rows.push(
+                        <tr key={`subtotal-${c.id}`} style={{ background: "#eff6ff" }}>
+                          <td colSpan={5} style={{ ...S.td, textAlign: "right", fontWeight: 800, color: "#1d4ed8", fontSize: "0.75rem" }}>
+                            TOTAL MULTI-YEARS
+                          </td>
+                          <td style={{ ...S.td, textAlign: "right", fontWeight: 800, color: "#1d4ed8", fontSize: "0.82rem" }}>
+                            {fmt(subTotalKad)}
+                          </td>
+                          <td style={{ ...S.td, textAlign: "center", color: "#64748b" }}>—</td>
+                          <td style={{ ...S.td, textAlign: "right", fontWeight: 800, color: "#16a34a", fontSize: "0.82rem" }}>
+                            {fmt(subTotalRkap)}
+                          </td>
+                          <td style={S.td}></td>
+                        </tr>
+                      );
                     }
                     return rows;
                   })
               )}
             </tbody>
-            {(() => {
-              const filteredForTotal = capexList.filter(
-                (c) =>
-                  !filterCapexTahun ||
-                  c.thn_anggaran === parseInt(filterCapexTahun),
-              );
-              // Hanya tampilkan baris total jika ada minimal satu capex yang
-              // sudah memiliki child row (anggaran_tahunan), agar tidak
-              // membingungkan user seolah itu total dari semua baris 1-6.
-              const hasAnyChildRows = filteredForTotal.some(
-                (c) => (c.anggaran_tahunan || []).length > 0,
-              );
-              if (!hasAnyChildRows) return null;
-              // Total RKAP = nilai_rkap parent (awal) + semua nilai_anggaran child rows
-              const totalKad = filteredForTotal.reduce(
-                (s, c) => s + (c.nilai_kad || 0),
-                0,
-              );
-              const totalRkap = filteredForTotal.reduce(
-                (s, c) =>
-                  s +
-                  (c.nilai_rkap || 0) +
-                  (c.anggaran_tahunan || []).reduce(
-                    (ss, a) => ss + (a.nilai_anggaran || 0),
-                    0,
-                  ),
-                0,
-              );
-              return (
-                <tfoot>
-                  <tr style={{ background: "#eff6ff" }}>
-                    <td
-                      colSpan={5}
-                      style={{
-                        ...S.td,
-                        textAlign: "right",
-                        fontWeight: 700,
-                        color: "#1d4ed8",
-                        fontSize: "0.75rem",
-                      }}
-                    >
-                      TOTAL (Baris dipilih)
-                    </td>
-                    <td
-                      style={{
-                        ...S.td,
-                        textAlign: "right",
-                        fontWeight: 800,
-                        color: "#1d4ed8",
-                        fontSize: "0.82rem",
-                      }}
-                    >
-                      {fmt(totalKad)}
-                    </td>
-                    <td
-                      style={{
-                        ...S.td,
-                        textAlign: "center",
-                        fontWeight: 600,
-                        color: "#64748b",
-                      }}
-                    >
-                      —
-                    </td>
-                    <td
-                      style={{
-                        ...S.td,
-                        textAlign: "right",
-                        fontWeight: 800,
-                        color: "#16a34a",
-                        fontSize: "0.82rem",
-                      }}
-                    >
-                      {fmt(totalRkap)}
-                    </td>
-                    <td style={S.td} />
-                  </tr>
-                </tfoot>
-              );
-            })()}
           </table>
         </div>
       </div>
@@ -6359,7 +6375,7 @@ function CapexModule({ capexList, setCapexList }) {
 export default function App() {
   const { type } = useParams();
   const [masterList, setMasterList] = useState(MASTER_LIST_INIT);
-  const [capexList, setCapexList] = useState(INIT_CAPEX_FORM);
+  const [capexList, setCapexList] = useState([]);
   const moduleType = type?.toUpperCase() || "OPEX";
 
   const wrap = (children) => (
