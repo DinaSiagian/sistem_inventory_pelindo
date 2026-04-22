@@ -1,4 +1,5 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
+import { masterDataAPI } from "../services/api";
 
 // ─── INLINE SVG ICONS ─────────────────────────────────────────
 const SVG = {
@@ -1874,28 +1875,49 @@ function EntitySection({ entityList, setEntityList }) {
     setPage(1);
   }, [search]);
 
-  const handleAdd = (form) => {
-    const code = form.entity_code.trim().toUpperCase();
-    setEntityList((prev) => [
-      ...prev,
-      { entity_code: code, name: form.name.trim() },
-    ]);
-    setModal(null);
+  const handleAdd = async (form) => {
+    try {
+      const res = await masterDataAPI.addEntity({
+        entity_code: form.entity_code.trim().toUpperCase(),
+        name: form.name.trim(),
+      });
+      if (res.data?.success) {
+        setEntityList((prev) => [...prev, res.data.data]);
+        setModal(null);
+      }
+    } catch (err) {
+      alert("Gagal menambahkan entitas: " + (err.response?.data?.message || err.message));
+    }
   };
 
-  const handleEdit = (form) => {
-    setEntityList((prev) =>
-      prev.map((e) =>
-        e.entity_code === modal.item.entity_code
-          ? { ...e, name: form.name.trim() }
-          : e,
-      ),
-    );
-    setModal(null);
+  const handleEdit = async (form) => {
+    try {
+      const res = await masterDataAPI.updateEntity(modal.item.entity_code, {
+        name: form.name.trim(),
+      });
+      if (res.data?.success) {
+        setEntityList((prev) =>
+          prev.map((e) =>
+            e.entity_code === modal.item.entity_code ? res.data.data : e,
+          ),
+        );
+        setModal(null);
+      }
+    } catch (err) {
+      alert("Gagal memperbarui entitas: " + (err.response?.data?.message || err.message));
+    }
   };
 
-  const handleDelete = (code) => {
-    setEntityList((prev) => prev.filter((e) => e.entity_code !== code));
+  const handleDelete = async (code) => {
+    try {
+      const res = await masterDataAPI.deleteEntity(code);
+      if (res.data?.success) {
+        setEntityList((prev) => prev.filter((e) => e.entity_code !== code));
+        setModal(null);
+      }
+    } catch (err) {
+      alert("Gagal menghapus entitas: " + (err.response?.data?.message || err.message));
+    }
   };
 
   return (
@@ -2102,32 +2124,62 @@ function BranchSection({ branchList, setBranchList, entityList }) {
   const getEntityName = (code) =>
     entityList.find((e) => e.entity_code === code)?.name || code;
 
-  const handleAdd = (form) => {
-    const code = form.branch_code.trim().toUpperCase();
-    setBranchList((prev) => [
-      ...prev,
-      {
+  const handleAdd = async (form) => {
+    try {
+      const code = form.branch_code.trim().toUpperCase();
+      const res = await masterDataAPI.addBranch({
         branch_code: code,
         entity_code: form.entity_code,
         name: form.name.trim(),
-      },
-    ]);
-    setModal(null);
+        address: form.address,
+        phone: form.phone,
+        longitude: form.longitude ? parseFloat(form.longitude) : null,
+        latitude: form.latitude ? parseFloat(form.latitude) : null,
+        is_active: form.is_active === 'true' || form.is_active === true,
+      });
+      if (res.data?.success) {
+        setBranchList((prev) => [...prev, res.data.data]);
+        setModal(null);
+      }
+    } catch (err) {
+      alert("Gagal menambahkan cabang: " + (err.response?.data?.message || err.message));
+    }
   };
 
-  const handleEdit = (form) => {
-    setBranchList((prev) =>
-      prev.map((b) =>
-        b.branch_code === modal.item.branch_code
-          ? { ...b, name: form.name.trim(), entity_code: form.entity_code }
-          : b,
-      ),
-    );
-    setModal(null);
+  const handleEdit = async (form) => {
+    try {
+      const res = await masterDataAPI.updateBranch(modal.item.branch_code, {
+        name: form.name.trim(),
+        entity_code: form.entity_code,
+        address: form.address,
+        phone: form.phone,
+        longitude: form.longitude ? parseFloat(form.longitude) : null,
+        latitude: form.latitude ? parseFloat(form.latitude) : null,
+        is_active: form.is_active === 'true' || form.is_active === true,
+      });
+      if (res.data?.success) {
+        setBranchList((prev) =>
+          prev.map((b) =>
+            b.branch_code === modal.item.branch_code ? res.data.data : b,
+          ),
+        );
+        setModal(null);
+      }
+    } catch (err) {
+      alert("Gagal memperbarui cabang: " + (err.response?.data?.message || err.message));
+    }
   };
 
-  const handleDelete = (code) => {
-    setBranchList((prev) => prev.filter((b) => b.branch_code !== code));
+  const handleDelete = async (code) => {
+    try {
+      const res = await masterDataAPI.deleteBranch(code);
+      if (res.data?.success) {
+        setBranchList((prev) => prev.filter((b) => b.branch_code !== code));
+        setModal(null);
+      }
+    } catch (err) {
+      alert("Gagal menghapus cabang: " + (err.response?.data?.message || err.message));
+    }
   };
 
   const entityOptions = entityList.map((e) => ({
@@ -2311,6 +2363,48 @@ function BranchSection({ branchList, setBranchList, entityList }) {
               placeholder: "Contoh: Bandung",
               required: true,
             },
+            {
+              key: "address",
+              label: "Alamat",
+              icon: "mapPin",
+              placeholder: "Alamat cabang",
+              required: false,
+            },
+            {
+              key: "phone",
+              label: "No. Telepon",
+              icon: "phone",
+              placeholder: "08xxxxxxxxxx",
+              required: false,
+            },
+            {
+              key: "longitude",
+              label: "Longitude",
+              icon: "globe",
+              type: "number",
+              placeholder: "Contoh: 106.8229",
+              required: false,
+            },
+            {
+              key: "latitude",
+              label: "Latitude",
+              icon: "globe",
+              type: "number",
+              placeholder: "Contoh: -6.1944",
+              required: false,
+            },
+            {
+              key: "is_active",
+              label: "Status Aktif",
+              icon: "activity",
+              type: "select",
+              options: [
+                 { value: "true", label: "Aktif" },
+                 { value: "false", label: "Nonaktif" }
+              ],
+              defaultValue: "true",
+              required: true,
+            },
           ]}
           onClose={() => setModal(null)}
           onSave={handleAdd}
@@ -2346,6 +2440,52 @@ function BranchSection({ branchList, setBranchList, entityList }) {
               icon: "mapPin",
               defaultValue: modal.item.name,
               placeholder: "Nama cabang",
+              required: true,
+            },
+            {
+              key: "address",
+              label: "Alamat",
+              icon: "mapPin",
+              defaultValue: modal.item.address || "",
+              placeholder: "Alamat cabang",
+              required: false,
+            },
+            {
+              key: "phone",
+              label: "No. Telepon",
+              icon: "phone",
+              defaultValue: modal.item.phone || "",
+              placeholder: "08xxxxxxxxxx",
+              required: false,
+            },
+            {
+              key: "longitude",
+              label: "Longitude",
+              icon: "globe",
+              type: "number",
+              defaultValue: modal.item.longitude || "",
+              placeholder: "Contoh: 106.8229",
+              required: false,
+            },
+            {
+              key: "latitude",
+              label: "Latitude",
+              icon: "globe",
+              type: "number",
+              defaultValue: modal.item.latitude || "",
+              placeholder: "Contoh: -6.1944",
+              required: false,
+            },
+            {
+              key: "is_active",
+              label: "Status Aktif",
+              icon: "activity",
+              type: "select",
+              options: [
+                 { value: "true", label: "Aktif" },
+                 { value: "false", label: "Nonaktif" }
+              ],
+              defaultValue: modal.item.is_active !== false ? "true" : "false",
               required: true,
             },
           ]}
@@ -2408,40 +2548,52 @@ function DivisionSection({
   const getBranchName = (code) =>
     branchList.find((b) => b.branch_code === code)?.name || code;
 
-  const handleAdd = (form) => {
-    const code = form.division_code.trim().toUpperCase();
-    const branch = branchList.find((b) => b.branch_code === form.branch_code);
-    setDivisionList((prev) => [
-      ...prev,
-      {
+  const handleAdd = async (form) => {
+    try {
+      const code = form.division_code.trim().toUpperCase();
+      const res = await masterDataAPI.addDivision({
         division_code: code,
         branch_code: form.branch_code,
-        entity_code: branch?.entity_code || form.entity_code,
         name: form.name.trim(),
-      },
-    ]);
-    setModal(null);
+      });
+      if (res.data?.success) {
+        setDivisionList((prev) => [...prev, res.data.data]);
+        setModal(null);
+      }
+    } catch (err) {
+      alert("Gagal menambahkan divisi: " + (err.response?.data?.message || err.message));
+    }
   };
 
-  const handleEdit = (form) => {
-    const branch = branchList.find((b) => b.branch_code === form.branch_code);
-    setDivisionList((prev) =>
-      prev.map((d) =>
-        d.division_code === modal.item.division_code
-          ? {
-              ...d,
-              name: form.name.trim(),
-              branch_code: form.branch_code,
-              entity_code: branch?.entity_code || d.entity_code,
-            }
-          : d,
-      ),
-    );
-    setModal(null);
+  const handleEdit = async (form) => {
+    try {
+      const res = await masterDataAPI.updateDivision(modal.item.division_code, {
+        name: form.name.trim(),
+        branch_code: form.branch_code,
+      });
+      if (res.data?.success) {
+        setDivisionList((prev) =>
+          prev.map((d) =>
+            d.division_code === modal.item.division_code ? res.data.data : d,
+          ),
+        );
+        setModal(null);
+      }
+    } catch (err) {
+      alert("Gagal memperbarui divisi: " + (err.response?.data?.message || err.message));
+    }
   };
 
-  const handleDelete = (code) => {
-    setDivisionList((prev) => prev.filter((d) => d.division_code !== code));
+  const handleDelete = async (code) => {
+    try {
+      const res = await masterDataAPI.deleteDivision(code);
+      if (res.data?.success) {
+        setDivisionList((prev) => prev.filter((d) => d.division_code !== code));
+        setModal(null);
+      }
+    } catch (err) {
+      alert("Gagal menghapus divisi: " + (err.response?.data?.message || err.message));
+    }
   };
 
   const entityOptions = entityList.map((e) => ({
@@ -2729,6 +2881,250 @@ function DivisionSection({
     </div>
   );
 }
+
+// ─── ROLE MANAGEMENT SECTION ───────────────────────────────
+function RoleSection({ roleList, setRoleList }) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [modal, setModal] = useState(null);
+
+  const filtered = roleList.filter(
+    (e) =>
+      e.name.toLowerCase().includes(search.toLowerCase()) ||
+      e.role_code.toLowerCase().includes(search.toLowerCase()),
+  );
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / MD_PER_PAGE));
+  const paginated = filtered.slice(
+    (page - 1) * MD_PER_PAGE,
+    page * MD_PER_PAGE,
+  );
+
+  React.useEffect(() => {
+    setPage(1);
+  }, [search]);
+
+  const handleAdd = async (form) => {
+    try {
+      const res = await masterDataAPI.addRole({
+        role_code: form.role_code.trim().toUpperCase(),
+        name: form.name.trim(),
+      });
+      if (res.data?.success) {
+        setRoleList((prev) => [...prev, res.data.data]);
+        setModal(null);
+      }
+    } catch (err) {
+      alert("Gagal menambahkan role: " + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const handleEdit = async (form) => {
+    try {
+      const res = await masterDataAPI.updateRole(modal.item.role_code, {
+        name: form.name.trim(),
+      });
+      if (res.data?.success) {
+        setRoleList((prev) =>
+          prev.map((e) =>
+            e.role_code === modal.item.role_code ? res.data.data : e,
+          ),
+        );
+        setModal(null);
+      }
+    } catch (err) {
+      alert("Gagal memperbarui role: " + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const handleDelete = async (code) => {
+    try {
+      const res = await masterDataAPI.deleteRole(code);
+      if (res.data?.success) {
+        setRoleList((prev) => prev.filter((e) => e.role_code !== code));
+        setModal(null);
+      }
+    } catch (err) {
+      alert("Gagal menghapus role: " + (err.response?.data?.message || err.message));
+    }
+  };
+
+  return (
+    <div className="md-section md-section--role" style={{ borderLeft: "4px solid #f59e0b" }}>
+      <div
+        className="md-header md-header--role"
+        onClick={() => setOpen((o) => !o)}
+      >
+        <div className="md-header-left">
+          <Ico n="shield" size={15} style={{ color: "#f59e0b" }} />
+          <span className="md-header-title--role" style={{ color: "#b45309", fontWeight: 600 }}>Manajemen Role</span>
+          <span className="md-header-count--role" style={{ background: "#fef3c7", color: "#b45309", padding: "2px 8px", borderRadius: "12px", fontSize: "0.7rem", fontWeight: 600 }}>
+            {roleList.length} role
+          </span>
+        </div>
+        <Ico
+          n={open ? "chevronUp" : "chevronDown"}
+          size={14}
+          style={{ color: "#f59e0b" }}
+        />
+      </div>
+      {open && (
+        <div className="md-body">
+          <div className="md-toolbar" style={{ borderBottom: "1px solid #e2e8f0", paddingBottom: "12px", marginBottom: "12px" }}>
+            <div className="md-search-wrap">
+              <Ico n="search" size={12} style={{ color: "#94a3b8" }} />
+              <input
+                placeholder="Cari kode atau nama role…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <span style={{ fontSize: ".72rem", color: "#64748b" }}>
+              {filtered.length} ditemukan
+            </span>
+            <button
+              className="md-add-btn md-add-btn--role"
+              style={{ background: "#f59e0b", color: "#fff" }}
+              onClick={() => setModal({ type: "add" })}
+            >
+              <Ico n="plus" size={12} /> Tambah Role
+            </button>
+          </div>
+          <div className="md-table-wrap">
+            <table className="md-table md-table--role">
+              <thead>
+                <tr>
+                  <th>Kode Role</th>
+                  <th>Nama Role</th>
+                  <th style={{ width: 70, textAlign: "center" }}>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginated.length === 0 ? (
+                  <tr>
+                    <td colSpan={3} className="md-empty">
+                      Tidak ada role ditemukan
+                    </td>
+                  </tr>
+                ) : (
+                  paginated.map((e) => (
+                    <tr key={e.role_code}>
+                      <td>
+                        <span className="md-code-badge md-code-badge--role" style={{ background: "#fef3c7", color: "#b45309" }}>
+                          {e.role_code}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="md-name-text">{e.name}</span>
+                      </td>
+                      <td>
+                        <div
+                          className="md-action-row"
+                          style={{ justifyContent: "center" }}
+                        >
+                          <button
+                            className="md-icon-btn md-icon-btn--edit"
+                            title="Edit"
+                            onClick={() => setModal({ type: "edit", item: e })}
+                          >
+                            <Ico n="edit" size={11} />
+                          </button>
+                          <button
+                            className="md-icon-btn md-icon-btn--del"
+                            title="Hapus"
+                            onClick={() =>
+                              setModal({ type: "delete", item: e })
+                            }
+                          >
+                            <Ico n="trash" size={11} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            total={filtered.length}
+            perPage={MD_PER_PAGE}
+            onPageChange={setPage}
+            accentColor="#f59e0b"
+            accentBg="#fef3c7"
+          />
+        </div>
+      )}
+
+      {modal?.type === "add" && (
+        <MdModal
+          title="Tambah Role Baru"
+          iconName="shield"
+          iconColor="#f59e0b"
+          fields={[
+            {
+              key: "role_code",
+              label: "Kode Role",
+              icon: "idCard",
+              placeholder: "Contoh: ADMIN",
+              required: true,
+              hint: "Kode unik role (akan diubah ke UPPERCASE)",
+            },
+            {
+              key: "name",
+              label: "Nama Role",
+              icon: "shield",
+              placeholder: "Contoh: Administrator",
+              required: true,
+            },
+          ]}
+          onClose={() => setModal(null)}
+          onSave={handleAdd}
+        />
+      )}
+      {modal?.type === "edit" && (
+        <MdModal
+          title={`Edit Role — ${modal.item.role_code}`}
+          iconName="shield"
+          iconColor="#f59e0b"
+          fields={[
+            {
+              key: "role_code",
+              label: "Kode Role",
+              icon: "idCard",
+              defaultValue: modal.item.role_code,
+              placeholder: "Kode role",
+              required: false,
+              disabled: true,
+              hint: "Kode role tidak dapat diubah",
+            },
+            {
+              key: "name",
+              label: "Nama Role",
+              icon: "shield",
+              defaultValue: modal.item.name,
+              placeholder: "Nama role",
+              required: true,
+            },
+          ]}
+          onClose={() => setModal(null)}
+          onSave={handleEdit}
+        />
+      )}
+      {modal?.type === "delete" && (
+        <MdDeleteModal
+          itemName={`${modal.item.role_code} — ${modal.item.name}`}
+          onClose={() => setModal(null)}
+          onConfirm={() => handleDelete(modal.item.role_code)}
+        />
+      )}
+    </div>
+  );
+}
+
 
 // ─── FORM VIEW ────────────────────────────────────────────────
 function UserFormView({
@@ -3440,9 +3836,30 @@ const UserManagement = () => {
   const [logs, setLogs] = useState(mockLogs);
   const logIdRef = useRef(mockLogs.length + 1);
 
-  const [entityList, setEntityList] = useState(INITIAL_ENTITY_LIST);
-  const [branchList, setBranchList] = useState(INITIAL_BRANCH_LIST);
-  const [divisionList, setDivisionList] = useState(INITIAL_DIVISION_LIST);
+  const [entityList, setEntityList] = useState([]);
+  const [branchList, setBranchList] = useState([]);
+  const [divisionList, setDivisionList] = useState([]);
+  const [roleList, setRoleList] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [entRes, brRes, divRes, roleRes] = await Promise.all([
+          masterDataAPI.getEntities(),
+          masterDataAPI.getBranches(),
+          masterDataAPI.getDivisions(),
+          masterDataAPI.getRoles(),
+        ]);
+        if (entRes.data?.success) setEntityList(entRes.data.data);
+        if (brRes.data?.success) setBranchList(brRes.data.data);
+        if (divRes.data?.success) setDivisionList(divRes.data.data);
+        if (roleRes.data?.success) setRoleList(roleRes.data.data);
+      } catch (err) {
+        console.error("Gagal mengambil master data", err);
+      }
+    };
+    fetchData();
+  }, []);
 
   const getEntityName = (code) =>
     entityList.find((e) => e.entity_code === code)?.name || code;
@@ -3989,3 +4406,4 @@ const UserManagement = () => {
 };
 
 export default UserManagement;
+

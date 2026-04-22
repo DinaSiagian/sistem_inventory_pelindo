@@ -44,4 +44,30 @@ export const authAPI = {
   getMasterData: () => api.get("/master-data"),
 };
 
+export const masterDataAPI = {
+  // Entities
+  getEntities: () => api.get("/master-data/entities"),
+  addEntity: (data) => api.post("/master-data/entities", data),
+  updateEntity: (code, data) => api.put(`/master-data/entities/${code}`, data),
+  deleteEntity: (code) => api.delete(`/master-data/entities/${code}`),
+  
+  // Branches
+  getBranches: () => api.get("/master-data/branches"),
+  addBranch: (data) => api.post("/master-data/branches", data),
+  updateBranch: (code, data) => api.put(`/master-data/branches/${code}`, data),
+  deleteBranch: (code) => api.delete(`/master-data/branches/${code}`),
+
+  // Divisions
+  getDivisions: () => api.get("/master-data/divisions"),
+  addDivision: (data) => api.post("/master-data/divisions", data),
+  updateDivision: (code, data) => api.put(`/master-data/divisions/${code}`, data),
+  deleteDivision: (code) => api.delete(`/master-data/divisions/${code}`),
+
+  // Roles
+  getRoles: () => api.get("/master-data/roles"),
+  addRole: (data) => api.post("/master-data/roles", data),
+  updateRole: (code, data) => api.put(`/master-data/roles/${code}`, data),
+  deleteRole: (code) => api.delete(`/master-data/roles/${code}`),
+};
+
 export default api;

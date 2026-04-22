@@ -14,12 +14,18 @@ class MasterDataController extends Controller
 {
     /* ==================== ENTITIES ==================== */
     
+    /**
+     * GET /api/master-data/entities
+     * List semua entities dengan count branches
+     */
     public function indexEntities()
     {
         try {
             $entities = Entity::withCount('branches')->get();
+            
             return response()->json([
                 'success' => true,
+                'message' => 'Data entitas berhasil diambil',
                 'data' => $entities
             ], 200);
         } catch (Exception $e) {
@@ -31,11 +37,15 @@ class MasterDataController extends Controller
         }
     }
 
+    /**
+     * POST /api/master-data/entities
+     * Tambah entity baru
+     */
     public function storeEntity(Request $request)
     {
         try {
             $validator = Validator::make($request->all(), [
-                'entity_code' => 'required|string|max:255|unique:entities,entity_code',
+                'entity_code' => 'required|string|max:50|unique:entities,entity_code',
                 'name' => 'required|string|max:255',
             ]);
 
@@ -67,6 +77,10 @@ class MasterDataController extends Controller
         }
     }
 
+    /**
+     * PUT /api/master-data/entities/{code}
+     * Update entity by entity_code
+     */
     public function updateEntity(Request $request, $code)
     {
         try {
@@ -103,12 +117,16 @@ class MasterDataController extends Controller
         }
     }
 
+    /**
+     * DELETE /api/master-data/entities/{code}
+     * Hapus entity (dengan proteksi jika masih ada branch)
+     */
     public function deleteEntity($code)
     {
         try {
             $entity = Entity::findOrFail($code);
             
-            // Cek jika ada branch yang terkait
+            // Cek jika ada branch yang terkait (restrict delete)
             if ($entity->branches()->count() > 0) {
                 return response()->json([
                     'success' => false,
@@ -134,20 +152,30 @@ class MasterDataController extends Controller
 
     /* ==================== BRANCHES ==================== */
     
+    /**
+     * GET /api/master-data/branches
+     * List semua branches dengan filter entity_code opsional
+     */
     public function indexBranches(Request $request)
     {
         try {
             $query = Branch::with(['entity', 'divisions']);
             
-            // Filter by entity jika ada
+            // Filter by entity_code jika ada
             if ($request->has('entity_code')) {
                 $query->where('entity_code', $request->entity_code);
+            }
+            
+            // Filter by status
+            if ($request->has('is_active')) {
+                $query->where('is_active', filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN));
             }
             
             $branches = $query->withCount('divisions')->get();
             
             return response()->json([
                 'success' => true,
+                'message' => 'Data cabang berhasil diambil',
                 'data' => $branches
             ], 200);
         } catch (Exception $e) {
@@ -159,11 +187,15 @@ class MasterDataController extends Controller
         }
     }
 
+    /**
+     * POST /api/master-data/branches
+     * Tambah branch baru
+     */
     public function storeBranch(Request $request)
     {
         try {
             $validator = Validator::make($request->all(), [
-                'branch_code' => 'required|string|max:255|unique:branches,branch_code',
+                'branch_code' => 'required|string|max:50|unique:branches,branch_code',
                 'entity_code' => 'required|exists:entities,entity_code',
                 'name' => 'required|string|max:255',
                 'address' => 'nullable|string',
@@ -191,6 +223,9 @@ class MasterDataController extends Controller
                 'is_active' => true,
             ]);
 
+            // Load relations untuk response
+            $branch->load(['entity', 'divisions']);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Cabang berhasil ditambahkan',
@@ -206,6 +241,10 @@ class MasterDataController extends Controller
         }
     }
 
+    /**
+     * PUT /api/master-data/branches/{code}
+     * Update branch by branch_code
+     */
     public function updateBranch(Request $request, $code)
     {
         try {
@@ -239,10 +278,12 @@ class MasterDataController extends Controller
                 'is_active' => $request->has('is_active') ? $request->is_active : $branch->is_active,
             ]);
 
+            $branch->load(['entity', 'divisions']);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Cabang berhasil diperbarui',
-                'data' => $branch->load(['entity', 'divisions'])
+                'data' => $branch
             ], 200);
 
         } catch (Exception $e) {
@@ -254,12 +295,16 @@ class MasterDataController extends Controller
         }
     }
 
+    /**
+     * DELETE /api/master-data/branches/{code}
+     * Hapus branch (dengan proteksi jika masih ada division)
+     */
     public function deleteBranch($code)
     {
         try {
             $branch = Branch::findOrFail($code);
             
-            // Cek jika ada division yang terkait
+            // Cek jika ada division yang terkait (restrict delete)
             if ($branch->divisions()->count() > 0) {
                 return response()->json([
                     'success' => false,
@@ -285,20 +330,32 @@ class MasterDataController extends Controller
 
     /* ==================== DIVISIONS ==================== */
     
+    /**
+     * GET /api/master-data/divisions
+     * List semua divisions dengan filter opsional
+     */
     public function indexDivisions(Request $request)
     {
         try {
             $query = Division::with('branch.entity');
             
-            // Filter by branch jika ada
+            // Filter by branch_code jika ada
             if ($request->has('branch_code')) {
                 $query->where('branch_code', $request->branch_code);
+            }
+            
+            // Filter by entity_code (via branch)
+            if ($request->has('entity_code')) {
+                $query->whereHas('branch', function($q) use ($request) {
+                    $q->where('entity_code', $request->entity_code);
+                });
             }
             
             $divisions = $query->get();
             
             return response()->json([
                 'success' => true,
+                'message' => 'Data divisi berhasil diambil',
                 'data' => $divisions
             ], 200);
         } catch (Exception $e) {
@@ -310,11 +367,15 @@ class MasterDataController extends Controller
         }
     }
 
+    /**
+     * POST /api/master-data/divisions
+     * Tambah division baru
+     */
     public function storeDivision(Request $request)
     {
         try {
             $validator = Validator::make($request->all(), [
-                'division_code' => 'required|string|max:255|unique:divisions,division_code',
+                'division_code' => 'required|string|max:50|unique:divisions,division_code',
                 'branch_code' => 'required|exists:branches,branch_code',
                 'name' => 'required|string|max:255',
             ]);
@@ -333,10 +394,13 @@ class MasterDataController extends Controller
                 'name' => $request->name,
             ]);
 
+            // Load relations untuk response
+            $division->load('branch.entity');
+
             return response()->json([
                 'success' => true,
                 'message' => 'Divisi berhasil ditambahkan',
-                'data' => $division->load('branch.entity')
+                'data' => $division
             ], 201);
 
         } catch (Exception $e) {
@@ -348,6 +412,10 @@ class MasterDataController extends Controller
         }
     }
 
+    /**
+     * PUT /api/master-data/divisions/{code}
+     * Update division by division_code
+     */
     public function updateDivision(Request $request, $code)
     {
         try {
@@ -371,10 +439,12 @@ class MasterDataController extends Controller
                 'branch_code' => $request->branch_code,
             ]);
 
+            $division->load('branch.entity');
+
             return response()->json([
                 'success' => true,
                 'message' => 'Divisi berhasil diperbarui',
-                'data' => $division->load('branch.entity')
+                'data' => $division
             ], 200);
 
         } catch (Exception $e) {
@@ -386,6 +456,10 @@ class MasterDataController extends Controller
         }
     }
 
+    /**
+     * DELETE /api/master-data/divisions/{code}
+     * Hapus division
+     */
     public function deleteDivision($code)
     {
         try {
@@ -402,6 +476,183 @@ class MasterDataController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal menghapus divisi'
+            ], 500);
+        }
+    }
+
+    /* ==================== ROLES ==================== */
+    
+    /**
+     * GET /api/master-data/roles
+     * List semua roles dengan filter opsional
+     */
+    public function indexRoles()
+    {
+        try {
+            $roles = \App\Models\Role::all();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Data role berhasil diambil',
+                'data' => $roles
+            ], 200);
+        } catch (Exception $e) {
+            Log::error('Get Roles Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data role'
+            ], 500);
+        }
+    }
+
+    /**
+     * POST /api/master-data/roles
+     * Tambah role baru
+     */
+    public function storeRole(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'role_code' => 'required|string|max:50|unique:roles,role_code',
+                'name' => 'required|string|max:255',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validasi gagal',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $role = \App\Models\Role::create([
+                'role_code' => strtolower($request->role_code),
+                'name' => $request->name,
+                'is_active' => true,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Role berhasil ditambahkan',
+                'data' => $role
+            ], 201);
+
+        } catch (Exception $e) {
+            Log::error('Store Role Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menambahkan role: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * PUT /api/master-data/roles/{code}
+     * Update role by role_code
+     */
+    public function updateRole(Request $request, $code)
+    {
+        try {
+            $role = \App\Models\Role::findOrFail($code);
+
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:255',
+                'is_active' => 'nullable|boolean',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validasi gagal',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $role->update([
+                'name' => $request->name,
+                'is_active' => $request->has('is_active') ? $request->is_active : $role->is_active,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Role berhasil diperbarui',
+                'data' => $role
+            ], 200);
+
+        } catch (Exception $e) {
+            Log::error('Update Role Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memperbarui role'
+            ], 500);
+        }
+    }
+
+    /**
+     * DELETE /api/master-data/roles/{code}
+     * Hapus role
+     */
+    public function deleteRole($code)
+    {
+        try {
+            $role = \App\Models\Role::findOrFail($code);
+            
+            // Cek jika ada user yang terkait (restrict delete)
+            if (\App\Models\User::where('role_code', $code)->count() > 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak dapat menghapus role karena masih digunakan oleh user'
+                ], 400);
+            }
+
+            $role->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Role berhasil dihapus'
+            ], 200);
+
+        } catch (Exception $e) {
+            Log::error('Delete Role Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus role'
+            ], 500);
+        }
+    }
+
+    /* ==================== COMBINED MASTER DATA ==================== */
+    /**
+     * GET /api/master-data
+     * Endpoint khusus untuk Auth.jsx - ambil semua data sekaligus
+     */
+    public function getMasterData()
+    {
+        try {
+            // Ambil entities dengan nested branches & divisions
+            $entities = Entity::with([
+                'branches' => function($query) {
+                    $query->with('divisions')->where('is_active', true);
+                }
+            ])->where('is_active', true)->get();
+            
+            // Ambil roles
+            $roles = \App\Models\Role::select('role_code', 'name')->where('is_active', true)->get();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Master data berhasil diambil',
+                'data' => [
+                    'entities' => $entities,
+                    'roles' => $roles,
+                ]
+            ], 200);
+            
+        } catch (Exception $e) {
+            Log::error('Get Master Data Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil master data'
             ], 500);
         }
     }

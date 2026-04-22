@@ -13,7 +13,8 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        //
+        // Tambahkan custom commands di sini jika ada
+        // Contoh: \App\Console\Commands\YourCommand::class,
     ];
 
     /**
@@ -24,6 +25,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        //
+        // Definisikan scheduled tasks di sini
+        // $schedule->command('inspire')->hourly();
     }
 }
