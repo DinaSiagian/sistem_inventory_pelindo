@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
-import { masterDataAPI } from "../services/api";
+import { masterDataAPI, userAPI } from "../services/api";
 
 // ─── INLINE SVG ICONS ─────────────────────────────────────────
 const SVG = {
@@ -566,94 +566,13 @@ function Pagination({
 }
 
 // ─── MASTER DATA (state-managed) ──────────────────────────────
-const INITIAL_ENTITY_LIST = [
-  { entity_code: "PMT", name: "PT Pelindo Multi Terminal" },
-  { entity_code: "PTP", name: "PT Pelabuhan Indonesia" },
-  { entity_code: "IKT", name: "Indonesia Kendaraan Terminal" },
-];
-const INITIAL_BRANCH_LIST = [
-  { branch_code: "PMT-JKT", entity_code: "PMT", name: "Jakarta" },
-  { branch_code: "PMT-SBY", entity_code: "PMT", name: "Surabaya" },
-  { branch_code: "PMT-MDN", entity_code: "PMT", name: "Medan" },
-  { branch_code: "PTP-JKT", entity_code: "PTP", name: "Jakarta" },
-  { branch_code: "IKT-JKT", entity_code: "IKT", name: "Jakarta" },
-];
-const INITIAL_DIVISION_LIST = [
-  {
-    division_code: "PMT-JKT-OPS",
-    branch_code: "PMT-JKT",
-    entity_code: "PMT",
-    name: "Operasional",
-  },
-  {
-    division_code: "PMT-JKT-FIN",
-    branch_code: "PMT-JKT",
-    entity_code: "PMT",
-    name: "Keuangan",
-  },
-  {
-    division_code: "PMT-JKT-IT",
-    branch_code: "PMT-JKT",
-    entity_code: "PMT",
-    name: "Teknologi Informasi",
-  },
-  {
-    division_code: "PMT-JKT-HRD",
-    branch_code: "PMT-JKT",
-    entity_code: "PMT",
-    name: "HRD",
-  },
-  {
-    division_code: "PMT-SBY-OPS",
-    branch_code: "PMT-SBY",
-    entity_code: "PMT",
-    name: "Operasional",
-  },
-  {
-    division_code: "PMT-SBY-FIN",
-    branch_code: "PMT-SBY",
-    entity_code: "PMT",
-    name: "Keuangan",
-  },
-  {
-    division_code: "PMT-MDN-OPS",
-    branch_code: "PMT-MDN",
-    entity_code: "PMT",
-    name: "Operasional",
-  },
-  {
-    division_code: "PTP-JKT-OPS",
-    branch_code: "PTP-JKT",
-    entity_code: "PTP",
-    name: "Operasional",
-  },
-  {
-    division_code: "PTP-JKT-FIN",
-    branch_code: "PTP-JKT",
-    entity_code: "PTP",
-    name: "Keuangan",
-  },
-  {
-    division_code: "PTP-JKT-HRD",
-    branch_code: "PTP-JKT",
-    entity_code: "PTP",
-    name: "HRD",
-  },
-  {
-    division_code: "IKT-JKT-OPS",
-    branch_code: "IKT-JKT",
-    entity_code: "IKT",
-    name: "Operasional",
-  },
-  {
-    division_code: "IKT-JKT-IT",
-    branch_code: "IKT-JKT",
-    entity_code: "IKT",
-    name: "Teknologi Informasi",
-  },
-];
-
 const roleConfig = {
+  admin: {
+    label: "Administrator",
+    color: "#7c3aed",
+    bg: "#ede9fe",
+    iconName: "shield",
+  },
   superadmin: {
     label: "Super Admin",
     color: "#7c3aed",
@@ -675,99 +594,6 @@ const ACTION_CONFIG = {
 
 const CURRENT_USER_IP = "192.168.1.1";
 const CURRENT_USER_ID = 1;
-
-const mockUsers = [
-  {
-    id: 1,
-    name: "Joy Valeda Silalahi",
-    nip: "19900101001",
-    username: "joy.silalahi",
-    email: "joy.silalahi@pelindo.co.id",
-    phone: "081234567890",
-    role_code: "superadmin",
-    entity_code: "PMT",
-    branch_code: "PMT-JKT",
-    division_code: "PMT-JKT-IT",
-    is_active: true,
-    created_at: "2025-01-10",
-    last_login: "2026-03-04 08:32",
-  },
-  {
-    id: 2,
-    name: "Dina Marlina Siagian",
-    nip: "19920202002",
-    username: "dina.siagian",
-    email: "dina.siagian@pelindo.co.id",
-    phone: "081298765432",
-    role_code: "superadmin",
-    entity_code: "PMT",
-    branch_code: "PMT-JKT",
-    division_code: "PMT-JKT-HRD",
-    is_active: true,
-    created_at: "2025-01-10",
-    last_login: "2026-03-04 09:15",
-  },
-  {
-    id: 3,
-    name: "Andi Pratama",
-    nip: "19950303003",
-    username: "andi.pratama",
-    email: "andi.pratama@pelindo.co.id",
-    phone: "082112345678",
-    role_code: "user",
-    entity_code: "PMT",
-    branch_code: "PMT-SBY",
-    division_code: "PMT-SBY-OPS",
-    is_active: true,
-    created_at: "2025-03-15",
-    last_login: "2026-03-03 14:22",
-  },
-  {
-    id: 4,
-    name: "Sari Dewi",
-    nip: "19970404004",
-    username: "sari.dewi",
-    email: "sari.dewi@pelindo.co.id",
-    phone: "085787654321",
-    role_code: "user",
-    entity_code: "PTP",
-    branch_code: "PTP-JKT",
-    division_code: "PTP-JKT-FIN",
-    is_active: true,
-    created_at: "2025-04-01",
-    last_login: "2026-03-02 10:05",
-  },
-  {
-    id: 5,
-    name: "Budi Santoso",
-    nip: "19880505005",
-    username: "budi.santoso",
-    email: "budi.santoso@pelindo.co.id",
-    phone: "087890123456",
-    role_code: "user",
-    entity_code: "PMT",
-    branch_code: "PMT-MDN",
-    division_code: "PMT-MDN-OPS",
-    is_active: false,
-    created_at: "2025-05-20",
-    last_login: "2026-01-15 16:40",
-  },
-  {
-    id: 6,
-    name: "Rini Handayani",
-    nip: "19991212006",
-    username: "rini.handayani",
-    email: "rini.handayani@pelindo.co.id",
-    phone: "089912345678",
-    role_code: "user",
-    entity_code: "IKT",
-    branch_code: "IKT-JKT",
-    division_code: "IKT-JKT-OPS",
-    is_active: true,
-    created_at: "2025-06-10",
-    last_login: "2026-03-03 08:55",
-  },
-];
 
 const mockLogs = [
   {
@@ -3125,8 +2951,8 @@ function RoleSection({ roleList, setRoleList }) {
   );
 }
 
+      
 
-// ─── FORM VIEW ────────────────────────────────────────────────
 function UserFormView({
   user,
   onBack,
@@ -3200,7 +3026,7 @@ function UserFormView({
       ...form,
       id: user?.id || Date.now(),
       created_at: user?.created_at || new Date().toISOString().split("T")[0],
-      last_login: user?.last_login || "—",
+      last_login: user?.last_login || "ΓÇö",
     });
     onBack();
   };
@@ -3332,7 +3158,7 @@ function UserFormView({
             <option value="">-- Pilih Entitas --</option>
             {entityList.map((e) => (
               <option key={e.entity_code} value={e.entity_code}>
-                {e.entity_code} — {e.name}
+                {e.entity_code} ΓÇö {e.name}
               </option>
             ))}
           </select>
@@ -3507,7 +3333,7 @@ function UserFormView({
   );
 }
 
-// ─── DETAIL VIEW ──────────────────────────────────────────────
+// ΓöÇΓöÇΓöÇ DETAIL VIEW ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 function DetailUserView({
   user,
   onBack,
@@ -3525,7 +3351,7 @@ function DetailUserView({
     branchList.find((b) => b.branch_code === code)?.name || code;
   const getDivisionName = (code) =>
     divisionList.find((d) => d.division_code === code)?.name || code;
-  const rc = roleConfig[user.role_code];
+  const rc = roleConfig[user.role_code] || roleConfig.user;
   return (
     <div className="um-detail-root">
       <style>{css}</style>
@@ -3595,7 +3421,7 @@ function DetailUserView({
             <div className="um-detail-item">
               <span className="um-detail-label">NIP</span>
               <span className="um-detail-val">
-                <code>{user.nip || "—"}</code>
+                <code>{user.nip || "ΓÇö"}</code>
               </span>
             </div>
             <div className="um-detail-item">
@@ -3610,7 +3436,7 @@ function DetailUserView({
             </div>
             <div className="um-detail-item">
               <span className="um-detail-label">No. Telepon</span>
-              <span className="um-detail-val">{user.phone || "—"}</span>
+              <span className="um-detail-val">{user.phone || "ΓÇö"}</span>
             </div>
             <div className="um-detail-item">
               <span className="um-detail-label">Entitas</span>
@@ -3627,7 +3453,7 @@ function DetailUserView({
             <div className="um-detail-item">
               <span className="um-detail-label">Divisi</span>
               <span className="um-detail-val">
-                {getDivisionName(user.division_code) || "—"}
+                {getDivisionName(user.division_code) || "ΓÇö"}
               </span>
             </div>
             <div className="um-detail-item">
@@ -3650,7 +3476,7 @@ function DetailUserView({
   );
 }
 
-// ─── RESET VIEW ───────────────────────────────────────────────
+// ΓöÇΓöÇΓöÇ RESET VIEW ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 function ResetPassView({ user, onBack }) {
   const [done, setDone] = useState(false);
   if (!user) return null;
@@ -3715,7 +3541,7 @@ function ResetPassView({ user, onBack }) {
   );
 }
 
-// ─── DELETE VIEW ──────────────────────────────────────────────
+// ΓöÇΓöÇΓöÇ DELETE VIEW ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 function DeleteUserView({ user, onBack, onConfirm }) {
   if (!user) return null;
   return (
@@ -3762,7 +3588,7 @@ function DeleteUserView({ user, onBack, onConfirm }) {
   );
 }
 
-// ─── DROPDOWN COMPONENT ───────────────────────────────────────
+// ΓöÇΓöÇΓöÇ DROPDOWN COMPONENT ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 function ActionDropdown({ user, onDetail, onEdit, onReset, onDelete }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -3828,11 +3654,12 @@ function ActionDropdown({ user, onDetail, onEdit, onReset, onDelete }) {
   );
 }
 
-// ─── MAIN COMPONENT ───────────────────────────────────────────
+
+// --- MAIN COMPONENT ---
 const USERS_PER_PAGE = 5;
 
 const UserManagement = () => {
-  const [users, setUsers] = useState(mockUsers);
+  const [users, setUsers] = useState([]);
   const [logs, setLogs] = useState(mockLogs);
   const logIdRef = useRef(mockLogs.length + 1);
 
@@ -3844,18 +3671,20 @@ const UserManagement = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [entRes, brRes, divRes, roleRes] = await Promise.all([
+        const [entRes, brRes, divRes, roleRes, userRes] = await Promise.all([
           masterDataAPI.getEntities(),
           masterDataAPI.getBranches(),
           masterDataAPI.getDivisions(),
           masterDataAPI.getRoles(),
+          userAPI.getAll(),
         ]);
         if (entRes.data?.success) setEntityList(entRes.data.data);
         if (brRes.data?.success) setBranchList(brRes.data.data);
         if (divRes.data?.success) setDivisionList(divRes.data.data);
         if (roleRes.data?.success) setRoleList(roleRes.data.data);
+        if (userRes.data?.success) setUsers(userRes.data.data);
       } catch (err) {
-        console.error("Gagal mengambil master data", err);
+        console.error("Gagal mengambil data", err);
       }
     };
     fetchData();
@@ -3904,39 +3733,18 @@ const UserManagement = () => {
 
   React.useEffect(() => {
     setUserPage(1);
-  }, [
-    search,
-    filterRole,
-    filterEntity,
-    filterBranch,
-    filterDivision,
-    filterStatus,
-  ]);
+  }, [search, filterRole, filterEntity, filterBranch, filterDivision, filterStatus]);
 
   const recordActivity = useCallback(
-    ({
-      action_type,
-      table_name = "users",
-      record_id = null,
-      old_value = null,
-      new_value = null,
-    }) => {
+    ({ action_type, table_name = "users", record_id = null, old_value = null, new_value = null }) => {
       const entry = {
         log_id: logIdRef.current++,
         user_id: CURRENT_USER_ID,
         action_type,
         table_name,
         record_id,
-        old_value: old_value
-          ? typeof old_value === "string"
-            ? old_value
-            : JSON.stringify(old_value)
-          : null,
-        new_value: new_value
-          ? typeof new_value === "string"
-            ? new_value
-            : JSON.stringify(new_value)
-          : null,
+        old_value: old_value ? (typeof old_value === "string" ? old_value : JSON.stringify(old_value)) : null,
+        new_value: new_value ? (typeof new_value === "string" ? new_value : JSON.stringify(new_value)) : null,
         ip_address: CURRENT_USER_IP,
         created_at: new Date().toISOString(),
       };
@@ -3948,70 +3756,81 @@ const UserManagement = () => {
   const filtered = users.filter((u) => {
     const q = search.toLowerCase();
     return (
-      (u.name.toLowerCase().includes(q) ||
-        u.username.toLowerCase().includes(q) ||
-        u.email.toLowerCase().includes(q) ||
-        (u.nip && u.nip.includes(q))) &&
+      (u.name.toLowerCase().includes(q) || u.username.toLowerCase().includes(q) ||
+        u.email.toLowerCase().includes(q) || (u.nip && u.nip.includes(q))) &&
       (filterRole === "semua" || u.role_code === filterRole) &&
       (filterEntity === "semua" || u.entity_code === filterEntity) &&
       (filterBranch === "semua" || u.branch_code === filterBranch) &&
       (filterDivision === "semua" || u.division_code === filterDivision) &&
-      (filterStatus === "semua" ||
-        (filterStatus === "aktif" ? u.is_active : !u.is_active))
+      (filterStatus === "semua" || (filterStatus === "aktif" ? u.is_active : !u.is_active))
     );
   });
 
-  const userTotalPages = Math.max(
-    1,
-    Math.ceil(filtered.length / USERS_PER_PAGE),
-  );
-  const paginatedUsers = filtered.slice(
-    (userPage - 1) * USERS_PER_PAGE,
-    userPage * USERS_PER_PAGE,
-  );
+  const userTotalPages = Math.max(1, Math.ceil(filtered.length / USERS_PER_PAGE));
+  const paginatedUsers = filtered.slice((userPage - 1) * USERS_PER_PAGE, userPage * USERS_PER_PAGE);
 
   const stats = {
     total: users.length,
-    superadmin: users.filter((u) => u.role_code === "superadmin").length,
+    superadmin: users.filter((u) => u.role_code === "superadmin" || u.role_code === "admin").length,
     aktif: users.filter((u) => u.is_active).length,
     nonaktif: users.filter((u) => !u.is_active).length,
   };
 
-  const handleSave = (saved) => {
-    const existing = users.find((u) => u.id === saved.id);
-    if (existing) {
-      setUsers(users.map((u) => (u.id === saved.id ? saved : u)));
-      recordActivity({
-        action_type: "UPDATE_PROFILE",
-        table_name: "users",
-        record_id: saved.id,
-        old_value: { name: existing.name },
-        new_value: { name: saved.name },
-      });
-    } else {
-      setUsers([saved, ...users]);
-      recordActivity({
-        action_type: "REGISTER",
-        table_name: "users",
-        record_id: saved.id,
-        new_value: { username: saved.username, email: saved.email },
-      });
+  const handleSave = async (saved) => {
+    try {
+      const existing = users.find((u) => u.id === saved.id);
+      if (existing) {
+        const payload = {
+          name: saved.name, username: saved.username, email: saved.email,
+          phone: saved.phone, nip: saved.nip, role_code: saved.role_code,
+          entity_code: saved.entity_code, branch_code: saved.branch_code,
+          division_code: saved.division_code || null, is_active: saved.is_active,
+          ...(saved.password ? { password: saved.password } : {}),
+        };
+        const res = await userAPI.update(saved.id, payload);
+        if (res.data?.success) {
+          setUsers((prev) => prev.map((u) => (u.id === saved.id ? res.data.data : u)));
+          recordActivity({ action_type: "UPDATE_PROFILE", table_name: "users", record_id: saved.id, old_value: { name: existing.name }, new_value: { name: saved.name } });
+        }
+      } else {
+        const payload = {
+          name: saved.name, username: saved.username, email: saved.email,
+          password: saved.password, phone: saved.phone, nip: saved.nip,
+          role_code: saved.role_code, entity_code: saved.entity_code,
+          branch_code: saved.branch_code, division_code: saved.division_code || null,
+          is_active: saved.is_active,
+        };
+        const res = await userAPI.create(payload);
+        if (res.data?.success) {
+          setUsers((prev) => [res.data.data, ...prev]);
+          recordActivity({ action_type: "REGISTER", table_name: "users", record_id: res.data.data.id, new_value: { username: res.data.data.username, email: res.data.data.email } });
+        }
+      }
+    } catch (err) {
+      alert("Gagal menyimpan user: " + (err.response?.data?.message || err.message));
     }
   };
-  const handleDelete = (id) => {
-    const u = users.find((x) => x.id === id);
-    recordActivity({
-      action_type: "DELETE_ACCOUNT",
-      table_name: "users",
-      record_id: id,
-      old_value: { name: u?.name },
-    });
-    setUsers(users.filter((u) => u.id !== id));
+  const handleDelete = async (id) => {
+    try {
+      const u = users.find((x) => x.id === id);
+      const res = await userAPI.delete(id);
+      if (res.data?.success) {
+        recordActivity({ action_type: "DELETE_ACCOUNT", table_name: "users", record_id: id, old_value: { name: u?.name } });
+        setUsers((prev) => prev.filter((u) => u.id !== id));
+      }
+    } catch (err) {
+      alert("Gagal menghapus user: " + (err.response?.data?.message || err.message));
+    }
   };
-  const handleToggle = (id) => {
-    setUsers(
-      users.map((u) => (u.id === id ? { ...u, is_active: !u.is_active } : u)),
-    );
+  const handleToggle = async (id) => {
+    try {
+      const res = await userAPI.toggleStatus(id);
+      if (res.data?.success) {
+        setUsers((prev) => prev.map((u) => (u.id === id ? res.data.data : u)));
+      }
+    } catch (err) {
+      alert("Gagal mengubah status user: " + (err.response?.data?.message || err.message));
+    }
   };
 
   const goDetail = (u) => {
@@ -4164,7 +3983,7 @@ const UserManagement = () => {
             onChange={(e) => setFilterRole(e.target.value)}
           >
             <option value="semua">Semua Role</option>
-            <option value="superadmin">Super Admin</option>
+            <option value="admin">Administrator</option>
             <option value="user">User</option>
           </select>
         </div>
@@ -4282,13 +4101,14 @@ const UserManagement = () => {
               </tr>
             ) : (
               paginatedUsers.map((u) => {
-                const rc = roleConfig[u.role_code];
+                const rc = roleConfig[u.role_code] || roleConfig.user;
+                const isAdmin = u.role_code === "superadmin" || u.role_code === "admin";
                 return (
                   <tr key={u.id}>
                     <td>
                       <div className="um-user-cell">
                         <div
-                          className={`um-avatar um-avatar--${u.role_code === "superadmin" ? "purple" : "blue"}`}
+                          className={`um-avatar um-avatar--${isAdmin ? "purple" : "blue"}`}
                         >
                           {getInitials(u.name)}
                         </div>

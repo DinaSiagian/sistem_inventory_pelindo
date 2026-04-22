@@ -70,4 +70,17 @@ export const masterDataAPI = {
   deleteRole: (code) => api.delete(`/master-data/roles/${code}`),
 };
 
+export const userAPI = {
+  getAll:       ()         => api.get('/users'),
+  getById:      (id)       => api.get(`/users/${id}`),
+  create:       (data)     => api.post('/users', data),
+  update:       (id, data) => api.put(`/users/${id}`, data),
+  delete:       (id)       => api.delete(`/users/${id}`),
+  toggleStatus: (id)       => api.patch(`/users/${id}/toggle-status`),
+};
+
+export const logAPI = {
+  getAll: () => api.get('/logs'),
+};
+
 export default api;

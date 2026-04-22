@@ -33,20 +33,33 @@ const UserLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const currentUser = JSON.parse(sessionStorage.getItem("currentUser") || "{}");
+  const [user, setUser] = useState(() => {
+    const saved = localStorage.getItem("user");
+    return saved ? JSON.parse(saved) : null;
+  });
+
+  const getInitials = (name) => {
+    if (!name) return "U";
+    const parts = name.split(" ");
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return name.slice(0, 2).toUpperCase();
+  };
+
+  const getRoleLabel = (roleCode) => {
+    const roles = {
+      admin: "Administrator",
+      user: "User / Pegawai",
+    };
+    return roles[roleCode] || roleCode;
+  };
 
   // Fleksibel: support id = 1 (number), "1" (string), atau "u001" (string)
-  const rawId = String(currentUser.id ?? "");
+  const rawId = String(user?.id ?? "");
   const userId = rawId.startsWith("u")
-    ? rawId // sudah "u001"
-    : `u00${rawId}`; // "1" → "u001", "2" → "u002"
+    ? rawId
+    : `u00${rawId}`;
 
-  const userInitials = (currentUser.nama || "U")
-    .split(" ")
-    .map((w) => w[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  const userInitials = getInitials(user?.name);
 
   // ✅ Pakai hook yang sama dengan LoanAlertPopup
   const { urgentLoans, badgeCount, badgeLevel } = useLoanNotifications(
@@ -90,7 +103,8 @@ const UserLayout = () => {
 
   const handleLogout = () => {
     if (window.confirm("Apakah Anda yakin ingin keluar?")) {
-      sessionStorage.removeItem("currentUser");
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
       navigate("/");
     }
   };
@@ -273,10 +287,10 @@ const UserLayout = () => {
               <div className="user-profile">
                 <div className="user-info">
                   <span className="user-name">
-                    {currentUser.nama || "User"}
+                    {user?.name || "User"}
                   </span>
                   <span className="user-role">
-                    {currentUser.cabang || "Pegawai"}
+                    {getRoleLabel(user?.role_code)}
                   </span>
                 </div>
                 <div className="user-avatar">{userInitials}</div>

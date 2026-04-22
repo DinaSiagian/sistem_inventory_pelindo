@@ -121,18 +121,22 @@ const Ico = ({ n, s = 18, c }) => {
 
 export default function Dashboard() {
   const navigate = useNavigate(); // ← React Router, bukan props
+  const [user] = useState(() => JSON.parse(localStorage.getItem("user") || "null"));
   const [loans, setLoans] = useState(transactionsMock);
   const [selectedAsset, setSelectedAsset] = useState(null);
   const [borrowAsset, setBorrowAsset] = useState(null);
 
+  // Gunakan ID user yang sedang login jika ada, fallback ke u001 untuk demo data
+  const activeUserId = user?.id || "u001";
+
   const myLoans = loans.filter(
-    (t) => t.user_id === "u001" && t.status === "ACTIVE",
+    (t) => t.user_id === activeUserId && t.status === "ACTIVE",
   );
   const myReturned = loans.filter(
-    (t) => t.user_id === "u001" && t.status === "RETURNED",
+    (t) => t.user_id === activeUserId && t.status === "RETURNED",
   );
   const branchAssets = assetsMock.filter(
-    (a) => a.branch_code === currentUser.branch_code,
+    (a) => a.branch_code === (user?.branch_code || currentUser.branch_code),
   );
   const available = branchAssets.filter((a) => a.status === "AVAILABLE");
 
@@ -166,7 +170,7 @@ export default function Dashboard() {
     {
       label: "Total Aset Lokasi",
       value: branchAssets.length,
-      sub: currentUser.branch_name,
+      sub: user?.branch_name || currentUser.branch_name,
       icon: "building",
       color: "purple",
     },
@@ -178,10 +182,10 @@ export default function Dashboard() {
       <div className="dash-greeting">
         <div>
           <h1 className="dash-greeting-title">
-            Halo, {currentUser.name.split(" ")[0]}! 👋
+            Halo, {user?.name?.split(" ")[0] || "User"}! 👋
           </h1>
           <p className="dash-greeting-sub">
-            Selamat datang di sistem manajemen aset {currentUser.branch_name}.
+            Selamat datang di sistem manajemen aset {user?.branch_name || currentUser.branch_name}.
           </p>
         </div>
         <div className="dash-date-chip">

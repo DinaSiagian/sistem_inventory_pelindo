@@ -106,13 +106,39 @@ const Layout = () => {
   }, [navigate]);
 
   const handleLogout = () => {
-    if (window.confirm("Apakah Anda yakin ingin keluar?")) navigate("/");
+    if (window.confirm("Apakah Anda yakin ingin keluar?")) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      navigate("/");
+    }
   };
 
   const handleMenuClick = (path) => {
     if (location.pathname === path) {
       setResetKey((prevKey) => prevKey + 1);
     }
+  };
+
+  // --- Get User Data ---
+  const [user, setUser] = useState(() => {
+    const saved = localStorage.getItem("user");
+    return saved ? JSON.parse(saved) : null;
+  });
+
+  const getInitials = (name) => {
+    if (!name) return "U";
+    const parts = name.split(" ");
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return name.slice(0, 2).toUpperCase();
+  };
+
+  const getRoleLabel = (roleCode) => {
+    const roles = {
+      admin: "Administrator",
+      superadmin: "Administrator", // support both naming conventions
+      user: "User / Pegawai",
+    };
+    return roles[roleCode] || roleCode;
   };
 
   return (
@@ -241,10 +267,10 @@ const Layout = () => {
           <div className="topbar-right">
             <div className="user-profile">
               <div className="user-info">
-                <span className="user-name">Joy Silalahi</span>
-                <span className="user-role">Super Admin</span>
+                <span className="user-name">{user?.name || "Guest"}</span>
+                <span className="user-role">{getRoleLabel(user?.role_code)}</span>
               </div>
-              <div className="user-avatar">JS</div>
+              <div className="user-avatar">{getInitials(user?.name)}</div>
             </div>
           </div>
         </header>
