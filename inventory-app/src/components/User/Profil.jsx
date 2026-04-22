@@ -1,8 +1,9 @@
 // ============================================================
 // Profil.jsx — full-screen layout
 // ============================================================
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./Profil.css";
+import { authAPI, userAPI } from "../../services/api";
 
 const Ico = ({ n, s = 18, c }) => {
   const paths = {
@@ -122,19 +123,7 @@ const Ico = ({ n, s = 18, c }) => {
   );
 };
 
-// Daftar pilihan divisi
-const DIVISI_OPTIONS = [
-  "Teknologi Informasi",
-  "Keuangan & Akuntansi",
-  "Sumber Daya Manusia",
-  "Operasional Terminal",
-  "Pemasaran & Bisnis",
-  "Hukum & Kepatuhan",
-  "Pengadaan & Logistik",
-  "Manajemen Risiko",
-  "Perencanaan & Strategi",
-  "Keselamatan & Keamanan",
-];
+
 
 function Toast({ msg, type }) {
   if (!msg) return null;
@@ -178,16 +167,18 @@ function PwField({ label, name, form, setForm, show, setShow, error }) {
 }
 
 export default function Profil() {
-  const sessionUser = JSON.parse(sessionStorage.getItem("currentUser") || "{}");
+  const [userData, setUserData] = useState(() =>
+    JSON.parse(localStorage.getItem("user") || "{}"),
+  );
 
   const [activeTab, setActiveTab] = useState("info");
   const [form, setForm] = useState({
-    nama: sessionUser.nama || "",
-    email: sessionUser.email || "",
-    telepon: sessionUser.telepon || "",
-    // ── field baru divisi ──
-    divisi: sessionUser.divisi || "",
+    nama: userData.name || userData.nama || "",
+    email: userData.email || "",
+    telepon: userData.phone || userData.telepon || "",
+    divisi: userData.division_code || userData.divisi || "",
   });
+
   const [editMode, setEditMode] = useState(false);
   const [pwForm, setPwForm] = useState({ old: "", new_: "", confirm: "" });
   const [showOld, setShowOld] = useState(false);
@@ -195,32 +186,97 @@ export default function Profil() {
   const [showCfm, setShowCfm] = useState(false);
   const [pwErrors, setPwErrors] = useState({});
   const [toast, setToast] = useState({ msg: "", type: "success" });
+  const [allDivisions, setAllDivisions] = useState([]);
+
+  useEffect(() => {
+    fetchUserData();
+    fetchMasterData();
+  }, []);
+
+  const fetchUserData = async () => {
+    try {
+      const res = await authAPI.getMe();
+      if (res.data?.success) {
+        const u = res.data.data;
+        setUserData(u);
+        localStorage.setItem("user", JSON.stringify(u));
+        setForm({
+          nama: u.name || "",
+          email: u.email || "",
+          telepon: u.phone || "",
+          divisi: u.division_code || "",
+        });
+      }
+    } catch (err) {
+      console.error("Gagal fetch profile:", err);
+    }
+  };
+
+  const fetchMasterData = async () => {
+    try {
+      const res = await authAPI.getMasterData();
+      if (res.data?.success) {
+        const divisions = [];
+        res.data.data.entities?.forEach((ent) => {
+          ent.branches?.forEach((br) => {
+            br.divisions?.forEach((div) => {
+              if (!divisions.find((d) => d.division_code === div.division_code)) {
+                divisions.push(div);
+              }
+            });
+          });
+        });
+        setAllDivisions(divisions);
+      }
+    } catch (err) {
+      console.warn("Gagal load master data untuk profil:", err);
+    }
+  };
 
   const showToast = (msg, type = "success") => {
     setToast({ msg, type });
     setTimeout(() => setToast({ msg: "", type: "success" }), 3000);
   };
 
-  const handleSave = () => {
-    sessionStorage.setItem(
-      "currentUser",
-      JSON.stringify({ ...sessionUser, ...form }),
-    );
-    setEditMode(false);
-    showToast("Profil berhasil diperbarui!");
+  const handleSave = async () => {
+    try {
+      const res = await userAPI.update(userData.id, {
+        name: form.nama,
+        email: form.email,
+        phone: form.telepon,
+        division_code: form.divisi || null,
+        // Kirim code yang ada agar tetap konsisten
+        role_code: userData.role_code,
+        entity_code: userData.entity_code,
+        branch_code: userData.branch_code || userData.branches_code,
+      });
+
+      if (res.data?.success) {
+        const updatedUser = res.data.data;
+        setUserData(updatedUser);
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        setEditMode(false);
+        showToast("Profil berhasil diperbarui ke database!");
+        fetchUserData(); // Refresh to get relations correctly
+      }
+    } catch (err) {
+      console.error("Update profile error:", err.response?.data || err.message);
+      const errorMsg = err.response?.data?.message || "Gagal memperbarui profil ke database";
+      showToast(errorMsg, "error");
+    }
   };
 
   const handleCancel = () => {
     setForm({
-      nama: sessionUser.nama || "",
-      email: sessionUser.email || "",
-      telepon: sessionUser.telepon || "",
-      divisi: sessionUser.divisi || "",
+      nama: userData.name || userData.nama || "",
+      email: userData.email || "",
+      telepon: userData.phone || userData.telepon || "",
+      divisi: userData.division_code || userData.divisi || "",
     });
     setEditMode(false);
   };
 
-  const handleSavePw = () => {
+  const handleSavePw = async () => {
     const e = {};
     if (!pwForm.old) e.old = "Password lama wajib diisi";
     if (!pwForm.new_) e.new_ = "Password baru wajib diisi";
@@ -230,9 +286,21 @@ export default function Profil() {
       setPwErrors(e);
       return;
     }
-    setPwErrors({});
-    setPwForm({ old: "", new_: "", confirm: "" });
-    showToast("Password berhasil diubah!");
+
+    try {
+      const res = await userAPI.update(userData.id, {
+        password: pwForm.new_,
+      });
+      if (res.data?.success) {
+        setPwErrors({});
+        setPwForm({ old: "", new_: "", confirm: "" });
+        showToast("Password berhasil diperbarui di database!");
+      }
+    } catch (err) {
+      console.error("Ganti password error:", err.response?.data || err.message);
+      const errorMsg = err.response?.data?.message || "Gagal mengganti password";
+      showToast(errorMsg, "error");
+    }
   };
 
   const initials = form.nama
@@ -243,7 +311,7 @@ export default function Profil() {
         .slice(0, 2)
         .toUpperCase()
     : "U";
-  const roleLabel = sessionUser.role === "admin" ? "Admin" : "User";
+  const roleLabel = userData.role?.name || (userData.role_code === "admin" ? "Admin" : "User");
 
   // ── Info fields — divisi masuk di antara telepon & entitas ──
   const fields = [
@@ -259,7 +327,7 @@ export default function Profil() {
       icon: "id",
       label: "NIP",
       key: "nip",
-      val: sessionUser.nip || "—",
+      val: userData.nip || "—",
       editable: false,
       type: "text",
     },
@@ -267,7 +335,7 @@ export default function Profil() {
       icon: "user",
       label: "Username",
       key: "username",
-      val: sessionUser.username || "—",
+      val: userData.username || "—",
       editable: false,
       type: "text",
     },
@@ -291,7 +359,7 @@ export default function Profil() {
       icon: "layers",
       label: "Divisi",
       key: "divisi",
-      val: form.divisi || "—",
+      val: allDivisions.find(d => d.division_code === form.divisi)?.name || form.divisi || "—",
       editable: true,
       type: "select",
     },
@@ -299,7 +367,7 @@ export default function Profil() {
       icon: "building",
       label: "Entitas",
       key: "entitas",
-      val: sessionUser.entitas || "—",
+      val: userData.entity?.name || userData.entitas || "—",
       editable: false,
       type: "text",
     },
@@ -307,7 +375,7 @@ export default function Profil() {
       icon: "building",
       label: "Cabang",
       key: "cabang",
-      val: sessionUser.cabang || "—",
+      val: userData.branch?.name || userData.cabang || "—",
       editable: false,
       type: "text",
     },
@@ -386,14 +454,14 @@ export default function Profil() {
               {
                 icon: "building",
                 label: "Entitas",
-                val: sessionUser.entitas || "—",
+                val: userData.entity?.name || userData.entitas || "—",
               },
               {
                 icon: "building",
                 label: "Cabang",
-                val: sessionUser.cabang || "—",
+                val: userData.branch?.name || userData.cabang || "—",
               },
-              { icon: "id", label: "NIP", val: sessionUser.nip || "—" },
+              { icon: "id", label: "NIP", val: userData.nip || "—" },
               { icon: "shield", label: "Role", val: roleLabel },
             ].map((r) => (
               <div key={r.label} className="p-sidebar-row">
@@ -477,9 +545,9 @@ export default function Profil() {
                           }
                         >
                           <option value="">— Pilih Divisi —</option>
-                          {DIVISI_OPTIONS.map((d) => (
-                            <option key={d} value={d}>
-                              {d}
+                          {allDivisions.map((d) => (
+                            <option key={d.division_code} value={d.division_code}>
+                              {d.name}
                             </option>
                           ))}
                         </select>
