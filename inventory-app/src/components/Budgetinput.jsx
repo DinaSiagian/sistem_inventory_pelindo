@@ -3961,7 +3961,7 @@ function OpexModule({ masterList, setMasterList }) {
                   <option value="">— Pilih Anggaran Master —</option>
                   {masters.map((m) => (
                     <option key={m.id} value={m.nama}>
-                      {m.nama}
+                      {m.nama} - {m.kd}
                     </option>
                   ))}
                 </select>
