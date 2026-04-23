@@ -1344,16 +1344,18 @@ function RealisasiSection({ master, setMasters, toast_ }) {
       msg: "Hapus data anggaran tahunan ini?",
       onConfirm: () => {
         setMasters((prev) =>
-          prev.map((m) =>
-            m.id === master.id
-              ? {
-                ...m,
-                realisasi_tahunan: (m.realisasi_tahunan || []).filter(
-                  (r) => r.id !== rowId,
-                ),
-              }
-              : m,
-          ),
+          prev.map((m) => {
+            if (m.id !== master.id) return m;
+            const rowToDelete = (m.realisasi_tahunan || []).find((r) => r.id === rowId);
+            const amountToDeduct = rowToDelete ? (parseFloat(rowToDelete.realisasi_murni) || 0) : 0;
+            return {
+              ...m,
+              nilai_anggaran: Math.max(0, (parseFloat(m.nilai_anggaran) || 0) - amountToDeduct),
+              realisasi_tahunan: (m.realisasi_tahunan || []).filter(
+                (r) => r.id !== rowId,
+              ),
+            };
+          })
         );
         setConfirm(null);
         toast_("Data anggaran dihapus.");
@@ -3309,17 +3311,22 @@ function OpexMasterListPage({ masters, onBack, onAdd, onEdit, onDelete }) {
                             style={{
                               ...S.abtn,
                               padding: "6px 10px",
-                              background: "#fef2f2",
-                              borderColor: "#fecaca",
+                              background: m.nilai_anggaran > 0 ? "#f1f5f9" : "#fef2f2",
+                              borderColor: m.nilai_anggaran > 0 ? "#e2e8f0" : "#fecaca",
+                              cursor: m.nilai_anggaran > 0 ? "not-allowed" : "pointer",
+                              opacity: m.nilai_anggaran > 0 ? 0.5 : 1,
                             }}
                             onClick={() => {
+                              if (m.nilai_anggaran > 0) return;
                               if (isBeingEdited) handleCancelEdit();
                               onDelete(m.id);
                             }}
+                            disabled={m.nilai_anggaran > 0}
+                            title={m.nilai_anggaran > 0 ? "Tidak dapat dihapus (sudah ada anggaran)" : "Hapus"}
                           >
                             <Trash2
                               size={13}
-                              style={{ color: "#ef4444" }}
+                              style={{ color: m.nilai_anggaran > 0 ? "#94a3b8" : "#ef4444" }}
                             />
                           </button>
                         </div>
@@ -4770,14 +4777,21 @@ function OpexModule({ masterList, setMasterList }) {
                                   style={{
                                     ...S.abtn,
                                     padding: "6px 10px",
-                                    background: "#fef2f2",
-                                    borderColor: "#fecaca",
+                                    background: m.nilai_anggaran > 0 ? "#f1f5f9" : "#fef2f2",
+                                    borderColor: m.nilai_anggaran > 0 ? "#e2e8f0" : "#fecaca",
+                                    cursor: m.nilai_anggaran > 0 ? "not-allowed" : "pointer",
+                                    opacity: m.nilai_anggaran > 0 ? 0.5 : 1,
                                   }}
-                                  onClick={() => handleDeleteMaster(m.id)}
+                                  onClick={() => {
+                                    if (m.nilai_anggaran > 0) return;
+                                    handleDeleteMaster(m.id);
+                                  }}
+                                  disabled={m.nilai_anggaran > 0}
+                                  title={m.nilai_anggaran > 0 ? "Tidak dapat dihapus (sudah ada anggaran)" : "Hapus"}
                                 >
                                   <Trash2
                                     size={13}
-                                    style={{ color: "#ef4444" }}
+                                    style={{ color: m.nilai_anggaran > 0 ? "#94a3b8" : "#ef4444" }}
                                   />
                                 </button>
                               </div>
