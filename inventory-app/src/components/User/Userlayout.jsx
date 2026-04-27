@@ -19,7 +19,7 @@ import "./Shared.css";
 import logoPelindo from "../../pictures/pelindo2.png";
 import batikImg from "../../pictures/batik.png";
 
-import { transactionsMock, assetsMock, fmt } from "./Data";
+import { transactionsMock, assetsMock, fmt } from "../Data";
 import { useLoanNotifications } from "./useLoanNotifications";
 import LoanAlertPopup from "./LoanAlertPopup";
 
@@ -40,9 +40,10 @@ const UserLayout = () => {
 
   const getInitials = (name) => {
     if (!name) return "U";
-    const parts = name.split(" ");
+    const strName = String(name);
+    const parts = strName.split(" ");
     if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
-    return name.slice(0, 2).toUpperCase();
+    return strName.slice(0, 2).toUpperCase();
   };
 
   const getRoleLabel = (roleCode) => {
@@ -63,7 +64,7 @@ const UserLayout = () => {
 
   // ✅ Pakai hook yang sama dengan LoanAlertPopup
   const { urgentLoans, badgeCount, badgeLevel } = useLoanNotifications(
-    transactionsMock,
+    transactionsMock || [],
     userId,
   );
 
@@ -284,11 +285,13 @@ const UserLayout = () => {
                 </button>
               )}
 
-              <div className="user-profile">
+              <div
+                className="user-profile"
+                onClick={() => navigate("/user/profil")}
+                style={{ cursor: "pointer" }}
+              >
                 <div className="user-info">
-                  <span className="user-name">
-                    {user?.name || "User"}
-                  </span>
+                  <span className="user-name">{user?.name || "User"}</span>
                   <span className="user-role">
                     {getRoleLabel(user?.role_code)}
                   </span>

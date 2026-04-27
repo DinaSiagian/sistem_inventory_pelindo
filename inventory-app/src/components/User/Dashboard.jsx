@@ -130,13 +130,13 @@ export default function Dashboard() {
   const activeUserId = user?.id || "u001";
 
   const myLoans = loans.filter(
-    (t) => t.user_id === activeUserId && t.status === "ACTIVE",
+    (t) => t.user_id == activeUserId && t.status === "ACTIVE",
   );
   const myReturned = loans.filter(
-    (t) => t.user_id === activeUserId && t.status === "RETURNED",
+    (t) => t.user_id == activeUserId && t.status === "RETURNED",
   );
   const branchAssets = assetsMock.filter(
-    (a) => a.branch_code === (user?.branch_code || currentUser.branch_code),
+    (a) => a.branch_code === (user?.branches_code || user?.branch_code || currentUser.branch_code),
   );
   const available = branchAssets.filter((a) => a.status === "AVAILABLE");
 
@@ -170,7 +170,7 @@ export default function Dashboard() {
     {
       label: "Total Aset Lokasi",
       value: branchAssets.length,
-      sub: user?.branch_name || currentUser.branch_name,
+      sub: user?.branch?.name || user?.branch_name || currentUser.branch_name,
       icon: "building",
       color: "purple",
     },
@@ -185,7 +185,7 @@ export default function Dashboard() {
             Halo, {user?.name?.split(" ")[0] || "User"}! 👋
           </h1>
           <p className="dash-greeting-sub">
-            Selamat datang di sistem manajemen aset {user?.branch_name || currentUser.branch_name}.
+            Selamat datang di sistem manajemen aset {user?.branch?.name || user?.branch_name || currentUser.branch_name}.
           </p>
         </div>
         <div className="dash-date-chip">

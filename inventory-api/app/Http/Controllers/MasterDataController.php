@@ -630,11 +630,13 @@ class MasterDataController extends Controller
     {
         try {
             // Ambil entities dengan nested branches & divisions
+            // Kita tidak memfilter entity by is_active di sini agar dropdown registrasi tetap aman 
+            // jika ada entity lama yang belum diupdate kolom is_active-nya
             $entities = Entity::with([
                 'branches' => function($query) {
                     $query->with('divisions')->where('is_active', true);
                 }
-            ])->where('is_active', true)->get();
+            ])->get();
             
             // Ambil roles
             $roles = \App\Models\Role::select('role_code', 'name')->where('is_active', true)->get();
@@ -652,7 +654,11 @@ class MasterDataController extends Controller
             Log::error('Get Master Data Error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengambil master data'
+                'message' => 'Gagal mengambil master data: ' . $e->getMessage(),
+                'data' => [
+                    'entities' => [],
+                    'roles' => []
+                ]
             ], 500);
         }
     }

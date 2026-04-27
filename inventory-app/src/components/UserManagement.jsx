@@ -2754,23 +2754,37 @@ function UserFormView({
     if (!form.entity_code) e.entity_code = "Wajib dipilih";
     if (!form.branch_code) e.branch_code = "Wajib dipilih";
     if (!form.division_code) e.division_code = "Wajib dipilih";
-    if (!isEdit && !form.password) e.password = "Wajib diisi";
-    if (form.password && form.password.length < 8)
-      e.password = "Minimal 8 karakter";
-    if (form.password && form.password !== form.confirm_password)
-      e.confirm_password = "Password tidak cocok";
+    if (!isEdit) {
+      if (!form.password) e.password = "Wajib diisi";
+      if (form.password && form.password.length < 8)
+        e.password = "Minimal 8 karakter";
+      if (form.password !== form.confirm_password)
+        e.confirm_password = "Password tidak cocok";
+    } else {
+      // Edit mode: Only validate if confirm_password is filled (user intent to change)
+      if (form.confirm_password) {
+        if (form.password.length < 8) e.password = "Minimal 8 karakter";
+        if (form.password !== form.confirm_password)
+          e.confirm_password = "Password tidak cocok";
+      }
+    }
     setErrors(e);
     return Object.keys(e).length === 0;
   };
   const handleSave = () => {
     if (!validate()) return;
-    onSave({
+    const dataToSave = {
       ...user,
       ...form,
       id: user?.id || Date.now(),
       created_at: user?.created_at || new Date().toISOString().split("T")[0],
       last_login: user?.last_login || "—",
-    });
+    };
+    // Jika sedang edit dan konfirmasi password kosong, jangan kirim password (abaikan auto-fill)
+    if (isEdit && !form.confirm_password) {
+      delete dataToSave.password;
+    }
+    onSave(dataToSave);
     onBack();
   };
   return (
@@ -3002,6 +3016,7 @@ function UserFormView({
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
                 placeholder="Min. 8 karakter"
                 className={errors.password ? "um-input-error" : ""}
+                autoComplete="new-password"
               />
               <button
                 type="button"
@@ -3029,6 +3044,7 @@ function UserFormView({
                 }
                 placeholder="Ulangi password"
                 className={errors.confirm_password ? "um-input-error" : ""}
+                autoComplete="new-password"
               />
               <button
                 type="button"
