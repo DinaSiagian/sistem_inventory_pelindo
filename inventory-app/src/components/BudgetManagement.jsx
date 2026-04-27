@@ -210,6 +210,47 @@ const SN_DB = {
   "HIK-D2M-002": "SPMT-MLH-SCT-CCTV-02",
   "HIK-D2M-003": "SPMT-TBK-SCT-CCTV-01",
 };
+const ENTITAS_LIST = [
+  { name: "Pelindo Multi Terminal", code: "SPMT" },
+  { name: "PT Pelabuhan Indonesia", code: "PTP" },
+  { name: "Indonesia Kendaraan Terminal", code: "IKT" },
+];
+const BRANCH_BY_ENTITY = {
+  SPMT: [
+    { name: "Belawan", code: "BLW" },
+    { name: "Gresik", code: "GRK" },
+    { name: "Lembar Badas", code: "LBR" },
+    { name: "Tanjung Intan", code: "TJI" },
+    { name: "Dumai", code: "DMI" },
+    { name: "Sibolga", code: "SBG" },
+    { name: "Malahayati", code: "MLH" },
+    { name: "Lhokseumawe", code: "LHK" },
+    { name: "Tanjung Emas", code: "TJE" },
+    { name: "Balikpapan", code: "BLP" },
+    { name: "Makassar", code: "MKS" },
+    { name: "Trisakti", code: "BJM" },
+  ],
+  PTP: [
+    { name: "Banten", code: "BTN" },
+    { name: "Tanjung Priok", code: "TJP" },
+    { name: "Teluk Bayur", code: "TBR" },
+    { name: "Palembang", code: "PLB" },
+    { name: "Jambi", code: "JMB" },
+  ],
+  IKT: [{ name: "Jakarta", code: "JKT" }],
+};
+const ZONA_LIST = [
+  { name: "Gedung", code: "GDG" },
+  { name: "Lapangan", code: "LPG" },
+  { name: "Data Center", code: "DTC" },
+  { name: "Gudang", code: "GDN" },
+];
+const SUBZONA_LIST = [
+  { name: "Dermaga", code: "DMG" },
+  { name: "Parkir", code: "PKR" },
+  { name: "Jalan", code: "JLN" },
+  { name: "Taman/Parkir", code: "TPK" },
+];
 const BUDGET_MASTERS = [
   {
     kd_anggaran_master: "5030905000",
@@ -1012,6 +1053,122 @@ function Pagination({ total, page, onPage, label }) {
     </div>
   );
 }
+function SmartLocationInput({ value, onChange, placeholder = "Pilih Branch / Zona / Subzona" }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const wrapperRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const valStr = value || "";
+  const parts = valStr.split(" / ");
+  const currentPartIdx = parts.length - 1;
+  const currentText = (parts[currentPartIdx] || "").trim();
+
+  let options = [];
+  let stepLabel = "";
+  if (currentPartIdx === 0) {
+    options = Object.values(BRANCH_BY_ENTITY).flat().map(b => b.name);
+    stepLabel = "Pilih Branch";
+  } else if (currentPartIdx === 1) {
+    options = ZONA_LIST.map(z => z.name);
+    stepLabel = "Pilih Zona";
+  } else if (currentPartIdx === 2) {
+    options = SUBZONA_LIST.map(s => s.name);
+    stepLabel = "Pilih Subzona";
+  }
+
+  const filteredOptions = options.filter(o => o.toLowerCase().includes(currentText.toLowerCase()));
+
+  const handleSelect = (opt) => {
+    const newParts = [...parts];
+    newParts[currentPartIdx] = opt;
+    const nextVal = newParts.join(" / ") + (currentPartIdx < 2 ? " / " : "");
+    onChange(nextVal);
+    if (currentPartIdx >= 2) setIsOpen(false);
+  };
+
+  return (
+    <div ref={wrapperRef} style={{ position: "relative", width: "100%" }}>
+      <input
+        value={valStr}
+        onChange={(e) => {
+          onChange(e.target.value);
+          setIsOpen(true);
+        }}
+        onFocus={() => setIsOpen(true)}
+        placeholder={placeholder}
+        style={{
+          width: "100%",
+          padding: "8px 12px",
+          border: "1px solid #cbd5e1",
+          borderRadius: 8,
+          fontSize: "0.8rem",
+          background: "#fcfdfe",
+          color: "#111827",
+          fontWeight: 500,
+          outline: "none",
+          transition: "all 0.2s"
+        }}
+        onFocusCapture={(e) => {
+          e.target.style.borderColor = "var(--blue)";
+          e.target.style.boxShadow = "0 0 0 3px rgba(37,99,235,0.1)";
+        }}
+        onBlurCapture={(e) => {
+          e.target.style.borderColor = "#cbd5e1";
+          e.target.style.boxShadow = "none";
+        }}
+      />
+      {isOpen && filteredOptions.length > 0 && currentPartIdx <= 2 && (
+        <div style={{
+          position: "absolute",
+          top: "100%",
+          left: 0,
+          right: 0,
+          background: "white",
+          border: "1px solid #e2e8f0",
+          borderRadius: 12,
+          marginTop: 6,
+          zIndex: 100,
+          boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+          maxHeight: 220,
+          overflowY: "auto",
+          animation: "slideDown 0.2s ease-out"
+        }}>
+          <div style={{ padding: "8px 12px", fontSize: "0.65rem", fontWeight: 800, color: "#64748b", background: "#f8fafc", borderBottom: "1px solid #e2e8f0", textTransform: "uppercase", position: "sticky", top: 0, zIndex: 2 }}>
+            {stepLabel}
+          </div>
+          {filteredOptions.map((opt, i) => (
+            <div
+              key={i}
+              onClick={() => handleSelect(opt)}
+              style={{
+                padding: "10px 12px",
+                fontSize: "0.78rem",
+                color: "#334155",
+                cursor: "pointer",
+                borderBottom: i === filteredOptions.length - 1 ? "none" : "1px solid #f1f5f9",
+                transition: "background 0.2s"
+              }}
+              onMouseEnter={(e) => e.target.style.background = "var(--blue-lt)"}
+              onMouseLeave={(e) => e.target.style.background = "white"}
+            >
+              {opt}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Toast({ msg, onDone }) {
   useEffect(() => {
     const t = setTimeout(onDone, 2400);
@@ -1908,129 +2065,91 @@ function RealisasiTablePage({
 // ══════ REALISASI / ENTRY PAGE OPEX ══════
 function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
   const isEdit = !!editData;
-  // PERBAIKAN: Inisialisasi state robust & dynamic options agar auto-fill bekerja 100% di OPEX
+
   const [form, setForm] = useState(() => {
     if (isEdit && editData) {
       const code = editData.asset_code || "";
       const cat = editData.category || ASSET_DB[code]?.category || "";
       const mod = editData.model || ASSET_DB[code]?.model || "";
-      const loc = editData.location || ASSET_DB[code]?.location || "";
-      const sn =
-        editData.serial_number ||
-        Object.entries(SN_DB).find(([s, c]) => c === code)?.[0] ||
-        "";
+      const sn = editData.serial_number || Object.entries(SN_DB).find(([s, c]) => c === code)?.[0] || "";
       return {
         category: cat,
         model: mod,
-        asset_code: code,
-        serial_number: sn,
-        location: loc,
-        procurement_date: editData.procurement_date || editData.tanggal || "",
-        acquisition_value: String(
-          editData.acquisition_value ?? editData.jumlah ?? "",
-        ),
+        items: [{
+          serial_number: sn,
+          location: editData.location || [editData.branch, editData.zona, editData.subzona].filter(Boolean).join(" / "),
+          asset_code: code
+        }],
+        acquisition_value: String(editData.acquisition_value ?? editData.jumlah ?? ""),
       };
     }
-    return {
-      category: "",
-      model: "",
-      asset_code: "",
-      serial_number: "",
-      location: "",
-      procurement_date: "",
-      acquisition_value: "",
-    };
+    return { category: "", model: "", items: [], acquisition_value: "" };
   });
+
   const up = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+
   const handleCat = (cat) => {
     up("category", cat);
     up("model", "");
-    up("asset_code", "");
-    up("serial_number", "");
-    up("location", "");
+    up("items", []);
   };
   const handleMod = (mod) => {
     up("model", mod);
-    up("asset_code", "");
-    up("serial_number", "");
-    up("location", "");
+    up("items", []);
   };
-  const handleCode = (code) => {
-    up("asset_code", code);
-    if (code && ASSET_DB[code]) {
-      up("location", ASSET_DB[code].location || "");
-      up(
-        "serial_number",
-        Object.entries(SN_DB).find(([s, c]) => c === code)?.[0] || "",
-      );
-    } else {
-      up("location", "");
-      up("serial_number", "");
+
+  const availCats = Array.from(new Set(Object.values(ASSET_DB).map(x => x.category).filter(Boolean)));
+  const availMods = form.category ? Array.from(new Set(Object.values(ASSET_DB).filter(x => x.category === form.category).map(x => x.model))).filter(Boolean) : [];
+  const availCodes = form.category && form.model ? Object.keys(ASSET_DB).filter(c => ASSET_DB[c].category === form.category && ASSET_DB[c].model === form.model) : [];
+  const availSNs = Object.entries(SN_DB).filter(([sn, code]) => availCodes.includes(code)).map(([sn]) => sn);
+
+  const handleQtyChange = (qty) => {
+    const newItems = [...(form.items || [])];
+    while (newItems.length < qty) {
+      const idx = newItems.length;
+      newItems.push({ id: `new-${Date.now()}-${idx}`, serial_number: "", location: "", asset_code: "" });
     }
+    if (newItems.length > qty) newItems.length = qty;
+    up("items", newItems);
   };
-  // PERBAIKAN: Opsi dropdown menyertakan nilai form saat ini agar <select> bisa menampilkan value yang terisi otomatis
-  const availCats = Array.from(
-    new Set([...Object.values(ASSET_DB).map((x) => x.category), form.category]),
-  ).filter(Boolean);
-  const availMods = form.category
-    ? Array.from(
-      new Set([
-        ...Object.values(ASSET_DB)
-          .filter((x) => x.category === form.category)
-          .map((x) => x.model),
-        form.model,
-      ]),
-    ).filter(Boolean)
-    : [];
-  const availCodes =
-    form.category && form.model
-      ? Array.from(
-        new Set([
-          ...Object.entries(ASSET_DB)
-            .filter(
-              ([_, x]) =>
-                x.category === form.category && x.model === form.model,
-            )
-            .map(([c]) => c),
-          form.asset_code,
-        ]),
-      ).filter(Boolean)
-      : [];
+
   const pagu = ang.nilai_anggaran_tahunan || 0;
-  const prev = (ang.transaksi || [])
-    .filter((t) => !isEdit || t.id !== editData.id)
-    .reduce(
-      (s, t) => s + (parseFloat(t.jumlah || t.acquisition_value) || 0),
-      0,
-    );
-  const amount =
-    parseFloat(String(form.acquisition_value).replace(/[^\d.]/g, "")) || 0;
-  const sisa = pagu - prev - amount;
+  const prev = (ang.transaksi || []).filter((t) => !isEdit || t.id !== editData.id).reduce((s, t) => s + (parseFloat(t.jumlah || t.acquisition_value) || 0), 0);
+  const amount = parseFloat(String(form.acquisition_value).replace(/[^\d.]/g, "")) || 0;
+  const sisa = pagu - prev - amount * (form.items?.length || 0);
+
   const save = () => {
-    if (!form.asset_code || !form.procurement_date || !amount) {
-      showToast("Lengkapi Kode Aset, Tanggal, dan Nilai");
+    if (!form.items?.length || !amount) {
+      showToast("Lengkapi Quantity dan Nilai");
       return;
     }
-    const val = amount;
-    const newItem = {
-      id: isEdit ? editData.id : newId(),
-      category: form.category,
-      model: form.model,
-      asset_code: form.asset_code,
-      serial_number: form.serial_number,
-      location: form.location,
-      procurement_date: form.procurement_date,
-      tanggal: form.procurement_date,
-      acquisition_value: val,
-      jumlah: val,
-      keterangan: ASSET_DB[form.asset_code]?.name || form.asset_code,
-      aset: form.asset_code,
-    };
+    const today = new Date().toISOString().split('T')[0];
+    const newItems = form.items.map((item, index) => {
+      const ac = item.asset_code || `ASSET-NEW-${Date.now()}-${index}`;
+      const locStr = item.location || "";
+      const p = locStr.split(" / ").map(s => s.trim());
+      return {
+        id: isEdit ? editData.id : item.id || newId() + index,
+        category: form.category,
+        model: form.model,
+        asset_code: ac,
+        serial_number: item.serial_number,
+        branch: p[0] || "",
+        zona: p[1] || "",
+        subzona: p[2] || "",
+        location: locStr,
+        procurement_date: today,
+        tanggal: today,
+        acquisition_value: amount,
+        jumlah: amount,
+        keterangan: ASSET_DB[ac]?.name || `${form.category} ${form.model}`,
+        aset: ac,
+      };
+    });
+
     const list = isEdit
-      ? ang.transaksi.map((t) =>
-        t.id === editData.id ? { ...t, ...newItem } : t,
-      )
-      : [...(ang.transaksi || []), newItem];
+      ? ang.transaksi.map((t) => t.id === editData.id ? { ...t, ...newItems[0] } : t)
+      : [...(ang.transaksi || []), ...newItems];
     onSave(ang.id, list);
     showToast(isEdit ? "Aset OPEX diperbarui" : "Aset OPEX ditambahkan");
     onBack();
@@ -2124,70 +2243,114 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
             </AEFld>
           )}
           {form.model && (
-            <AEFld label="Kode Aset" req={true}>
+            <AEFld label="Quantity" req={true}>
               <select
-                value={form.asset_code || ""}
-                onChange={(e) => handleCode(e.target.value)}
+                value={form.items?.length || 0}
+                onChange={(e) => handleQtyChange(parseInt(e.target.value) || 0)}
+                disabled={isEdit}
               >
-                <option value="">— Pilih Kode Aset —</option>
-                {availCodes.map((code) => (
-                  <option key={code} value={code}>
-                    {code}
-                  </option>
+                <option value={0}>— Pilih Quantity —</option>
+                {Array.from({ length: 10 }, (_, i) => i + 1).map(n => (
+                  <option key={n} value={n}>{n}</option>
                 ))}
               </select>
             </AEFld>
           )}
-          <AEFld label="Serial Number">
-            <input
-              value={form.serial_number || ""}
-              readOnly
-              disabled
-              style={{
-                background: "#f8fafc",
-                color: "var(--ink4)",
-                cursor: "not-allowed",
-              }}
-            />
-          </AEFld>
-          <AEFld label="Lokasi">
-            <input
-              value={form.location || ""}
-              readOnly
-              disabled
-              style={{
-                background: "#f8fafc",
-                color: "var(--ink4)",
-                cursor: "not-allowed",
-              }}
-            />
-          </AEFld>
-          <AEFld label="Tgl. Pengadaan" req={true}>
-            <input
-              type="date"
-              value={form.procurement_date || ""}
-              onChange={(e) => up("procurement_date", e.target.value)}
-            />
-          </AEFld>
-          <AEFld label="Nilai Perolehan (IDR)" req={true}>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+
+          {form.items?.length > 0 && (
+            <div style={{ marginTop: 16, borderTop: "1px dashed var(--green-mid)", paddingTop: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+              <div style={{ fontWeight: 600, fontSize: "0.8rem", color: "var(--ink2)" }}>
+                Detail Aset
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                {form.items.map((item, idx) => {
+                  const used = form.items.map((it, i) => i !== idx ? it.serial_number : null).filter(Boolean);
+                  const filteredSNs = availSNs.filter(sn => !used.includes(sn));
+
+                  return (
+                    <div key={idx} style={{ background: "white", padding: "16px", borderRadius: 12, border: "1px solid #e2e8f0", boxShadow: "0 2px 4px rgba(0,0,0,0.04)" }}>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: "16px", alignItems: "center" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                          <label style={{ fontSize: "0.65rem", color: "#64748b", fontWeight: 700, textTransform: "uppercase", width: "130px", flexShrink: 0 }}>Serial Number {idx + 1}</label>
+                          <div style={{ flex: 1 }}>
+                            <SmartSNInput
+                              value={item.serial_number}
+                              options={filteredSNs}
+                              onChange={(val) => {
+                                const newItems = [...form.items];
+                                newItems[idx].serial_number = val;
+                                newItems[idx].asset_code = Object.entries(SN_DB).find(([s, c]) => s === val)?.[1] || "";
+                                up("items", newItems);
+                              }}
+                            />
+                          </div>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                          <label style={{ fontSize: "0.65rem", color: "#64748b", fontWeight: 700, textTransform: "uppercase", width: "130px", flexShrink: 0 }}>Lokasi Penempatan</label>
+                          <div style={{ flex: 1 }}>
+                            <SmartLocationInput
+                              value={item.location}
+                              onChange={(v) => {
+                                const newItems = [...form.items];
+                                newItems[idx].location = v;
+                                up("items", newItems);
+                              }}
+                            />
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => up("items", form.items.filter((_, i) => i !== idx))}
+                          style={{ color: "#ef4444", background: "none", border: "none", cursor: "pointer", padding: "8px", display: "flex", alignItems: "center", justifyContent: "center", transition: "transform 0.2s" }}
+                          onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.1)"}
+                          onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
+                          title="Hapus baris"
+                        >
+                          <Icon d={I.trash} size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              {!isEdit && (
+                <button
+                  className="btn btn-outline"
+                  style={{ width: "100%", padding: "8px", fontSize: "0.75rem", justifyContent: "center", borderStyle: "dashed" }}
+                  onClick={() => {
+                    const ac = availCodes[form.items.length] || "";
+                    const sn = ac ? Object.entries(SN_DB).find(([s, c]) => c === ac)?.[0] || "" : "";
+                    up("items", [...form.items, { serial_number: sn, location: "", asset_code: ac }]);
+                  }}
+                >
+                  <Icon d={I.plus} size={12} /> Tambah Quantity
+                </button>
+              )}
+            </div>
+          )}
+
+          <AEFld label="Nilai Perolehan (/unit)" req={true}>
+            <div
+              style={{ display: "flex", alignItems: "center", gap: "8px" }}
+            >
               <input
                 type="number"
                 value={form.acquisition_value || ""}
-                onChange={(e) => up("acquisition_value", e.target.value)}
+                onChange={(e) =>
+                  up("acquisition_value", e.target.value)
+                }
                 placeholder="0"
                 style={{ flex: 1 }}
               />
-              {amount > 0 && (
+              {parseFloat(form.acquisition_value) > 0 && (
                 <span
                   className="aefld-hint"
                   style={{
-                    color: "var(--green)",
+                    color: "var(--blue)",
                     fontWeight: 600,
                     whiteSpace: "nowrap",
                   }}
                 >
-                  {fmt(amount)}
+                  {fmt(parseFloat(form.acquisition_value))}
                 </span>
               )}
             </div>
@@ -2212,10 +2375,10 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
           <button
             className="btn btn-green"
             onClick={save}
-            disabled={!form.asset_code || !form.procurement_date || !amount}
+            disabled={!form.items?.length || !amount}
             style={{
               opacity:
-                !form.asset_code || !form.procurement_date || !amount ? 0.5 : 1,
+                !form.items?.length || !amount ? 0.5 : 1,
             }}
           >
             <Icon d={I.save} size={12} /> {isEdit ? "Perbarui" : "Simpan"}
@@ -2670,39 +2833,56 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
 }
 // ══════ ASSET ENTRY PAGE (NEW ONLY) ══════
 function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
-  const [assets, setAssets] = useState(() => [
-    {
-      id: newId(),
-      asset_code: "",
-      serial_number: "",
-      name: "",
-      brand: "",
-      model: "",
-      category: "",
-      location: "",
-      procurement_date: "",
-      acquisition_value: "",
-      _new: true,
-      _af: false,
-    },
-  ]);
-  const [confirm, setConfirm] = useState(null);
-  const upd = (id, k, v) =>
-    setAssets((p) => p.map((a) => (a.id === id ? { ...a, [k]: v } : a)));
-  const total = assets.reduce(
-    (s, a) => s + (parseFloat(a.acquisition_value) || 0),
-    0,
-  );
+  const [form, setForm] = useState({ category: "", model: "", items: [], acquisition_value: "" });
+  const upd = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  const amount = parseFloat(form.acquisition_value) || 0;
+  const total = (form.items || []).length * amount;
+
+  const availCodes = form.category && form.model
+    ? Object.keys(ASSET_DB).filter(c => ASSET_DB[c].category === form.category && ASSET_DB[c].model === form.model)
+    : [];
+  const availSNs = Object.entries(SN_DB).filter(([sn, code]) => availCodes.includes(code)).map(([sn]) => sn);
+
+  const handleQtyChange = (qty) => {
+    const newItems = [...(form.items || [])];
+    while (newItems.length < qty) {
+      const idx = newItems.length;
+      newItems.push({ id: `new-${Date.now()}-${idx}`, serial_number: "", location: "", asset_code: "" });
+    }
+    if (newItems.length > qty) newItems.length = qty;
+    upd("items", newItems);
+  };
+
   const save = () => {
-    const cl = assets.map(({ _new, _af, ...a }) => ({
-      ...a,
-      acquisition_value: parseFloat(a.acquisition_value) || 0,
-    }));
+    if (!form.items?.length || !form.acquisition_value) {
+      showToast("Lengkapi data aset");
+      return;
+    }
+    const today = new Date().toISOString().split('T')[0];
+    const cl = form.items.map((it, idx) => {
+      const locStr = it.location || "";
+      const p = locStr.split(" / ").map(s => s.trim());
+      return {
+        id: it.id || newId() + idx,
+        category: form.category,
+        model: form.model,
+        asset_code: it.asset_code || `ASSET-NEW-${Date.now()}-${idx}`,
+        serial_number: it.serial_number,
+        branch: p[0] || "",
+        zona: p[1] || "",
+        subzona: p[2] || "",
+        location: locStr,
+        procurement_date: today,
+        acquisition_value: amount,
+        name: ASSET_DB[it.asset_code]?.name || `${form.category} ${form.model}`
+      };
+    });
     onSave(anggaran.id, [...(anggaran.assets || []), ...cl]);
     showToast(`${cl.length} aset disimpan`);
     onBack();
   };
-  const a = assets[0];
+
   return (
     <div className="subpage">
       <div className="subpage-hdr">
@@ -2730,170 +2910,134 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
       <div className="acard">
         <div className="acard-hdr">
           <span className="asset-number-badge">ASET BARU</span>
-          {a._new && (
-            <span
-              style={{
-                background: "var(--green-mid)",
-                color: "var(--green)",
-                borderRadius: 99,
-                padding: "2px 8px",
-                fontSize: "0.65rem",
-                fontWeight: 800,
-              }}
-            >
-              Baru
-            </span>
-          )}
-          {a._af && (
-            <span
-              style={{
-                background: "var(--green-lt)",
-                color: "var(--green)",
-                border: "1px solid var(--green-mid)",
-                borderRadius: 99,
-                padding: "2px 8px",
-                fontSize: "0.65rem",
-                fontWeight: 700,
-                display: "flex",
-                alignItems: "center",
-                gap: 4,
-              }}
-            >
-              <Icon d={I.checkCirc} size={10} /> Auto-filled
-            </span>
-          )}
         </div>
         <div className="acard-body">
-          <div style={{ display: "flex", flexDirection: "column" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <AEFld label="Jenis Aset" req={true}>
               <select
-                value={a.category || ""}
+                value={form.category || ""}
                 onChange={(e) => {
-                  upd(a.id, "category", e.target.value);
-                  upd(a.id, "model", "");
-                  upd(a.id, "asset_code", "");
-                  upd(a.id, "serial_number", "");
-                  upd(a.id, "location", "");
+                  upd("category", e.target.value);
+                  upd("model", "");
+                  upd("items", []);
                 }}
               >
                 <option value="">— Pilih Jenis Aset —</option>
-                {Array.from(
-                  new Set(Object.values(ASSET_DB).map((x) => x.category)),
-                ).map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
+                {Array.from(new Set(Object.values(ASSET_DB).map(x => x.category))).map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
                 ))}
               </select>
             </AEFld>
-            {a.category && (
+            {form.category && (
               <AEFld label="Tipe Aset" req={true}>
                 <select
-                  value={a.model || ""}
+                  value={form.model || ""}
                   onChange={(e) => {
-                    upd(a.id, "model", e.target.value);
-                    upd(a.id, "asset_code", "");
-                    upd(a.id, "serial_number", "");
-                    upd(a.id, "location", "");
+                    upd("model", e.target.value);
+                    upd("items", []);
                   }}
                 >
                   <option value="">— Pilih Tipe —</option>
-                  {Array.from(
-                    new Set(
-                      Object.values(ASSET_DB)
-                        .filter((x) => x.category === a.category)
-                        .map((x) => x.model),
-                    ),
-                  ).map((m) => (
-                    <option key={m} value={m}>
-                      {m}
-                    </option>
+                  {Array.from(new Set(Object.values(ASSET_DB).filter(x => x.category === form.category).map(x => x.model))).map(m => (
+                    <option key={m} value={m}>{m}</option>
                   ))}
                 </select>
               </AEFld>
             )}
-            {a.model && (
-              <AEFld label="Kode Aset" req={true}>
+
+            {form.model && (
+              <AEFld label="Quantity" req={true}>
                 <select
-                  value={a.asset_code || ""}
-                  onChange={(e) => {
-                    const code = e.target.value;
-                    upd(a.id, "asset_code", code);
-                    const sn =
-                      Object.entries(SN_DB).find(([s, c]) => c === code)?.[0] ||
-                      "";
-                    upd(a.id, "serial_number", sn);
-                    upd(a.id, "location", ASSET_DB[code]?.location || "");
-                  }}
+                  value={form.items?.length || 0}
+                  onChange={(e) => handleQtyChange(parseInt(e.target.value) || 0)}
                 >
-                  <option value="">— Pilih Kode Aset —</option>
-                  {Object.entries(ASSET_DB)
-                    .filter(
-                      ([code, x]) =>
-                        x.category === a.category && x.model === a.model,
-                    )
-                    .map(([code]) => (
-                      <option key={code} value={code}>
-                        {code}
-                      </option>
-                    ))}
+                  <option value={0}>— Pilih Quantity —</option>
+                  {Array.from({ length: 10 }, (_, i) => i + 1).map(n => (
+                    <option key={n} value={n}>{n}</option>
+                  ))}
                 </select>
               </AEFld>
             )}
-            <AEFld label="Serial Number">
-              <input
-                value={a.serial_number || ""}
-                readOnly
-                disabled
-                style={{
-                  background: "#f8fafc",
-                  color: "var(--ink4)",
-                  cursor: "not-allowed",
-                }}
-              />
-            </AEFld>
-            <AEFld label="Lokasi">
-              <input
-                value={a.location || ""}
-                readOnly
-                disabled
-                style={{
-                  background: "#f8fafc",
-                  color: "var(--ink4)",
-                  cursor: "not-allowed",
-                }}
-              />
-            </AEFld>
-            <AEFld label="Tgl. Pengadaan">
-              <input
-                type="date"
-                value={a.procurement_date || ""}
-                onChange={(e) => upd(a.id, "procurement_date", e.target.value)}
-              />
-            </AEFld>
-            <AEFld label="Nilai Perolehan (IDR)">
-              <div
-                style={{ display: "flex", alignItems: "center", gap: "8px" }}
-              >
+
+            {form.items?.length > 0 && (
+              <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 12 }}>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  {form.items.map((item, idx) => {
+                    const used = form.items.map((it, i) => i !== idx ? it.serial_number : null).filter(Boolean);
+                    const filteredSNs = availSNs.filter(sn => !used.includes(sn));
+
+                    return (
+                      <div key={idx} style={{ background: "white", padding: "16px", borderRadius: 12, border: "1px solid #e2e8f0", boxShadow: "0 2px 4px rgba(0,0,0,0.04)" }}>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: "16px", alignItems: "center" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                            <label style={{ fontSize: "0.65rem", color: "#64748b", fontWeight: 700, textTransform: "uppercase", width: "130px", flexShrink: 0 }}>Serial Number {idx + 1}</label>
+                            <div style={{ flex: 1 }}>
+                              <SmartSNInput
+                                value={item.serial_number}
+                                options={filteredSNs}
+                                onChange={(val) => {
+                                  const newItems = [...form.items];
+                                  newItems[idx].serial_number = val;
+                                  newItems[idx].asset_code = Object.entries(SN_DB).find(([s, c]) => s === val)?.[1] || "";
+                                  upd("items", newItems);
+                                }}
+                              />
+                            </div>
+                          </div>
+                          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                            <label style={{ fontSize: "0.65rem", color: "#64748b", fontWeight: 700, textTransform: "uppercase", width: "130px", flexShrink: 0 }}>Lokasi Penempatan</label>
+                            <div style={{ flex: 1 }}>
+                              <SmartLocationInput
+                                value={item.location}
+                                onChange={(v) => {
+                                  const newItems = [...form.items];
+                                  newItems[idx].location = v;
+                                  upd("items", newItems);
+                                }}
+                              />
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => upd("items", form.items.filter((_, i) => i !== idx))}
+                            style={{ color: "#ef4444", background: "none", border: "none", cursor: "pointer", padding: "8px", display: "flex", alignItems: "center", justifyContent: "center", transition: "transform 0.2s" }}
+                            onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.1)"}
+                            onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
+                            title="Hapus baris"
+                          >
+                            <Icon d={I.trash} size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <button
+                  className="btn btn-outline"
+                  style={{ width: "100%", padding: "8px", fontSize: "0.75rem", justifyContent: "center", borderStyle: "dashed" }}
+                  onClick={() => {
+                    const ac = availCodes[form.items.length] || "";
+                    const sn = ac ? Object.entries(SN_DB).find(([s, c]) => c === ac)?.[0] || "" : "";
+                    upd("items", [...form.items, { id: newId() + form.items.length, serial_number: sn, location: "", asset_code: ac }]);
+                  }}
+                >
+                  <Icon d={I.plus} size={12} /> Tambah Quantity
+                </button>
+              </div>
+            )}
+
+            <AEFld label="Nilai Perolehan (/unit)" req={true}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <input
                   type="number"
-                  value={a.acquisition_value || ""}
-                  onChange={(e) =>
-                    upd(a.id, "acquisition_value", e.target.value)
-                  }
+                  value={form.acquisition_value || ""}
+                  onChange={(e) => upd("acquisition_value", e.target.value)}
                   placeholder="0"
                   style={{ flex: 1 }}
                 />
-                {parseFloat(a.acquisition_value) > 0 && (
-                  <span
-                    className="aefld-hint"
-                    style={{
-                      color: "var(--blue)",
-                      fontWeight: 600,
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {fmt(parseFloat(a.acquisition_value))}
+                {parseFloat(form.acquisition_value) > 0 && (
+                  <span className="aefld-hint" style={{ color: "var(--blue)", fontWeight: 600, whiteSpace: "nowrap" }}>
+                    {fmt(parseFloat(form.acquisition_value))}
                   </span>
                 )}
               </div>
@@ -2901,33 +3045,21 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
           </div>
         </div>
       </div>
-      {assets.length > 0 && (
-        <div className="edit-footer">
-          <div>
-            <span style={{ fontSize: "0.75rem", color: "var(--ink3)" }}>
-              Total Nilai Semua Aset
-            </span>
-            <strong style={{ color: "var(--blue)", display: "block" }}>
-              {fmt(total)}
-            </strong>
-          </div>
-          <div style={{ display: "flex", gap: 12 }}>
-            <button className="btn btn-outline" onClick={onBack}>
-              Batal
-            </button>
-            <button className="btn btn-prim" onClick={save}>
-              <Icon d={I.save} size={14} /> Simpan Data Aset
-            </button>
-          </div>
-        </div>
-      )}
-      {confirm && (
-        <Confirm
-          msg={confirm.msg}
-          onConfirm={confirm.onConfirm}
-          onCancel={() => setConfirm(null)}
-        />
-      )}
+
+      <div className="subpage-footer">
+        <button className="btn btn-outline" onClick={onBack}>
+          Batal
+        </button>
+        <button
+          className="btn btn-green"
+          onClick={save}
+          disabled={!form.items?.length || !form.acquisition_value}
+          style={{ opacity: (!form.items?.length || !form.acquisition_value) ? 0.5 : 1 }}
+        >
+          <Icon d={I.save} size={12} /> Simpan
+        </button>
+      </div>
+
     </div>
   );
 }
@@ -4241,6 +4373,12 @@ export default function BudgetManagement({ forcedType }) {
     setSelectedAnggaran((prev) =>
       prev?.id === anggaranId ? { ...prev, assets } : prev,
     );
+    setPage((prev) => {
+      if (!prev || !prev.data) return prev;
+      if (prev.data.id === anggaranId) return { ...prev, data: { ...prev.data, assets } };
+      if (prev.data.anggaran?.id === anggaranId) return { ...prev, data: { ...prev.data, anggaran: { ...prev.data.anggaran, assets } } };
+      return prev;
+    });
   };
   const deleteProject = (projId, angId) => {
     setCapexData((p) =>
@@ -4857,5 +4995,84 @@ export default function BudgetManagement({ forcedType }) {
         />
       )}
     </>
+  );
+}
+function SmartSNInput({ value, onChange, options, placeholder = 'Pilih/Ketik SN' }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const wrapperRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const filteredOptions = (options || []).filter(o => (o || '').toLowerCase().includes((value || '').toLowerCase()));
+
+  const handleSelect = (opt) => {
+    onChange(opt);
+    setIsOpen(false);
+  };
+
+  return (
+    <div ref={wrapperRef} style={{ position: 'relative', width: '100%' }}>
+      <input
+        value={value || ''}
+        onChange={(e) => {
+          onChange(e.target.value);
+          setIsOpen(true);
+        }}
+        onFocus={() => setIsOpen(true)}
+        placeholder={placeholder}
+        style={{
+          width: '100%',
+          padding: '8px 12px',
+          border: '1px solid #cbd5e1',
+          borderRadius: 8,
+          fontSize: '0.85rem',
+          background: '#fcfdfe',
+          color: 'var(--ink)',
+          fontWeight: 500,
+          outline: 'none',
+          transition: 'all 0.2s'
+        }}
+      />
+      {isOpen && filteredOptions.length > 0 && (
+        <div style={{
+          position: 'absolute',
+          top: '100%',
+          left: 0,
+          right: 0,
+          background: 'white',
+          border: '1px solid #e2e8f0',
+          borderRadius: 12,
+          marginTop: 6,
+          zIndex: 100,
+          boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+          maxHeight: 200,
+          overflowY: 'auto'
+        }}>
+          {filteredOptions.map((opt, i) => (
+            <div
+              key={i}
+              onClick={() => handleSelect(opt)}
+              style={{
+                padding: '10px 12px',
+                fontSize: '0.78rem',
+                color: '#334155',
+                cursor: 'pointer',
+                borderBottom: i === filteredOptions.length - 1 ? 'none' : '1px solid #f1f5f9'
+              }}
+            >
+              {opt}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
