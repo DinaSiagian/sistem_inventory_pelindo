@@ -1962,26 +1962,7 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
     toast_("Data berhasil diperbarui.");
   };
 
-  const handleDelete = (rowId) =>
-    setConfirm({
-      msg: "Hapus data anggaran tahunan ini?",
-      onConfirm: () => {
-        setCapexList((prev) =>
-          prev.map((c) =>
-            c.id === capex.id
-              ? {
-                ...c,
-                anggaran_tahunan: (c.anggaran_tahunan || []).filter(
-                  (r) => r.id !== rowId,
-                ),
-              }
-              : c,
-          ),
-        );
-        setConfirm(null);
-        toast_("Data anggaran dihapus.");
-      },
-    });
+
 
   const handleUpdateHistoryRecord = (historyId, updates) => {
     setCapexList((prev) =>
@@ -2274,26 +2255,24 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
           )}
         </div>
         
-        {capex.thn_rkap_awal != capex.thn_rkap_akhir && (
-          <button
-            style={{
-              ...S.btn,
-              background: nilaiRkapBatas > 0 && sisaRkapTersedia <= 0 ? "#9ca3af" : "#2563eb",
-              padding: "6px 12px",
-              fontSize: "0.75rem",
-              cursor: nilaiRkapBatas > 0 && sisaRkapTersedia <= 0 ? "not-allowed" : "pointer",
-              opacity: nilaiRkapBatas > 0 && sisaRkapTersedia <= 0 ? 0.6 : 1,
-            }}
-            onClick={() => {
-              if (nilaiRkapBatas > 0 && sisaRkapTersedia <= 0) return;
-              setShowForm(true);
-              setForm(f => ({ ...f, thn: Math.max(capex.thn_rkap_awal, capex.thn_rkap_akhir) }));
-            }}
-            title={nilaiRkapBatas > 0 && sisaRkapTersedia <= 0 ? "Anggaran RKAP sudah penuh" : ""}
-          >
-            <Plus size={12} /> Input Anggaran
-          </button>
-        )}
+        <button
+          style={{
+            ...S.btn,
+            background: nilaiRkapBatas > 0 && sisaRkapTersedia <= 0 ? "#9ca3af" : "#2563eb",
+            padding: "6px 12px",
+            fontSize: "0.75rem",
+            cursor: nilaiRkapBatas > 0 && sisaRkapTersedia <= 0 ? "not-allowed" : "pointer",
+            opacity: nilaiRkapBatas > 0 && sisaRkapTersedia <= 0 ? 0.6 : 1,
+          }}
+          onClick={() => {
+            if (nilaiRkapBatas > 0 && sisaRkapTersedia <= 0) return;
+            setShowForm(true);
+            setForm(f => ({ ...f, thn: Math.max(capex.thn_rkap_awal, capex.thn_rkap_akhir) }));
+          }}
+          title={nilaiRkapBatas > 0 && sisaRkapTersedia <= 0 ? "Anggaran RKAP sudah penuh" : ""}
+        >
+          <Plus size={12} /> Input Anggaran
+        </button>
       </div>
 
       {/* CARD 1: Tabel Daftar Anggaran */}
@@ -2395,28 +2374,21 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
                         {fmt(total)}
                       </td>
                       <td style={{ ...S.td, textAlign: "center" }}>
-                        <div
+                        <button
                           style={{
-                            display: "flex",
-                            gap: 4,
-                            justifyContent: "center",
+                            ...S.abtn,
+                            color: "#2563eb",
+                            borderColor: "#bfdbfe",
+                            background: "#eff6ff",
+                            padding: "8px",
                           }}
+                          onClick={() =>
+                            setEditRowId(editRowId === row.id ? null : row.id)
+                          }
+                          title="Tambah Jenis Perubahan"
                         >
-                          <button
-                            style={S.abtn}
-                            onClick={() =>
-                              setEditRowId(editRowId === row.id ? null : row.id)
-                            }
-                          >
-                            <Edit size={12} style={{ color: "#d97706" }} />
-                          </button>
-                          <button
-                            style={S.abtn}
-                            onClick={() => handleDelete(row.id)}
-                          >
-                            <Trash2 size={12} style={{ color: "#ef4444" }} />
-                          </button>
-                        </div>
+                          <Plus size={14} style={{ color: "#2563eb" }} />
+                        </button>
                       </td>
                     </tr>
                     {editRowId === row.id && (
@@ -4657,7 +4629,7 @@ function OpexModule({ masterList, setMasterList }) {
                               ...(i === 6 && {
                                 width: "8%",
                                 textAlign: "center",
-                                minWidth: 100,
+                                minWidth: 140,
                               }),
                             }}
                           >
@@ -5911,7 +5883,7 @@ function CapexModule({ capexList, setCapexList }) {
                           position: "relative",
                         }),
                         ...(i === 7 && { width: 140, textAlign: "right" }),
-                        ...(i === 8 && { width: 130, textAlign: "center" }),
+                        ...(i === 8 && { width: 160, textAlign: "center" }),
                         paddingRight: isThnAnggaran ? 28 : undefined,
                       }}
                     >
@@ -6125,7 +6097,7 @@ function CapexModule({ capexList, setCapexList }) {
                               display: "flex",
                               gap: 5,
                               justifyContent: "center",
-                              flexWrap: "wrap",
+                              flexWrap: "nowrap",
                             }}
                           >
                             <button
