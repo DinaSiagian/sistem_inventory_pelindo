@@ -119,96 +119,65 @@ function pctMeta(p) {
   return { label: "Healthy", bg: "#f0fdf4", fg: "#16a34a", border: "#bbf7d0" };
 }
 const ASSET_DB = {
-  "SPMT-KPT-DTC-SRV-01": {
-    name: "Server Rack Kantor Pusat — Rack 1",
+  "CCTV-HIK-DOME-2MP": {
+    name: "CCTV Hikvision DS-2CD2143G2-I",
+    brand: "Hikvision",
+    model: "DS-2CD2143G2-I",
+    category: "CCTV",
+  },
+  "ALAT-CAT-EXC-336": {
+    name: "Excavator CAT 336",
+    brand: "CAT",
+    model: "336",
+    category: "Alat Berat",
+  },
+  "SRV-DELL-R740": {
+    name: "Server Dell PowerEdge R740",
     brand: "Dell",
-    model: "PowerEdge R750",
+    model: "R740",
     category: "Server",
-    location: "Kantor Pusat",
   },
-  "SPMT-KPT-DTC-SRV-02": {
-    name: "Server Rack Kantor Pusat — Rack 2",
-    brand: "Dell",
-    model: "PowerEdge R750",
-    category: "Server",
-    location: "Kantor Pusat",
+  "KND-TYT-HLX-PKP": {
+    name: "Toyota Hilux Pickup",
+    brand: "Toyota",
+    model: "Hilux",
+    category: "Kendaraan",
   },
-  "SPMT-MLH-DTC-PKR-02": {
-    name: "Core Switch Malahayati",
+  "FURN-MJA-DIR-01": {
+    name: "Meja Kerja Direksi",
+    brand: "-",
+    model: "MK-DIR",
+    category: "Furniture",
+  },
+  "SWT-CSC-CAT-9300L": {
+    name: "Switch Cisco Catalyst 9300L",
     brand: "Cisco",
-    model: "Catalyst 9300-48P",
+    model: "9300L",
     category: "Network",
-    location: "Malahayati",
   },
-  "SPMT-TBK-DTC-PKR-01": {
-    name: "Core Switch Tanjung Balai Karimun",
-    brand: "Cisco",
-    model: "Catalyst 9300-24P",
-    category: "Network",
-    location: "Tanjung Balai Karimun",
-  },
-  "SPMT-KPT-DTC-PKR-02": {
-    name: "Firewall Data Center Kantor Pusat",
-    brand: "Fortinet",
-    model: "FortiGate 200F",
-    category: "Security",
-    location: "Kantor Pusat",
-  },
-  "SPMT-KPT-USR-LPT-01": {
-    name: "Laptop Operasional ASUS ROG 1",
+  "LPT-ASU-ROG-G15": {
+    name: "Laptop ASUS ROG Strix G15",
     brand: "ASUS",
-    model: "ROG Strix G15",
+    model: "ROG-G15",
     category: "Laptop",
-    location: "Kantor Pusat",
-  },
-  "SPMT-KPT-USR-LPT-02": {
-    name: "Laptop Operasional ASUS ROG 2",
-    brand: "ASUS",
-    model: "ROG Strix G15",
-    category: "Laptop",
-    location: "Kantor Pusat",
-  },
-  "SPMT-KPT-USR-LPT-03": {
-    name: "Laptop Operasional ASUS ROG 3",
-    brand: "ASUS",
-    model: "ROG Strix G15",
-    category: "Laptop",
-    location: "Malahayati",
-  },
-  "SPMT-MLH-SCT-CCTV-01": {
-    name: "CCTV Gerbang Utama Malahayati",
-    brand: "Hikvision",
-    model: "Dome 2MP",
-    category: "CCTV",
-    location: "Malahayati",
-  },
-  "SPMT-MLH-SCT-CCTV-02": {
-    name: "CCTV Gudang Malahayati",
-    brand: "Hikvision",
-    model: "Dome 2MP",
-    category: "CCTV",
-    location: "Malahayati",
-  },
-  "SPMT-TBK-SCT-CCTV-01": {
-    name: "CCTV Lobi Tanjung Balai Karimun",
-    brand: "Hikvision",
-    model: "Dome 2MP",
-    category: "CCTV",
-    location: "Tanjung Balai Karimun",
   },
 };
+
 const SN_DB = {
-  "DELL-KPT-SRV-001": "SPMT-KPT-DTC-SRV-01",
-  "DELL-KPT-SRV-002": "SPMT-KPT-DTC-SRV-02",
-  "CSC-MLH-CSW-001": "SPMT-MLH-DTC-PKR-02",
-  "CSC-TBK-CSW-001": "SPMT-TBK-DTC-PKR-01",
-  "FGT-KPT-FWL-001": "SPMT-KPT-DTC-PKR-02",
-  "ASUS-ROG-001": "SPMT-KPT-USR-LPT-01",
-  "ASUS-ROG-002": "SPMT-KPT-USR-LPT-02",
-  "ASUS-ROG-003": "SPMT-KPT-USR-LPT-03",
-  "HIK-D2M-001": "SPMT-MLH-SCT-CCTV-01",
-  "HIK-D2M-002": "SPMT-MLH-SCT-CCTV-02",
-  "HIK-D2M-003": "SPMT-TBK-SCT-CCTV-01",
+  "SN-CCTV-001": "CCTV-HIK-DOME-2MP",
+  "SN-CCTV-002": "CCTV-HIK-DOME-2MP",
+  "SN-EXC-336-01": "ALAT-CAT-EXC-336",
+  "SN-EXC-336-02": "ALAT-CAT-EXC-336",
+  "SN-DELL-R740-01": "SRV-DELL-R740",
+  "SN-DELL-R740-02": "SRV-DELL-R740",
+  "BK 1234 ZZ": "KND-TYT-HLX-PKP",
+  "BK 5678 AA": "KND-TYT-HLX-PKP",
+  "SN-MEJA-001": "FURN-MJA-DIR-01",
+  "SN-MEJA-002": "FURN-MJA-DIR-01",
+  "SN-CISCO-9300-01": "SWT-CSC-CAT-9300L",
+  "SN-CISCO-9300-02": "SWT-CSC-CAT-9300L",
+  "SN-ROG-001": "LPT-ASU-ROG-G15",
+  "SN-ROG-002": "LPT-ASU-ROG-G15",
 };
 const ENTITAS_LIST = [
   { name: "Pelindo Multi Terminal", code: "SPMT" },
@@ -419,7 +388,38 @@ const INIT_CAPEX = [
     thn_rkap_awal: 2024,
     thn_rkap_akhir: 2024,
     type: "capex",
-    assets: [],
+    assets: [
+      {
+        id: "AST-2440015-001",
+        category: "CCTV",
+        model: "DS-2CD2143G2-I",
+        asset_code: "CCTV-HIK-DOME-2MP",
+        serial_number: "SN-CCTV-001",
+        branch: "Belawan",
+        zona: "LPG",
+        subzona: "DMG",
+        location: "Belawan / LPG / DMG",
+        procurement_date: "2024-08-15",
+        acquisition_value: 6000000,
+        name: "CCTV Hikvision DS-2CD2143G2-I",
+        id_pekerjaan: "PKJ-2440015-001"
+      },
+      {
+        id: "AST-2440015-002",
+        category: "CCTV",
+        model: "DS-2CD2143G2-I",
+        asset_code: "CCTV-HIK-DOME-2MP",
+        serial_number: "SN-CCTV-002",
+        branch: "Belawan",
+        zona: "LPG",
+        subzona: "DMG",
+        location: "Belawan / LPG / DMG",
+        procurement_date: "2024-08-15",
+        acquisition_value: 6000000,
+        name: "CCTV Hikvision DS-2CD2143G2-I",
+        id_pekerjaan: "PKJ-2440015-001"
+      }
+    ],
     projects: [
       {
         id: "PKJ-2440015-001",
@@ -450,16 +450,41 @@ const INIT_CAPEX = [
     id: "CAP-2540011",
     kode: "2540011",
     nama: "Transformasi dan Digitalisasi PT Pelindo Multi Terminal",
-    nilai_kad: 4500000000,
+    nilai_kad: 2500000000,
     thn_rkap_awal: 2025,
     thn_rkap_akhir: 2026,
     type: "capex",
-    assets: [],
+    assets: [
+      {
+        id: "AST-2540011-001",
+        category: "Server",
+        model: "PowerEdge R740",
+        asset_code: "SRV-DELL-R740",
+        serial_number: "SN-DELL-R740-01",
+        branch: "Lhokseumawe",
+        zona: "DTC",
+        subzona: "PKR",
+        location: "Lhokseumawe / DTC / PKR",
+        procurement_date: "2025-01-20",
+        acquisition_value: 90000000,
+        name: "Server Dell PowerEdge R740",
+        id_pekerjaan: "PKJ-2540011-001"
+      }
+    ],
+    projects: [
+      {
+        id: "PKJ-2540011-001",
+        nm_pekerjaan: "Penyediaan Kebutuhan Perangkat Jaringan, SIEM dan Perangkat Pendukung Gate System PT Pelindo Multi Terminal",
+        nilai_rab: 2000000000,
+        nilai_kontrak: 1850000000,
+        no_kontrak: "SI.05/01/2/PPTI/PLMT-25",
+        tgl_kontrak: "2025-01-05",
+      }
+    ],
     history_anggaran: [
       { id: "H6", tahun: 2025, nilai_rkap: 2500000000 },
       { id: "H7", tahun: 2026, nilai_rkap: 2000000000 },
     ],
-    projects: [],
   },
   {
     id: "CAP-2540012",
@@ -2070,14 +2095,13 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
   const [form, setForm] = useState(() => {
     if (isEdit && editData) {
       const code = editData.asset_code || "";
-      const cat = editData.category || ASSET_DB[code]?.category || "";
-      const mod = editData.model || ASSET_DB[code]?.model || "";
-      const sn = editData.serial_number || Object.entries(SN_DB).find(([s, c]) => c === code)?.[0] || "";
+      const dbInfo = ASSET_DB[code] || {};
       return {
-        category: cat,
-        model: mod,
+        category: editData.category || dbInfo.category || "",
+        model: editData.model || dbInfo.model || "",
         items: [{
-          serial_number: sn,
+          id: editData.id,
+          serial_number: editData.serial_number || "",
           location: editData.location || [editData.branch, editData.zona, editData.subzona].filter(Boolean).join(" / "),
           asset_code: code
         }],
@@ -2125,12 +2149,12 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
       return;
     }
     const today = new Date().toISOString().split('T')[0];
-    const newItems = form.items.map((item, index) => {
+    const finalItems = form.items.map((item, index) => {
       const ac = item.asset_code || `ASSET-NEW-${Date.now()}-${index}`;
       const locStr = item.location || "";
       const p = locStr.split(" / ").map(s => s.trim());
       return {
-        id: isEdit ? editData.id : item.id || newId() + index,
+        id: (isEdit && index === 0) ? editData.id : item.id || `new-${Date.now()}-${index}`,
         category: form.category,
         model: form.model,
         asset_code: ac,
@@ -2148,13 +2172,20 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
       };
     });
 
-    const list = isEdit
-      ? ang.transaksi.map((t) => t.id === editData.id ? { ...t, ...newItems[0] } : t)
-      : [...(ang.transaksi || []), ...newItems];
+    let list = [];
+    if (isEdit) {
+      // Replace the original item with the first of our new items, and append any additional new items
+      const base = ang.transaksi.filter(t => t.id !== editData.id);
+      list = [...base, ...finalItems];
+    } else {
+      list = [...(ang.transaksi || []), ...finalItems];
+    }
+
     onSave(ang.id, list);
     showToast(isEdit ? "Barang OPEX diperbarui" : "Barang OPEX ditambahkan");
     onBack();
   };
+
   return (
     <div className="subpage">
       <div className="subpage-hdr">
@@ -2165,14 +2196,8 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
           <h2>{isEdit ? "Edit Barang OPEX" : "Entry Barang OPEX Baru"}</h2>
         </div>
       </div>
-      <div
-        className="ctx-card"
-        style={{
-          borderColor: "var(--green)",
-          background: "var(--green-lt)",
-          borderLeft: "4px solid var(--green)",
-        }}
-      >
+
+      <div className="ctx-card" style={{ borderColor: "var(--green)", background: "var(--green-lt)", borderLeft: "4px solid var(--green)" }}>
         <div className="ctx-item">
           <span>Pos Anggaran</span>
           <strong style={{ color: "var(--ink)" }}>{ang.nama}</strong>
@@ -2182,206 +2207,152 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
           <strong style={{ color: "var(--blue)" }}>{fmt(pagu)}</strong>
         </div>
         <div className="ctx-item">
-          <span>Nilai Input</span>
-          <strong style={{ color: "var(--amber)" }}>{fmt(amount)}</strong>
-        </div>
-        <div className="ctx-item">
-          <span>Sisa Setelah Input</span>
-          <strong
-            className={sisa >= 0 ? "green" : "red"}
-            style={{ color: sisa >= 0 ? "var(--green)" : "var(--red)" }}
-          >
-            {fmt(Math.max(0, sisa))}
-            {sisa < 0 && " (melebihi)"}
+          <span>Sisa Anggaran</span>
+          <strong className={sisa >= 0 ? "green" : "red"} style={{ color: sisa >= 0 ? "var(--green)" : "var(--red)" }}>
+            {fmt(Math.max(0, sisa))}{sisa < 0 && " (melebihi)"}
           </strong>
         </div>
       </div>
-      <div className="sec-card">
-        <div className="sec-card-hdr">
-          <div
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: 8,
-              background: "var(--green-lt)",
-              color: "var(--green)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Icon d={isEdit ? I.edit : I.plus} size={14} />
-          </div>
-          <h3>Data Barang OPEX</h3>
+
+      <div className="acard" style={{ borderLeftColor: "var(--green)" }}>
+        <div className="acard-hdr" style={{ background: "var(--green-lt)" }}>
+          <span className="asset-number-badge" style={{ background: "var(--green)" }}>DETAIL BARANG OPEX</span>
         </div>
-        <div className="sec-card-body">
-          <AEFld label="Jenis Barang" req={true}>
-            <select
-              value={form.category || ""}
-              onChange={(e) => handleCat(e.target.value)}
-            >
-              <option value="">— Pilih Jenis Barang —</option>
-              {availCats.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
-          </AEFld>
-          {form.category && (
-            <AEFld label="Tipe Barang" req={true}>
-              <select
-                value={form.model || ""}
-                onChange={(e) => handleMod(e.target.value)}
-              >
-                <option value="">— Pilih Tipe —</option>
-                {availMods.map((mod) => (
-                  <option key={mod} value={mod}>
-                    {mod}
-                  </option>
-                ))}
-              </select>
+        <div className="acard-body">
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <AEFld label="Jenis Barang" req={true}>
+              {isEdit ? (
+                <div style={{ fontSize: "0.95rem", fontWeight: 600, color: "var(--ink)", padding: "4px 0" }}>{form.category}</div>
+              ) : (
+                <select value={form.category || ""} onChange={(e) => handleCat(e.target.value)}>
+                  <option value="">— Pilih Jenis Barang —</option>
+                  {availCats.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
+                </select>
+              )}
             </AEFld>
-          )}
-          {form.model && (
-            <AEFld label="Quantity" req={true}>
-              <select
-                value={form.items?.length || 0}
-                onChange={(e) => handleQtyChange(parseInt(e.target.value) || 0)}
-                disabled={isEdit}
-              >
-                <option value={0}>— Pilih Quantity —</option>
-                {Array.from({ length: 10 }, (_, i) => i + 1).map(n => (
-                  <option key={n} value={n}>{n}</option>
-                ))}
-              </select>
-            </AEFld>
-          )}
 
-          {form.items?.length > 0 && (
-            <div style={{ marginTop: 16, borderTop: "1px dashed var(--green-mid)", paddingTop: 16, display: "flex", flexDirection: "column", gap: 12 }}>
-              <div style={{ fontWeight: 600, fontSize: "0.8rem", color: "var(--ink2)" }}>
-                Detail Barang
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                {form.items.map((item, idx) => {
-                  const used = form.items.map((it, i) => i !== idx ? it.serial_number : null).filter(Boolean);
-                  const filteredSNs = availSNs.filter(sn => !used.includes(sn));
+            {(form.category || isEdit) && (
+              <AEFld label="Tipe Barang" req={true}>
+                {isEdit ? (
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0" }}>
+                    <div style={{ width: 4, height: 20, background: "var(--green)", borderRadius: 2 }} />
+                    <span style={{ fontSize: "1rem", fontWeight: 800, color: "var(--ink)", letterSpacing: "-0.2px" }}>{form.model}</span>
+                  </div>
+                ) : (
+                  <select value={form.model || ""} onChange={(e) => handleMod(e.target.value)}>
+                    <option value="">— Pilih Tipe —</option>
+                    {availMods.map((mod) => <option key={mod} value={mod}>{mod}</option>)}
+                  </select>
+                )}
+              </AEFld>
+            )}
 
-                  return (
-                    <div key={idx} style={{ background: "white", padding: "16px", borderRadius: 12, border: "1px solid #e2e8f0", boxShadow: "0 2px 4px rgba(0,0,0,0.04)" }}>
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: "16px", alignItems: "center" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                          <label style={{ fontSize: "0.65rem", color: "#64748b", fontWeight: 700, textTransform: "uppercase", width: "130px", flexShrink: 0 }}>Serial Number {idx + 1}</label>
-                          <div style={{ flex: 1 }}>
-                            <SmartSNInput
-                              value={item.serial_number}
-                              options={filteredSNs}
-                              onChange={(val) => {
-                                const newItems = [...form.items];
-                                newItems[idx].serial_number = val;
-                                newItems[idx].asset_code = Object.entries(SN_DB).find(([s, c]) => s === val)?.[1] || "";
-                                up("items", newItems);
-                              }}
-                            />
+            {(form.model || isEdit) && (
+              <AEFld label="Quantity" req={true}>
+                <select
+                  value={form.items?.length || 0}
+                  onChange={(e) => handleQtyChange(parseInt(e.target.value) || 0)}
+                  style={{ maxWidth: "200px" }}
+                >
+                  {Array.from({ length: 20 }, (_, i) => i + 1).map(n => (
+                    <option key={n} value={n}>{n}</option>
+                  ))}
+                </select>
+              </AEFld>
+            )}
+
+            {form.items?.length > 0 && (
+              <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 12 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  {form.items.map((item, idx) => {
+                    const used = form.items.map((it, i) => i !== idx ? it.serial_number : null).filter(Boolean);
+                    const filteredSNs = availSNs.filter(sn => !used.includes(sn));
+
+                    return (
+                      <div key={idx} style={{ background: "white", padding: "16px", borderRadius: 12, border: "1px solid #e2e8f0", boxShadow: "0 2px 4px rgba(0,0,0,0.04)" }}>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: "16px", alignItems: "center" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                            <label style={{ fontSize: "0.65rem", color: "#64748b", fontWeight: 700, textTransform: "uppercase", width: "130px", flexShrink: 0 }}>Serial Number {idx + 1}</label>
+                            <div style={{ flex: 1 }}>
+                              <SmartSNInput
+                                value={item.serial_number}
+                                options={filteredSNs}
+                                onChange={(val) => {
+                                  const newItems = [...form.items];
+                                  newItems[idx].serial_number = val;
+                                  newItems[idx].asset_code = Object.entries(SN_DB).find(([s, c]) => s === val)?.[1] || "";
+                                  up("items", newItems);
+                                }}
+                              />
+                            </div>
                           </div>
-                        </div>
-                        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                          <label style={{ fontSize: "0.65rem", color: "#64748b", fontWeight: 700, textTransform: "uppercase", width: "130px", flexShrink: 0 }}>Lokasi Penempatan</label>
-                          <div style={{ flex: 1 }}>
-                            <SmartLocationInput
-                              value={item.location}
-                              onChange={(v) => {
-                                const newItems = [...form.items];
-                                newItems[idx].location = v;
-                                up("items", newItems);
-                              }}
-                            />
+                          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                            <label style={{ fontSize: "0.65rem", color: "#64748b", fontWeight: 700, textTransform: "uppercase", width: "130px", flexShrink: 0 }}>Lokasi Penempatan</label>
+                            <div style={{ flex: 1 }}>
+                              <SmartLocationInput
+                                value={item.location}
+                                onChange={(v) => {
+                                  const newItems = [...form.items];
+                                  newItems[idx].location = v;
+                                  up("items", newItems);
+                                }}
+                              />
+                            </div>
                           </div>
+                          <button
+                            onClick={() => up("items", form.items.filter((_, i) => i !== idx))}
+                            style={{ color: "#ef4444", background: "none", border: "none", cursor: "pointer", padding: "8px", display: "flex", alignItems: "center", justifyContent: "center" }}
+                            title="Hapus baris"
+                          >
+                            <Icon d={I.trash} size={16} />
+                          </button>
                         </div>
-                        <button
-                          onClick={() => up("items", form.items.filter((_, i) => i !== idx))}
-                          style={{ color: "#ef4444", background: "none", border: "none", cursor: "pointer", padding: "8px", display: "flex", alignItems: "center", justifyContent: "center", transition: "transform 0.2s" }}
-                          onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.1)"}
-                          onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
-                          title="Hapus baris"
-                        >
-                          <Icon d={I.trash} size={16} />
-                        </button>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
-              {!isEdit && (
+                    );
+                  })}
+                </div>
                 <button
                   className="btn btn-outline"
                   style={{ width: "100%", padding: "8px", fontSize: "0.75rem", justifyContent: "center", borderStyle: "dashed" }}
                   onClick={() => {
                     const ac = availCodes[form.items.length] || "";
-                    const sn = ac ? Object.entries(SN_DB).find(([s, c]) => c === ac)?.[0] || "" : "";
-                    up("items", [...form.items, { serial_number: sn, location: "", asset_code: ac }]);
+                    const sn = ac ? Object.entries(SN_DB).find(([s, c]) => s === ac)?.[0] || "" : "";
+                    up("items", [...form.items, { id: `new-${Date.now()}-${form.items.length}`, serial_number: sn, location: "", asset_code: ac }]);
                   }}
                 >
                   <Icon d={I.plus} size={12} /> Tambah Quantity
                 </button>
-              )}
-            </div>
-          )}
+              </div>
+            )}
 
-          <AEFld label="Nilai Perolehan (/unit)" req={true}>
-            <div
-              style={{ display: "flex", alignItems: "center", gap: "8px" }}
-            >
-              <input
-                type="number"
-                value={form.acquisition_value || ""}
-                onChange={(e) =>
-                  up("acquisition_value", e.target.value)
-                }
-                placeholder="0"
-                style={{ flex: 1 }}
-              />
-              {parseFloat(form.acquisition_value) > 0 && (
-                <span
-                  className="aefld-hint"
-                  style={{
-                    color: "var(--blue)",
-                    fontWeight: 600,
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {fmt(parseFloat(form.acquisition_value))}
-                </span>
-              )}
-            </div>
-          </AEFld>
-        </div>
-      </div>
-      <div className="edit-footer">
-        <div>
-          <span style={{ fontSize: "0.75rem", color: "var(--ink3)" }}>
-            Nilai Aset Input
-          </span>
-          <div
-            style={{ fontSize: "1rem", fontWeight: 800, color: "var(--green)" }}
-          >
-            {fmt(amount)}
+            <AEFld label="Nilai Perolehan (/unit)" req={true}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <input
+                  type="number"
+                  value={form.acquisition_value || ""}
+                  onChange={(e) => up("acquisition_value", e.target.value)}
+                  placeholder="0"
+                  style={{ flex: 1 }}
+                />
+                {amount > 0 && (
+                  <span className="aefld-hint" style={{ color: "var(--blue)", fontWeight: 600 }}>
+                    {fmt(amount)}
+                  </span>
+                )}
+              </div>
+            </AEFld>
           </div>
         </div>
+      </div>
+
+      <div className="edit-footer">
+        <div>
+          <span style={{ fontSize: "0.75rem", color: "var(--ink3)" }}>Total Nilai Input</span>
+          <div style={{ fontSize: "1rem", fontWeight: 800, color: "var(--green)" }}>{fmt(amount * (form.items?.length || 0))}</div>
+        </div>
         <div style={{ display: "flex", gap: 12 }}>
-          <button className="btn btn-outline" onClick={onBack}>
-            Batal
-          </button>
-          <button
-            className="btn btn-green"
-            onClick={save}
-            disabled={!form.items?.length || !amount}
-            style={{
-              opacity:
-                !form.items?.length || !amount ? 0.5 : 1,
-            }}
-          >
+          <button className="btn btn-outline" onClick={onBack}>Batal</button>
+          <button className="btn btn-green" onClick={save} disabled={!form.items?.length || !amount}>
             <Icon d={I.save} size={12} /> {isEdit ? "Perbarui" : "Simpan"}
           </button>
         </div>
@@ -2832,7 +2803,7 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
     </div>
   );
 }
-// ══════ ASSET ENTRY PAGE (NEW ONLY) ══════
+// ══════ ASSET ENTRY PAGE (CAPEX) ══════
 function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
   const [form, setForm] = useState({ category: "", model: "", items: [], acquisition_value: "" });
   const upd = (k, v) => setForm(f => ({ ...f, [k]: v }));
@@ -3060,11 +3031,10 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
           <Icon d={I.save} size={12} /> Simpan
         </button>
       </div>
-
     </div>
   );
 }
-// ══════ EDIT ASSET PAGE ══════
+
 function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) {
   const [form, setForm] = useState(() => {
     const code = asset.asset_code || "";
@@ -3108,11 +3078,11 @@ function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) 
       return;
     }
     const today = new Date().toISOString().split('T')[0];
-    const cl = form.items.map((it, idx) => {
+    const finalItems = form.items.map((it, idx) => {
       const locStr = it.location || "";
       const p = locStr.split(" / ").map(s => s.trim());
       return {
-        id: it.id || newId() + idx,
+        id: (idx === 0) ? asset.id : it.id || `new-${Date.now()}-${idx}`,
         category: form.category,
         model: form.model,
         asset_code: it.asset_code || `ASSET-NEW-${Date.now()}-${idx}`,
@@ -3127,11 +3097,8 @@ function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) 
       };
     });
 
-    // Replace existing assets with the new list (filter out the one being edited, then add the new items)
-    // Note: if multiple items are edited/added, we should handle correctly.
-    // Here we just replace the entire asset being edited with potentially multiple new entries.
     const filteredAssets = (anggaran.assets || []).filter(a => a.id !== asset.id);
-    onSave(anggaran.id, [...filteredAssets, ...cl]);
+    onSave(anggaran.id, [...filteredAssets, ...finalItems]);
     showToast("Data barang berhasil diperbarui");
     onBack();
   };
@@ -3167,23 +3134,26 @@ function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) 
           <span className="asset-number-badge">DETAIL BARANG</span>
         </div>
         <div className="acard-body">
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <AEFld label="Jenis Barang" req={true}>
-              <select value={form.category || ""} disabled={true}>
-                <option value={form.category}>{form.category}</option>
-              </select>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "4px 0" }}>
+                <Icon d={I.package} size={14} style={{ color: "var(--blue)" }} />
+                <span style={{ fontSize: "0.95rem", fontWeight: 700, color: "var(--ink2)" }}>{form.category}</span>
+              </div>
             </AEFld>
 
             <AEFld label="Tipe Barang" req={true}>
-              <select value={form.model || ""} disabled={true}>
-                <option value={form.model}>{form.model}</option>
-              </select>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "4px 0" }}>
+                <div style={{ width: 4, height: 20, background: "var(--blue)", borderRadius: 2 }} />
+                <span style={{ fontSize: "1rem", fontWeight: 800, color: "var(--ink)", letterSpacing: "-0.2px" }}>{form.model}</span>
+              </div>
             </AEFld>
 
             <AEFld label="Quantity" req={true}>
               <select
                 value={form.items?.length || 0}
                 onChange={(e) => handleQtyChange(parseInt(e.target.value) || 0)}
+                style={{ maxWidth: "200px" }}
               >
                 {Array.from({ length: 20 }, (_, i) => i + 1).map(n => (
                   <option key={n} value={n}>{n}</option>
@@ -3231,9 +3201,7 @@ function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) 
                           </div>
                           <button
                             onClick={() => upd("items", form.items.filter((_, i) => i !== idx))}
-                            style={{ color: "#ef4444", background: "none", border: "none", cursor: "pointer", padding: "8px", display: "flex", alignItems: "center", justifyContent: "center", transition: "transform 0.2s" }}
-                            onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.1)"}
-                            onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
+                            style={{ color: "#ef4444", background: "none", border: "none", cursor: "pointer", padding: "8px", display: "flex", alignItems: "center", justifyContent: "center" }}
                             title="Hapus baris"
                           >
                             <Icon d={I.trash} size={16} />
@@ -3248,8 +3216,8 @@ function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) 
                   style={{ width: "100%", padding: "8px", fontSize: "0.75rem", justifyContent: "center", borderStyle: "dashed" }}
                   onClick={() => {
                     const ac = availCodes[form.items.length] || "";
-                    const sn = ac ? Object.entries(SN_DB).find(([s, c]) => s === ac)?.[0] || "" : "";
-                    upd("items", [...form.items, { id: newId() + form.items.length, serial_number: sn, location: "", asset_code: ac }]);
+                    const sn = ac ? Object.entries(SN_DB).find(([s, c]) => c === ac)?.[0] || "" : "";
+                    upd("items", [...form.items, { id: `new-${Date.now()}-${form.items.length}`, serial_number: sn, location: "", asset_code: ac }]);
                   }}
                 >
                   <Icon d={I.plus} size={12} /> Tambah Quantity
@@ -3285,17 +3253,15 @@ function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) 
         </div>
       </div>
 
-      <div className="subpage-footer">
-        <button className="btn btn-outline" onClick={onBack}>
-          Batal
-        </button>
+      <div className="subpage-footer" style={{ marginTop: 20, display: "flex", justifyContent: "flex-end", gap: 12, background: "white", padding: 16, borderRadius: 12, border: "1px solid var(--border)", boxShadow: "var(--sh-md)" }}>
+        <button className="btn btn-outline" onClick={onBack}>Batal</button>
         <button
           className="btn btn-green"
           onClick={save}
           disabled={!form.items?.length || !form.acquisition_value}
           style={{ opacity: (!form.items?.length || !form.acquisition_value) ? 0.5 : 1 }}
         >
-          <Icon d={I.save} size={12} /> Perbarui
+          <Icon d={I.save} size={12} /> Simpan Perubahan
         </button>
       </div>
     </div>
@@ -3820,8 +3786,8 @@ function PekerjaanListPage({
           { label: "Daftar Anggaran", onClick: onBack, icon: I.layers },
           {
             label:
-              anggaran.nama.substring(0, 35) +
-              (anggaran.nama.length > 35 ? "…" : ""),
+              (anggaran?.nama || "Detail Anggaran").substring(0, 35) +
+              ((anggaran?.nama?.length || 0) > 35 ? "…" : ""),
             icon: I.briefcase,
           },
         ]}
@@ -3832,7 +3798,7 @@ function PekerjaanListPage({
           {anggaran.kode}
         </code>
         <h2 style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--ink)" }}>
-          {anggaran.nama}
+          {anggaran?.nama || "Nama Anggaran"}
         </h2>
       </div>
 
@@ -3852,15 +3818,15 @@ function PekerjaanListPage({
         }}
       >
         {[
-          ["Tahun RKAP", isMulti ? `${anggaran.thn_rkap_awal} — ${anggaran.thn_rkap_akhir}` : anggaran.thn_rkap_awal],
+          ["Tahun RKAP", isMulti ? `${anggaran?.thn_rkap_awal || '—'} — ${anggaran?.thn_rkap_akhir || '—'}` : (anggaran?.thn_rkap_awal || '—')],
           "DIV",
-          ["Nilai KAD", fmt(anggaran.nilai_kad), false, "var(--blue)"],
+          ["Nilai KAD", fmt(anggaran?.nilai_kad || 0), false, "var(--blue)"],
           isMulti
             ? [
               "Nilai RKAP Per Tahun",
               (
                 <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                  {(anggaran.history_anggaran || []).map((h) => (
+                  {(anggaran?.history_anggaran || []).map((h) => (
                     <div key={h.id || h.tahun} style={{ fontSize: "0.72rem", whiteSpace: "nowrap", color: "var(--ink2)" }}>
                       RKAP {h.tahun}: <span style={{ fontWeight: 800, color: "var(--blue)" }}>{fmt(h.nilai_rkap)}</span>
                     </div>
@@ -3868,11 +3834,11 @@ function PekerjaanListPage({
                 </div>
               ),
             ]
-            : ["Nilai RKAP", fmt(anggaran.nilai_kad), false, "var(--blue)"],
+            : ["Nilai RKAP", fmt(anggaran?.nilai_kad || 0), false, "var(--blue)"],
           "DIV",
           ["Nilai RAB", fmt(totalRab), false, "var(--amber)"],
           "DIV",
-          ["Nilai Kontrak", fmt(totalKontrak), false, totalKontrak > anggaran.nilai_kad ? "var(--red)" : "var(--blue)"],
+          ["Nilai Kontrak", fmt(totalKontrak), false, totalKontrak > (anggaran?.nilai_kad || 0) ? "var(--red)" : "var(--blue)"],
           ["% Kontrak", `${totalPercent.toFixed(1)}%`, false, "var(--ink2)"],
           "DIV",
           [
@@ -3881,13 +3847,14 @@ function PekerjaanListPage({
               <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
                 <span>{filteredByDate.length} Pos</span>
                 <span style={{ fontSize: "0.82rem", color: "var(--amber)", fontWeight: 700 }}>
-                  ({fmt(anggaran.nilai_kad - totalKontrak)})
+                  ({fmt((anggaran?.nilai_kad || 0) - totalKontrak)})
                 </span>
               </div>
             ),
           ],
         ].map((item) => {
           if (item === "DIV") return <div key={Math.random()} className="asset-ctx-divider" />;
+          if (!Array.isArray(item)) return null;
           const [lbl, val, isCode, color] = item;
           return (
             <div key={lbl} className="asset-ctx-item" style={{ gap: 4 }}>
@@ -4188,6 +4155,7 @@ export default function BudgetManagement({ forcedType }) {
   const filteredAnggaran = useMemo(
     () =>
       capexData.filter((a) => {
+        if (!a || !a.id) return false;
         // REVISI: Filter berdasarkan range RKAP Awal & Akhir
         if (capexThnFrom !== "all" && String(a.thn_rkap_awal) !== capexThnFrom) return false;
         if (capexThnTo !== "all" && String(a.thn_rkap_akhir) !== capexThnTo) return false;
@@ -4198,7 +4166,7 @@ export default function BudgetManagement({ forcedType }) {
         )
           return false;
         const hasAssets = (a.assets || []).length > 0;
-        if (hasAssets && a.nilai_kad === 0) return false;
+        if (hasAssets && (a.nilai_kad || 0) === 0) return false;
         return true;
       }),
     [capexData, capexThnFrom, capexThnTo, capexAngSearch],
@@ -4258,7 +4226,7 @@ export default function BudgetManagement({ forcedType }) {
     }, 0);
     const capexRab = capexFiltered.reduce(
       (s, a) =>
-        s + (a.projects || []).reduce((ss, p) => ss + (p.nilai_rab || 0), 0),
+        s + (a?.projects || []).reduce((ss, p) => ss + (p?.nilai_rab || 0), 0),
       0,
     );
     const capexAset = capexFiltered.reduce(
