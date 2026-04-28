@@ -1210,6 +1210,107 @@ function SmartLocationInput({ value, onChange, placeholder = "Pilih Branch / Zon
   );
 }
 
+function SmartAssetInput({ value, onChange, options, placeholder = "Ketik/Pilih Nama Barang" }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const wrapperRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const valStr = value || "";
+  const filteredOptions = options.filter(o => 
+    o.name.toLowerCase().includes(valStr.toLowerCase()) || 
+    o.model.toLowerCase().includes(valStr.toLowerCase())
+  );
+
+  return (
+    <div ref={wrapperRef} style={{ position: "relative", width: "100%" }}>
+      <div style={{ position: 'relative' }}>
+        <input
+          value={valStr}
+          onChange={(e) => {
+            onChange(e.target.value);
+            setIsOpen(true);
+          }}
+          onFocus={() => setIsOpen(true)}
+          placeholder={placeholder}
+          style={{
+            width: "100%",
+            padding: "8px 12px",
+            border: "1px solid #cbd5e1",
+            borderRadius: 8,
+            fontSize: "0.8rem",
+            background: "#fcfdfe",
+            color: "#111827",
+            fontWeight: 500,
+            outline: "none",
+            transition: "all 0.2s"
+          }}
+        />
+        {valStr && (
+          <button 
+            onClick={() => { onChange(""); setIsOpen(false); }}
+            style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: 4 }}
+          >
+            <Icon d={I.x} size={12} />
+          </button>
+        )}
+      </div>
+      {isOpen && filteredOptions.length > 0 && (
+        <div style={{
+          position: "absolute",
+          top: "100%",
+          left: 0,
+          right: 0,
+          background: "white",
+          border: "1px solid #e2e8f0",
+          borderRadius: 12,
+          marginTop: 6,
+          zIndex: 100,
+          boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+          maxHeight: 250,
+          overflowY: "auto"
+        }}>
+          {filteredOptions.map((opt, i) => (
+            <div
+              key={i}
+              onClick={() => {
+                onChange(opt.model);
+                setIsOpen(false);
+              }}
+              style={{
+                padding: "10px 12px",
+                fontSize: "0.82rem",
+                cursor: "pointer",
+                borderBottom: "1px solid #f1f5f9",
+                transition: "background 0.2s",
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10
+              }}
+              onMouseEnter={(e) => e.target.style.background = "#eff6ff"}
+              onMouseLeave={(e) => e.target.style.background = "white"}
+            >
+              <div style={{ width: 4, height: 4, borderRadius: "50%", background: "var(--blue)" }} />
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ fontWeight: 700, color: '#1e293b' }}>{opt.name}</span>
+                <span style={{ fontSize: '0.7rem', color: '#64748b' }}>{opt.model} • {opt.category}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Toast({ msg, onDone }) {
   useEffect(() => {
     const t = setTimeout(onDone, 2400);
@@ -2917,41 +3018,36 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
             </AEFld>
             {form.category && (
               <AEFld label="Nama Barang" req={true}>
-                <select
+                <SmartAssetInput
                   value={form.model || ""}
-                  onChange={(e) => {
-                    upd("model", e.target.value);
+                  options={Object.values(ASSET_DB).filter(x => x.category === form.category)}
+                  onChange={(val) => {
+                    upd("model", val);
                     upd("items", []);
                   }}
-                >
-                  <option value="">— Pilih Tipe —</option>
-                  {Object.values(ASSET_DB)
-                    .filter(x => x.category === form.category)
-                    .map(m => (
-                      <option key={m.model} value={m.model}>{m.name}</option>
-                    ))}
-                </select>
+                  placeholder="Ketik nama atau pilih dari daftar..."
+                />
               </AEFld>
             )}
 
             {form.model && (
-              <AEFld label="Quantity" req={true}>
-                <select
-                  value={form.items?.length || 0}
-                  onChange={(e) => handleQtyChange(parseInt(e.target.value) || 0)}
-                >
-                  <option value={0}>— Pilih Quantity —</option>
-                  {Array.from({ length: 10 }, (_, i) => i + 1).map(n => (
-                    <option key={n} value={n}>{n}</option>
-                  ))}
-                </select>
-              </AEFld>
-            )}
+              <div style={{ marginTop: 8 }}>
+                <AEFld label="Quantity">
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 8, padding: "2px 0" }}>
+                    <span style={{ 
+                      fontSize: "1.2rem", 
+                      fontWeight: 800, 
+                      color: "var(--blue)"
+                    }}>
+                      {form.items?.length || 0}
+                    </span>
+                    <span style={{ fontSize: "0.75rem", color: "var(--ink3)", fontWeight: 600, textTransform: "none" }}>
+                      Unit Terdaftar
+                    </span>
+                  </div>
+                </AEFld>
 
-            {form.items?.length > 0 && (
-              <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 12 }}>
-
-                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "12px" }}>
                   {form.items.map((item, idx) => {
                     const used = form.items.map((it, i) => i !== idx ? it.serial_number : null).filter(Boolean);
                     const filteredSNs = availSNs.filter(sn => !used.includes(sn));
@@ -3001,16 +3097,25 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
                     );
                   })}
                 </div>
+                
                 <button
                   className="btn btn-outline"
-                  style={{ width: "100%", padding: "8px", fontSize: "0.75rem", justifyContent: "center", borderStyle: "dashed" }}
+                  style={{ 
+                    width: "100%", 
+                    padding: "10px", 
+                    marginTop: "12px", 
+                    fontSize: "0.75rem", 
+                    justifyContent: "center", 
+                    borderStyle: "dashed",
+                    borderColor: "var(--blue-mid)",
+                    color: "var(--blue)",
+                    background: "var(--blue-lt)"
+                  }}
                   onClick={() => {
-                    const ac = availCodes[form.items.length] || "";
-                    const sn = ac ? Object.entries(SN_DB).find(([s, c]) => c === ac)?.[0] || "" : "";
-                    upd("items", [...form.items, { id: newId() + form.items.length, serial_number: sn, location: "", asset_code: ac }]);
+                    upd("items", [...form.items, { id: `new-${Date.now()}`, serial_number: "", location: "", asset_code: "" }]);
                   }}
                 >
-                  <Icon d={I.plus} size={12} /> Tambah Quantity
+                  <Icon d={I.plus} size={14} /> Tambah Unit (Tambah Quantity)
                 </button>
               </div>
             )}
@@ -3171,16 +3276,19 @@ function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) 
               </div>
             </AEFld>
 
-            <AEFld label="Quantity" req={true}>
-              <select
-                value={form.items?.length || 0}
-                onChange={(e) => handleQtyChange(parseInt(e.target.value) || 0)}
-                style={{ maxWidth: "200px" }}
-              >
-                {Array.from({ length: 20 }, (_, i) => i + 1).map(n => (
-                  <option key={n} value={n}>{n}</option>
-                ))}
-              </select>
+            <AEFld label="Quantity">
+              <div style={{ display: "flex", alignItems: "baseline", gap: 8, padding: "2px 0" }}>
+                <span style={{ 
+                  fontSize: "1.2rem", 
+                  fontWeight: 800, 
+                  color: "var(--blue)"
+                }}>
+                  {form.items?.length || 0}
+                </span>
+                <span style={{ fontSize: "0.75rem", color: "var(--ink3)", fontWeight: 600, textTransform: "none" }}>
+                  Unit Terdaftar
+                </span>
+              </div>
             </AEFld>
 
             {form.items?.length > 0 && (
@@ -3235,14 +3343,24 @@ function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) 
                 </div>
                 <button
                   className="btn btn-outline"
-                  style={{ width: "100%", padding: "8px", fontSize: "0.75rem", justifyContent: "center", borderStyle: "dashed" }}
+                  style={{ 
+                    width: "100%", 
+                    padding: "10px", 
+                    marginTop: "12px", 
+                    fontSize: "0.75rem", 
+                    justifyContent: "center", 
+                    borderStyle: "dashed",
+                    borderColor: "var(--blue-mid)",
+                    color: "var(--blue)",
+                    background: "var(--blue-lt)"
+                  }}
                   onClick={() => {
                     const ac = availCodes[form.items.length] || "";
                     const sn = ac ? Object.entries(SN_DB).find(([s, c]) => c === ac)?.[0] || "" : "";
                     upd("items", [...form.items, { id: `new-${Date.now()}-${form.items.length}`, serial_number: sn, location: "", asset_code: ac }]);
                   }}
                 >
-                  <Icon d={I.plus} size={12} /> Tambah Quantity
+                  <Icon d={I.plus} size={14} /> Tambah Unit Baru (Tambah Quantity)
                 </button>
               </div>
             )}
