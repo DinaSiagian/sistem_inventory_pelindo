@@ -2078,7 +2078,7 @@ const ViewAsset = () => {
       branch: "Belawan",
       zona: "LPG",
       subzona: "DMG",
-      value: 12000000,
+      value: 6000000,
       id_pekerjaan: 1,
       quantity: 2,
       units: [
@@ -2105,10 +2105,9 @@ const ViewAsset = () => {
       subzona: "DMG",
       value: 1200000000,
       id_pekerjaan: 3,
-      quantity: 2,
+      quantity: 1,
       units: [
         { serialNumber: "SN-EXC-336-01", location: "Gudang Dumai - Sektor A" },
-        { serialNumber: "SN-EXC-336-02", location: "Workshop Perbaikan - Lt. Dasar" },
       ],
       photo: null,
       specs: [
@@ -2156,10 +2155,9 @@ const ViewAsset = () => {
       subzona: "PKR",
       value: 350000000,
       id_pekerjaan: "OPEX-5",
-      quantity: 2,
+      quantity: 1,
       units: [
         { serialNumber: "BK 1234 ZZ", location: "Pool Kendaraan Belawan" },
-        { serialNumber: "BK 5678 AA", location: "Bengkel Operasional - Sektor B" },
       ],
       photo: null,
       specs: [
@@ -2347,7 +2345,7 @@ const ViewAsset = () => {
       tersedia: assets.filter((a) => a.status === "Tersedia").length,
       maintenance: assets.filter((a) => a.status === "Maintenance").length,
       dipinjam: assets.filter((a) => a.status === "Dipinjam").length,
-      totalNilai: assets.reduce((s, a) => s + (a.value || 0), 0),
+      totalNilai: assets.reduce((s, a) => s + ((a.value || 0) * (a.quantity || 1)), 0),
     }),
     [assets],
   );
@@ -3238,32 +3236,35 @@ const ViewAsset = () => {
                             </span>
                           </div>
                         </div>
-                        <div className="asset-card-footer">
-                          <span className="asset-card-value">
-                            {fmt(asset.value)}
-                          </span>
-                          <div
-                            className="asset-card-actions"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <button
-                              className="card-action-btn"
-                              onClick={() => {
-                                setSelectedAsset(asset);
-                                setCurrentView("barcode");
-                              }}
+                        <div className="asset-card-footer" style={{ flexDirection: "column", alignItems: "flex-start", gap: "4px" }}>
+                          <div style={{ fontSize: "10px", color: "#64748b", fontWeight: "600" }}>HARGA SATUAN: {fmt(asset.value)}</div>
+                          <div style={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
+                            <span className="asset-card-value">
+                              {fmt(asset.value * (asset.quantity || 1))}
+                            </span>
+                            <div
+                              className="asset-card-actions"
+                              onClick={(e) => e.stopPropagation()}
                             >
-                              <Icon.Barcode />
-                            </button>
-                            <button
-                              className="card-action-btn danger"
-                              onClick={() => {
-                                setSelectedAsset(asset);
-                                setCurrentView("delete");
-                              }}
-                            >
-                              <Icon.Trash />
-                            </button>
+                              <button
+                                className="card-action-btn"
+                                onClick={() => {
+                                  setSelectedAsset(asset);
+                                  setCurrentView("barcode");
+                                }}
+                              >
+                                <Icon.Barcode />
+                              </button>
+                              <button
+                                className="card-action-btn danger"
+                                onClick={() => {
+                                  setSelectedAsset(asset);
+                                  setCurrentView("delete");
+                                }}
+                              >
+                                <Icon.Trash />
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -3280,7 +3281,7 @@ const ViewAsset = () => {
                   <th>NAMA BARANG</th>
                   <th>KATEGORI</th>
                   <th>KUANTITAS</th>
-                  <th>NILAI</th>
+                  <th>TOTAL NILAI</th>
                   <th>AKSI</th>
                 </tr>
               </thead>
@@ -3369,7 +3370,7 @@ const ViewAsset = () => {
                             {asset.quantity || (asset.units ? asset.units.length : 1)}
                           </span>
                         </td>
-                        <td className="fw-bold">{fmt(asset.value)}</td>
+                        <td className="fw-bold">{fmt(asset.value * (asset.quantity || 1))}</td>
                         <td onClick={(e) => e.stopPropagation()}>
                           <div
                             className="action-wrap"
@@ -3618,6 +3619,8 @@ const ViewAsset = () => {
                               zonaCode: zCode,
                               subzona: subzonaName,
                               subzonaCode: szCode,
+                              value: a.value || "",
+                              id_pekerjaan: a.id_pekerjaan || "",
                               units: a.units && a.units.length > 0
                                 ? a.units.map(u => ({ serialNumber: u.serialNumber, location: u.location }))
                                 : [{ serialNumber: "", location: "" }],
@@ -4345,6 +4348,21 @@ const ViewAsset = () => {
                 }
                 style={modernInputStyle}
               />
+            </TableRow>
+            <TableRow label="Harga Satuan" required>
+              <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                <span style={{ position: "absolute", left: "12px", color: "#64748b", fontWeight: "bold", fontSize: "14px" }}>Rp</span>
+                <input
+                  type="text"
+                  placeholder="0"
+                  value={editData.value ? new Intl.NumberFormat('id-ID').format(editData.value) : ""}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, "");
+                    setEditData((p) => ({ ...p, value: val }));
+                  }}
+                  style={{ ...modernInputStyle, paddingLeft: "40px" }}
+                />
+              </div>
             </TableRow>
             <TableRow label="Kuantitas">
               <div style={{ fontSize: "15px", fontWeight: "700", color: "#0f172a", background: "#f1f5f9", padding: "6px 14px", borderRadius: "8px" }}>
@@ -5256,17 +5274,6 @@ const ViewAsset = () => {
                   (Zona: {a.zona} · Sub: {a.subzona})
                 </span>
               </TableRow>
-              <TableRow label="Nilai Barang">
-                <span
-                  style={{
-                    fontSize: "15px",
-                    fontWeight: "800",
-                    color: "#16a34a",
-                  }}
-                >
-                  {fmt(a.value)}
-                </span>
-              </TableRow>
               <TableRow label="Tipe Anggaran">
                 <span
                   style={{
@@ -5320,6 +5327,7 @@ const ViewAsset = () => {
                   <tr>
                     <th style={{ padding: "12px 16px", textAlign: "left", fontSize: "12px", color: "#64748b", borderBottom: "1px solid #e2e8f0", width: "50px" }}>NO</th>
                     <th style={{ padding: "12px 16px", textAlign: "left", fontSize: "12px", color: "#64748b", borderBottom: "1px solid #e2e8f0" }}>SERIAL NUMBER</th>
+                    <th style={{ padding: "12px 16px", textAlign: "left", fontSize: "12px", color: "#64748b", borderBottom: "1px solid #e2e8f0" }}>HARGA SATUAN</th>
                     <th style={{ padding: "12px 16px", textAlign: "left", fontSize: "12px", color: "#64748b", borderBottom: "1px solid #e2e8f0" }}>STATUS</th>
                     <th style={{ padding: "12px 16px", textAlign: "left", fontSize: "12px", color: "#64748b", borderBottom: "1px solid #e2e8f0" }}>LOKASI SAAT INI</th>
                   </tr>
@@ -5332,6 +5340,7 @@ const ViewAsset = () => {
                       <tr key={idx}>
                         <td style={{ padding: "12px 16px", fontSize: "14px", borderBottom: "1px solid #f1f5f9", color: "#94a3b8", fontWeight: "bold" }}>{idx + 1}</td>
                         <td style={{ padding: "12px 16px", fontSize: "14px", borderBottom: "1px solid #f1f5f9", color: "#0f172a", fontWeight: "600" }}>{u.serialNumber}</td>
+                        <td style={{ padding: "12px 16px", fontSize: "14px", borderBottom: "1px solid #f1f5f9", color: "#475569" }}>{fmt(a.value)}</td>
                         <td style={{ padding: "12px 16px", fontSize: "14px", borderBottom: "1px solid #f1f5f9" }}>
                           <span style={{
                             padding: "4px 8px",
@@ -5359,6 +5368,12 @@ const ViewAsset = () => {
                     );
                   })}
                 </tbody>
+                <tfoot style={{ background: "#f8fafc", borderTop: "2px solid #e2e8f0" }}>
+                  <tr>
+                    <td colSpan="4" style={{ padding: "12px 16px", textAlign: "right", fontSize: "13px", fontWeight: "800", color: "#64748b" }}>TOTAL NILAI KESELURUHAN ASET:</td>
+                    <td style={{ padding: "12px 16px", fontSize: "16px", fontWeight: "900", color: "#16a34a" }}>{fmt(a.value * (a.quantity || 1))}</td>
+                  </tr>
+                </tfoot>
               </table>
             </div>
           </div>
