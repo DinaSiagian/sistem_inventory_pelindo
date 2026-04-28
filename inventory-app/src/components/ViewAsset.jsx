@@ -9,9 +9,8 @@ const CAPEX_ANGGARAN = [
     thn_anggaran: 2024,
     pekerjaan: [
       {
-        id_pekerjaan: 1,
-        nm_pekerjaan:
-          "Pekerjaan Implementasi dan Standarisasi IT Infrastruktur (Planning & Control, CCTV dan SD-WAN Branch Malahayati, Lhokseumawe, Lembar, ParePare dan Garongkong) PT Pelindo Multi Terminal",
+        id_pekerjaan: "PKJ-2440015-001",
+        nm_pekerjaan: "Pekerjaan Implementasi CCTV",
       },
       {
         id_pekerjaan: 2,
@@ -48,9 +47,8 @@ const CAPEX_ANGGARAN = [
     thn_anggaran: 2024,
     pekerjaan: [
       {
-        id_pekerjaan: 6,
-        nm_pekerjaan:
-          "Penyiapan Infrastruktur IT (Kantor Pusat, Pelindo Place, Pelindo Tower, Malahayati, Lhokseumawe, Bima, Badas, Parepare, Gresik, Tanjung Emas, Mekar Putih, Meulaboh, Kuala Langsa dan Bumiharjo) PT Pelindo Multi Terminal",
+        id_pekerjaan: "PKJ-2440013-001",
+        nm_pekerjaan: "Pengadaan Server dan Network",
       },
     ],
   },
@@ -88,9 +86,8 @@ const CAPEX_ANGGARAN = [
     thn_anggaran: 2025,
     pekerjaan: [
       {
-        id_pekerjaan: 11,
-        nm_pekerjaan:
-          "Pemenuhan Kebutuhan Gate System, Planning and Control dan Perangkat Pendukung Roro pada Branch (Lembar Gilimas, Tanjung Wangi, Tanjung Emas, Sibolga, Balikpapan, Parepare dan Tanjung Balai Karimun) PT Pelindo Multi Terminal",
+        id_pekerjaan: "PKJ-2540011-001",
+        nm_pekerjaan: "Penyediaan Alat Berat Excavator",
       },
       {
         id_pekerjaan: 12,
@@ -2079,7 +2076,7 @@ const ViewAsset = () => {
       zona: "LPG",
       subzona: "DMG",
       value: 6000000,
-      id_pekerjaan: 1,
+      id_pekerjaan: "PKJ-2440015-001",
       quantity: 2,
       units: [
         { serialNumber: "SN-CCTV-001", location: "Area Dermaga - Tiang 1" },
@@ -2104,7 +2101,7 @@ const ViewAsset = () => {
       zona: "GDG",
       subzona: "DMG",
       value: 1200000000,
-      id_pekerjaan: 3,
+      id_pekerjaan: "PKJ-2540011-001",
       quantity: 1,
       units: [
         { serialNumber: "SN-EXC-336-01", location: "Gudang Dumai - Sektor A" },
@@ -2129,7 +2126,7 @@ const ViewAsset = () => {
       zona: "DTC",
       subzona: "PKR",
       value: 180000000,
-      id_pekerjaan: 5,
+      id_pekerjaan: "PKJ-2440013-001",
       quantity: 2,
       units: [
         { serialNumber: "SN-DELL-R740-01", location: "Data Center Lhokseumawe" },
@@ -2205,7 +2202,7 @@ const ViewAsset = () => {
       zona: "DTC",
       subzona: "PKR",
       value: 45000000,
-      id_pekerjaan: 4,
+      id_pekerjaan: "PKJ-2440013-001",
       quantity: 2,
       units: [
         { serialNumber: "SN-CISCO-9300-01", location: "Data Center Utama" },
@@ -3222,7 +3219,7 @@ const ViewAsset = () => {
                           <div className="asset-card-name">{asset.name}</div>
                           <div className="asset-card-meta">
                             <span className="cat-badge">{asset.category}</span>
-                            <span 
+                            <span
                               style={{
                                 fontSize: "11px",
                                 fontWeight: "700",
@@ -3316,7 +3313,7 @@ const ViewAsset = () => {
                     </td>
                   </tr>
                 ) : (
-                  paginated.map((asset) => {
+                  paginated.map((asset, idx) => {
                     const imgSrc = getAssetImage(asset);
                     const project = getProjectById(asset.id_pekerjaan);
                     return (
@@ -3389,7 +3386,7 @@ const ViewAsset = () => {
                               <Icon.Dots />
                             </button>
                             {activeDropdown === asset.id && (
-                              <div className="action-dropdown">
+                              <div className={`action-dropdown ${idx >= paginated.length - 2 ? "dropdown-up" : ""}`}>
                                 <button
                                   onClick={() => {
                                     setSelectedAsset(asset);
@@ -3694,7 +3691,7 @@ const ViewAsset = () => {
                 style={modernInputStyle}
               />
             </TableRow>
-            <TableRow label="ID Barang (Mulai)">
+            <TableRow label="ID Barang">
               <input
                 type="text"
                 readOnly
@@ -4348,21 +4345,6 @@ const ViewAsset = () => {
                 }
                 style={modernInputStyle}
               />
-            </TableRow>
-            <TableRow label="Harga Satuan" required>
-              <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
-                <span style={{ position: "absolute", left: "12px", color: "#64748b", fontWeight: "bold", fontSize: "14px" }}>Rp</span>
-                <input
-                  type="text"
-                  placeholder="0"
-                  value={editData.value ? new Intl.NumberFormat('id-ID').format(editData.value) : ""}
-                  onChange={(e) => {
-                    const val = e.target.value.replace(/\D/g, "");
-                    setEditData((p) => ({ ...p, value: val }));
-                  }}
-                  style={{ ...modernInputStyle, paddingLeft: "40px" }}
-                />
-              </div>
             </TableRow>
             <TableRow label="Kuantitas">
               <div style={{ fontSize: "15px", fontWeight: "700", color: "#0f172a", background: "#f1f5f9", padding: "6px 14px", borderRadius: "8px" }}>
