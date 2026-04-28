@@ -211,7 +211,35 @@ const SUBZONA_LIST = [
   { name: "Parkir", code: "PKR" },
   { name: "Jalan", code: "JLN" },
   { name: "Taman/Parkir", code: "TPK" },
+  { name: "Gudang", code: "GDN" },
+  { name: "Server Room", code: "SRV" },
+  { name: "Office", code: "OFC" },
 ];
+
+const LOCATION_MAP = {
+  "Belawan": {
+    "Lapangan": ["Dermaga", "Gudang", "Parkir"],
+    "Gedung": ["Lantai 1", "Lantai 2"],
+    "Data Center": ["Server Room"]
+  },
+  "Gresik": {
+    "Lapangan": ["Dermaga Utama", "Gudang Logistik"],
+    "Gedung": ["Kantor Cabang", "Ruang Rapat"]
+  },
+  "Dumai": {
+    "Gedung": ["Kantor Dumai"],
+    "Gudang": ["DMG"],
+    "Lapangan": ["Parkir Area"]
+  },
+  "Lhokseumawe": {
+    "Data Center": ["PKR"],
+    "Gedung": ["Kantor LHK"]
+  },
+  "Malahayati": {
+    "Data Center": ["PKR"],
+    "Lapangan": ["Dermaga Malahayati"]
+  }
+};
 const BUDGET_MASTERS = [
   {
     kd_anggaran_master: "5030905000",
@@ -838,8 +866,8 @@ body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:var(--bg);c
 .ctx-item{display:flex;flex-direction:column;gap:4px}
 .ctx-item span{font-size:0.65rem;font-weight:800;text-transform:uppercase;color:var(--ink4);letter-spacing:0.5px}
 .ctx-item strong{font-size:0.9rem;font-weight:700;color:var(--ink)}
-.sec-card{background:var(--surf);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--sh);overflow:hidden;margin-bottom:14px}
-.sec-card-hdr{display:flex;align-items:center;gap:11px;padding:12px 18px;background:var(--bg);border-bottom:1px solid var(--border)}
+.sec-card{background:var(--surf);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--sh);margin-bottom:14px}
+.sec-card-hdr{display:flex;align-items:center;gap:11px;padding:12px 18px;background:var(--bg);border-bottom:1px solid var(--border);border-top-left-radius:var(--r-lg);border-top-right-radius:var(--r-lg)}
 .sec-card-hdr h3{font-size:0.88rem;font-weight:800;color:var(--ink)}
 .sec-card-body{padding:16px}
 .hfld{display:flex;align-items:flex-start;gap:0;border-bottom:1px solid var(--border-lt);padding:8px 0}
@@ -860,9 +888,9 @@ body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:var(--bg);c
 .aefld input:focus,.aefld select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
 .aefld-hint{font-size:0.68rem;color:var(--ink4);margin-top:3px}
 .edit-footer{background:var(--surf);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;box-shadow:var(--sh-md);margin-top:20px;position:sticky;bottom:24px;z-index:10}
-.acard{background:var(--surf);border:1px solid var(--border);border-left:5px solid var(--blue);border-radius:var(--r-lg);overflow:hidden;margin-bottom:24px;box-shadow:0 4px 16px rgba(0,0,0,0.03);transition:box-shadow 0.2s}
+.acard{background:var(--surf);border:1px solid var(--border);border-left:5px solid var(--blue);border-radius:var(--r-lg);margin-bottom:24px;box-shadow:0 4px 16px rgba(0,0,0,0.03);transition:box-shadow 0.2s}
 .acard:hover{box-shadow:0 8px 24px rgba(0,0,0,0.06)}
-.acard-hdr{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--bg);border-bottom:1px solid var(--border)}
+.acard-hdr{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--bg);border-bottom:1px solid var(--border);border-top-right-radius:var(--r-lg)}
 .acard-body{padding:24px}
 .asset-number-badge{background:var(--ink);color:#fff;font-size:0.7rem;font-weight:800;padding:4px 10px;border-radius:6px;letter-spacing:0.5px}
 .acard-image-section{display:flex;align-items:flex-start;gap:20px;margin-bottom:20px;border-bottom:1px dashed var(--border);padding-bottom:20px}
@@ -1016,23 +1044,32 @@ function SmartLocationInput({ value, onChange, placeholder = "Pilih Branch / Zon
 
   const valStr = value || "";
   const parts = valStr.split(" / ");
-  const currentPartIdx = parts.length - 1;
+  const currentPartIdx = Math.max(0, parts.length - 1);
   const currentText = (parts[currentPartIdx] || "").trim();
 
   let options = [];
   let stepLabel = "";
+
+  const branch = (parts[0] || "").trim();
+  const zone = (parts[1] || "").trim();
+
   if (currentPartIdx === 0) {
     options = Object.values(BRANCH_BY_ENTITY).flat().map(b => b.name);
     stepLabel = "Pilih Branch";
   } else if (currentPartIdx === 1) {
-    options = ZONA_LIST.map(z => z.name);
-    stepLabel = "Pilih Zona";
+    options = LOCATION_MAP[branch] 
+      ? Object.keys(LOCATION_MAP[branch]) 
+      : ZONA_LIST.map(z => z.name);
+    stepLabel = `Zona di ${branch || 'Branch'}`;
   } else if (currentPartIdx === 2) {
-    options = SUBZONA_LIST.map(s => s.name);
-    stepLabel = "Pilih Subzona";
+    options = (LOCATION_MAP[branch] && LOCATION_MAP[branch][zone])
+      ? LOCATION_MAP[branch][zone]
+      : SUBZONA_LIST.map(s => s.name);
+    stepLabel = `Subzona di ${zone || 'Zona'}`;
   }
 
   const filteredOptions = options.filter(o => o.toLowerCase().includes(currentText.toLowerCase()));
+  const exactMatch = options.find(o => o.toLowerCase() === currentText.toLowerCase());
 
   const handleSelect = (opt) => {
     const newParts = [...parts];
@@ -1042,38 +1079,60 @@ function SmartLocationInput({ value, onChange, placeholder = "Pilih Branch / Zon
     if (currentPartIdx >= 2) setIsOpen(false);
   };
 
+  const handleCustom = () => {
+    if (!currentText) return;
+    const newParts = [...parts];
+    newParts[currentPartIdx] = currentText;
+    const nextVal = newParts.join(" / ") + (currentPartIdx < 2 ? " / " : "");
+    onChange(nextVal);
+    if (currentPartIdx >= 2) setIsOpen(false);
+    else setIsOpen(true);
+  };
+
   return (
     <div ref={wrapperRef} style={{ position: "relative", width: "100%" }}>
-      <input
-        value={valStr}
-        onChange={(e) => {
-          onChange(e.target.value);
-          setIsOpen(true);
-        }}
-        onFocus={() => setIsOpen(true)}
-        placeholder={placeholder}
-        style={{
-          width: "100%",
-          padding: "8px 12px",
-          border: "1px solid #cbd5e1",
-          borderRadius: 8,
-          fontSize: "0.8rem",
-          background: "#fcfdfe",
-          color: "#111827",
-          fontWeight: 500,
-          outline: "none",
-          transition: "all 0.2s"
-        }}
-        onFocusCapture={(e) => {
-          e.target.style.borderColor = "var(--blue)";
-          e.target.style.boxShadow = "0 0 0 3px rgba(37,99,235,0.1)";
-        }}
-        onBlurCapture={(e) => {
-          e.target.style.borderColor = "#cbd5e1";
-          e.target.style.boxShadow = "none";
-        }}
-      />
-      {isOpen && filteredOptions.length > 0 && currentPartIdx <= 2 && (
+      <div style={{ position: 'relative' }}>
+        <input
+          value={valStr}
+          onChange={(e) => {
+            onChange(e.target.value);
+            setIsOpen(true);
+          }}
+          onFocus={() => setIsOpen(true)}
+          placeholder={placeholder}
+          style={{
+            width: "100%",
+            padding: "8px 12px",
+            paddingRight: "30px",
+            border: "1px solid #cbd5e1",
+            borderRadius: 8,
+            fontSize: "0.8rem",
+            background: "#fcfdfe",
+            color: "#111827",
+            fontWeight: 500,
+            outline: "none",
+            transition: "all 0.2s"
+          }}
+          onFocusCapture={(e) => {
+            e.target.style.borderColor = "var(--blue)";
+            e.target.style.boxShadow = "0 0 0 3px rgba(37,99,235,0.1)";
+          }}
+          onBlurCapture={(e) => {
+            e.target.style.borderColor = "#cbd5e1";
+            e.target.style.boxShadow = "none";
+          }}
+        />
+        {valStr && (
+          <button 
+            onClick={() => { onChange(""); setIsOpen(false); }}
+            style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: 4 }}
+          >
+            <Icon d={I.x} size={12} />
+          </button>
+        )}
+      </div>
+
+      {isOpen && currentPartIdx <= 2 && (
         <div style={{
           position: "absolute",
           top: "100%",
@@ -1085,31 +1144,66 @@ function SmartLocationInput({ value, onChange, placeholder = "Pilih Branch / Zon
           marginTop: 6,
           zIndex: 100,
           boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
-          maxHeight: 220,
+          maxHeight: 250,
           overflowY: "auto",
           animation: "slideDown 0.2s ease-out"
         }}>
           <div style={{ padding: "8px 12px", fontSize: "0.65rem", fontWeight: 800, color: "#64748b", background: "#f8fafc", borderBottom: "1px solid #e2e8f0", textTransform: "uppercase", position: "sticky", top: 0, zIndex: 2 }}>
             {stepLabel}
           </div>
+          
           {filteredOptions.map((opt, i) => (
             <div
               key={i}
               onClick={() => handleSelect(opt)}
               style={{
                 padding: "10px 12px",
-                fontSize: "0.78rem",
-                color: "#334155",
+                fontSize: "0.82rem",
                 cursor: "pointer",
-                borderBottom: i === filteredOptions.length - 1 ? "none" : "1px solid #f1f5f9",
-                transition: "background 0.2s"
+                borderBottom: "1px solid #f1f5f9",
+                transition: "background 0.2s",
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                color: '#1e293b'
               }}
-              onMouseEnter={(e) => e.target.style.background = "var(--blue-lt)"}
+              onMouseEnter={(e) => e.target.style.background = "#eff6ff"}
               onMouseLeave={(e) => e.target.style.background = "white"}
             >
+              <Icon d={I.layers} size={12} style={{ color: 'var(--blue)' }} />
               {opt}
             </div>
           ))}
+
+          {currentText && !exactMatch && (
+            <div
+              onClick={handleCustom}
+              style={{
+                padding: "12px",
+                fontSize: "0.82rem",
+                cursor: "pointer",
+                background: "#f0fdf4",
+                color: "#16a34a",
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                borderTop: filteredOptions.length > 0 ? "1px dashed #bbf7d0" : "none"
+              }}
+              onMouseEnter={(e) => e.target.style.background = "#dcfce7"}
+              onMouseLeave={(e) => e.target.style.background = "#f0fdf4"}
+            >
+              <Icon d={I.plus} size={12} />
+              Konfirmasi Lokasi Baru: "{currentText}"
+            </div>
+          )}
+
+          {filteredOptions.length === 0 && !currentText && (
+            <div style={{ padding: "20px", textAlign: "center", color: "#94a3b8", fontSize: "0.75rem" }}>
+              <Icon d={I.search} size={24} style={{ opacity: 0.3, marginBottom: 8 }} />
+              <p>Ketik untuk mencari atau menambah lokasi baru</p>
+            </div>
+          )}
         </div>
       )}
     </div>
