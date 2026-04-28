@@ -119,65 +119,57 @@ function pctMeta(p) {
   return { label: "Healthy", bg: "#f0fdf4", fg: "#16a34a", border: "#bbf7d0" };
 }
 const ASSET_DB = {
-  "CCTV-HIK-DOME-2MP": {
+  "CCTV-24BLW-001": {
     name: "CCTV Hikvision DS-2CD2143G2-I",
     brand: "Hikvision",
     model: "DS-2CD2143G2-I",
     category: "CCTV",
   },
-  "ALAT-CAT-EXC-336": {
+  "ALAT-25DMI-001": {
     name: "Excavator CAT 336",
     brand: "CAT",
     model: "336",
     category: "Alat Berat",
   },
-  "SRV-DELL-R740": {
+  "SRV-25LHK-001": {
     name: "Server Dell PowerEdge R740",
     brand: "Dell",
     model: "R740",
     category: "Server",
   },
-  "KND-TYT-HLX-PKP": {
+  "KND-24BLW-001": {
     name: "Toyota Hilux Pickup",
     brand: "Toyota",
-    model: "Hilux",
+    model: "Hilux Pickup",
     category: "Kendaraan",
   },
-  "FURN-MJA-DIR-01": {
-    name: "Meja Kerja Direksi",
-    brand: "-",
-    model: "MK-DIR",
+  "FURN-26TJP-001": {
+    name: "Meja Kerja Direktori",
+    brand: "Generic",
+    model: "Meja Kerja Direktori",
     category: "Furniture",
   },
-  "SWT-CSC-CAT-9300L": {
+  "SWT-25MLH-001": {
     name: "Switch Cisco Catalyst 9300L",
     brand: "Cisco",
-    model: "9300L",
-    category: "Network",
-  },
-  "LPT-ASU-ROG-G15": {
-    name: "Laptop ASUS ROG Strix G15",
-    brand: "ASUS",
-    model: "ROG-G15",
-    category: "Laptop",
+    model: "Catalyst 9300L",
+    category: "Switch",
   },
 };
 
 const SN_DB = {
-  "SN-CCTV-001": "CCTV-HIK-DOME-2MP",
-  "SN-CCTV-002": "CCTV-HIK-DOME-2MP",
-  "SN-EXC-336-01": "ALAT-CAT-EXC-336",
-  "SN-EXC-336-02": "ALAT-CAT-EXC-336",
-  "SN-DELL-R740-01": "SRV-DELL-R740",
-  "SN-DELL-R740-02": "SRV-DELL-R740",
-  "BK 1234 ZZ": "KND-TYT-HLX-PKP",
-  "BK 5678 AA": "KND-TYT-HLX-PKP",
-  "SN-MEJA-001": "FURN-MJA-DIR-01",
-  "SN-MEJA-002": "FURN-MJA-DIR-01",
-  "SN-CISCO-9300-01": "SWT-CSC-CAT-9300L",
-  "SN-CISCO-9300-02": "SWT-CSC-CAT-9300L",
-  "SN-ROG-001": "LPT-ASU-ROG-G15",
-  "SN-ROG-002": "LPT-ASU-ROG-G15",
+  "SN-CCTV-001": "CCTV-24BLW-001",
+  "SN-CCTV-002": "CCTV-24BLW-001",
+  "SN-EXC-336-01": "ALAT-25DMI-001",
+  "SN-EXC-336-02": "ALAT-25DMI-001",
+  "SN-DELL-R740-01": "SRV-25LHK-001",
+  "SN-DELL-R740-02": "SRV-25LHK-001",
+  "BK 1234 ZZ": "KND-24BLW-001",
+  "BK 5678 AA": "KND-24BLW-001",
+  "SN-MEJA-001": "FURN-26TJP-001",
+  "SN-MEJA-002": "FURN-26TJP-001",
+  "SN-CISCO-9300-01": "SWT-25MLH-001",
+  "SN-CISCO-9300-02": "SWT-25MLH-001",
 };
 const ENTITAS_LIST = [
   { name: "Pelindo Multi Terminal", code: "SPMT" },
@@ -254,29 +246,19 @@ const BUDGET_MASTERS = [
 ];
 const mkAssets = () => [
   {
-    id: newId(),
-    asset_code: "SPMT-KPT-DTC-SRV-01",
-    serial_number: "DELL-KPT-SRV-001",
-    name: "Server Rack Kantor Pusat — Rack 1",
+    id: "AST-SRV-25LHK-001",
+    asset_code: "SRV-25LHK-001",
+    name: "Server Dell PowerEdge R740",
     brand: "Dell",
-    model: "PowerEdge R750",
+    model: "R740",
     category: "Server",
-    location: "Kantor Pusat",
+    jumlah: 2,
     procurement_date: "2024-09-10",
-    acquisition_value: 450000000,
-    image: null,
-  },
-  {
-    id: newId(),
-    asset_code: "SPMT-KPT-DTC-SRV-02",
-    serial_number: "DELL-KPT-SRV-002",
-    name: "Server Rack Kantor Pusat — Rack 2",
-    brand: "Dell",
-    model: "PowerEdge R750",
-    category: "Server",
-    location: "Kantor Pusat",
-    procurement_date: "2024-09-10",
-    acquisition_value: 450000000,
+    acquisition_value: 180000000,
+    units: [
+      { serialNumber: "SN-DELL-R740-01", location: "Data Center Lhokseumawe" },
+      { serialNumber: "SN-DELL-R740-02", location: "Lantai 3 - Ruang Server Cadangan" },
+    ],
     image: null,
   },
 ];
@@ -285,7 +267,7 @@ const INIT_CAPEX = [
   {
     id: "CAP-2440013",
     kode: "2440013",
-    nama: "Penyiapan Infrastruktur IT (Kantor Pusat, Pelindo Place, Pelindo Tower, Malahayati, Lhokseumawe, Bima, Badas, Parepare, Gresik, Tanjung Emas, Mekar Putih, Meulaboh, Kuala Langsa dan Bumiharjo) PT Pelindo Multi Terminal",
+    nama: "Penyiapan Infrastruktur IT PT Pelindo Multi Terminal",
     nilai_kad: 5500000000,
     thn_rkap_awal: 2024,
     thn_rkap_akhir: 2026,
@@ -294,28 +276,15 @@ const INIT_CAPEX = [
       ...mkAssets(),
       {
         id: newId(),
-        asset_code: "SPMT-KPT-USR-LPT-04",
-        serial_number: "DELL-LPT-2025-001",
-        name: "Laptop High-End Penyiapan Infrastruktur 2025",
-        brand: "Dell",
-        model: "Latitude 7420",
-        category: "Laptop",
-        location: "Kantor Pusat",
+        asset_code: "SWT-25MLH-001",
+        serial_number: "SN-CISCO-9300-01",
+        name: "Switch Cisco Catalyst 9300L",
+        brand: "Cisco",
+        model: "Catalyst 9300L",
+        category: "Switch",
+        location: "Malahayati / DTC / PKR",
         procurement_date: "2025-05-15",
-        acquisition_value: 25000000,
-        image: null,
-      },
-      {
-        id: newId(),
-        asset_code: "SPMT-KPT-DTC-STR-01",
-        serial_number: "HPE-STR-2026-001",
-        name: "Storage Array Network (SAN) 2026",
-        brand: "HPE",
-        model: "MSA 2060",
-        category: "Storage",
-        location: "Data Center",
-        procurement_date: "2026-02-20",
-        acquisition_value: 850000000,
+        acquisition_value: 45000000,
         image: null,
       },
     ],
@@ -327,56 +296,12 @@ const INIT_CAPEX = [
     projects: [
       {
         id: "PKJ-2440013-001",
-        nm_pekerjaan: "Penyiapan Infrastruktur IT Tahap 1",
+        nm_pekerjaan: "Pengadaan Server dan Network",
         nilai_rab: 2000000000,
         nilai_kontrak: 1950000000,
         no_kontrak: "SI.01/10/9/2/PPTI/TEKI/PLMT-24",
         tgl_kontrak: "2024-09-10",
         durasi_kontrak: 90,
-      },
-      {
-        id: "PKJ-2440013-002",
-        nm_pekerjaan: "Penyiapan Infrastruktur IT Tahap 2 (Tambahan Pekerjaan)",
-        nilai_rab: 2000000000,
-        nilai_kontrak: 1900000000,
-        no_kontrak: "SI.01/10/9/3/PPTI/TEKI/PLMT-24",
-        tgl_kontrak: "2024-10-15",
-        durasi_kontrak: 90,
-      },
-    ],
-  },
-  {
-    id: "CAP-2440014",
-    kode: "2440014",
-    nama: "Penyediaan Network di Branch SPMT",
-    nilai_kad: 3200000000,
-    thn_rkap_awal: 2024,
-    thn_rkap_akhir: 2024,
-    type: "capex",
-    assets: [
-      {
-        id: newId(),
-        asset_code: "SPMT-BRN-NET-SW-01",
-        serial_number: "CSC-BRN-SW-001",
-        name: "Switch Cisco Branch SPMT",
-        brand: "Cisco",
-        model: "Catalyst 9200",
-        category: "Network",
-        location: "Branch SPMT",
-        procurement_date: "2024-11-20",
-        acquisition_value: 500000000,
-        image: null,
-      },
-    ],
-    projects: [
-      {
-        id: "PKJ-2440014-001",
-        nm_pekerjaan: "Pengadaan Perangkat Jaringan (Switch & AP) Branch SPMT",
-        nilai_rab: 1500000000,
-        nilai_kontrak: 1450000000,
-        no_kontrak: "SI.02/11/7/2/NET/SPMT-24",
-        tgl_kontrak: "2024-11-20",
-        durasi_kontrak: 60,
       },
     ],
   },
@@ -393,43 +318,79 @@ const INIT_CAPEX = [
         id: "AST-2440015-001",
         category: "CCTV",
         model: "DS-2CD2143G2-I",
-        asset_code: "CCTV-HIK-DOME-2MP",
-        serial_number: "SN-CCTV-001",
-        branch: "Belawan",
-        zona: "LPG",
-        subzona: "DMG",
-        location: "Belawan / LPG / DMG",
+        asset_code: "CCTV-24BLW-001",
+        jumlah: 2,
         procurement_date: "2024-08-15",
         acquisition_value: 6000000,
         name: "CCTV Hikvision DS-2CD2143G2-I",
-        id_pekerjaan: "PKJ-2440015-001"
+        id_pekerjaan: "PKJ-2440015-001",
+        units: [
+          { serialNumber: "SN-CCTV-001", location: "Area Dermaga - Tiang 1" },
+          { serialNumber: "SN-CCTV-002", location: "Pos Security - Gerbang Utama" }
+        ]
       },
-      {
-        id: "AST-2440015-002",
-        category: "CCTV",
-        model: "DS-2CD2143G2-I",
-        asset_code: "CCTV-HIK-DOME-2MP",
-        serial_number: "SN-CCTV-002",
-        branch: "Belawan",
-        zona: "LPG",
-        subzona: "DMG",
-        location: "Belawan / LPG / DMG",
-        procurement_date: "2024-08-15",
-        acquisition_value: 6000000,
-        name: "CCTV Hikvision DS-2CD2143G2-I",
-        id_pekerjaan: "PKJ-2440015-001"
-      }
     ],
     projects: [
       {
         id: "PKJ-2440015-001",
-        nm_pekerjaan: "Pekerjaan Implementasi dan Standarisasi IT Infrastruktur PT Pelindo Multi Terminal",
+        nm_pekerjaan: "Pekerjaan Implementasi CCTV",
         nilai_rab: 1000000000,
         nilai_kontrak: 900000000,
         no_kontrak: "SI.01/12/8/2/PPTI/TEKI/PLMT-24",
         tgl_kontrak: "2024-08-12",
       },
     ],
+  },
+  {
+    id: "CAP-2540011",
+    kode: "2540011",
+    nama: "Transformasi dan Digitalisasi Alat Berat",
+    nilai_kad: 5000000000,
+    thn_rkap_awal: 2025,
+    thn_rkap_akhir: 2026,
+    type: "capex",
+    assets: [
+      {
+        id: "AST-2540011-001",
+        category: "Alat Berat",
+        model: "CAT 336",
+        asset_code: "ALAT-25DMI-001",
+        serial_number: "SN-EXC-336-01",
+        branch: "Dumai",
+        zona: "GDG",
+        subzona: "DMG",
+        location: "Dumai / GDG / DMG",
+        procurement_date: "2025-01-20",
+        acquisition_value: 1200000000,
+        name: "Excavator CAT 336",
+        id_pekerjaan: "PKJ-2540011-001"
+      }
+    ],
+    projects: [
+      {
+        id: "PKJ-2540011-001",
+        nm_pekerjaan: "Penyediaan Alat Berat Excavator",
+        nilai_rab: 2000000000,
+        nilai_kontrak: 1850000000,
+        no_kontrak: "SI.05/01/2/PPTI/PLMT-25",
+        tgl_kontrak: "2025-01-05",
+      }
+    ],
+    history_anggaran: [
+      { id: "H6", tahun: 2025, nilai_rkap: 2500000000 },
+      { id: "H7", tahun: 2026, nilai_rkap: 2000000000 },
+    ],
+  },
+  {
+    id: "CAP-2440014",
+    kode: "2440014",
+    nama: "Penyediaan Network di Branch SPMT",
+    nilai_kad: 3200000000,
+    thn_rkap_awal: 2024,
+    thn_rkap_akhir: 2024,
+    type: "capex",
+    assets: [],
+    projects: [],
   },
   {
     id: "CAP-2440020",
@@ -445,46 +406,6 @@ const INIT_CAPEX = [
       { id: "H5", tahun: 2025, nilai_rkap: 750000000 },
     ],
     projects: [],
-  },
-  {
-    id: "CAP-2540011",
-    kode: "2540011",
-    nama: "Transformasi dan Digitalisasi PT Pelindo Multi Terminal",
-    nilai_kad: 2500000000,
-    thn_rkap_awal: 2025,
-    thn_rkap_akhir: 2026,
-    type: "capex",
-    assets: [
-      {
-        id: "AST-2540011-001",
-        category: "Server",
-        model: "PowerEdge R740",
-        asset_code: "SRV-DELL-R740",
-        serial_number: "SN-DELL-R740-01",
-        branch: "Lhokseumawe",
-        zona: "DTC",
-        subzona: "PKR",
-        location: "Lhokseumawe / DTC / PKR",
-        procurement_date: "2025-01-20",
-        acquisition_value: 90000000,
-        name: "Server Dell PowerEdge R740",
-        id_pekerjaan: "PKJ-2540011-001"
-      }
-    ],
-    projects: [
-      {
-        id: "PKJ-2540011-001",
-        nm_pekerjaan: "Penyediaan Kebutuhan Perangkat Jaringan, SIEM dan Perangkat Pendukung Gate System PT Pelindo Multi Terminal",
-        nilai_rab: 2000000000,
-        nilai_kontrak: 1850000000,
-        no_kontrak: "SI.05/01/2/PPTI/PLMT-25",
-        tgl_kontrak: "2025-01-05",
-      }
-    ],
-    history_anggaran: [
-      { id: "H6", tahun: 2025, nilai_rkap: 2500000000 },
-      { id: "H7", tahun: 2026, nilai_rkap: 2000000000 },
-    ],
   },
   {
     id: "CAP-2540012",
@@ -2232,11 +2153,13 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
             </AEFld>
 
             {(form.category || isEdit) && (
-              <AEFld label="Tipe Barang" req={true}>
+              <AEFld label="Nama Barang" req={true}>
                 {isEdit ? (
                   <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0" }}>
                     <div style={{ width: 4, height: 20, background: "var(--green)", borderRadius: 2 }} />
-                    <span style={{ fontSize: "1rem", fontWeight: 800, color: "var(--ink)", letterSpacing: "-0.2px" }}>{form.model}</span>
+                    <span style={{ fontSize: "1rem", fontWeight: 800, color: "var(--ink)", letterSpacing: "-0.2px" }}>
+                      {ASSET_DB[form.items?.[0]?.asset_code]?.name || form.model}
+                    </span>
                   </div>
                 ) : (
                   <select value={form.model || ""} onChange={(e) => handleMod(e.target.value)}>
@@ -2831,27 +2754,25 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
       showToast("Lengkapi data barang");
       return;
     }
-    const today = new Date().toISOString().split('T')[0];
-    const cl = form.items.map((it, idx) => {
-      const locStr = it.location || "";
-      const p = locStr.split(" / ").map(s => s.trim());
-      return {
-        id: it.id || newId() + idx,
-        category: form.category,
-        model: form.model,
-        asset_code: it.asset_code || `ASSET-NEW-${Date.now()}-${idx}`,
-        serial_number: it.serial_number,
-        branch: p[0] || "",
-        zona: p[1] || "",
-        subzona: p[2] || "",
-        location: locStr,
-        procurement_date: today,
-        acquisition_value: amount,
-        name: ASSET_DB[it.asset_code]?.name || `${form.category} ${form.model}`
-      };
-    });
-    onSave(anggaran.id, [...(anggaran.assets || []), ...cl]);
-    showToast(`${cl.length} barang disimpan`);
+    const amount = parseFloat(form.acquisition_value) || 0;
+    const newAsset = {
+      id: newId(),
+      name: ASSET_DB[form.items[0]?.asset_code]?.name || `${form.category} ${form.model}`,
+      category: form.category,
+      model: form.model,
+      jumlah: form.items.length,
+      acquisition_value: amount,
+      procurement_date: form.procurement_date || new Date().toISOString().split('T')[0],
+      id_pekerjaan: project.id,
+      units: form.items.map(it => ({
+        serialNumber: it.serial_number,
+        location: it.location
+      })),
+      asset_code: form.items[0]?.asset_code || ""
+    };
+
+    onSave(anggaran.id, [...(anggaran.assets || []), newAsset]);
+    showToast("Barang baru berhasil ditambahkan");
     onBack();
   };
 
@@ -2901,7 +2822,7 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
               </select>
             </AEFld>
             {form.category && (
-              <AEFld label="Tipe Barang" req={true}>
+              <AEFld label="Nama Barang" req={true}>
                 <select
                   value={form.model || ""}
                   onChange={(e) => {
@@ -2910,9 +2831,11 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
                   }}
                 >
                   <option value="">— Pilih Tipe —</option>
-                  {Array.from(new Set(Object.values(ASSET_DB).filter(x => x.category === form.category).map(x => x.model))).map(m => (
-                    <option key={m} value={m}>{m}</option>
-                  ))}
+                  {Object.values(ASSET_DB)
+                    .filter(x => x.category === form.category)
+                    .map(m => (
+                      <option key={m.model} value={m.model}>{m.name}</option>
+                    ))}
                 </select>
               </AEFld>
             )}
@@ -3039,15 +2962,23 @@ function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) 
   const [form, setForm] = useState(() => {
     const code = asset.asset_code || "";
     const dbInfo = ASSET_DB[code] || {};
+    const items = asset.units ? asset.units.map((u, i) => ({
+      id: i === 0 ? asset.id : `unit-${i}`,
+      serial_number: u.serialNumber || "",
+      location: u.location || "",
+      asset_code: code
+    })) : [{
+      id: asset.id,
+      serial_number: asset.serial_number || "",
+      location: asset.location || [asset.branch, asset.zona, asset.subzona].filter(Boolean).join(" / "),
+      asset_code: code
+    }];
+
     return {
+      name: asset.name || dbInfo.name || "",
       category: asset.category || dbInfo.category || "",
       model: asset.model || dbInfo.model || "",
-      items: [{
-        id: asset.id,
-        serial_number: asset.serial_number || "",
-        location: asset.location || [asset.branch, asset.zona, asset.subzona].filter(Boolean).join(" / "),
-        asset_code: code
-      }],
+      items,
       procurement_date: asset.procurement_date || new Date().toISOString().split('T')[0],
       acquisition_value: String(asset.acquisition_value ?? ""),
     };
@@ -3077,28 +3008,23 @@ function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) 
       showToast("Lengkapi data barang");
       return;
     }
-    const today = new Date().toISOString().split('T')[0];
-    const finalItems = form.items.map((it, idx) => {
-      const locStr = it.location || "";
-      const p = locStr.split(" / ").map(s => s.trim());
-      return {
-        id: (idx === 0) ? asset.id : it.id || `new-${Date.now()}-${idx}`,
-        category: form.category,
-        model: form.model,
-        asset_code: it.asset_code || `ASSET-NEW-${Date.now()}-${idx}`,
-        serial_number: it.serial_number,
-        branch: p[0] || "",
-        zona: p[1] || "",
-        subzona: p[2] || "",
-        location: locStr,
-        procurement_date: form.procurement_date || today,
-        acquisition_value: amount,
-        name: ASSET_DB[it.asset_code]?.name || `${form.category} ${form.model}`
-      };
-    });
+    const consolidatedAsset = {
+      ...asset,
+      name: form.name,
+      category: form.category,
+      model: form.model,
+      jumlah: form.items.length,
+      acquisition_value: amount,
+      procurement_date: form.procurement_date,
+      units: form.items.map(it => ({
+        serialNumber: it.serial_number,
+        location: it.location
+      })),
+      asset_code: form.items[0]?.asset_code || asset.asset_code
+    };
 
     const filteredAssets = (anggaran.assets || []).filter(a => a.id !== asset.id);
-    onSave(anggaran.id, [...filteredAssets, ...finalItems]);
+    onSave(anggaran.id, [...filteredAssets, consolidatedAsset]);
     showToast("Data barang berhasil diperbarui");
     onBack();
   };
@@ -3142,10 +3068,12 @@ function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) 
               </div>
             </AEFld>
 
-            <AEFld label="Tipe Barang" req={true}>
+            <AEFld label="Nama Barang" req={true}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "4px 0" }}>
                 <div style={{ width: 4, height: 20, background: "var(--blue)", borderRadius: 2 }} />
-                <span style={{ fontSize: "1rem", fontWeight: 800, color: "var(--ink)", letterSpacing: "-0.2px" }}>{form.model}</span>
+                <span style={{ fontSize: "1rem", fontWeight: 800, color: "var(--ink)", letterSpacing: "-0.2px" }}>
+                  {form.name}
+                </span>
               </div>
             </AEFld>
 
@@ -3314,10 +3242,12 @@ function AssetTablePage({
     return s + (qty * price);
   }, 0);
 
-  const totalAllAssets = useMemo(() => 
+  const totalAllAssets = useMemo(() =>
     assets.reduce((s, a) => s + ((a.jumlah || 1) * (a.harga_satuan || a.acquisition_value || 0)), 0),
     [assets]
   );
+  const totalQty = useMemo(() => assets.reduce((s, a) => s + (a.jumlah || 1), 0), [assets]);
+  const filteredQty = useMemo(() => filtered.reduce((s, a) => s + (a.jumlah || 1), 0), [filtered]);
   const sisaProject = (project?.nilai_kontrak || 0) - totalAllAssets;
   const handleDelete = (id) => {
     setConfirm({
@@ -3370,24 +3300,24 @@ function AssetTablePage({
             </h2>
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                <span style={{ 
-                  color: "var(--ink3)", 
-                  fontSize: "0.82rem", 
+                <span style={{
+                  color: "var(--ink3)",
+                  fontSize: "0.82rem",
                   fontWeight: 500,
                   fontFamily: "inherit"
                 }}>
-                  Total {assets.length} barang ·
+                  Total {totalQty} barang ·
                 </span>
-                <span style={{ 
-                  fontSize: "0.82rem", 
-                  fontWeight: 600, 
-                  color: "var(--ink3)", 
+                <span style={{
+                  fontSize: "0.82rem",
+                  fontWeight: 600,
+                  color: "var(--ink3)",
                   fontFamily: "inherit"
                 }}>
                   {project?.nm_pekerjaan || anggaran.nama}
                 </span>
               </div>
-              
+
               <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
                 {/* Nilai Kontrak */}
                 <div style={{ background: "var(--red-lt)", padding: "4px 12px", borderRadius: "8px", border: "1px solid #fee2e2", display: "flex", alignItems: "center", gap: "8px", boxShadow: "var(--sh)" }}>
@@ -3470,7 +3400,7 @@ function AssetTablePage({
                   <div className="table-empty-inner">
                     <Icon d={I.package} size={36} style={{ opacity: 0.2 }} />
                     <span style={{ fontWeight: 600 }}>
-                      {assets.length} barang terdaftar.
+                      {totalQty} barang terdaftar.
                     </span>
                     {assets.length === 0 && (
                       <button
@@ -3539,7 +3469,7 @@ function AssetTablePage({
                     color: "var(--blue)",
                   }}
                 >
-                  Total {filtered.length} barang
+                  Total {filteredQty} barang
                 </td>
                 <td
                   className="tfoot-total"
@@ -3566,7 +3496,7 @@ function AssetTablePage({
 // ══════ LEVEL 1: ANGGARAN CARD ══════
 function AnggaranCard({ ang, onSelect, onShowRkap, onDelete }) {
   const assetTotal = (ang.assets || []).reduce(
-    (s, a) => s + (a.acquisition_value || 0),
+    (s, a) => s + ((a.jumlah || 1) * (a.acquisition_value || 0)),
     0,
   );
   const nilaiKadBatas = ang.nilai_kad || 0;
@@ -3601,7 +3531,7 @@ function AnggaranCard({ ang, onSelect, onShowRkap, onDelete }) {
 
           <div className="ang-card-meta">
             <span><Icon d={I.briefcase} size={12} /> {ang.projects?.length || 0} pekerjaan</span>
-            <span><Icon d={I.package} size={12} /> {ang.assets?.length || 0} barang terdaftar</span>
+            <span><Icon d={I.package} size={12} /> {(ang.assets || []).reduce((s, a) => s + (a.jumlah || 1), 0)} barang terdaftar</span>
           </div>
 
           <div className="ang-card-fin">
