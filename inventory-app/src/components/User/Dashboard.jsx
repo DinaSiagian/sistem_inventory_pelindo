@@ -12,7 +12,7 @@ import {
   fmtIDR,
   fmt,
   isOverdue,
-} from "./data";
+} from "./Data";
 import AssetDetailModal from "./AssetDetailModal";
 import BorrowModal from "./BorrowModal";
 import "./Dashboard.css";

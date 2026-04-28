@@ -19,7 +19,7 @@ import "./Shared.css";
 import logoPelindo from "../../pictures/pelindo2.png";
 import batikImg from "../../pictures/batik.png";
 
-import { transactionsMock, assetsMock, fmt } from "../Data";
+import { transactionsMock, assetsMock, fmt } from "./Data";
 import { useLoanNotifications } from "./useLoanNotifications";
 import LoanAlertPopup from "./LoanAlertPopup";
 
@@ -30,8 +30,15 @@ const UserLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [pageTitle, setPageTitle] = useState("Dashboard");
   const [showAlert, setShowAlert] = useState(false);
+  const [resetKey, setResetKey] = useState(0);
   const location = useLocation();
   const navigate = useNavigate();
+
+  const handleMenuClick = (path) => {
+    if (location.pathname === path) {
+      setResetKey((prevKey) => prevKey + 1);
+    }
+  };
 
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem("user");
@@ -121,10 +128,10 @@ const UserLayout = () => {
         }
       `}</style>
 
-      <div className="layout-wrapper">
+      <div className="layout-wrapper" style={{ flexDirection: "row-reverse" }}>
         <aside
           className={`sidebar ${collapsed ? "collapsed" : ""}`}
-          style={{ "--batik-url": `url(${batikImg})` }}
+          style={{ "--batik-url": `url(${batikImg})`, borderLeft: "1px solid rgba(255,255,255,0.1)", borderRight: "none" }}
         >
           <div className="sidebar-header">
             <img src={logoPelindo} alt="Pelindo" className="sidebar-logo-img" />
@@ -142,7 +149,8 @@ const UserLayout = () => {
                 <Link
                   key={index}
                   to={item.path}
-                  className={`menu-item ${location.pathname === item.path ? "active" : ""}`}
+                  className={`menu-item ${location.pathname.startsWith(item.path) ? "active" : ""}`}
+                  onClick={() => handleMenuClick(item.path)}
                 >
                   <div className="menu-icon" style={{ position: "relative" }}>
                     {item.icon}
@@ -221,7 +229,7 @@ const UserLayout = () => {
                 className="toggle-btn"
                 onClick={() => setCollapsed(!collapsed)}
               >
-                {collapsed ? <FaChevronRight /> : <FaChevronLeft />}
+                {collapsed ? <FaChevronLeft /> : <FaChevronRight />}
               </button>
               <div className="breadcrumb">
                 <span>Pelindo</span> /{" "}
@@ -302,7 +310,7 @@ const UserLayout = () => {
           </header>
 
           <main className="page-content">
-            <Outlet />
+            <Outlet key={`${location.pathname}-${resetKey}`} />
           </main>
         </div>
       </div>

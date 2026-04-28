@@ -29,7 +29,7 @@ const Layout = () => {
   const menuItems = [
     { path: "/dashboard", label: "Dashboard Utama", icon: <FaHome /> },
     { category: "Manajemen Aset" },
-    { path: "/assets", label: "Inventory Aset", icon: <FaBox /> },
+    { path: "/assets", label: "List Barang", icon: <FaBox /> },
     {
       path: "/peminjaman",
       label: "BAST Aset",
@@ -114,7 +114,7 @@ const Layout = () => {
   };
 
   const handleMenuClick = (path) => {
-    if (location.pathname === path) {
+    if (location.pathname.startsWith(path)) {
       setResetKey((prevKey) => prevKey + 1);
     }
   };
@@ -219,7 +219,7 @@ const Layout = () => {
                       <Link
                         key={`${index}-${subIndex}`}
                         to={subItem.path}
-                        className={`menu-item submenu-item ${location.pathname === subItem.path ? "active" : ""}`}
+                        className={`menu-item submenu-item ${location.pathname.startsWith(subItem.path) ? "active" : ""}`}
                         onClick={() => handleMenuClick(subItem.path)}
                       >
                         <span className="menu-text">{subItem.label}</span>
@@ -232,7 +232,7 @@ const Layout = () => {
               <Link
                 key={index}
                 to={item.path}
-                className={`menu-item ${location.pathname === item.path ? "active" : ""}`}
+                className={`menu-item ${location.pathname.startsWith(item.path) ? "active" : ""}`}
                 onClick={() => handleMenuClick(item.path)}
               >
                 <div className="menu-icon">{item.icon}</div>
