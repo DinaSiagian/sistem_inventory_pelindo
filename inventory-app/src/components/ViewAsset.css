@@ -466,8 +466,10 @@
   background: var(--white);
   border-radius: 16px;
   border: 1px solid var(--border-lt);
-  overflow: hidden;
+  overflow: visible !important;
   box-shadow: var(--shadow-sm);
+  position: relative;
+  z-index: 5;
 }
 
 .table-info-bar {
@@ -1064,10 +1066,16 @@
   border: 1px solid var(--border);
   border-radius: 12px;
   box-shadow: 0 12px 32px -6px rgba(0, 0, 0, 0.14);
-  z-index: 100;
+  z-index: 9999;
   min-width: 172px;
   padding: 6px;
   animation: fadeIn 0.13s ease-out;
+}
+
+.action-dropdown.dropdown-up {
+  top: auto;
+  bottom: calc(100% + 4px);
+  transform-origin: bottom right;
 }
 
 .action-dropdown button {
