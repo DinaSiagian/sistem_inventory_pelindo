@@ -2062,6 +2062,213 @@ const PageWrapper = ({ title, onBack, children, actions }) => (
   </div>
 );
 
+const LOCATION_MAP = {
+  "Belawan": {
+    "Lapangan": ["Dermaga", "Gudang", "Parkir"],
+    "Gedung": ["Lantai 1", "Lantai 2"],
+    "Data Center": ["Server Room"]
+  },
+  "Gresik": {
+    "Lapangan": ["Dermaga Utama", "Gudang Logistik"],
+    "Gedung": ["Kantor Cabang", "Ruang Rapat"]
+  },
+  "Dumai": {
+    "Gedung": ["Kantor Dumai"],
+    "Gudang": ["DMG"],
+    "Lapangan": ["Parkir Area"]
+  },
+  "Lhokseumawe": {
+    "Data Center": ["PKR"],
+    "Gedung": ["Kantor LHK"]
+  },
+  "Malahayati": {
+    "Data Center": ["PKR"],
+    "Lapangan": ["Dermaga Malahayati"]
+  }
+};
+
+const SmartLocationInput = ({ value, onChange, placeholder = "Pilih Branch / Zona / Subzona", readOnly = false }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const wrapperRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  if (readOnly) {
+    if (!value) return null;
+    return (
+      <div style={{
+        fontSize: "13px",
+        color: "#64748b",
+        padding: "8px 12px",
+        background: "#f8fafc",
+        borderRadius: "6px",
+        border: "1px solid #e2e8f0",
+        minHeight: "36px",
+        display: "flex",
+        alignItems: "center"
+      }}>
+        {value}
+      </div>
+    );
+  }
+
+  const valStr = value || "";
+  const parts = valStr.split(" / ");
+  const currentPartIdx = Math.max(0, parts.length - 1);
+  const currentText = (parts[currentPartIdx] || "").trim();
+
+  let options = [];
+  let stepLabel = "";
+
+  const branch = (parts[0] || "").trim();
+  const zone = (parts[1] || "").trim();
+
+  if (currentPartIdx === 0) {
+    options = Object.values(BRANCH_BY_ENTITY).flat().map(b => b.name);
+    stepLabel = "Pilih Branch";
+  } else if (currentPartIdx === 1) {
+    options = LOCATION_MAP[branch] 
+      ? Object.keys(LOCATION_MAP[branch]) 
+      : ZONA_LIST.map(z => z.name);
+    stepLabel = `Zona di ${branch || 'Branch'}`;
+  } else if (currentPartIdx === 2) {
+    options = (LOCATION_MAP[branch] && LOCATION_MAP[branch][zone])
+      ? LOCATION_MAP[branch][zone]
+      : SUBZONA_LIST.map(s => s.name);
+    stepLabel = `Subzona di ${zone || 'Zona'}`;
+  }
+
+  const filteredOptions = options.filter(o => o.toLowerCase().includes(currentText.toLowerCase()));
+  const exactMatch = options.find(o => o.toLowerCase() === currentText.toLowerCase());
+
+  const handleSelect = (opt) => {
+    const newParts = [...parts];
+    newParts[currentPartIdx] = opt;
+    const nextVal = newParts.join(" / ") + (currentPartIdx < 2 ? " / " : "");
+    onChange(nextVal);
+    if (currentPartIdx >= 2) setIsOpen(false);
+  };
+
+  const handleCustom = () => {
+    if (!currentText) return;
+    const newParts = [...parts];
+    newParts[currentPartIdx] = currentText;
+    const nextVal = newParts.join(" / ") + (currentPartIdx < 2 ? " / " : "");
+    onChange(nextVal);
+    if (currentPartIdx >= 2) setIsOpen(false);
+    else setIsOpen(true);
+  };
+
+  return (
+    <div ref={wrapperRef} style={{ position: "relative", width: "100%" }}>
+      <div style={{ position: 'relative' }}>
+        <input
+          value={valStr}
+          onChange={(e) => {
+            onChange(e.target.value);
+            setIsOpen(true);
+          }}
+          onFocus={() => setIsOpen(true)}
+          placeholder={placeholder}
+          style={{
+            width: "100%",
+            padding: "8px 12px",
+            paddingRight: "30px",
+            fontSize: "13px",
+            background: "#fff",
+            color: "#0f172a",
+            border: "1px solid #cbd5e1",
+            borderRadius: "6px",
+            outline: "none",
+            transition: "all 0.2s"
+          }}
+        />
+        {valStr && (
+          <button 
+            type="button"
+            onClick={() => { onChange(""); setIsOpen(false); }}
+            style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: 4 }}
+          >
+            <Icon.XCircle />
+          </button>
+        )}
+      </div>
+
+      {isOpen && currentPartIdx <= 2 && (
+        <div style={{
+          position: "absolute",
+          top: "100%",
+          left: 0,
+          right: 0,
+          background: "white",
+          border: "1px solid #e2e8f0",
+          borderRadius: 12,
+          marginTop: 6,
+          zIndex: 100,
+          boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+          maxHeight: 250,
+          overflowY: "auto",
+        }}>
+          <div style={{ padding: "8px 12px", fontSize: "10px", fontWeight: 800, color: "#64748b", background: "#f8fafc", borderBottom: "1px solid #e2e8f0", textTransform: "uppercase", position: "sticky", top: 0, zIndex: 2 }}>
+            {stepLabel}
+          </div>
+          
+          {filteredOptions.map((opt, i) => (
+            <div
+              key={i}
+              onClick={() => handleSelect(opt)}
+              style={{
+                padding: "10px 12px",
+                fontSize: "13px",
+                cursor: "pointer",
+                borderBottom: "1px solid #f1f5f9",
+                transition: "background 0.2s",
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                color: '#1e293b'
+              }}
+              onMouseEnter={(e) => e.target.style.background = "#eff6ff"}
+              onMouseLeave={(e) => e.target.style.background = "white"}
+            >
+              <Icon.Layers />
+              {opt}
+            </div>
+          ))}
+
+          {currentText && !exactMatch && (
+            <div
+              onClick={handleCustom}
+              style={{
+                padding: "12px",
+                fontSize: "13px",
+                cursor: "pointer",
+                background: "#f0fdf4",
+                color: "#16a34a",
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                borderTop: filteredOptions.length > 0 ? "1px dashed #bbf7d0" : "none"
+              }}
+            >
+              <Icon.Plus /> Gunakan "{currentText}" (Custom)
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ── MAIN COMPONENT ────────────────────────────────────────────────
 const ViewAsset = () => {
   const [assets, setAssets] = useState([
@@ -2079,8 +2286,8 @@ const ViewAsset = () => {
       id_pekerjaan: "PKJ-2440015-001",
       quantity: 2,
       units: [
-        { serialNumber: "SN-CCTV-001", location: "Area Dermaga - Tiang 1" },
-        { serialNumber: "SN-CCTV-002", location: "Pos Security - Gerbang Utama" },
+        { serialNumber: "SN-CCTV-001", location: "Belawan / Lapangan / Dermaga" },
+        { serialNumber: "SN-CCTV-002", location: "Belawan / Lapangan / Dermaga" },
       ],
       photo: null,
       specs: [
@@ -2104,7 +2311,7 @@ const ViewAsset = () => {
       id_pekerjaan: "PKJ-2540011-001",
       quantity: 1,
       units: [
-        { serialNumber: "SN-EXC-336-01", location: "Gudang Dumai - Sektor A" },
+        { serialNumber: "SN-EXC-336-01", location: "Dumai / Gedung / Dermaga" },
       ],
       photo: null,
       specs: [
@@ -2129,8 +2336,8 @@ const ViewAsset = () => {
       id_pekerjaan: "PKJ-2440013-001",
       quantity: 2,
       units: [
-        { serialNumber: "SN-DELL-R740-01", location: "Data Center Lhokseumawe" },
-        { serialNumber: "SN-DELL-R740-02", location: "Lantai 3 - Ruang Server Cadangan" },
+        { serialNumber: "SN-DELL-R740-01", location: "Lhokseumawe / DTC / Data Center" },
+        { serialNumber: "SN-DELL-R740-02", location: "Lhokseumawe / DTC / Ruang Server" },
       ],
       photo: null,
       specs: [
@@ -2154,7 +2361,7 @@ const ViewAsset = () => {
       id_pekerjaan: "OPEX-5",
       quantity: 1,
       units: [
-        { serialNumber: "BK 1234 ZZ", location: "Pool Kendaraan Belawan" },
+        { serialNumber: "BK 1234 ZZ", location: "Belawan / Lapangan / Parkir" },
       ],
       photo: null,
       specs: [
@@ -2178,8 +2385,8 @@ const ViewAsset = () => {
       id_pekerjaan: "OPEX-3",
       quantity: 2,
       units: [
-        { serialNumber: "SN-MEJA-001", location: "Ruang Direksi - Lantai 2" },
-        { serialNumber: "SN-MEJA-002", location: "Lantai 4 - Ruang Staff" },
+        { serialNumber: "SN-MEJA-001", location: "Tanjung Priok / Gedung / Dermaga" },
+        { serialNumber: "SN-MEJA-002", location: "Tanjung Priok / Gedung / Dermaga" },
       ],
       photo: null,
       specs: [
@@ -2205,8 +2412,8 @@ const ViewAsset = () => {
       id_pekerjaan: "PKJ-2440013-001",
       quantity: 2,
       units: [
-        { serialNumber: "SN-CISCO-9300-01", location: "Data Center Utama" },
-        { serialNumber: "SN-CISCO-9300-02", location: "Lantai 2 - Ruang IT" },
+        { serialNumber: "SN-CISCO-9300-01", location: "Malahayati / Data Center / Parkir" },
+        { serialNumber: "SN-CISCO-9300-02", location: "Malahayati / Data Center / Parkir" },
       ],
       photo: null,
       specs: [
@@ -2679,11 +2886,14 @@ const ViewAsset = () => {
       id_pekerjaan: asset.id_pekerjaan || "",
       quantity: asset.quantity || (asset.units ? asset.units.length : 1),
       units: asset.units
-        ? asset.units.map((u) => ({ ...u }))
+        ? asset.units.map((u) => ({
+          ...u,
+          location: u.location || [asset.branch, asset.zona, asset.subzona].filter(Boolean).join(" / ")
+        }))
         : [
           {
             serialNumber: asset.serialNumber || "",
-            location: asset.unitLocation || "",
+            location: asset.unitLocation || [asset.branch, asset.zona, asset.subzona].filter(Boolean).join(" / "),
           },
         ],
       thn_anggaran: existingProj?.thn_anggaran
@@ -3010,7 +3220,7 @@ const ViewAsset = () => {
                     setCurrentPage(1);
                   }}
                 >
-                  <option value="">Semua Kategori</option>
+                  <option value="">▾</option>
                   <option>IT Equipment</option>
                   <option>Kendaraan</option>
                   <option>Alat Berat</option>
@@ -3276,7 +3486,47 @@ const ViewAsset = () => {
                 <tr>
                   <th>ID BARANG</th>
                   <th>NAMA BARANG</th>
-                  <th>KATEGORI</th>
+                  <th style={{ minWidth: "150px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <span style={{ fontSize: "12px", color: "#475569", fontWeight: "600" }}>
+                        Kategori
+                      </span>
+                      <select
+                        value={filterCategory}
+                        onChange={(e) => setFilterCategory(e.target.value)}
+                        style={{
+                          width: "18px",
+                          height: "18px",
+                          padding: "0",
+                          fontSize: "12px",
+                          borderRadius: "4px",
+                          border: "1px solid #cbd5e1",
+                          background: "#fff",
+                          color: "#475569",
+                          outline: "none",
+                          cursor: "pointer",
+                          appearance: "none",
+                          textAlign: "center",
+                          textAlignLast: "center",
+                          lineHeight: "1"
+                        }}
+                      >
+                        <option value={filterCategory} hidden>▾</option>
+                        <option value="">Kategori</option>
+                        <option value="Laptop">Laptop</option>
+                        <option value="CCTV">CCTV</option>
+                        <option value="Router">Router</option>
+                        <option value="PC Desktop">PC Desktop</option>
+                        <option value="Server">Server</option>
+                        <option value="Switch">Switch</option>
+                        <option value="Printer">Printer</option>
+                        <option value="Kendaraan">Kendaraan</option>
+                        <option value="Alat Berat">Alat Berat</option>
+                        <option value="Furniture">Furniture</option>
+                        <option value="Lainnya">Lainnya</option>
+                      </select>
+                    </div>
+                  </th>
                   <th>KUANTITAS</th>
                   <th>TOTAL NILAI</th>
                   <th>AKSI</th>
@@ -3511,7 +3761,7 @@ const ViewAsset = () => {
           </h3>
           <ModernTable>
             <TableRow label="Cek Eksisting (Opsional)">
-              <div style={{ position: "relative" }}>
+              <div style={{ position: "relative", width: "100%" }}>
                 <input
                   type="text"
                   placeholder="Ketik untuk mencari dari entry sebelumnya..."
@@ -3619,8 +3869,14 @@ const ViewAsset = () => {
                               value: a.value || "",
                               id_pekerjaan: a.id_pekerjaan || "",
                               units: a.units && a.units.length > 0
-                                ? a.units.map(u => ({ serialNumber: u.serialNumber, location: u.location }))
-                                : [{ serialNumber: "", location: "" }],
+                                ? a.units.map(u => ({ 
+                                    serialNumber: u.serialNumber, 
+                                    location: u.location || [a.branch, zonaName, subzonaName].filter(Boolean).join(" / ")
+                                  }))
+                                : [{ 
+                                    serialNumber: "", 
+                                    location: [a.branch, zonaName, subzonaName].filter(Boolean).join(" / ")
+                                  }],
                               quantity: a.quantity || (a.units ? a.units.length : 1),
                             }));
                             const tpl = a.specs
@@ -3638,7 +3894,12 @@ const ViewAsset = () => {
                             (e.currentTarget.style.background = "transparent")
                           }
                         >
-                          {a.tipeAset || a.name} - {a.category}
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <span>{a.tipeAset || a.name}</span>
+                            <span style={{ fontSize: "11px", color: "#94a3b8", background: "#f1f5f9", padding: "2px 6px", borderRadius: "4px" }}>
+                              {[a.branch, a.zona, a.subzona].filter(Boolean).join(" / ")}
+                            </span>
+                          </div>
                         </div>
                       ))}
                     {assets.filter((a) =>
@@ -3707,10 +3968,43 @@ const ViewAsset = () => {
                 }}
               />
             </TableRow>
-            <TableRow label="Kuantitas">
-              <div style={{ fontSize: "15px", fontWeight: "700", color: "#0f172a", background: "#f1f5f9", padding: "6px 14px", borderRadius: "8px" }}>
-                {formData.quantity} Unit barang
-              </div>
+            <TableRow label="Kuantitas" required>
+              {formData.cekEksisting ? (
+                <div style={{ fontSize: "15px", fontWeight: "700", color: "#0f172a" }}>
+                  {formData.quantity} Unit barang
+                </div>
+              ) : (
+                <input
+                  type="number"
+                  min="1"
+                  max="100"
+                  value={formData.quantity}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value, 10) || 1;
+                    const clamped = Math.max(1, Math.min(100, val));
+                    setFormData((p) => {
+                      let newUnits = [...p.units];
+                      if (clamped > newUnits.length) {
+                        const diff = clamped - newUnits.length;
+                        for (let i = 0; i < diff; i++) {
+                          newUnits.push({ 
+                            serialNumber: "", 
+                            location: [p.branch, p.zona, p.subzona].filter(Boolean).join(" / ") 
+                          });
+                        }
+                      } else if (clamped < newUnits.length) {
+                        newUnits = newUnits.slice(0, clamped);
+                      }
+                      return { ...p, quantity: clamped, units: newUnits };
+                    });
+                  }}
+                  style={{
+                    ...modernInputStyle,
+                    width: "120px",
+                    fontWeight: "700",
+                  }}
+                />
+              )}
             </TableRow>
           </ModernTable>
 
@@ -3761,6 +4055,19 @@ const ViewAsset = () => {
                   >
                     SERIAL NUMBER
                   </th>
+                  {formData.cekEksisting && (
+                    <th
+                      style={{
+                        padding: "12px",
+                        textAlign: "left",
+                        fontSize: "12px",
+                        color: "#64748b",
+                        borderBottom: "1px solid #e2e8f0",
+                      }}
+                    >
+                      LOKASI
+                    </th>
+                  )}
                   <th
                     style={{
                       padding: "12px",
@@ -3817,6 +4124,22 @@ const ViewAsset = () => {
                           }}
                         />
                       </td>
+                      {formData.cekEksisting && (
+                        <td
+                          style={{
+                            padding: "8px 12px",
+                            borderBottom: "1px solid #f1f5f9",
+                          }}
+                        >
+                          <SmartLocationInput
+                            value={unit.location}
+                            readOnly={isExisting}
+                            onChange={(val) =>
+                              updateUnitField(idx, "location", val)
+                            }
+                          />
+                        </td>
+                      )}
                       <td
                         style={{
                           padding: "8px 12px",
@@ -3879,35 +4202,6 @@ const ViewAsset = () => {
                 })}
               </tbody>
             </table>
-          </div>
-          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "12px" }}>
-            <button
-              type="button"
-              onClick={() => {
-                const newUnits = [...formData.units, { serialNumber: "", location: "" }];
-                const newIdx = newUnits.length - 1;
-                setIsEditingUnit(p => ({ ...p, [newIdx]: true }));
-                setFormData(p => ({ ...p, units: newUnits, quantity: newUnits.length }));
-              }}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                padding: "8px 16px",
-                background: "#f0f9ff",
-                border: "1px solid #bae6fd",
-                borderRadius: "8px",
-                fontSize: "13px",
-                fontWeight: "700",
-                color: "#0369a1",
-                cursor: "pointer",
-                transition: "all 0.2s",
-              }}
-              onMouseOver={(e) => { e.currentTarget.style.background = "#e0f2fe"; }}
-              onMouseOut={(e) => { e.currentTarget.style.background = "#f0f9ff"; }}
-            >
-              <Icon.Plus /> Tambah Unit
-            </button>
           </div>
 
           <h3
@@ -4347,7 +4641,7 @@ const ViewAsset = () => {
               />
             </TableRow>
             <TableRow label="Kuantitas">
-              <div style={{ fontSize: "15px", fontWeight: "700", color: "#0f172a", background: "#f1f5f9", padding: "6px 14px", borderRadius: "8px" }}>
+              <div style={{ fontSize: "15px", fontWeight: "700", color: "#0f172a" }}>
                 {editData.quantity} Unit barang
               </div>
             </TableRow>
@@ -4532,6 +4826,17 @@ const ViewAsset = () => {
                   <th
                     style={{
                       padding: "12px 16px",
+                      textAlign: "left",
+                      fontSize: "12px",
+                      color: "#64748b",
+                      borderBottom: "1px solid #e2e8f0",
+                    }}
+                  >
+                    LOKASI
+                  </th>
+                  <th
+                    style={{
+                      padding: "12px 16px",
                       textAlign: "center",
                       fontSize: "12px",
                       color: "#64748b",
@@ -4581,6 +4886,21 @@ const ViewAsset = () => {
                             border: isReadOnly ? "1px solid #e2e8f0" : "1px solid #cbd5e1",
                             cursor: isReadOnly ? "not-allowed" : "text",
                           }}
+                        />
+                      </td>
+                      <td
+                        style={{
+                          padding: "12px 16px",
+                          fontSize: "14px",
+                          borderBottom: "1px solid #f1f5f9",
+                        }}
+                      >
+                        <SmartLocationInput
+                          value={unit.location}
+                          readOnly={isReadOnly}
+                          onChange={(val) =>
+                            updateEditUnitField(i, "location", val)
+                          }
                         />
                       </td>
                       <td
@@ -4645,35 +4965,6 @@ const ViewAsset = () => {
                 })}
               </tbody>
             </table>
-          </div>
-          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "12px" }}>
-            <button
-              type="button"
-              onClick={() => {
-                const newUnits = [...(editData.units || []), { serialNumber: "", location: "" }];
-                const newIdx = newUnits.length - 1;
-                setIsEditingUnit(p => ({ ...p, [newIdx]: true }));
-                setEditData(p => ({ ...p, units: newUnits, quantity: newUnits.length }));
-              }}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                padding: "8px 16px",
-                background: "#f0f9ff",
-                border: "1px solid #bae6fd",
-                borderRadius: "8px",
-                fontSize: "13px",
-                fontWeight: "700",
-                color: "#0369a1",
-                cursor: "pointer",
-                transition: "all 0.2s",
-              }}
-              onMouseOver={(e) => { e.currentTarget.style.background = "#e0f2fe"; }}
-              onMouseOut={(e) => { e.currentTarget.style.background = "#f0f9ff"; }}
-            >
-              <Icon.Plus /> Tambah Unit
-            </button>
           </div>
 
           <h3
@@ -5243,17 +5534,7 @@ const ViewAsset = () => {
                     fontWeight: "600",
                   }}
                 >
-                  {a.branch}
-                </span>{" "}
-                <span
-                  style={{
-                    color: "#94a3b8",
-                    fontSize: "13px",
-                    marginLeft: "6px",
-                  }}
-                >
-                  {" "}
-                  (Zona: {a.zona} · Sub: {a.subzona})
+                  {[a.branch, a.zona, a.subzona].filter(Boolean).join(" / ")}
                 </span>
               </TableRow>
               <TableRow label="Tipe Anggaran">
@@ -5342,7 +5623,7 @@ const ViewAsset = () => {
                             </div>
                           ) : (
                             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                              <Icon.MapPin /> {a.branch} ({a.zona})
+                              <Icon.MapPin /> {u.location || [a.branch, a.zona, a.subzona].filter(Boolean).join(" / ")}
                             </div>
                           )}
                         </td>
