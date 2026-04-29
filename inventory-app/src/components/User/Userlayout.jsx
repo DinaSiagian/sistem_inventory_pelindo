@@ -128,10 +128,10 @@ const UserLayout = () => {
         }
       `}</style>
 
-      <div className="layout-wrapper" style={{ flexDirection: "row-reverse" }}>
+      <div className="layout-wrapper" style={{ flexDirection: "row" }}>
         <aside
           className={`sidebar ${collapsed ? "collapsed" : ""}`}
-          style={{ "--batik-url": `url(${batikImg})`, borderLeft: "1px solid rgba(255,255,255,0.1)", borderRight: "none" }}
+          style={{ "--batik-url": `url(${batikImg})`, borderRight: "1px solid rgba(255,255,255,0.1)", borderLeft: "none" }}
         >
           <div className="sidebar-header">
             <img src={logoPelindo} alt="Pelindo" className="sidebar-logo-img" />
@@ -229,7 +229,7 @@ const UserLayout = () => {
                 className="toggle-btn"
                 onClick={() => setCollapsed(!collapsed)}
               >
-                {collapsed ? <FaChevronLeft /> : <FaChevronRight />}
+                {collapsed ? <FaChevronRight /> : <FaChevronLeft />}
               </button>
               <div className="breadcrumb">
                 <span>Pelindo</span> /{" "}

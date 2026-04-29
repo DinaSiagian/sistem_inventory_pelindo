@@ -2182,11 +2182,12 @@ const SmartLocationInput = ({ value, onChange, placeholder = "Pilih Branch / Zon
             width: "100%",
             padding: "8px 12px",
             paddingRight: "30px",
-            fontSize: "13px",
-            background: "#fff",
-            color: "#0f172a",
+            fontSize: "0.82rem",
+            background: "#fcfdfe",
+            color: "#111827",
             border: "1px solid #cbd5e1",
-            borderRadius: "6px",
+            borderRadius: 8,
+            fontWeight: 500,
             outline: "none",
             transition: "all 0.2s"
           }}
@@ -3225,6 +3226,7 @@ const ViewAsset = () => {
                   <option>Kendaraan</option>
                   <option>Alat Berat</option>
                   <option>Furniture</option>
+                  <option>Jasa</option>
                 </select>
               </div>
               <div className="filter-group">
@@ -3523,6 +3525,7 @@ const ViewAsset = () => {
                         <option value="Kendaraan">Kendaraan</option>
                         <option value="Alat Berat">Alat Berat</option>
                         <option value="Furniture">Furniture</option>
+                        <option value="Jasa">Jasa</option>
                         <option value="Lainnya">Lainnya</option>
                       </select>
                     </div>
@@ -3938,6 +3941,7 @@ const ViewAsset = () => {
                 <option value="Kendaraan">Kendaraan</option>
                 <option value="Alat Berat">Alat Berat</option>
                 <option value="Furniture">Furniture</option>
+                <option value="Jasa">Jasa</option>
                 <option value="Lainnya">IT Lainnya</option>
               </select>
             </TableRow>
@@ -4026,7 +4030,9 @@ const ViewAsset = () => {
               background: "#fff",
               border: "1px solid var(--border)",
               borderRadius: "12px",
-              overflow: "hidden",
+              // overflow: "hidden", (removed to allow location dropdown)
+              position: "relative",
+              zIndex: 1
             }}
           >
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
@@ -4664,6 +4670,7 @@ const ViewAsset = () => {
                 <option value="Kendaraan">Kendaraan</option>
                 <option value="Alat Berat">Alat Berat</option>
                 <option value="Furniture">Furniture</option>
+                <option value="Jasa">Jasa</option>
                 <option value="Lainnya">IT Lainnya</option>
               </select>
             </TableRow>
@@ -4793,7 +4800,9 @@ const ViewAsset = () => {
               background: "#fff",
               border: "1px solid #e2e8f0",
               borderRadius: "12px",
-              overflow: "hidden",
+              // overflow: "hidden", (removed for location dropdown)
+              position: "relative",
+              zIndex: 1,
               boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1)",
             }}
           >
