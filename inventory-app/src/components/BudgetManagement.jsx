@@ -149,11 +149,35 @@ const ASSET_DB = {
     model: "Meja Kerja Direktori",
     category: "Furniture",
   },
-  "JASA-GENERIC": {
-    name: "Jasa Pemeliharaan / Layanan",
+  "MAT-PMS-001": {
+    name: "Jasa Pemasangan Perangkat / Kabel",
     brand: "Layanan",
-    model: "Jasa",
-    category: "Jasa",
+    model: "Jasa Pemasangan",
+    category: "Material",
+  },
+  "MAT-MLH-001": {
+    name: "Jasa Pemeliharaan / Maintenance",
+    brand: "Layanan",
+    model: "Jasa Pemeliharaan",
+    category: "Material",
+  },
+  "MAT-KNS-001": {
+    name: "Jasa Konsultasi / Survey Lapangan",
+    brand: "Layanan",
+    model: "Jasa Konsultasi",
+    category: "Material",
+  },
+  "SFT-GENERIC": {
+    name: "Lisensi Perangkat Lunak / Software",
+    brand: "Software",
+    model: "Software",
+    category: "Software",
+  },
+  "HW-GENERIC": {
+    name: "Perangkat Keras Lainnya",
+    brand: "Hardware",
+    model: "Hardware",
+    category: "Hardware",
   },
   "SWT-25MLH-001": {
     name: "Switch Cisco Catalyst 9300L",
@@ -293,7 +317,7 @@ const mkAssets = () => [
       { serialNumber: "SN-DELL-R740-01", location: "Data Center Lhokseumawe" },
       { serialNumber: "SN-DELL-R740-02", location: "Lantai 3 - Ruang Server Cadangan" },
     ],
-    image: null,
+    image: "/assets/img/server.png",
   },
 ];
 // ══════ INIT DATA ══════
@@ -319,7 +343,7 @@ const INIT_CAPEX = [
         location: "Malahayati / DTC / PKR",
         procurement_date: "2025-05-15",
         acquisition_value: 45000000,
-        image: null,
+        image: "/assets/img/switch.png",
       },
     ],
     history_anggaran: [
@@ -361,7 +385,23 @@ const INIT_CAPEX = [
         units: [
           { serialNumber: "SN-CCTV-001", location: "Area Dermaga - Tiang 1" },
           { serialNumber: "SN-CCTV-002", location: "Pos Security - Gerbang Utama" }
-        ]
+        ],
+        image: "/assets/img/cctv.png",
+      },
+      {
+        id: "AST-2440015-MAT-001",
+        category: "Material",
+        model: "Jasa Pemasangan",
+        asset_code: "MAT-PMS-001",
+        jumlah: 1,
+        procurement_date: "2024-08-20",
+        acquisition_value: 15000000,
+        name: "Jasa Pemasangan Perangkat / Kabel",
+        id_pekerjaan: "PKJ-2440015-001",
+        units: [
+          { serialNumber: "MAT-PMS-001", location: "Belawan / Lapangan / Dermaga" }
+        ],
+        image: "/assets/img/installation.png",
       },
     ],
     projects: [
@@ -397,7 +437,8 @@ const INIT_CAPEX = [
         procurement_date: "2025-01-20",
         acquisition_value: 1200000000,
         name: "Excavator CAT 336",
-        id_pekerjaan: "PKJ-2540011-001"
+        id_pekerjaan: "PKJ-2540011-001",
+        image: "/assets/img/excavator.png",
       }
     ],
     projects: [
@@ -487,6 +528,7 @@ const INIT_OPEX = [
         jumlah: 1,
         acquisition_value: 8500000,
         name: "Lisensi Antivirus Kaspersky",
+        image: "/assets/img/kaspersky.png",
       },
       {
         id: "TRX-OPEX-002",
@@ -502,6 +544,7 @@ const INIT_OPEX = [
         jumlah: 1,
         acquisition_value: 15000000,
         name: "Pembayaran Lisensi Microsoft Office 365",
+        image: "/assets/img/office.png",
       },
       {
         id: "TRX-OPEX-003",
@@ -517,6 +560,7 @@ const INIT_OPEX = [
         jumlah: 1,
         acquisition_value: 12500000,
         name: "Langganan Adobe Creative Cloud Team",
+        image: "/assets/img/adobe.png",
       },
       {
         id: "TRX-OPEX-004",
@@ -532,6 +576,7 @@ const INIT_OPEX = [
         jumlah: 1,
         acquisition_value: 4500000,
         name: "Lisensi Zoom Business (10 Host)",
+        image: "/assets/img/zoom.png",
       },
     ],
   },
@@ -563,6 +608,7 @@ const INIT_OPEX = [
         jumlah: 1,
         acquisition_value: 24000000,
         name: "Tagihan MPLS Januari 2026",
+        image: "/assets/img/mpls.png",
       },
     ],
   },
@@ -604,6 +650,7 @@ const INIT_OPEX = [
         jumlah: 1,
         acquisition_value: 150000000,
         name: "Konsultan IT Masterplan Tahap 1",
+        image: "/assets/img/masterplan.png",
       },
     ],
   },
@@ -649,6 +696,22 @@ const INIT_OPEX = [
         jumlah: 1,
         acquisition_value: 12500000,
         name: "Ganti Baterai UPS 10kVA",
+        image: "/assets/img/ups_battery.png",
+      },
+      {
+        id: "TRX-OPEX-MAT-001",
+        id_pekerjaan: "PKJ-OPX-6-001",
+        tanggal: "2026-03-15",
+        keterangan: "Layanan Pemeliharaan Rutin UPS",
+        no_invoice: "INV/2026/110",
+        asset_code: "MAT-MLH-001",
+        category: "Material",
+        model: "Jasa Pemeliharaan",
+        location: "Server Room BLW",
+        jumlah: 1,
+        acquisition_value: 5000000,
+        name: "Jasa Pemeliharaan / Maintenance",
+        image: "/assets/img/services.png",
       },
     ],
   },
@@ -1011,6 +1074,7 @@ body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:var(--bg);c
 .ang-card-meta{display:flex;flex-direction:column;gap:4px;font-size:0.75rem;color:var(--ink3);font-weight:500}
 .ang-card-meta span{display:flex;align-items:center;gap:6px}
 .ang-card-fin{display:flex;align-items:center;justify-content:flex-end;gap:18px}
+.ang-card-year{display:flex;flex-direction:column;gap:5px;justify-content:center}
 .ang-card-actions{display:flex;align-items:center;gap:8px}
 .ang-card-chevron{color:var(--blue);display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:var(--blue-lt);border:1px solid var(--blue-mid)}
 .yr-tag.multi {
@@ -2070,30 +2134,30 @@ function RealisasiTablePage({
           <div>
             <h2
               style={{
-                fontSize: "1.2rem",
+                fontSize: "1.5rem",
                 fontWeight: 800,
                 letterSpacing: "-0.5px",
                 color: "var(--ink)",
                 marginBottom: 3,
               }}
             >
-              Daftar Barang OPEX
+              {ang.nama}
             </h2>
-            <p
-              style={{
-                fontSize: "0.75rem",
-                color: "var(--ink4)",
-                fontWeight: 500,
-              }}
-            >
-              {transactions.length} barang · {ang.nama}
-            </p>
+
           </div>
         </div>
         <div className="asset-page-hdr-right">
           <button className="btn btn-green" onClick={onEntryNew}>
             <Icon d={I.plus} size={13} /> Entry Barang Baru
           </button>
+          <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+            <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--ink2)" }}>
+              Daftar Barang OPEX
+            </span>
+            <span style={{ fontSize: "0.72rem", color: "var(--ink4)", fontWeight: 500 }}>
+              {transactions.length} barang
+            </span>
+          </div>
         </div>
       </div>
       {/* Summary Card Perbaikan */}
@@ -2281,7 +2345,7 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
         acquisition_value: String(editData.acquisition_value ?? editData.jumlah ?? ""),
       };
     }
-    return { category: "", model: "", items: [], acquisition_value: "" };
+    return { category: "", model: "", items: [{ id: `new-${Date.now()}-0`, serial_number: "", location: "", asset_code: "" }], acquisition_value: "" };
   });
 
   const up = (k, v) => setForm((f) => ({ ...f, [k]: v }));
@@ -2289,11 +2353,11 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
   const handleCat = (cat) => {
     up("category", cat);
     up("model", "");
-    up("items", []);
+    up("items", [{ id: `new-${Date.now()}-0`, serial_number: "", location: "", asset_code: "" }]);
   };
   const handleMod = (mod) => {
     up("model", mod);
-    up("items", []);
+    up("items", [{ id: `new-${Date.now()}-0`, serial_number: "", location: "", asset_code: "" }]);
   };
 
   const availCats = Array.from(new Set(Object.values(ASSET_DB).map(x => x.category).filter(Boolean)));
@@ -2318,7 +2382,7 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
 
   const save = () => {
     if (!form.items?.length || !amount) {
-      showToast("Lengkapi Quantity dan Nilai");
+      showToast("Lengkapi Kuantitas dan Nilai");
       return;
     }
     const today = new Date().toISOString().split('T')[0];
@@ -2423,7 +2487,7 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
             )}
 
             {(form.model || isEdit) && (
-              <AEFld label="Quantity" req={true}>
+              <AEFld label="KUANTITAS" req={true}>
                 <select
                   value={form.items?.length || 0}
                   onChange={(e) => handleQtyChange(parseInt(e.target.value) || 0)}
@@ -2495,7 +2559,7 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
                     up("items", [...form.items, { id: `new-${Date.now()}-${form.items.length}`, serial_number: sn, location: "", asset_code: ac }]);
                   }}
                 >
-                  <Icon d={I.plus} size={12} /> Tambah Quantity
+                  <Icon d={I.plus} size={12} /> Tambah Kuantitas
                 </button>
               </div>
             )}
@@ -2548,11 +2612,10 @@ function OpexCard({ ang, onSelect, onDelete }) {
     <div className="ang-card" onClick={() => onSelect(ang)}>
       <div className="ang-card-inner">
         <div className="ang-card-accent opx" style={{ background: "var(--green)" }} />
-        <div className="ang-card-body">
+        <div className="ang-card-body" style={{ gridTemplateColumns: "2.4fr 1.4fr 1fr 2.1fr auto" }}>
           <div className="ang-card-info">
             <div className="ang-card-tags">
               <span className="badge opex">OPEX</span>
-              <span className="yr-tag">Thn {ang.thn_anggaran}</span>
               <code className="code-tag">{ang.kode}</code>
             </div>
             <p className="ang-card-title">{ang.nama}</p>
@@ -2561,6 +2624,11 @@ function OpexCard({ ang, onSelect, onDelete }) {
           <div className="ang-card-meta">
             <span><Icon d={I.briefcase} size={12} /> {ang.projects?.length || 0} pekerjaan</span>
             <span><Icon d={I.package} size={12} /> {(ang.assets || []).reduce((s, a) => s + (a.jumlah || 1), 0)} barang terdaftar</span>
+          </div>
+
+          <div className="ang-card-year">
+            <span className="amt-lbl" style={{ fontSize: '0.72rem' }}>Tahun</span>
+            <span className="yr-tag" style={{ width: 'fit-content', fontSize: '0.8rem', fontWeight: 800, padding: '2px 8px' }}> {ang.thn_anggaran}</span>
           </div>
 
           <div className="ang-card-fin">
@@ -2872,7 +2940,7 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
 }
 // ══════ ASSET ENTRY PAGE (CAPEX) ══════
 function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
-  const [form, setForm] = useState({ category: "", model: "", items: [], acquisition_value: "" });
+  const [form, setForm] = useState({ category: "", model: "", items: [{ id: `new-${Date.now()}-0`, serial_number: "", location: "", asset_code: "" }], acquisition_value: "" });
   const upd = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
   const amount = parseFloat(form.acquisition_value) || 0;
@@ -2956,7 +3024,7 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
                 onChange={(e) => {
                   upd("category", e.target.value);
                   upd("model", "");
-                  upd("items", []);
+                  upd("items", [{ id: `new-${Date.now()}-0`, serial_number: "", location: "", asset_code: "" }]);
                 }}
               >
                 <option value="">— Pilih Kategori —</option>
@@ -2972,7 +3040,7 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
                   options={Object.values(ASSET_DB).filter(x => x.category === form.category)}
                   onChange={(val) => {
                     upd("model", val);
-                    upd("items", []);
+                    upd("items", [{ id: `new-${Date.now()}-0`, serial_number: "", location: "", asset_code: "" }]);
                   }}
                   placeholder="Ketik nama atau pilih dari daftar..."
                 />
@@ -2981,7 +3049,7 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
 
             {form.model && (
               <div style={{ marginTop: 8 }}>
-                <AEFld label="Quantity">
+                <AEFld label="KUANTITAS">
                   <div style={{ display: "flex", alignItems: "baseline", gap: 8, padding: "2px 0" }}>
                     <span style={{
                       fontSize: "1.2rem",
@@ -3064,7 +3132,7 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
                     upd("items", [...form.items, { id: `new-${Date.now()}`, serial_number: "", location: "", asset_code: "" }]);
                   }}
                 >
-                  <Icon d={I.plus} size={14} /> Tambah Unit (Tambah Quantity)
+                  <Icon d={I.plus} size={14} /> Tambah Unit (Tambah Kuantitas)
                 </button>
               </div>
             )}
@@ -3226,7 +3294,7 @@ function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) 
               </div>
             </AEFld>
 
-            <AEFld label="Quantity">
+            <AEFld label="KUANTITAS">
               <div style={{ display: "flex", alignItems: "baseline", gap: 8, padding: "2px 0" }}>
                 <span style={{
                   fontSize: "1.2rem",
@@ -3310,7 +3378,7 @@ function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) 
                     upd("items", [...form.items, { id: `new-${Date.now()}-${form.items.length}`, serial_number: sn, location: "", asset_code: ac }]);
                   }}
                 >
-                  <Icon d={I.plus} size={14} /> Tambah Unit Baru (Tambah Quantity)
+                  <Icon d={I.plus} size={14} /> Tambah Unit Baru (Tambah Kuantitas)
                 </button>
               </div>
             )}
@@ -3445,34 +3513,17 @@ function AssetTablePage({
           <div>
             <h2
               style={{
-                fontSize: "1.2rem",
+                fontSize: "1.5rem",
                 fontWeight: 800,
                 letterSpacing: "-0.5px",
                 color: "var(--ink)",
                 marginBottom: 3,
               }}
             >
-              Daftar Barang {anggaran.type === "opex" ? "OPEX" : "CAPEX"}
+              {project?.nm_pekerjaan || anggaran.nama}
             </h2>
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                <span style={{
-                  color: "var(--ink3)",
-                  fontSize: "0.82rem",
-                  fontWeight: 500,
-                  fontFamily: "inherit"
-                }}>
-                  Total {totalQty} barang ·
-                </span>
-                <span style={{
-                  fontSize: "0.82rem",
-                  fontWeight: 600,
-                  color: "var(--ink3)",
-                  fontFamily: "inherit"
-                }}>
-                  {project?.nm_pekerjaan || anggaran.nama}
-                </span>
-              </div>
+
 
               <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
                 {/* Nilai Kontrak */}
@@ -3534,6 +3585,14 @@ function AssetTablePage({
         <button className={`btn ${anggaran.type === 'opex' ? 'btn-green' : 'btn-prim'}`} onClick={onEntryNew}>
           <Icon d={I.plus} size={13} /> Entry Barang Baru
         </button>
+        <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+          <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--ink2)" }}>
+            Daftar Barang {anggaran.type === "opex" ? "OPEX" : "CAPEX"}
+          </span>
+          <span style={{ fontSize: "0.72rem", color: "var(--ink4)", fontWeight: 500 }}>
+            Total {totalQty} barang
+          </span>
+        </div>
       </div>
       <div className="asset-table-wrap">
         <table className="asset-table">

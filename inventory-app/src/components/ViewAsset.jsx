@@ -2279,7 +2279,7 @@ const ViewAsset = () => {
       id: "CCTV-24BLW-001",
       name: "CCTV Hikvision DS-2CD2143G2-I",
       category: "CCTV",
-      tipeAset: "Hikvision DS-2CD2143G2-I",
+      tipeAset: "DS-2CD2143G2-I",
       status: "Tersedia",
       entitas: "Pelindo Multi Terminal",
       branch: "Belawan",
@@ -2292,7 +2292,7 @@ const ViewAsset = () => {
         { serialNumber: "SN-CCTV-001", location: "Belawan / Lapangan / Dermaga" },
         { serialNumber: "SN-CCTV-002", location: "Belawan / Lapangan / Dermaga" },
       ],
-      photo: null,
+      photo: "/assets/img/cctv.png",
       specs: [
         { spec_label: "Resolusi", value: "4", default_unit: "MP" },
         { spec_label: "Lensa", value: "2.8", default_unit: "mm" },
@@ -2305,6 +2305,7 @@ const ViewAsset = () => {
       id: "ALAT-25DMI-001",
       name: "Excavator CAT 336",
       category: "Alat Berat",
+      tipeAset: "336",
       status: "Maintenance",
       entitas: "Pelindo Multi Terminal",
       branch: "Dumai",
@@ -2316,7 +2317,7 @@ const ViewAsset = () => {
       units: [
         { serialNumber: "SN-EXC-336-01", location: "Dumai / Gedung / Dermaga" },
       ],
-      photo: null,
+      photo: "/assets/img/excavator.png",
       specs: [
         { spec_label: "Nomor Mesin", value: "C9.3B-2024", default_unit: "" },
         { spec_label: "Kapasitas Angkat", value: "36", default_unit: "ton" },
@@ -2326,10 +2327,50 @@ const ViewAsset = () => {
       customSpecs: [{ spec_label: "Jam Kerja Saat Ini", value: "1240", default_unit: "jam" }],
     },
     {
+      id: "MAT-25BLW-001",
+      name: "Jasa Pemasangan Perangkat / Kabel",
+      category: "Material",
+      tipeAset: "Jasa Pemasangan",
+      status: "Tersedia",
+      entitas: "Pelindo Multi Terminal",
+      branch: "Belawan",
+      zona: "LPG",
+      subzona: "DMG",
+      value: 15000000,
+      id_pekerjaan: "PKJ-2440015-001",
+      quantity: 1,
+      units: [
+        { serialNumber: "MAT-PMS-001", location: "Belawan / Lapangan / Dermaga" },
+      ],
+      photo: "/assets/img/installation.png",
+      specs: [],
+      customSpecs: [{ spec_label: "Lingkup Pekerjaan", value: "Penarikan Kabel & Konfigurasi", default_unit: "" }],
+    },
+    {
+      id: "MAT-26BLW-002",
+      name: "Jasa Pemeliharaan / Maintenance",
+      category: "Material",
+      tipeAset: "Jasa Pemeliharaan",
+      status: "Tersedia",
+      entitas: "Pelindo Multi Terminal",
+      branch: "Belawan",
+      zona: "GDG",
+      subzona: "SRV",
+      value: 5000000,
+      id_pekerjaan: "PKJ-OPX-6-001",
+      quantity: 1,
+      units: [
+        { serialNumber: "MAT-MLH-001", location: "Belawan / Gedung / Server Room" },
+      ],
+      photo: "/assets/img/services.png",
+      specs: [],
+      customSpecs: [{ spec_label: "Periode", value: "Q1 2026", default_unit: "" }],
+    },
+    {
       id: "SRV-25LHK-001",
       name: "Server Dell PowerEdge R740",
       category: "Server",
-      tipeAset: "Dell PowerEdge R740",
+      tipeAset: "R740",
       status: "Tersedia",
       entitas: "Pelindo Multi Terminal",
       branch: "Lhokseumawe",
@@ -2342,7 +2383,7 @@ const ViewAsset = () => {
         { serialNumber: "SN-DELL-R740-01", location: "Lhokseumawe / DTC / Data Center" },
         { serialNumber: "SN-DELL-R740-02", location: "Lhokseumawe / DTC / Ruang Server" },
       ],
-      photo: null,
+      photo: "/assets/img/server.png",
       specs: [
         { spec_label: "Processor (CPU)", value: "2x Intel Xeon Gold 6230R", default_unit: "" },
         { spec_label: "RAM", value: "128", default_unit: "GB RAM" },
@@ -2355,6 +2396,7 @@ const ViewAsset = () => {
       id: "KND-24BLW-001",
       name: "Toyota Hilux Pickup",
       category: "Kendaraan",
+      tipeAset: "Hilux Pickup",
       status: "Dipinjam",
       entitas: "Pelindo Multi Terminal",
       branch: "Belawan",
@@ -2366,7 +2408,7 @@ const ViewAsset = () => {
       units: [
         { serialNumber: "BK 1234 ZZ", location: "Belawan / Lapangan / Parkir" },
       ],
-      photo: null,
+      photo: "/assets/img/hilux.png",
       specs: [
         { spec_label: "Plat Nomor", value: "BK 1234 ZZ", default_unit: "" },
         { spec_label: "Nomor Mesin", value: "1GD-0045221", default_unit: "" },
@@ -2379,6 +2421,7 @@ const ViewAsset = () => {
       id: "FURN-26TJP-001",
       name: "Meja Kerja Direktori",
       category: "Furniture",
+      tipeAset: "Meja Kerja Direktori",
       status: "Tersedia",
       entitas: "PT Pelabuhan Indonesia",
       branch: "Tanjung Priok",
@@ -2391,7 +2434,7 @@ const ViewAsset = () => {
         { serialNumber: "SN-MEJA-001", location: "Tanjung Priok / Gedung / Dermaga" },
         { serialNumber: "SN-MEJA-002", location: "Tanjung Priok / Gedung / Dermaga" },
       ],
-      photo: null,
+      photo: "/assets/img/desk.png",
       specs: [
         { spec_label: "Bahan Material", value: "MDF + Veneer Kayu Jati", default_unit: "" },
         { spec_label: "Panjang", value: "180", default_unit: "cm" },
@@ -2405,7 +2448,7 @@ const ViewAsset = () => {
       id: "SWT-25MLH-001",
       name: "Switch Cisco Catalyst 9300L",
       category: "Switch",
-      tipeAset: "Cisco Catalyst 9300L",
+      tipeAset: "Catalyst 9300L",
       status: "Tersedia",
       entitas: "Pelindo Multi Terminal",
       branch: "Malahayati",
@@ -2418,7 +2461,7 @@ const ViewAsset = () => {
         { serialNumber: "SN-CISCO-9300-01", location: "Malahayati / Data Center / Parkir" },
         { serialNumber: "SN-CISCO-9300-02", location: "Malahayati / Data Center / Parkir" },
       ],
-      photo: null,
+      photo: "/assets/img/switch.png",
       specs: [
         { spec_label: "Processor (CPU)", value: "1.0", default_unit: "GHz" },
         { spec_label: "RAM", value: "256", default_unit: "MB RAM" },
@@ -2426,6 +2469,132 @@ const ViewAsset = () => {
         { spec_label: "Operating System", value: "Cisco IOS 15.2", default_unit: "" },
       ],
       customSpecs: [{ spec_label: "Jumlah Port", value: "48x GE + 4x SFP+", default_unit: "" }, { spec_label: "PoE Budget", value: "740", default_unit: "W" }],
+    },
+    {
+      id: "SFT-26KPT-001",
+      name: "Lisensi Antivirus Kaspersky",
+      category: "Software",
+      tipeAset: "Kaspersky Endpoint",
+      status: "Tersedia",
+      entitas: "Pelindo Multi Terminal",
+      branch: "Kantor Pusat",
+      zona: "GDG",
+      subzona: "OFC",
+      value: 8500000,
+      id_pekerjaan: "PKJ-OPX-1-001",
+      quantity: 1,
+      units: [{ serialNumber: "SN-KASP-001", location: "Kantor Pusat" }],
+      photo: "/assets/img/kaspersky.png",
+      specs: [],
+      customSpecs: [],
+    },
+    {
+      id: "SFT-26KPT-002",
+      name: "Pembayaran Lisensi Microsoft Office 365",
+      category: "Software",
+      tipeAset: "Office 365 Business",
+      status: "Tersedia",
+      entitas: "Pelindo Multi Terminal",
+      branch: "Kantor Pusat",
+      zona: "GDG",
+      subzona: "OFC",
+      value: 15000000,
+      id_pekerjaan: "PKJ-OPX-1-001",
+      quantity: 1,
+      units: [{ serialNumber: "SN-O365-001", location: "Kantor Pusat" }],
+      photo: "/assets/img/office.png",
+      specs: [],
+      customSpecs: [],
+    },
+    {
+      id: "SFT-26KPT-003",
+      name: "Langganan Adobe Creative Cloud Team",
+      category: "Software",
+      tipeAset: "Creative Cloud All Apps",
+      status: "Tersedia",
+      entitas: "Pelindo Multi Terminal",
+      branch: "Kantor Pusat",
+      zona: "GDG",
+      subzona: "OFC",
+      value: 12500000,
+      id_pekerjaan: "PKJ-OPX-1-001",
+      quantity: 1,
+      units: [{ serialNumber: "SN-ADOB-123", location: "Kantor Pusat" }],
+      photo: "/assets/img/adobe.png",
+      specs: [],
+      customSpecs: [],
+    },
+    {
+      id: "SFT-26KPT-004",
+      name: "Lisensi Zoom Business (10 Host)",
+      category: "Software",
+      tipeAset: "Zoom Business",
+      status: "Tersedia",
+      entitas: "Pelindo Multi Terminal",
+      branch: "Kantor Pusat",
+      zona: "GDG",
+      subzona: "OFC",
+      value: 4500000,
+      id_pekerjaan: "PKJ-OPX-1-001",
+      quantity: 1,
+      units: [{ serialNumber: "SN-ZOOM-001", location: "Kantor Pusat" }],
+      photo: "/assets/img/zoom.png",
+      specs: [],
+      customSpecs: [],
+    },
+    {
+      id: "NET-26BLW-001",
+      name: "Tagihan MPLS Januari 2026",
+      category: "Software",
+      tipeAset: "Koneksi MPLS",
+      status: "Tersedia",
+      entitas: "Pelindo Multi Terminal",
+      branch: "Belawan",
+      zona: "DTC",
+      subzona: "SRV",
+      value: 24000000,
+      id_pekerjaan: "PKJ-OPX-2-001",
+      quantity: 1,
+      units: [{ serialNumber: "NET-MPLS-001", location: "Belawan / DTC" }],
+      photo: "/assets/img/mpls.png",
+      specs: [],
+      customSpecs: [],
+    },
+    {
+      id: "MAT-26KPT-001",
+      name: "Konsultan IT Masterplan Tahap 1",
+      category: "Material",
+      tipeAset: "Jasa Konsultasi",
+      status: "Tersedia",
+      entitas: "Pelindo Multi Terminal",
+      branch: "Kantor Pusat",
+      zona: "GDG",
+      subzona: "OFC",
+      value: 150000000,
+      id_pekerjaan: "PKJ-OPX-4-001",
+      quantity: 1,
+      units: [{ serialNumber: "SRV-CON-001", location: "Kantor Pusat" }],
+      photo: "/assets/img/masterplan.png",
+      specs: [],
+      customSpecs: [],
+    },
+    {
+      id: "HW-26BLW-001",
+      name: "Ganti Baterai UPS 10kVA",
+      category: "Hardware",
+      tipeAset: "Battery Kit 12V 9Ah",
+      status: "Tersedia",
+      entitas: "Pelindo Multi Terminal",
+      branch: "Belawan",
+      zona: "DTC",
+      subzona: "SRV",
+      value: 12500000,
+      id_pekerjaan: "PKJ-OPX-6-001",
+      quantity: 1,
+      units: [{ serialNumber: "SN-UPS-BATT-001", location: "Server Room BLW" }],
+      photo: "/assets/img/ups_battery.png",
+      specs: [],
+      customSpecs: [],
     },
   ]);
 
@@ -2526,6 +2695,9 @@ const ViewAsset = () => {
     "Kendaraan": "KND",
     "Alat Berat": "ALAT",
     "Furniture": "FURN",
+    "Material": "MAT",
+    "Software": "SFT",
+    "Hardware": "HW",
     "Lainnya": "BRG"
   };
 
@@ -2577,7 +2749,11 @@ const ViewAsset = () => {
           (!q ||
             a.id.toLowerCase().includes(q) ||
             a.name.toLowerCase().includes(q) ||
-            a.branch.toLowerCase().includes(q)) &&
+            a.category.toLowerCase().includes(q) ||
+            a.branch.toLowerCase().includes(q) ||
+            (a.tipeAset && a.tipeAset.toLowerCase().includes(q)) ||
+            (a.entitas && a.entitas.toLowerCase().includes(q)) ||
+            (proj?.nm_pekerjaan && proj.nm_pekerjaan.toLowerCase().includes(q))) &&
           (!filterStatus || a.status === filterStatus) &&
           (!filterCategory || a.category === filterCategory) &&
           (!filterBranch || a.branch === filterBranch) &&
@@ -2639,8 +2815,10 @@ const ViewAsset = () => {
       : s === "Dipinjam"
         ? "dipinjam"
         : "maintenance";
-  const getAssetImage = (asset) =>
-    asset.photo?.dataUrl || CATEGORY_IMAGES[asset.category] || null;
+  const getAssetImage = (asset) => {
+    if (typeof asset.photo === "string") return asset.photo;
+    return asset.photo?.dataUrl || CATEGORY_IMAGES[asset.category] || null;
+  };
 
   const getNextNomor = (eCode, bCode, zCode, szCode) => {
     const prefix = `${eCode}-${bCode}-${zCode}-${szCode}-`;
@@ -3338,6 +3516,7 @@ const ViewAsset = () => {
             <table className="asset-table">
               <thead>
                 <tr>
+                  <th style={{ width: "60px" }}>GAMBAR</th>
                   <th>ID BARANG</th>
                   <th>NAMA BARANG</th>
                   <th style={{ minWidth: "150px" }}>
@@ -3423,28 +3602,26 @@ const ViewAsset = () => {
                         }}
                       >
                         <td>
+                          {imgSrc ? (
+                            <img
+                              src={imgSrc}
+                              alt={asset.name}
+                              className="asset-thumb"
+                              onError={(e) => {
+                                e.target.style.display = "none";
+                              }}
+                            />
+                          ) : (
+                            <div className="asset-thumb-placeholder">
+                              <Icon.PhotoSm />
+                            </div>
+                          )}
+                        </td>
+                        <td>
                           <code className="asset-id-code">{asset.id}</code>
                         </td>
                         <td>
-                          <div className="asset-thumb-cell">
-                            {imgSrc ? (
-                              <img
-                                src={imgSrc}
-                                alt={asset.name}
-                                className="asset-thumb"
-                                onError={(e) => {
-                                  e.target.style.display = "none";
-                                }}
-                              />
-                            ) : (
-                              <div className="asset-thumb-placeholder">
-                                <Icon.PhotoSm />
-                              </div>
-                            )}
-                            <div className="asset-name-wrap">
-                              <div className="fw-bold">{asset.name}</div>
-                            </div>
-                          </div>
+                          <div className="fw-bold">{asset.name}</div>
                         </td>
                         <td>
                           <span className="cat-badge">{asset.category}</span>
@@ -3784,7 +3961,9 @@ const ViewAsset = () => {
                 <option value="Kendaraan">Kendaraan</option>
                 <option value="Alat Berat">Alat Berat</option>
                 <option value="Furniture">Furniture</option>
-                <option value="Jasa">Jasa</option>
+                <option value="Material">Material</option>
+                <option value="Software">Software</option>
+                <option value="Hardware">Hardware</option>
                 <option value="Lainnya">IT Lainnya</option>
               </select>
             </TableRow>
@@ -4509,7 +4688,9 @@ const ViewAsset = () => {
                 <option value="Kendaraan">Kendaraan</option>
                 <option value="Alat Berat">Alat Berat</option>
                 <option value="Furniture">Furniture</option>
-                <option value="Jasa">Jasa</option>
+                <option value="Material">Material</option>
+                <option value="Software">Software</option>
+                <option value="Hardware">Hardware</option>
                 <option value="Lainnya">IT Lainnya</option>
               </select>
             </TableRow>
