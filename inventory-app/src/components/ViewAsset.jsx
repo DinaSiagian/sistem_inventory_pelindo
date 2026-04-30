@@ -2113,7 +2113,8 @@ const SmartLocationInput = ({ value, onChange, placeholder = "Pilih Branch / Zon
         border: "1px solid #e2e8f0",
         minHeight: "36px",
         display: "flex",
-        alignItems: "center"
+        alignItems: "center",
+        cursor: "pointer"
       }}>
         {value}
       </div>
@@ -2168,9 +2169,10 @@ const SmartLocationInput = ({ value, onChange, placeholder = "Pilih Branch / Zon
   };
 
   return (
-    <div ref={wrapperRef} style={{ position: "relative", width: "100%" }}>
+    <div ref={wrapperRef} className="unit-edit-input" style={{ position: "relative", width: "100%" }}>
       <div style={{ position: 'relative' }}>
         <input
+          autoFocus
           value={valStr}
           onChange={(e) => {
             onChange(e.target.value);
@@ -2500,6 +2502,17 @@ const ViewAsset = () => {
   useEffect(() => {
     setIsEditingUnit({});
   }, [currentView]);
+
+  useEffect(() => {
+    const handleOutsideEdit = (e) => {
+      if (Object.keys(isEditingUnit).filter(k => isEditingUnit[k]).length === 0) return;
+      if (!e.target.closest(".unit-edit-input")) {
+        setIsEditingUnit({});
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideEdit);
+    return () => document.removeEventListener("mousedown", handleOutsideEdit);
+  }, [isEditingUnit]);
 
   // Pemetaan Prefix berdasarkan Kategori
   const CATEGORY_PREFIX = {
@@ -3058,6 +3071,7 @@ const ViewAsset = () => {
 
   // ── RENDER LIST VIEW (TAMPILAN AWAL - TIDAK DIUBAH) ─────────────
   const renderListView = () => {
+    const uniqueCategories = [...new Set(assets.map(a => a.category).filter(Boolean))].sort();
     const autoNomor = canGenerate
       ? getNextNomor(
         formData.entitasCode,
@@ -3178,176 +3192,14 @@ const ViewAsset = () => {
                 <Icon.Grid /> Grid
               </button>
             </div>
-            <button
-              className={`control-btn ${showFilterPanel ? "active" : ""}`}
-              onClick={() => setShowFilterPanel(!showFilterPanel)}
-            >
-              <Icon.Filter /> Filter
-              {activeFiltersCount > 0 && (
-                <span className="filter-badge">{activeFiltersCount}</span>
-              )}
-              <Icon.ChevronDown deg={showFilterPanel ? 180 : 0} />
-            </button>
+
             <button className="control-btn" onClick={handleExport}>
               <Icon.Download /> Export CSV
             </button>
           </div>
         </div>
 
-        {showFilterPanel && (
-          <div className="filter-panel">
-            <div className="filter-panel-grid">
-              <div className="filter-group">
-                <label>Status</label>
-                <select
-                  value={filterStatus}
-                  onChange={(e) => {
-                    setFilterStatus(e.target.value);
-                    setCurrentPage(1);
-                  }}
-                >
-                  <option value="">Semua Status</option>
-                  <option>Tersedia</option>
-                  <option>Dipinjam</option>
-                  <option>Maintenance</option>
-                </select>
-              </div>
-              <div className="filter-group">
-                <label>Kategori</label>
-                <select
-                  value={filterCategory}
-                  onChange={(e) => {
-                    setFilterCategory(e.target.value);
-                    setCurrentPage(1);
-                  }}
-                >
-                  <option value="">▾</option>
-                  <option>IT Equipment</option>
-                  <option>Kendaraan</option>
-                  <option>Alat Berat</option>
-                  <option>Furniture</option>
-                  <option>Jasa</option>
-                </select>
-              </div>
-              <div className="filter-group">
-                <label>Branch</label>
-                <select
-                  value={filterBranch}
-                  onChange={(e) => {
-                    setFilterBranch(e.target.value);
-                    setCurrentPage(1);
-                  }}
-                >
-                  <option value="">Semua Branch</option>
-                  {Object.values(BRANCH_BY_ENTITY)
-                    .flat()
-                    .sort((a, b) => a.name.localeCompare(b.name))
-                    .map((b) => (
-                      <option key={b.code} value={b.name}>
-                        {b.name}
-                      </option>
-                    ))}
-                </select>
-              </div>
-              <div className="filter-group">
-                <label>Nama Anggaran</label>
-                <select
-                  value={filterAnggaran}
-                  onChange={(e) => {
-                    setFilterAnggaran(e.target.value);
-                    setFilterProject("");
-                    setCurrentPage(1);
-                  }}
-                  className={filterAnggaran ? "cascade-select--filled" : ""}
-                >
-                  <option value="">Semua Anggaran</option>
-                  <optgroup label="CAPEX">
-                    {CAPEX_ANGGARAN.map((a) => (
-                      <option key={a.kd_anggaran} value={a.kd_anggaran}>
-                        [{a.thn_anggaran}] {a.nm_anggaran}
-                      </option>
-                    ))}
-                  </optgroup>
-                  <optgroup label="OPEX">
-                    {OPEX_ANGGARAN.map((o) => (
-                      <option key={o.kd_anggaran} value={o.kd_anggaran}>
-                        [{o.thn_anggaran}] {o.nm_anggaran}
-                      </option>
-                    ))}
-                  </optgroup>
-                </select>
-                {filterAnggaranCapexEntry && (
-                  <div style={{ marginTop: 8 }}>
-                    <label
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 6,
-                        fontSize: 11,
-                        fontWeight: 700,
-                        color: "var(--cyan)",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.5px",
-                        marginBottom: 6,
-                      }}
-                    >
-                      <span style={{ opacity: 0.7 }}>↳</span> Nama Pekerjaan
-                      <span
-                        style={{
-                          background: "#e0f2fe",
-                          color: "#0369a1",
-                          fontSize: 10,
-                          fontWeight: 700,
-                          padding: "1px 6px",
-                          borderRadius: 20,
-                          border: "1px solid #bae6fd",
-                        }}
-                      >
-                        {filterAnggaranCapexEntry.pekerjaan.length}
-                      </span>
-                    </label>
-                    <select
-                      value={filterProject}
-                      onChange={(e) => {
-                        setFilterProject(e.target.value);
-                        setCurrentPage(1);
-                      }}
-                      className={filterProject ? "cascade-select--filled" : ""}
-                      style={{
-                        padding: "9px 12px",
-                        border: "1px solid var(--border)",
-                        borderRadius: 9,
-                        fontSize: 13,
-                        color: "#334155",
-                        background: "var(--white)",
-                        outline: "none",
-                        width: "100%",
-                        fontFamily: "var(--font)",
-                      }}
-                    >
-                      <option value="">Semua Pekerjaan</option>
-                      {filterAnggaranCapexEntry.pekerjaan.map((p) => (
-                        <option
-                          key={p.id_pekerjaan}
-                          value={String(p.id_pekerjaan)}
-                        >
-                          {p.nm_pekerjaan.length > 80
-                            ? p.nm_pekerjaan.substring(0, 80) + "…"
-                            : p.nm_pekerjaan}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-              </div>
-            </div>
-            {activeFiltersCount > 0 && (
-              <button className="filter-reset-btn" onClick={resetFilters}>
-                <Icon.Times /> Reset Filter
-              </button>
-            )}
-          </div>
-        )}
+
 
         <div className="table-container">
           <div className="table-info-bar">
@@ -3514,19 +3366,10 @@ const ViewAsset = () => {
                         }}
                       >
                         <option value={filterCategory} hidden>▾</option>
-                        <option value="">Kategori</option>
-                        <option value="Laptop">Laptop</option>
-                        <option value="CCTV">CCTV</option>
-                        <option value="Router">Router</option>
-                        <option value="PC Desktop">PC Desktop</option>
-                        <option value="Server">Server</option>
-                        <option value="Switch">Switch</option>
-                        <option value="Printer">Printer</option>
-                        <option value="Kendaraan">Kendaraan</option>
-                        <option value="Alat Berat">Alat Berat</option>
-                        <option value="Furniture">Furniture</option>
-                        <option value="Jasa">Jasa</option>
-                        <option value="Lainnya">Lainnya</option>
+                        <option value="">Semua Kategori</option>
+                        {uniqueCategories.map(cat => (
+                          <option key={cat} value={cat}>{cat}</option>
+                        ))}
                       </select>
                     </div>
                   </th>
@@ -4090,7 +3933,8 @@ const ViewAsset = () => {
               </thead>
               <tbody>
                 {formData.units.map((unit, idx) => {
-                  const isExisting = formData.cekEksisting && !isEditingUnit[idx];
+                  const isSnEditing = !!isEditingUnit[`${idx}-sn`];
+                  const isLocEditing = !!isEditingUnit[`${idx}-loc`];
                   return (
                     <tr key={idx}>
                       <td
@@ -4113,9 +3957,11 @@ const ViewAsset = () => {
                       >
                         <input
                           type="text"
+                          autoFocus={isSnEditing}
                           placeholder="Contoh: SN-123456"
                           value={unit.serialNumber}
-                          readOnly={isExisting}
+                          readOnly={!isSnEditing}
+                          onClick={(e) => { e.stopPropagation(); if (!isSnEditing) setIsEditingUnit({ [`${idx}-sn`]: true }); }}
                           onChange={(e) =>
                             updateUnitField(idx, "serialNumber", e.target.value)
                           }
@@ -4123,11 +3969,12 @@ const ViewAsset = () => {
                             ...modernInputStyle,
                             padding: "8px 12px",
                             fontSize: "13px",
-                            background: isExisting ? "#f8fafc" : "#fff",
-                            color: isExisting ? "#64748b" : "#0f172a",
-                            border: isExisting ? "1px solid #e2e8f0" : "1px solid #cbd5e1",
-                            cursor: isExisting ? "not-allowed" : "text",
+                            background: !isSnEditing ? "#f8fafc" : "#fff",
+                            color: !isSnEditing ? "#64748b" : "#0f172a",
+                            border: !isSnEditing ? "1px solid #e2e8f0" : "1px solid #cbd5e1",
+                            cursor: !isSnEditing ? "pointer" : "text",
                           }}
+                          className="unit-edit-input"
                         />
                       </td>
                       {formData.cekEksisting && (
@@ -4136,10 +3983,12 @@ const ViewAsset = () => {
                             padding: "8px 12px",
                             borderBottom: "1px solid #f1f5f9",
                           }}
+                          onClick={(e) => { e.stopPropagation(); if (!isLocEditing) setIsEditingUnit({ [`${idx}-loc`]: true }); }}
+                          className="unit-edit-input"
                         >
                           <SmartLocationInput
                             value={unit.location}
-                            readOnly={isExisting}
+                            readOnly={!isLocEditing}
                             onChange={(val) =>
                               updateUnitField(idx, "location", val)
                             }
@@ -4154,27 +4003,6 @@ const ViewAsset = () => {
                         }}
                       >
                         <div style={{ display: "flex", justifyContent: "center", gap: "8px" }}>
-                          <button
-                            type="button"
-                            onClick={() => setIsEditingUnit(p => ({ ...p, [idx]: !p[idx] }))}
-                            style={{
-                              width: "32px",
-                              height: "32px",
-                              borderRadius: "6px",
-                              border: isEditingUnit[idx] ? "1.5px solid #64748b" : "1px solid #e2e8f0",
-                              background: isEditingUnit[idx] ? "#f1f5f9" : "#f8fafc",
-                              color: "#64748b",
-                              cursor: "pointer",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              transition: "all 0.2s",
-                              padding: 0,
-                            }}
-                            title="Edit Serial Number"
-                          >
-                            <Icon.Edit />
-                          </button>
                           <button
                             type="button"
                             onClick={() => {
@@ -4859,7 +4687,8 @@ const ViewAsset = () => {
               </thead>
               <tbody>
                 {(editData.units || []).map((unit, i) => {
-                  const isReadOnly = !isEditingUnit[i];
+                  const isSnEditing = !!isEditingUnit[`${i}-sn`];
+                  const isLocEditing = !!isEditingUnit[`${i}-loc`];
                   return (
                     <tr key={i}>
                       <td
@@ -4882,19 +4711,22 @@ const ViewAsset = () => {
                       >
                         <input
                           type="text"
+                          autoFocus={isSnEditing}
                           value={unit.serialNumber}
-                          readOnly={isReadOnly}
+                          readOnly={!isSnEditing}
+                          onClick={(e) => { e.stopPropagation(); if (!isSnEditing) setIsEditingUnit({ [`${i}-sn`]: true }); }}
                           onChange={(e) =>
                             updateEditUnitField(i, "serialNumber", e.target.value)
                           }
                           placeholder="Masukkan Serial Number..."
                           style={{
                             ...modernInputStyle,
-                            background: isReadOnly ? "#f8fafc" : "#fff",
-                            color: isReadOnly ? "#64748b" : "#0f172a",
-                            border: isReadOnly ? "1px solid #e2e8f0" : "1px solid #cbd5e1",
-                            cursor: isReadOnly ? "not-allowed" : "text",
+                            background: !isSnEditing ? "#f8fafc" : "#fff",
+                            color: !isSnEditing ? "#64748b" : "#0f172a",
+                            border: !isSnEditing ? "1px solid #e2e8f0" : "1px solid #cbd5e1",
+                            cursor: !isSnEditing ? "pointer" : "text",
                           }}
+                          className="unit-edit-input"
                         />
                       </td>
                       <td
@@ -4904,13 +4736,18 @@ const ViewAsset = () => {
                           borderBottom: "1px solid #f1f5f9",
                         }}
                       >
-                        <SmartLocationInput
-                          value={unit.location}
-                          readOnly={isReadOnly}
-                          onChange={(val) =>
-                            updateEditUnitField(i, "location", val)
-                          }
-                        />
+                        <div 
+                          onClick={(e) => { e.stopPropagation(); if (!isLocEditing) setIsEditingUnit({ [`${i}-loc`]: true }); }}
+                          className="unit-edit-input"
+                        >
+                          <SmartLocationInput
+                            value={unit.location}
+                            readOnly={!isLocEditing}
+                            onChange={(val) =>
+                              updateEditUnitField(i, "location", val)
+                            }
+                          />
+                        </div>
                       </td>
                       <td
                         style={{
@@ -4920,27 +4757,6 @@ const ViewAsset = () => {
                         }}
                       >
                         <div style={{ display: "flex", justifyContent: "center", gap: "8px" }}>
-                          <button
-                            type="button"
-                            onClick={() => setIsEditingUnit(p => ({ ...p, [i]: !p[i] }))}
-                            style={{
-                              width: "32px",
-                              height: "32px",
-                              borderRadius: "6px",
-                              border: isEditingUnit[i] ? "1.5px solid #64748b" : "1px solid #e2e8f0",
-                              background: isEditingUnit[i] ? "#f1f5f9" : "#f8fafc",
-                              color: "#64748b",
-                              cursor: "pointer",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              transition: "all 0.2s",
-                              padding: 0,
-                            }}
-                            title="Edit Serial Number"
-                          >
-                            <Icon.Edit />
-                          </button>
                           <button
                             type="button"
                             onClick={() => {
