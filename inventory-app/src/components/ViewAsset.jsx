@@ -3827,7 +3827,13 @@ const ViewAsset = () => {
                   max="100"
                   value={formData.quantity}
                   onChange={(e) => {
-                    const val = parseInt(e.target.value, 10) || 1;
+                    const rawValue = e.target.value;
+                    if (rawValue === "") {
+                      setFormData((p) => ({ ...p, quantity: "" }));
+                      return;
+                    }
+                    const val = parseInt(rawValue, 10);
+                    if (isNaN(val)) return;
                     const clamped = Math.max(1, Math.min(100, val));
                     setFormData((p) => {
                       let newUnits = [...p.units];
@@ -3844,6 +3850,11 @@ const ViewAsset = () => {
                       }
                       return { ...p, quantity: clamped, units: newUnits };
                     });
+                  }}
+                  onBlur={(e) => {
+                    if (e.target.value === "" || parseInt(e.target.value, 10) < 1) {
+                      setFormData((p) => ({ ...p, quantity: Math.max(1, p.units.length) }));
+                    }
                   }}
                   style={{
                     ...modernInputStyle,
