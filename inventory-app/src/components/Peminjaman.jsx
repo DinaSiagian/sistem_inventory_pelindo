@@ -183,6 +183,36 @@ const Icon = {
       <circle cx="12" cy="7" r="4" />
     </svg>
   ),
+  Lock: () => (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    </svg>
+  ),
+  Unlock: () => (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+      <path d="M7 11V7a5 5 0 0 1 9.9-1" />
+    </svg>
+  ),
   MapPin: () => (
     <svg
       width="11"
@@ -593,84 +623,98 @@ const mockAssets = [
     name: "Laptop Lenovo ThinkPad X1",
     zone: "Ruang IT",
     pekerjaan_kode: "2540011-C",
+    status_id: 2, // Used
   },
   {
     code: "SPMT-LPT-02",
     name: "Laptop Dell Latitude 5420",
     zone: "Terminal 1",
     pekerjaan_kode: "2440020-A",
+    status_id: 1, // Available
   },
   {
     code: "SPMT-LPT-03",
     name: "Laptop HP EliteBook 840",
     zone: "Terminal 2",
     pekerjaan_kode: "2440020-A",
+    status_id: 1, // Available
   },
   {
     code: "SPMT-PC-01",
     name: "PC Desktop HP EliteDesk",
     zone: "Ruang Admin",
     pekerjaan_kode: "2440020-B",
+    status_id: 2, // Used
   },
   {
     code: "SPMT-PC-02",
     name: "PC Desktop Dell OptiPlex",
     zone: "Terminal 1",
     pekerjaan_kode: "2440020-B",
+    status_id: 1, // Available
   },
   {
     code: "SPMT-SRV-01",
     name: "Server HP ProLiant DL380",
     zone: "Data Center",
     pekerjaan_kode: "2540011-C",
+    status_id: 1, // Available
   },
   {
     code: "SPMT-SWT-01",
     name: "Switch Cisco Catalyst 9300",
     zone: "Ruang Network",
     pekerjaan_kode: "2540011-C",
+    status_id: 2, // Used
   },
   {
     code: "SPMT-RTR-01",
     name: "Router Mikrotik CCR2004",
     zone: "Ruang Network",
     pekerjaan_kode: "2540012-A",
+    status_id: 1, // Available
   },
   {
     code: "SPMT-UPS-01",
     name: "UPS APC Smart-UPS 3000",
     zone: "Data Center",
     pekerjaan_kode: "2540011-D",
+    status_id: 1, // Available
   },
   {
     code: "SPMT-NET-01",
     name: "Access Point Ubiquiti UniFi",
     zone: "Terminal 1",
     pekerjaan_kode: "2540011-A",
+    status_id: 1, // Available
   },
   {
     code: "SPMT-NET-02",
     name: "CCTV Hikvision DS-2CD",
     zone: "Gate Area",
     pekerjaan_kode: "2540011-D",
+    status_id: 1, // Available
   },
   {
     code: "SPMT-NET-03",
     name: "Public Announcer Bosch Praesideo",
     zone: "Terminal 2",
     pekerjaan_kode: "2540011-B",
+    status_id: 1, // Available
   },
   {
     code: "SPMT-NET-04",
     name: "Radio Point-To-Point Ubiquiti",
     zone: "Ruang Network",
     pekerjaan_kode: "2440020-B",
+    status_id: 1, // Available
   },
   {
     code: "SPMT-NET-05",
     name: "Firewall Fortinet FortiGate",
     zone: "Data Center",
     pekerjaan_kode: "2540010-A",
+    status_id: 1, // Available
   },
 ];
 
@@ -3164,386 +3208,386 @@ function HistoryPage({ assetCode, assetName, borrows, returns, onBack }) {
   );
 }
 
-// ─── PAGE: BORROW FORM ────────────────────────────────────────
-// REVISED: Single-column vertical layout, sections 4 & 5 moved below 1–3
+// ─── PAGE: CATAT SERAH TERIMA (REVISED) ──────────────────────
 function BorrowFormPage({ borrow, onBack, onSave }) {
-  const isEdit = !!borrow;
-  const defaultDueDate = new Date();
-  defaultDueDate.setDate(defaultDueDate.getDate() + 7);
+  const [pihak1, setPihak1] = useState({ id: "", locked: false }); // Penerima/User
+  const [pihak2, setPihak2] = useState({ id: "", locked: false }); // Pemberi/IT
+  const [searchQuery, setSearchQuery] = useState("");
+  
+  // Pending items in the current Berita Acara draft
+  const [baDraft, setBaDraft] = useState([]); // Array of { item, actionStatus }
+  
+  // Current status selection for search results
+  const [tempStatuses, setTempStatuses] = useState({});
 
-  const [form, setForm] = useState(
-    borrow
-      ? {
-          ...borrow,
-          attachmentFile: borrow.attachment
-            ? { name: borrow.attachment }
-            : null,
-        }
-      : {
-          pekerjaan_kode: "",
-          code: "",
-          borrow_date: new Date().toISOString().slice(0, 16),
-          due_date: defaultDueDate.toISOString().slice(0, 10),
-          giver_id: "",
-          receiver_id: "",
-          from_zone: "",
-          to_zone: "",
-          reason: "",
-          condition: "GOOD",
-          notes: "",
-          attachment: "",
-          attachmentFile: null,
-          is_returned: false,
-        },
-  );
-  const [errors, setErrors] = useState({});
-
-  const availableAssets = form.pekerjaan_kode
-    ? mockAssets.filter((a) => a.pekerjaan_kode === form.pekerjaan_kode)
-    : [];
-  const assetOptions = availableAssets.map((a) => ({
-    value: a.code,
-    label: a.code,
-    sub: a.name,
-    zone: a.zone,
-    fullName: a.name,
-  }));
   const userOptions = mockUsers.map((u) => ({
     value: u.id,
     label: u.name,
     sub: u.branch,
   }));
 
-  const handlePekerjaanChange = (kode) =>
-    setForm((f) => ({
-      ...f,
-      pekerjaan_kode: kode,
-      code: "",
-      from_zone: "",
-      name: "",
-    }));
-  const handleAssetChange = (code) => {
-    const asset = getAsset(code);
-    setForm((f) => ({
-      ...f,
-      code,
-      from_zone: asset?.zone || "",
-      name: asset?.name || "",
-    }));
+  const assetResults = searchQuery.length > 1
+    ? mockAssets.filter(a => 
+        (a.code.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        a.name.toLowerCase().includes(searchQuery.toLowerCase())) &&
+        (
+          a.status_id === 1 || 
+          a.owner_id === Number(pihak1.id) || 
+          a.owner_id === Number(pihak2.id)
+        )
+      )
+    : [];
+
+  const addToDraft = (item) => {
+    const status = tempStatuses[item.code];
+    if (!status) {
+      alert("Pilih status 'Diberi' atau 'Dikembalikan' terlebih dahulu.");
+      return;
+    }
+    
+    // Logic Validation:
+    if (status === "Diberi") {
+      // Must be from Warehouse or from Pihak 2
+      if (item.status_id !== 1 && item.owner_id !== Number(pihak2.id)) {
+        alert("Aksi 'Diberi' hanya bisa dilakukan untuk barang di gudang atau barang milik Pihak 2.");
+        return;
+      }
+    }
+    if (status === "Dikembalikan") {
+      // Must be from Pihak 1
+      if (item.owner_id !== Number(pihak1.id)) {
+        alert("Aksi 'Dikembalikan' hanya bisa dilakukan untuk barang yang saat ini dimiliki oleh Pihak 1.");
+        return;
+      }
+    }
+
+    if (!pihak1.id || !pihak2.id) {
+      alert("Pilih Pihak 1 dan Pihak 2 terlebih dahulu.");
+      return;
+    }
+    if (baDraft.find(d => d.item.code === item.code)) {
+      alert("Barang ini sudah ada di daftar Berita Acara.");
+      return;
+    }
+    setBaDraft([...baDraft, { item, actionStatus: status }]);
   };
 
-  const validate = () => {
-    const e = {};
-    if (!form.pekerjaan_kode) e.pekerjaan_kode = "Wajib pilih pekerjaan";
-    if (!form.code) e.code = "Wajib dipilih";
-    if (!form.giver_id) e.giver_id = "Wajib diisi";
-    if (!form.receiver_id) e.receiver_id = "Wajib diisi";
-    if (!form.to_zone) e.to_zone = "Wajib diisi";
-    setErrors(e);
-    return !Object.keys(e).length;
+  const removeFromDraft = (code) => {
+    setBaDraft(baDraft.filter(d => d.item.code !== code));
+  };
+
+  // Expand draft into 2 rows per item for the BA Table
+  const getBATableRows = () => {
+    const rows = [];
+    baDraft.forEach((d, idx) => {
+      const isDiberi = d.actionStatus === "Diberi";
+      const p1 = getUser(Number(pihak1.id));
+      const p2 = getUser(Number(pihak2.id));
+
+      if (isDiberi) {
+        // Peminjaman/Distribusi: Pihak 2 (Pemberi) -> Pihak 1 (Penerima)
+        rows.push({
+          key: d.item.code + "-giver",
+          name: d.item.name,
+          sn: d.item.code,
+          status: "kembalikan",
+          user: p2.name
+        });
+        rows.push({
+          key: d.item.code + "-receiver",
+          name: d.item.name,
+          sn: d.item.code,
+          status: "diterima",
+          user: p1.name
+        });
+      } else {
+        // Pengembalian: Pihak 1 (User) -> Pihak 2 (IT/Penerima)
+        rows.push({
+          key: d.item.code + "-giver",
+          name: d.item.name,
+          sn: d.item.code,
+          status: "kembalikan",
+          user: p1.name
+        });
+        rows.push({
+          key: d.item.code + "-receiver",
+          name: d.item.name,
+          sn: d.item.code,
+          status: "diterima",
+          user: p2.name
+        });
+      }
+    });
+    return rows;
   };
 
   const handleSave = () => {
-    if (!validate()) return;
-    const asset = getAsset(form.code);
-    onSave({
-      ...form,
-      id: borrow?.id || Date.now(),
-      name: asset?.name || form.code,
-      giver_id: parseInt(form.giver_id),
-      receiver_id: parseInt(form.receiver_id),
-      borrower_id: parseInt(form.receiver_id),
-      performed_by_id: LOGGED_IN_ADMIN_ID,
-      attachment: form.attachmentFile?.name || null,
-    });
+    if (baDraft.length === 0) {
+      alert("Tambahkan minimal satu barang ke daftar Berita Acara.");
+      return;
+    }
+    alert(`Berhasil menyimpan Berita Acara untuk ${baDraft.length} barang.`);
     onBack();
   };
 
-  const handleGenerateBAST = () => {
-    if (!form.giver_id || !form.receiver_id || !form.code) {
-      alert(
-        "Lengkapi data Aset, User Pemberi, dan User Penerima terlebih dahulu.",
-      );
-      return;
-    }
-    const asset = getAsset(form.code);
-    generateBAST(
-      {
-        ...form,
-        id: borrow?.id || Date.now(),
-        name: asset?.name || form.code,
-        giver_id: parseInt(form.giver_id),
-        receiver_id: parseInt(form.receiver_id),
-        performed_by_id: LOGGED_IN_ADMIN_ID,
-      },
-      "borrow",
-    );
-  };
-
-  // Blue section header style
-  const sectionHeaderStyle = {
-    display: "flex",
-    alignItems: "center",
-    gap: 10,
-    padding: ".65rem 1.25rem",
-    background: "linear-gradient(90deg, #eff6ff 0%, #f8fafc 100%)",
-    borderBottom: "1px solid #bfdbfe",
-    borderTop: "1px solid #e2e8f0",
-  };
-
   return (
-    <div>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-          marginBottom: "1rem",
-        }}
-      >
+    <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <button style={S.backBtn} onClick={onBack}>
-          <Icon.ArrowLeft /> Batal
+          <Icon.ArrowLeft /> Kembali
         </button>
         <span style={{ fontSize: ".75rem", color: "#94a3b8" }}>
-          / {isEdit ? "Edit Serah Terima" : "Catat Serah Terima"}
+          / Catat Serah Terima
         </span>
       </div>
+
       <div style={S.page}>
         <div style={{ ...S.pageHeader, borderTop: "3px solid #2563eb" }}>
           <div style={S.pageTitle}>
-            <span
-              style={{
-                width: 28,
-                height: 28,
-                borderRadius: 7,
-                background: "#eff6ff",
-                color: "#2563eb",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Icon.Exchange />
-            </span>
-            {isEdit ? "Edit Serah Terima" : "Catat Serah Terima Baru"}
+            <Icon.Exchange /> Catat Serah Terima Baru
           </div>
         </div>
 
-        {/* ── Section 1: Pilih Pekerjaan ── */}
-        <div style={sectionHeaderStyle}>
-          <SectionTitle n={1} label="Pilih Pekerjaan" active={true} />
-        </div>
-        <div style={S.formSection}>
-          <div style={S.fg}>
-            <label style={S.flabel}>
-              Pekerjaan / Program Anggaran{" "}
-              <span style={{ color: "#dc2626" }}>*</span>
-            </label>
-            <PekerjaanSelector
-              value={form.pekerjaan_kode}
-              onChange={handlePekerjaanChange}
-              error={errors.pekerjaan_kode}
-            />
-          </div>
-        </div>
-
-        {/* ── Section 2: Pilih Aset ── */}
-        <div style={sectionHeaderStyle}>
-          <SectionTitle
-            n={2}
-            label="Pilih Aset"
-            active={!!form.pekerjaan_kode}
-          />
-        </div>
-        <div style={S.formSection}>
-          <FHRow label="Aset" required>
-            {!form.pekerjaan_kode ? (
-              <div
-                style={{
-                  padding: ".55rem .8rem",
-                  background: "#f8fafc",
-                  border: "1.5px dashed #e2e8f0",
-                  borderRadius: 8,
-                  fontSize: ".76rem",
-                  color: "#94a3b8",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 7,
-                }}
-              >
-                <Icon.ArrowRight /> Pilih pekerjaan terlebih dahulu
-              </div>
-            ) : (
-              <SearchCombobox
-                options={assetOptions}
-                value={form.code}
-                onChange={handleAssetChange}
-                placeholder="Cari kode atau nama aset..."
-                renderLabel={(o) => `${o.label} — ${o.fullName}`}
-                renderSub={(o) => o.zone}
-                hasError={!!errors.code}
-              />
-            )}
-            {form.code && (
-              <span
-                style={{
-                  fontSize: ".69rem",
-                  color: "#64748b",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 3,
-                  marginTop: 4,
-                }}
-              >
-                <Icon.MapPin /> Lokasi:{" "}
-                <strong>{getAsset(form.code)?.zone}</strong>
-              </span>
-            )}
-            {errors.code && <span style={S.ferr}>{errors.code}</span>}
-          </FHRow>
-        </div>
-
-        {/* ── Section 3: Kondisi & Lampiran ── */}
-        <div style={sectionHeaderStyle}>
-          <SectionTitle n={3} label="Kondisi & Lampiran" active={true} />
-        </div>
-        <div style={S.formSection}>
-          <FHRow label="Kondisi Aset Saat Keluar">
-            <div style={S.chips}>
-              {Object.entries(conditionConfig).map(([val, cfg]) => (
+        <div style={{ padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+          
+          {/* ── SECTION 1: USER SELECTION ── */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem", background: "#f8fafc", padding: "1.5rem", borderRadius: "12px", border: "1px solid #e2e8f0" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
+              <label style={{ ...S.flabel, marginBottom: 0, minWidth: "180px", fontSize: ".75rem" }}>User Penerima [Pihak 1]</label>
+              <div style={{ flex: 1, display: "flex", gap: "8px", alignItems: "center" }}>
+                <div style={{ flex: 1 }}>
+                  <SearchCombobox
+                    options={userOptions}
+                    value={pihak1.id}
+                    onChange={(id) => {
+                      setPihak1({ ...pihak1, id });
+                      setBaDraft([]); // Reset draft for logic safety
+                    }}
+                    disabled={pihak1.locked}
+                    placeholder="Cari user penerima..."
+                    renderLabel={(o) => o.label}
+                  />
+                </div>
                 <button
-                  key={val}
-                  type="button"
+                  onClick={() => setPihak1({ ...pihak1, locked: !pihak1.locked })}
                   style={{
-                    ...S.chip,
-                    ...(form.condition === val
-                      ? {
-                          background: cfg.bg,
-                          color: cfg.color,
-                          borderColor: cfg.color,
-                        }
-                      : {}),
+                    padding: "8px",
+                    borderRadius: "8px",
+                    border: "1.5px solid #e2e8f0",
+                    background: pihak1.locked ? "#fef3c7" : "#fff",
+                    color: pihak1.locked ? "#d97706" : "#64748b",
+                    cursor: "pointer",
+                    display: "flex"
                   }}
-                  onClick={() => setForm({ ...form, condition: val })}
                 >
-                  {cfg.label}
+                  {pihak1.locked ? <Icon.Lock /> : <Icon.Unlock />}
                 </button>
-              ))}
+              </div>
             </div>
-          </FHRow>
-          <div style={{ marginTop: 8 }}>
-            <PdfUpload
-              value={form.attachmentFile}
-              onChange={(f) => setForm({ ...form, attachmentFile: f })}
-            />
+
+            <div style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
+              <label style={{ ...S.flabel, marginBottom: 0, minWidth: "180px", fontSize: ".75rem" }}>User Pemberi [Pihak 2]</label>
+              <div style={{ flex: 1, display: "flex", gap: "8px", alignItems: "center" }}>
+                <div style={{ flex: 1 }}>
+                  <SearchCombobox
+                    options={userOptions}
+                    value={pihak2.id}
+                    onChange={(id) => {
+                      setPihak2({ ...pihak2, id });
+                      setBaDraft([]);
+                    }}
+                    disabled={pihak2.locked}
+                    placeholder="Cari user pemberi..."
+                    renderLabel={(o) => o.label}
+                  />
+                </div>
+                <button
+                  onClick={() => setPihak2({ ...pihak2, locked: !pihak2.locked })}
+                  style={{
+                    padding: "8px",
+                    borderRadius: "8px",
+                    border: "1.5px solid #e2e8f0",
+                    background: pihak2.locked ? "#fef3c7" : "#fff",
+                    color: pihak2.locked ? "#d97706" : "#64748b",
+                    cursor: "pointer",
+                    display: "flex"
+                  }}
+                >
+                  {pihak2.locked ? <Icon.Lock /> : <Icon.Unlock />}
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
 
-        {/* ── Section 4: Pihak yang Terlibat ── */}
-        <div style={sectionHeaderStyle}>
-          <SectionTitle
-            n={4}
-            label="Pihak yang Terlibat"
-            active={!!form.code}
-          />
-        </div>
-        <div style={S.formSection}>
-          <FHRow label="User Pemberi" required>
-            <SearchCombobox
-              options={userOptions}
-              value={form.giver_id}
-              onChange={(val) => setForm({ ...form, giver_id: val })}
-              placeholder="Pilih pemberi..."
-              renderLabel={(o) => o.label}
-              renderSub={(o) => o.sub}
-              hasError={!!errors.giver_id}
-            />
-            {errors.giver_id && <span style={S.ferr}>{errors.giver_id}</span>}
-          </FHRow>
-          <FHRow label="User Penerima" required last>
-            <SearchCombobox
-              options={userOptions}
-              value={form.receiver_id}
-              onChange={(val) => setForm({ ...form, receiver_id: val })}
-              placeholder="Pilih penerima..."
-              renderLabel={(o) => o.label}
-              renderSub={(o) => o.sub}
-              hasError={!!errors.receiver_id}
-            />
-            {errors.receiver_id && (
-              <span style={S.ferr}>{errors.receiver_id}</span>
-            )}
-          </FHRow>
-        </div>
+          {/* ── SECTION 2: SEARCH RESULTS ── */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            <div style={S.fg}>
+              <label style={S.flabel}>Cari Barang</label>
+              <div style={S.searchWrap}>
+                <Icon.Search />
+                <input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Ketik Kode/Nama Barang..."
+                  style={S.searchInput}
+                />
+              </div>
+            </div>
 
-        {/* ── Section 5: Waktu & Lokasi ── */}
-        <div style={sectionHeaderStyle}>
-          <SectionTitle n={5} label="Waktu & Lokasi" active={true} />
-        </div>
-        <div style={S.formSection}>
-          <FHRow label="Waktu Serah Terima">
-            <input
-              type="datetime-local"
-              value={form.borrow_date}
-              readOnly
-              style={{ ...S.finput, ...S.finputRo }}
-            />
-          </FHRow>
-          <FHRow label="Jatuh Tempo" required>
-            <input
-              type="date"
-              value={form.due_date}
-              onChange={(e) => setForm({ ...form, due_date: e.target.value })}
-              style={S.finput}
-            />
-          </FHRow>
-          <FHRow label="Dari Lokasi">
-            <input
-              value={form.from_zone}
-              readOnly
-              style={{ ...S.finput, ...S.finputRo }}
-              placeholder="Dari aset"
-            />
-          </FHRow>
-          <FHRow label="Dibawa Ke" required>
-            <select
-              value={form.to_zone}
-              onChange={(e) => setForm({ ...form, to_zone: e.target.value })}
-              style={{
-                ...S.finput,
-                ...(errors.to_zone ? { borderColor: "#dc2626" } : {}),
-              }}
-            >
-              <option value="">-- Pilih Tujuan --</option>
-              {mockSubzona.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
-            {errors.to_zone && <span style={S.ferr}>{errors.to_zone}</span>}
-          </FHRow>
-          <FHRow label="Keperluan / Catatan" last>
-            <input
-              value={form.reason}
-              onChange={(e) => setForm({ ...form, reason: e.target.value })}
-              placeholder="Cth: Dipinjam untuk operasional proyek"
-              style={S.finput}
-            />
-          </FHRow>
+            <div style={{ ...S.tableCard }}>
+              <div style={{ padding: "10px 15px", background: "#f8fafc", borderBottom: "1px solid #e2e8f0", fontWeight: 700, fontSize: ".7rem" }}>
+                HASIL PENCARIAN BARANG
+              </div>
+              <table style={S.table}>
+                <thead style={S.thead}>
+                  <tr>
+                    <th style={{ ...S.th, width: 40 }}>No</th>
+                    <th style={S.th}>Nama Barang</th>
+                    <th style={S.th}>SN</th>
+                    <th style={S.th}>Kepemilikan</th>
+                    <th style={S.th}>Anggaran</th>
+                    <th style={S.th}>Status BA</th>
+                    <th style={{ ...S.th, width: 40 }}>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {assetResults.length === 0 ? (
+                    <tr><td colSpan="7" style={{ ...S.td, textAlign: "center", color: "#94a3b8" }}>{searchQuery.length > 1 ? "Tidak ada barang ditemukan untuk pihak yang dipilih" : "Cari barang..."}</td></tr>
+                  ) : (
+                    assetResults.map((item, idx) => {
+                      const pkj = mockPekerjaan.find(p => p.kode === item.pekerjaan_kode);
+                      const isOwnedByP1 = item.owner_id === Number(pihak1.id);
+                      const isOwnedByP2 = item.owner_id === Number(pihak2.id);
+                      const isGudang = item.status_id === 1;
+                      
+                      let ownerText = "Lainnya";
+                      if (isGudang) ownerText = "Gudang (Available)";
+                      if (isOwnedByP1) ownerText = "Milik Pihak 1";
+                      if (isOwnedByP2) ownerText = "Milik Pihak 2";
+
+                      return (
+                        <tr key={item.code} style={S.tr}>
+                          <td style={{ ...S.td, textAlign: "center" }}>{idx + 1}</td>
+                          <td style={S.td}>{item.name}</td>
+                          <td style={S.td}><code style={S.code}>{item.code}</code></td>
+                          <td style={S.td}>
+                            <span style={{ 
+                              ...S.pill, 
+                              fontSize: ".6rem", 
+                              background: isGudang ? "#f0fdf4" : (isOwnedByP1 ? "#fff1f2" : "#eff6ff"), 
+                              color: isGudang ? "#16a34a" : (isOwnedByP1 ? "#e11d48" : "#2563eb") 
+                            }}>
+                              {ownerText}
+                            </span>
+                          </td>
+                          <td style={S.td}>
+                             <span style={{ ...S.pill, background: pkj?.jenis === "Capex" ? "#eff6ff" : "#f0fdf4", color: pkj?.jenis === "Capex" ? "#2563eb" : "#16a34a" }}>
+                              {pkj?.jenis === "Capex" ? "CP" : "OP"}
+                            </span>
+                          </td>
+                          <td style={S.td}>
+                            <select
+                              value={tempStatuses[item.code] || ""}
+                              onChange={(e) => setTempStatuses({ ...tempStatuses, [item.code]: e.target.value })}
+                              style={{ ...S.finput, padding: "4px 8px", width: "auto", fontSize: ".7rem" }}
+                            >
+                              <option value="">-- Pilih --</option>
+                              {(isGudang || isOwnedByP2) && <option value="Diberi">Diberi</option>}
+                              {isOwnedByP1 && <option value="Dikembalikan">Dikembalikan</option>}
+                            </select>
+                          </td>
+                          <td style={S.td}>
+                            <button
+                              onClick={() => addToDraft(item)}
+                              style={{ background: "none", border: "none", color: "#2563eb", cursor: "pointer" }}
+                            >
+                              <Icon.Plus />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* ── SECTION 3: TABEL BERITA ACARA (DRAFT) ── */}
+          {baDraft.length > 0 && (
+            <div style={{ ...S.tableCard, animation: "fadeIn 0.2s ease-in", border: "2px solid #2563eb" }}>
+              <div style={{ 
+                padding: "10px 15px", 
+                background: "#eff6ff", 
+                borderBottom: "2px solid #2563eb",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center"
+              }}>
+                <div style={{ fontSize: ".75rem", fontWeight: 800, color: "#1e293b" }}>
+                  TABEL BERITA ACARA (PREVIEW)
+                </div>
+                <button onClick={() => setBaDraft([])} style={{ fontSize: ".65rem", color: "#ef4444", background: "none", border: "none", cursor: "pointer", fontWeight: 600 }}>Reset Semua</button>
+              </div>
+              <table style={S.table}>
+                <thead style={{ ...S.thead, background: "#f8fafc" }}>
+                  <tr>
+                    <th style={{...S.th, width: 40}}>no</th>
+                    <th style={S.th}>nama barang</th>
+                    <th style={S.th}>SN</th>
+                    <th style={S.th}>status</th>
+                    <th style={S.th}>user</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {getBATableRows().map((row, rIdx) => (
+                    <tr key={row.key} style={{ borderBottom: rIdx % 2 === 1 ? "2px solid #e2e8f0" : "1px solid #f1f5f9" }}>
+                      <td style={{ ...S.td, textAlign: "center" }}>{rIdx + 1}</td>
+                      <td style={S.td}>{row.name}</td>
+                      <td style={S.td}><code style={S.code}>{row.sn}</code></td>
+                      <td style={{ ...S.td, fontWeight: 700, color: row.status === "kembalikan" ? "#ef4444" : "#10b981" }}>
+                        {row.status}
+                      </td>
+                      <td style={{ ...S.td, fontWeight: 700 }}>{row.user}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {/* Official Narrative Summary */}
+              <div style={{ padding: "1rem", background: "#f8fafc", borderTop: "2px solid #2563eb" }}>
+                <div style={{ fontSize: ".7rem", fontWeight: 800, color: "#64748b", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                  Narasi Berita Acara:
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  {baDraft.map((d, i) => {
+                    const isDiberi = d.actionStatus === "Diberi";
+                    const p1Name = getUser(Number(pihak1.id)).name;
+                    const p2Name = getUser(Number(pihak2.id)).name;
+                    const action = isDiberi ? "diserahkan" : "dikembalikan";
+                    const to = isDiberi ? p1Name : p2Name;
+                    const from = isDiberi ? p2Name : p1Name;
+
+                    return (
+                      <div key={i} style={{ fontSize: ".75rem", color: "#1e293b", lineHeight: 1.5, display: "flex", gap: "8px" }}>
+                        <span style={{ color: "#2563eb", fontWeight: 700 }}>•</span>
+                        <span>
+                          Barang <strong>{d.item.name}</strong> ({d.item.code}) telah <strong>{action}</strong> kepada <strong>{to}</strong> dari <strong>{from}</strong>.
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
         </div>
 
         <div style={S.btnRow}>
-          <button style={S.btnGhost} onClick={onBack}>
-            Batal
-          </button>
-          {!form.attachmentFile && (
-            <button style={S.btnPurple} onClick={handleGenerateBAST}>
-              <Icon.Printer /> Generate BAST
-            </button>
-          )}
+          <button style={S.btnGhost} onClick={onBack}>Batal</button>
           <button style={S.btnBlue} onClick={handleSave}>
-            <Icon.Check /> {isEdit ? "Simpan Perubahan" : "Simpan"}
+            <Icon.Check /> Simpan Berita Acara
           </button>
         </div>
       </div>
@@ -3961,6 +4005,8 @@ export default function Peminjaman() {
       <div style={S.root}>
         <BorrowFormPage
           borrow={nav.data}
+          borrows={borrows}
+          returns={returns}
           onBack={goBack}
           onSave={handleSaveBorrow}
         />
