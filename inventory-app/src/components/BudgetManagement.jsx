@@ -1,4 +1,5 @@
-import React, { useState, useMemo, useEffect, useRef } from "react";
+import React, { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { budgetAPI } from '../services/api';
 const Icon = ({ d, size = 16, style, className }) => (
   <svg
     width={size}
@@ -4193,8 +4194,9 @@ export default function BudgetManagement({ forcedType }) {
   const [page, setPage] = useState(null);
   const [toast, setToast] = useState(null);
   const [confirm, setConfirm] = useState(null);
-  const [capexData, setCapexData] = useState(INIT_CAPEX);
-  const [opexData, setOpexData] = useState(INIT_OPEX);
+  const [capexData, setCapexData] = useState([]);
+  const [opexData, setOpexData]   = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [capexPage, setCapexPage] = useState(1);
   const [opexPage, setOpexPage] = useState(1);
   const [showAddOpex, setShowAddOpex] = useState(false);
@@ -4211,6 +4213,30 @@ export default function BudgetManagement({ forcedType }) {
   useEffect(() => {
     if (forcedType) setTypeFilter(forcedType);
   }, [forcedType]);
+
+  // ── Load data dari API saat pertama kali render ──
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        setIsLoading(true);
+        const [capexRes, opexRes] = await Promise.all([
+          budgetAPI.getCapex(),
+          budgetAPI.getOpex(),
+        ]);
+        if (!cancelled) {
+          setCapexData(capexRes.data?.data ?? []);
+          setOpexData(opexRes.data?.data   ?? []);
+        }
+      } catch (err) {
+        if (!cancelled) showToast('Gagal memuat data anggaran');
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    };
+    load();
+    return () => { cancelled = true; };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const showToast = (msg) => setToast(msg);
   const yearOpts = useMemo(() => {
     const all = new Set();
@@ -4426,98 +4452,97 @@ export default function BudgetManagement({ forcedType }) {
   const deleteOpex = (id) =>
     setConfirm({
       msg: "Hapus pos anggaran OPEX ini beserta semua pekerjaan dan barangnya?",
-      onConfirm: () => {
+      onConfirm: async () => {
         setOpexData((p) => p.filter((a) => a.id !== id));
-        showToast("Pos anggaran dihapus");
         setConfirm(null);
+        showToast("Pos anggaran dihapus");
+        try { await budgetAPI.deleteOpex(id); } catch { showToast('Gagal hapus dari server'); }
       },
     });
 
-  const saveProject = (id, u) => {
+  const saveProject = async (id, u) => {
     const isOpx = opexData.some(a => (a.projects || []).some(p => p.id === id));
     const setter = isOpx ? setOpexData : setCapexData;
     const selectedSetter = isOpx ? setSelectedOpex : setSelectedAnggaran;
 
-    setter((p) =>
-      p.map((ang) => ({
-        ...ang,
-        projects: (ang.projects || []).map((pr) =>
-          pr.id === id ? { ...pr, ...u } : pr,
-        ),
-      })),
-    );
+    // Optimistic update
+    setter((p) => p.map((ang) => ({
+      ...ang,
+      projects: (ang.projects || []).map((pr) => pr.id === id ? { ...pr, ...u } : pr),
+    })));
     selectedSetter((prev) =>
-      (prev?.projects || []).some(p => p.id === id)
-        ? {
-          ...prev,
-          projects: (prev.projects || []).map((pr) =>
-            pr.id === id ? { ...pr, ...u } : pr,
-          ),
-        }
-        : prev,
+      prev ? { ...prev, projects: (prev.projects || []).map((pr) => pr.id === id ? { ...pr, ...u } : pr) } : prev
     );
+
+    // Persist ke budget_projects table
+    try {
+      await budgetAPI.updateProject(id, u);
+    } catch { showToast('Gagal simpan pekerjaan ke server'); }
   };
-  const saveAssetsToAnggaran = (anggaranId, assets) => {
+  const saveAssetsToAnggaran = async (anggaranId, assets) => {
     const isOpx = opexData.some(a => a.id === anggaranId);
     const setter = isOpx ? setOpexData : setCapexData;
     const selectedSetter = isOpx ? setSelectedOpex : setSelectedAnggaran;
 
-    setter((p) =>
-      p.map((ang) => (ang.id === anggaranId ? { ...ang, assets } : ang)),
-    );
-    selectedSetter((prev) =>
-      prev?.id === anggaranId ? { ...prev, assets } : prev,
-    );
+    // Optimistic update
+    setter((p) => p.map((ang) => (ang.id === anggaranId ? { ...ang, assets } : ang)));
+    selectedSetter((prev) => prev?.id === anggaranId ? { ...prev, assets } : prev);
     setPage((prev) => {
       if (!prev || !prev.data) return prev;
       if (prev.data.id === anggaranId) return { ...prev, data: { ...prev.data, assets } };
       if (prev.data.anggaran?.id === anggaranId) return { ...prev, data: { ...prev.data, anggaran: { ...prev.data.anggaran, assets } } };
       return prev;
     });
+
+    // Persist ke budget_items table via sync
+    try {
+      if (isOpx) await budgetAPI.syncOpexAssets(anggaranId, { assets });
+      else        await budgetAPI.syncCapexAssets(anggaranId, { assets });
+    } catch { showToast('Gagal simpan barang ke server'); }
   };
-  const deleteProject = (projId, angId) => {
+  const deleteProject = async (projId, angId) => {
     const isOpx = opexData.some(a => a.id === angId);
     const setter = isOpx ? setOpexData : setCapexData;
     const selectedSetter = isOpx ? setSelectedOpex : setSelectedAnggaran;
 
-    setter((p) =>
-      p.map((ang) =>
-        ang.id === angId
-          ? {
-            ...ang,
-            projects: (ang.projects || []).filter((pr) => pr.id !== projId),
-            assets: (ang.assets || []).filter((as) => as.id_pekerjaan !== projId),
-          }
-          : ang,
-      ),
-    );
-    selectedSetter((prev) =>
-      prev?.id === angId
-        ? {
-          ...prev,
-          projects: (prev.projects || []).filter((pr) => pr.id !== projId),
-          assets: (prev.assets || []).filter((as) => as.id_pekerjaan !== projId),
-        }
-        : prev,
-    );
-    showToast("Pekerjaan dihapus");
+    setter((p) => p.map((ang) => ang.id !== angId ? ang : {
+      ...ang,
+      projects: (ang.projects || []).filter(pr => pr.id !== projId),
+      assets:   (ang.assets   || []).filter(as => as.id_pekerjaan !== projId),
+    }));
+    selectedSetter((prev) => prev?.id === angId ? {
+      ...prev,
+      projects: (prev.projects || []).filter(pr => pr.id !== projId),
+      assets:   (prev.assets   || []).filter(as => as.id_pekerjaan !== projId),
+    } : prev);
+    showToast('Pekerjaan dihapus');
+
+    // Hapus dari budget_projects (cascade hapus budget_items juga)
+    try {
+      await budgetAPI.deleteProject(projId);
+    } catch { showToast('Gagal hapus pekerjaan dari server'); }
   };
 
-  const addProjectToAnggaran = (angId, proj) => {
+  const addProjectToAnggaran = async (angId, proj) => {
     const isOpx = opexData.some(a => a.id === angId);
     const setter = isOpx ? setOpexData : setCapexData;
     const selectedSetter = isOpx ? setSelectedOpex : setSelectedAnggaran;
 
-    setter((p) =>
-      p.map((a) =>
-        a.id === angId ? { ...a, projects: [...(a.projects || []), proj] } : a,
-      ),
-    );
-    selectedSetter((prev) =>
-      prev?.id === angId
-        ? { ...prev, projects: [...(prev.projects || []), proj] }
-        : prev,
-    );
+    // Simpan ke budget_projects DULU → dapat DB integer id_pekerjaan
+    try {
+      const addFn = isOpx ? budgetAPI.addOpexProject : budgetAPI.addCapexProject;
+      const res   = await addFn(angId, proj);
+      const saved = res.data?.data ?? { ...proj, id: proj.id };
+
+      // Update state dengan DB id
+      setter((p) => p.map((a) => a.id !== angId ? a : { ...a, projects: [...(a.projects || []), saved] }));
+      selectedSetter((prev) => prev?.id === angId ? { ...prev, projects: [...(prev.projects || []), saved] } : prev);
+    } catch {
+      // Fallback: simpan lokal saja
+      setter((p) => p.map((a) => a.id !== angId ? a : { ...a, projects: [...(a.projects || []), proj] }));
+      selectedSetter((prev) => prev?.id === angId ? { ...prev, projects: [...(prev.projects || []), proj] } : prev);
+      showToast('Gagal simpan pekerjaan ke server');
+    }
   };
   const deleteAnggaran = (id) => {
     const isOpx = opexData.some(a => a.id === id);
@@ -4526,10 +4551,14 @@ export default function BudgetManagement({ forcedType }) {
 
     setConfirm({
       msg: `Hapus anggaran ${label} ini beserta semua pekerjaan dan barangnya?`,
-      onConfirm: () => {
+      onConfirm: async () => {
         setter((p) => p.filter((a) => a.id !== id));
-        showToast(`Anggaran ${label} dihapus`);
         setConfirm(null);
+        showToast(`Anggaran ${label} dihapus`);
+        try {
+          if (isOpx) await budgetAPI.deleteOpex(id);
+          else       await budgetAPI.deleteCapex(id);
+        } catch { showToast('Gagal hapus dari server'); }
       },
     });
   };
@@ -5081,10 +5110,25 @@ export default function BudgetManagement({ forcedType }) {
       {showAddOpex && (
         <TambahOpexModal
           onClose={() => setShowAddOpex(false)}
-          onSave={(newOpex) => {
-            setOpexData((p) => [...p, newOpex]);
+          onSave={async (newOpex) => {
             setShowAddOpex(false);
-            showToast("Pos anggaran OPEX berhasil ditambahkan");
+            try {
+              const res = await budgetAPI.addOpex({
+                nama:         newOpex.nama,
+                kode:         newOpex.kode,
+                thn_anggaran: newOpex.thn_anggaran,
+                nilai_kad:    newOpex.nilai_kad,
+                projects:     [],
+                assets:       [],
+              });
+              const saved = res.data?.data;
+              setOpexData((p) => [...p, saved ?? newOpex]);
+              showToast("Pos anggaran OPEX berhasil ditambahkan");
+            } catch {
+              // Simpan lokal sementara jika API gagal
+              setOpexData((p) => [...p, newOpex]);
+              showToast('Pos ditambah lokal, gagal simpan ke server');
+            }
           }}
         />
       )}

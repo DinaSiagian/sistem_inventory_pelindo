@@ -24,18 +24,20 @@ class BudgetAnnualCapex extends Model
         'nm_master',
         'anggaran_tahunan',
         'history_anggaran',
-        'pekerjaan',
+        'pekerjaan',       // menyimpan daftar pekerjaan CAPEX
+        'assets_json',     // [BARU] menyimpan daftar barang/aset CAPEX
     ];
 
     protected $casts = [
-        'anggaran_tahunan'  => 'array',
-        'history_anggaran'  => 'array',
-        'pekerjaan'         => 'array',
+        'anggaran_tahunan'    => 'array',
+        'history_anggaran'    => 'array',
+        'pekerjaan'           => 'array',
+        'assets_json'         => 'array',
         'nilai_anggaran_kad'  => 'float',
         'nilai_anggaran_rkap' => 'float',
-        'thn_rkap_awal'     => 'integer',
-        'thn_rkap_akhir'    => 'integer',
-        'thn_anggaran'      => 'integer',
+        'thn_rkap_awal'       => 'integer',
+        'thn_rkap_akhir'      => 'integer',
+        'thn_anggaran'        => 'integer',
     ];
 
     public function master()

@@ -17,14 +17,18 @@ class BudgetAnnualOpex extends Model
         'nilai_anggaran_tahunan',
         'nm_anggaran',
         'nilai_anggaran',
-        'realisasi_tahunan',
+        'realisasi_tahunan',  // BudgetInput.jsx: tracking realisasi per tahun (JANGAN DIUBAH)
+        'projects_json',      // BudgetManagement: daftar pekerjaan OPEX
+        'items_json',         // BudgetManagement: daftar barang/items OPEX
     ];
 
     protected $casts = [
-        'realisasi_tahunan' => 'array',
-        'nilai_anggaran'    => 'float',
+        'realisasi_tahunan'      => 'array',
+        'projects_json'          => 'array',
+        'items_json'             => 'array',
+        'nilai_anggaran'         => 'float',
         'nilai_anggaran_tahunan' => 'float',
-        'thn_anggaran'      => 'integer',
+        'thn_anggaran'           => 'integer',
     ];
 
     public function master()
