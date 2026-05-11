@@ -35,19 +35,7 @@ function App() {
         <Route element={<Layout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/assets" element={<ViewAsset />} />
-          {/* BAST Aset routes */}
-          <Route
-            path="/peminjaman"
-            element={<Navigate to="/peminjaman/serah-terima" replace />}
-          />
-          <Route
-            path="/peminjaman/serah-terima"
-            element={<Peminjaman forcedTab="borrow" />}
-          />
-          <Route
-            path="/peminjaman/riwayat"
-            element={<Peminjaman forcedTab="return" />}
-          />
+          <Route path="/peminjaman" element={<Peminjaman />} />
 
           {/* Input Anggaran routes */}
           <Route

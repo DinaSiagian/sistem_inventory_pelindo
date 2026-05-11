@@ -11,8 +11,6 @@ import {
   FaChevronRight,
   FaHandHolding,
   FaClipboardList,
-  FaHistory,
-  FaExchangeAlt,
 } from "react-icons/fa";
 import "./Layout.css";
 
@@ -32,16 +30,7 @@ const Layout = () => {
     { path: "/dashboard", label: "Dashboard Utama", icon: <FaHome /> },
     { category: "Manajemen Aset" },
     { path: "/assets", label: "List Barang", icon: <FaBox /> },
-    {
-      // BAST Aset — submenu Daftar Serah Terima & Riwayat Pengembalian
-      path: "/peminjaman",
-      label: "BAST Aset",
-      icon: <FaHandHolding />,
-      submenu: [
-        { path: "/peminjaman/serah-terima", label: "Daftar Serah Terima", icon: <FaExchangeAlt /> },
-        { path: "/peminjaman/riwayat", label: "Riwayat Pengembalian", icon: <FaHistory /> },
-      ],
-    },
+    { path: "/peminjaman", label: "BAST Aset", icon: <FaHandHolding /> },
     { category: "Keuangan & Proyek" },
     {
       // Input Pekerjaan — submenu CAPEX & OPEX
