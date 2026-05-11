@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback } from "react";
-import { budgetAPI } from '../services/api';
+import { budgetAPI, barangAPI } from '../services/api';
 const Icon = ({ d, size = 16, style, className }) => (
   <svg
     width={size}
@@ -119,89 +119,51 @@ function pctMeta(p) {
     };
   return { label: "Healthy", bg: "#f0fdf4", fg: "#16a34a", border: "#bbf7d0" };
 }
-const ASSET_DB = {
-  "CCTV-24BLW-001": {
-    name: "CCTV Hikvision DS-2CD2143G2-I",
-    brand: "Hikvision",
-    model: "DS-2CD2143G2-I",
-    category: "CCTV",
-  },
-  "ALAT-25DMI-001": {
-    name: "Excavator CAT 336",
-    brand: "CAT",
-    model: "336",
-    category: "Alat Berat",
-  },
-  "SRV-25LHK-001": {
-    name: "Server Dell PowerEdge R740",
-    brand: "Dell",
-    model: "R740",
-    category: "Server",
-  },
-  "KND-24BLW-001": {
-    name: "Toyota Hilux Pickup",
-    brand: "Toyota",
-    model: "Hilux Pickup",
-    category: "Kendaraan",
-  },
-  "FURN-26TJP-001": {
-    name: "Meja Kerja Direktori",
-    brand: "Generic",
-    model: "Meja Kerja Direktori",
-    category: "Furniture",
-  },
-  "MAT-PMS-001": {
-    name: "Jasa Pemasangan Perangkat / Kabel",
-    brand: "Layanan",
-    model: "Jasa Pemasangan",
-    category: "Material",
-  },
-  "MAT-MLH-001": {
-    name: "Jasa Pemeliharaan / Maintenance",
-    brand: "Layanan",
-    model: "Jasa Pemeliharaan",
-    category: "Material",
-  },
-  "MAT-KNS-001": {
-    name: "Jasa Konsultasi / Survey Lapangan",
-    brand: "Layanan",
-    model: "Jasa Konsultasi",
-    category: "Material",
-  },
-  "SFT-GENERIC": {
-    name: "Lisensi Perangkat Lunak / Software",
-    brand: "Software",
-    model: "Software",
-    category: "Software",
-  },
-  "HW-GENERIC": {
-    name: "Perangkat Keras Lainnya",
-    brand: "Hardware",
-    model: "Hardware",
-    category: "Hardware",
-  },
-  "SWT-25MLH-001": {
-    name: "Switch Cisco Catalyst 9300L",
-    brand: "Cisco",
-    model: "Catalyst 9300L",
-    category: "Switch",
-  },
-};
+const ASSET_DB = {};
 
-const SN_DB = {
-  "SN-CCTV-001": "CCTV-24BLW-001",
-  "SN-CCTV-002": "CCTV-24BLW-001",
-  "SN-EXC-336-01": "ALAT-25DMI-001",
-  "SN-EXC-336-02": "ALAT-25DMI-001",
-  "SN-DELL-R740-01": "SRV-25LHK-001",
-  "SN-DELL-R740-02": "SRV-25LHK-001",
-  "BK 1234 ZZ": "KND-24BLW-001",
-  "BK 5678 AA": "KND-24BLW-001",
-  "SN-MEJA-001": "FURN-26TJP-001",
-  "SN-MEJA-002": "FURN-26TJP-001",
-  "SN-CISCO-9300-01": "SWT-25MLH-001",
-  "SN-CISCO-9300-02": "SWT-25MLH-001",
-};
+const SN_DB = {};
+
+let barangCachePromise = null;
+function useAssetDB() {
+  const [data, setData] = useState(() => ({ assetDb: { ...ASSET_DB }, snDb: { ...SN_DB } }));
+
+  useEffect(() => {
+    if (!barangCachePromise) {
+      barangCachePromise = barangAPI.getAll().then(res => {
+        const aMap = { ...ASSET_DB };
+        const sMap = { ...SN_DB };
+        const dataAset = res.data?.data || res.data;
+        if (dataAset && Array.isArray(dataAset)) {
+          dataAset.forEach(b => {
+            // Menggunakan b.id karena di API Controller mapped ke assetId
+            aMap[b.id] = {
+              name: b.name,
+              brand: "-",
+              model: b.tipeAset || b.name,
+              category: b.category,
+              isDb: true
+            };
+            // Sinkronisasi Serial Numbers (Units)
+            if (b.units && Array.isArray(b.units)) {
+              b.units.forEach(u => {
+                if (u.serialNumber) {
+                  sMap[u.serialNumber] = b.id;
+                }
+              });
+            }
+          });
+        }
+        return { assetDb: aMap, snDb: sMap };
+      }).catch(err => {
+        console.error("Failed to load barang", err);
+        return { assetDb: ASSET_DB, snDb: SN_DB };
+      });
+    }
+    barangCachePromise.then(d => setData(d));
+  }, []);
+
+  return data;
+}
 const ENTITAS_LIST = [
   { name: "Pelindo Multi Terminal", code: "SPMT" },
   { name: "PT Pelabuhan Indonesia", code: "PTP" },
@@ -2097,6 +2059,7 @@ function RealisasiTablePage({
   onDeleteRow,
   showToast,
 }) {
+  const { assetDb: ASSET_DB_DYN, snDb: SN_DB_DYN } = useAssetDB();
   const [searchQ, setSearchQ] = useState("");
   const transactions = ang.transaksi || [];
   const filtered = useMemo(
@@ -2249,7 +2212,7 @@ function RealisasiTablePage({
                   </td>
                   <td>
                     <CatPill
-                      cat={t.category || ASSET_DB[t.asset_code]?.category}
+                      cat={t.category || ASSET_DB_DYN[t.asset_code]?.category}
                     />
                   </td>
                   <td>
@@ -2265,7 +2228,7 @@ function RealisasiTablePage({
                         size={11}
                         style={{ color: "var(--ink4)", flexShrink: 0 }}
                       />
-                      {t.location || ASSET_DB[t.asset_code]?.location || "—"}
+                      {t.location || ASSET_DB_DYN[t.asset_code]?.location || "—"}
                     </div>
                   </td>
                   <td>
@@ -2328,12 +2291,13 @@ function RealisasiTablePage({
 }
 // ══════ REALISASI / ENTRY PAGE OPEX ══════
 function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
+  const { assetDb: ASSET_DB_DYN, snDb: SN_DB_DYN } = useAssetDB();
   const isEdit = !!editData;
 
   const [form, setForm] = useState(() => {
     if (isEdit && editData) {
       const code = editData.asset_code || "";
-      const dbInfo = ASSET_DB[code] || {};
+      const dbInfo = ASSET_DB_DYN[code] || {};
       return {
         category: editData.category || dbInfo.category || "",
         model: editData.model || dbInfo.model || "",
@@ -2361,10 +2325,10 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
     up("items", [{ id: `new-${Date.now()}-0`, serial_number: "", location: "", asset_code: "" }]);
   };
 
-  const availCats = Array.from(new Set(Object.values(ASSET_DB).map(x => x.category).filter(Boolean)));
-  const availMods = form.category ? Array.from(new Set(Object.values(ASSET_DB).filter(x => x.category === form.category).map(x => x.model))).filter(Boolean) : [];
-  const availCodes = form.category && form.model ? Object.keys(ASSET_DB).filter(c => ASSET_DB[c].category === form.category && ASSET_DB[c].model === form.model) : [];
-  const availSNs = Object.entries(SN_DB).filter(([sn, code]) => availCodes.includes(code)).map(([sn]) => sn);
+  const availCats = Array.from(new Set(Object.values(ASSET_DB_DYN).map(x => x.category).filter(Boolean)));
+  const availMods = form.category ? Array.from(new Set(Object.values(ASSET_DB_DYN).filter(x => x.category === form.category).map(x => x.model))).filter(Boolean) : [];
+  const availCodes = form.category && form.model ? Object.keys(ASSET_DB_DYN).filter(c => ASSET_DB_DYN[c].category === form.category && ASSET_DB_DYN[c].model === form.model) : [];
+  const availSNs = Object.entries(SN_DB_DYN).filter(([sn, code]) => availCodes.includes(code)).map(([sn]) => sn);
 
   const handleQtyChange = (qty) => {
     const newItems = [...(form.items || [])];
@@ -2405,7 +2369,7 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
         tanggal: today,
         acquisition_value: amount,
         jumlah: amount,
-        keterangan: ASSET_DB[ac]?.name || `${form.category} ${form.model}`,
+        keterangan: ASSET_DB_DYN[ac]?.name || `${form.category} ${form.model}`,
         aset: ac,
       };
     });
@@ -2475,7 +2439,7 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
                   <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0" }}>
                     <div style={{ width: 4, height: 20, background: "var(--green)", borderRadius: 2 }} />
                     <span style={{ fontSize: "1rem", fontWeight: 800, color: "var(--ink)", letterSpacing: "-0.2px" }}>
-                      {ASSET_DB[form.items?.[0]?.asset_code]?.name || form.model}
+                      {ASSET_DB_DYN[form.items?.[0]?.asset_code]?.name || form.model}
                     </span>
                   </div>
                 ) : (
@@ -2520,7 +2484,7 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
                                 onChange={(val) => {
                                   const newItems = [...form.items];
                                   newItems[idx].serial_number = val;
-                                  newItems[idx].asset_code = Object.entries(SN_DB).find(([s, c]) => s === val)?.[1] || "";
+                                  newItems[idx].asset_code = Object.entries(SN_DB_DYN).find(([s, c]) => s === val)?.[1] || "";
                                   up("items", newItems);
                                 }}
                               />
@@ -2556,7 +2520,7 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
                   style={{ width: "100%", padding: "8px", fontSize: "0.75rem", justifyContent: "center", borderStyle: "dashed" }}
                   onClick={() => {
                     const ac = availCodes[form.items.length] || "";
-                    const sn = ac ? Object.entries(SN_DB).find(([s, c]) => s === ac)?.[0] || "" : "";
+                    const sn = ac ? Object.entries(SN_DB_DYN).find(([s, c]) => s === ac)?.[0] || "" : "";
                     up("items", [...form.items, { id: `new-${Date.now()}-${form.items.length}`, serial_number: sn, location: "", asset_code: ac }]);
                   }}
                 >
@@ -2941,6 +2905,7 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
 }
 // ══════ ASSET ENTRY PAGE (CAPEX) ══════
 function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
+  const { assetDb: ASSET_DB_DYN, snDb: SN_DB_DYN } = useAssetDB();
   const [form, setForm] = useState({ category: "", model: "", items: [{ id: `new-${Date.now()}-0`, serial_number: "", location: "", asset_code: "" }], acquisition_value: "" });
   const upd = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
@@ -2948,9 +2913,9 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
   const total = (form.items || []).length * amount;
 
   const availCodes = form.category && form.model
-    ? Object.keys(ASSET_DB).filter(c => ASSET_DB[c].category === form.category && ASSET_DB[c].model === form.model)
+    ? Object.keys(ASSET_DB_DYN).filter(c => ASSET_DB_DYN[c].category === form.category && ASSET_DB_DYN[c].model === form.model)
     : [];
-  const availSNs = Object.entries(SN_DB).filter(([sn, code]) => availCodes.includes(code)).map(([sn]) => sn);
+  const availSNs = Object.entries(SN_DB_DYN).filter(([sn, code]) => availCodes.includes(code)).map(([sn]) => sn);
 
   const handleQtyChange = (qty) => {
     const newItems = [...(form.items || [])];
@@ -2970,7 +2935,7 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
     const amount = parseFloat(form.acquisition_value) || 0;
     const newAsset = {
       id: newId(),
-      name: ASSET_DB[form.items[0]?.asset_code]?.name || `${form.category} ${form.model}`,
+      name: ASSET_DB_DYN[form.items[0]?.asset_code]?.name || `${form.category} ${form.model}`,
       category: form.category,
       model: form.model,
       jumlah: form.items.length,
@@ -3029,7 +2994,7 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
                 }}
               >
                 <option value="">— Pilih Kategori —</option>
-                {Array.from(new Set(Object.values(ASSET_DB).map(x => x.category))).map(cat => (
+                {Array.from(new Set(Object.values(ASSET_DB_DYN).map(x => x.category))).map(cat => (
                   <option key={cat} value={cat}>{cat}</option>
                 ))}
               </select>
@@ -3038,7 +3003,7 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
               <AEFld label="Nama Barang" req={true}>
                 <SmartAssetInput
                   value={form.model || ""}
-                  options={Object.values(ASSET_DB).filter(x => x.category === form.category)}
+                  options={Object.values(ASSET_DB_DYN).filter(x => x.category === form.category)}
                   onChange={(val) => {
                     upd("model", val);
                     upd("items", [{ id: `new-${Date.now()}-0`, serial_number: "", location: "", asset_code: "" }]);
@@ -3082,7 +3047,7 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
                                 onChange={(val) => {
                                   const newItems = [...form.items];
                                   newItems[idx].serial_number = val;
-                                  newItems[idx].asset_code = Object.entries(SN_DB).find(([s, c]) => s === val)?.[1] || "";
+                                  newItems[idx].asset_code = Object.entries(SN_DB_DYN).find(([s, c]) => s === val)?.[1] || "";
                                   upd("items", newItems);
                                 }}
                               />
@@ -3176,10 +3141,11 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
 }
 
 function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) {
+  const { assetDb: ASSET_DB_DYN, snDb: SN_DB_DYN } = useAssetDB();
   const isOpx = anggaran.type === 'opex';
   const [form, setForm] = useState(() => {
     const code = asset.asset_code || "";
-    const dbInfo = ASSET_DB[code] || {};
+    const dbInfo = ASSET_DB_DYN[code] || {};
     const items = asset.units ? asset.units.map((u, i) => ({
       id: i === 0 ? asset.id : `unit-${i}`,
       serial_number: u.serialNumber || "",
@@ -3207,9 +3173,9 @@ function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) 
   const total = (form.items || []).length * amount;
 
   const availCodes = form.category && form.model
-    ? Object.keys(ASSET_DB).filter(c => ASSET_DB[c].category === form.category && ASSET_DB[c].model === form.model)
+    ? Object.keys(ASSET_DB_DYN).filter(c => ASSET_DB_DYN[c].category === form.category && ASSET_DB_DYN[c].model === form.model)
     : [];
-  const availSNs = Object.entries(SN_DB).filter(([sn, code]) => availCodes.includes(code)).map(([sn]) => sn);
+  const availSNs = Object.entries(SN_DB_DYN).filter(([sn, code]) => availCodes.includes(code)).map(([sn]) => sn);
 
   const handleQtyChange = (qty) => {
     const newItems = [...(form.items || [])];
@@ -3329,7 +3295,7 @@ function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) 
                                 onChange={(val) => {
                                   const newItems = [...form.items];
                                   newItems[idx].serial_number = val;
-                                  newItems[idx].asset_code = Object.entries(SN_DB).find(([s, c]) => s === val)?.[1] || "";
+                                  newItems[idx].asset_code = Object.entries(SN_DB_DYN).find(([s, c]) => s === val)?.[1] || "";
                                   upd("items", newItems);
                                 }}
                               />
@@ -3375,7 +3341,7 @@ function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) 
                   }}
                   onClick={() => {
                     const ac = availCodes[form.items.length] || "";
-                    const sn = ac ? Object.entries(SN_DB).find(([s, c]) => c === ac)?.[0] || "" : "";
+                    const sn = ac ? Object.entries(SN_DB_DYN).find(([s, c]) => c === ac)?.[0] || "" : "";
                     upd("items", [...form.items, { id: `new-${Date.now()}-${form.items.length}`, serial_number: sn, location: "", asset_code: ac }]);
                   }}
                 >
@@ -3431,6 +3397,7 @@ function AssetTablePage({
   onSaveAssets,
   showToast,
 }) {
+  const { assetDb: ASSET_DB_DYN, snDb: SN_DB_DYN } = useAssetDB();
   const [searchQ, setSearchQ] = useState("");
   const [filterYear, setFilterYear] = useState("all");
   const [confirm, setConfirm] = useState(null);
@@ -4214,27 +4181,52 @@ export default function BudgetManagement({ forcedType }) {
     if (forcedType) setTypeFilter(forcedType);
   }, [forcedType]);
 
-  // ── Load data dari API saat pertama kali render ──
+  // ── Load data dari API dengan Instant-Load (Cache-First) ──
   useEffect(() => {
     let cancelled = false;
-    const load = async () => {
-      try {
-        setIsLoading(true);
-        const [capexRes, opexRes] = await Promise.all([
-          budgetAPI.getCapex(),
-          budgetAPI.getOpex(),
-        ]);
-        if (!cancelled) {
-          setCapexData(capexRes.data?.data ?? []);
-          setOpexData(opexRes.data?.data   ?? []);
-        }
-      } catch (err) {
-        if (!cancelled) showToast('Gagal memuat data anggaran');
-      } finally {
-        if (!cancelled) setIsLoading(false);
+
+    // 1. Load dari Cache agar INSTAN
+    const cachedCapex = localStorage.getItem("budget_mgmt_cache_capex");
+    const cachedOpex = localStorage.getItem("budget_mgmt_cache_opex");
+
+    if (cachedCapex) {
+      setCapexData(JSON.parse(cachedCapex));
+    }
+    if (cachedOpex) {
+      setOpexData(JSON.parse(cachedOpex));
+    }
+    if (cachedCapex || cachedOpex) {
+      setIsLoading(false);
+    }
+
+    // 2. Fetch CAPEX secara mandiri (Decoupled)
+    budgetAPI.getCapex().then(res => {
+      if (!cancelled && res.data?.success) {
+        const data = res.data.data ?? [];
+        setCapexData(data);
+        localStorage.setItem("budget_mgmt_cache_capex", JSON.stringify(data));
       }
-    };
-    load();
+    }).catch(err => {
+      console.error("Failed to load CAPEX", err);
+    }).finally(() => {
+      if (!cancelled && !localStorage.getItem("budget_mgmt_cache_opex")) {
+         // Hanya set loading false jika opex juga sudah (atau tidak ada cache)
+      }
+    });
+
+    // 3. Fetch OPEX secara mandiri (Decoupled)
+    budgetAPI.getOpex().then(res => {
+      if (!cancelled && res.data?.success) {
+        const data = res.data.data ?? [];
+        setOpexData(data);
+        localStorage.setItem("budget_mgmt_cache_opex", JSON.stringify(data));
+      }
+    }).catch(err => {
+      console.error("Failed to load OPEX", err);
+    }).finally(() => {
+      if (!cancelled) setIsLoading(false);
+    });
+
     return () => { cancelled = true; };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const showToast = (msg) => setToast(msg);

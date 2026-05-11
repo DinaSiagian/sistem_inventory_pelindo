@@ -3420,6 +3420,7 @@ const USERS_PER_PAGE = 5;
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
   const [logs, setLogs] = useState([]);
+  const [meta, setMeta] = useState({ stats: { total: 0, superadmin: 0, aktif: 0, nonaktif: 0 } });
 
   const [entityList, setEntityList] = useState([]);
   const [branchList, setBranchList] = useState([]);
@@ -3427,24 +3428,65 @@ const UserManagement = () => {
   const [roleList, setRoleList] = useState([]);
 
   useEffect(() => {
+    // 1. Ambil data dari Cache (localStorage) agar muncul INSTAN
+    const cachedUsers = localStorage.getItem("um_cache_users");
+    const cachedEntities = localStorage.getItem("um_cache_entities");
+    const cachedBranches = localStorage.getItem("um_cache_branches");
+    const cachedDivisions = localStorage.getItem("um_cache_divisions");
+    const cachedRoles = localStorage.getItem("um_cache_roles");
+    const cachedMeta = localStorage.getItem("um_cache_meta");
+
+    if (cachedUsers) setUsers(JSON.parse(cachedUsers));
+    if (cachedEntities) setEntityList(JSON.parse(cachedEntities));
+    if (cachedBranches) setBranchList(JSON.parse(cachedBranches));
+    if (cachedDivisions) setDivisionList(JSON.parse(cachedDivisions));
+    if (cachedRoles) setRoleList(JSON.parse(cachedRoles));
+    if (cachedMeta) setMeta(JSON.parse(cachedMeta));
+
     const fetchData = async () => {
       try {
-        const [entRes, brRes, divRes, roleRes, userRes, logRes] = await Promise.all([
-          masterDataAPI.getEntities(),
-          masterDataAPI.getBranches(),
-          masterDataAPI.getDivisions(),
-          masterDataAPI.getRoles(),
-          userAPI.getAll(),
-          logAPI.getAll(),
-        ]);
-        if (entRes.data?.success) setEntityList(entRes.data.data);
-        if (brRes.data?.success) setBranchList(brRes.data.data);
-        if (divRes.data?.success) setDivisionList(divRes.data.data);
-        if (roleRes.data?.success) setRoleList(roleRes.data.data);
-        if (userRes.data?.success) setUsers(userRes.data.data);
-        if (logRes.data?.success) setLogs(logRes.data.data);
+        // Fetch data secara paralel tapi update masing-masing secepat mungkin
+        masterDataAPI.getEntities().then(res => {
+          if (res.data?.success) {
+            setEntityList(res.data.data);
+            localStorage.setItem("um_cache_entities", JSON.stringify(res.data.data));
+          }
+        });
+        masterDataAPI.getBranches().then(res => {
+          if (res.data?.success) {
+            setBranchList(res.data.data);
+            localStorage.setItem("um_cache_branches", JSON.stringify(res.data.data));
+          }
+        });
+        masterDataAPI.getDivisions().then(res => {
+          if (res.data?.success) {
+            setDivisionList(res.data.data);
+            localStorage.setItem("um_cache_divisions", JSON.stringify(res.data.data));
+          }
+        });
+        masterDataAPI.getRoles().then(res => {
+          if (res.data?.success) {
+            setRoleList(res.data.data);
+            localStorage.setItem("um_cache_roles", JSON.stringify(res.data.data));
+          }
+        });
+
+        userAPI.getAll().then(res => {
+          if (res.data?.success) {
+            setUsers(res.data.data);
+            if (res.data.meta) {
+              setMeta(res.data.meta);
+              localStorage.setItem("um_cache_meta", JSON.stringify(res.data.meta));
+            }
+            localStorage.setItem("um_cache_users", JSON.stringify(res.data.data));
+          }
+        });
+
+        logAPI.getAll().then(res => {
+          if (res.data?.success) setLogs(res.data.data);
+        });
       } catch (err) {
-        console.error("Gagal mengambil data", err);
+        console.error("Gagal refresh data", err);
       }
     };
     fetchData();
@@ -3520,11 +3562,11 @@ const UserManagement = () => {
   const userTotalPages = Math.max(1, Math.ceil(filtered.length / USERS_PER_PAGE));
   const paginatedUsers = filtered.slice((userPage - 1) * USERS_PER_PAGE, userPage * USERS_PER_PAGE);
 
-  const stats = {
+  const stats = meta.stats || {
     total: users.length,
-    superadmin: users.filter((u) => u.role_code === "superadmin" || u.role_code === "admin").length,
-    aktif: users.filter((u) => u.is_active).length,
-    nonaktif: users.filter((u) => !u.is_active).length,
+    superadmin: 0,
+    aktif: 0,
+    nonaktif: 0,
   };
 
   const handleSave = async (saved) => {

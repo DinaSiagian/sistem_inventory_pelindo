@@ -106,4 +106,9 @@ export const budgetAPI = {
   deleteProject: (id)       => api.delete(`/budget/projects/${id}`),
 };
 
+export const barangAPI = {
+  getAll: () => api.get('/barang'),
+  create: (data) => api.post('/barang', data),
+};
+
 export default api;

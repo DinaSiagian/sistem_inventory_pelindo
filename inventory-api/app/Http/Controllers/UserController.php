@@ -21,13 +21,38 @@ class UserController extends Controller
     public function index(Request $request)
     {
         try {
+            // Hitung statistik untuk Dashboard secara efisien
+            $stats = [
+                'total'      => User::count(),
+                'superadmin' => User::whereIn('role_code', ['superadmin', 'admin'])->count(),
+                'aktif'      => User::where('is_active', true)->count(),
+                'nonaktif'   => User::where('is_active', false)->count(),
+            ];
+
+            // Gunakan paginate() untuk membatasi jumlah data yang ditarik sekaligus
             $users = User::with(['role', 'entity', 'branch', 'division'])
+                ->select('users.*')
+                ->addSelect(['last_login_actual' => LoginLog::select('login_time')
+                    ->whereColumn('user_id', 'users.id')
+                    ->orderBy('login_time', 'desc')
+                    ->limit(1)
+                ])
                 ->orderBy('created_at', 'desc')
-                ->get();
+                ->paginate($request->input('per_page', 50));
+
+            // Transformasi data paginasi menggunakan formatUser
+            $users->getCollection()->transform(fn($u) => $this->formatUser($u));
 
             return response()->json([
                 'success' => true,
-                'data'    => $users->map(fn($u) => $this->formatUser($u)),
+                'data'    => $users->items(),
+                'meta'    => [
+                    'current_page' => $users->currentPage(),
+                    'last_page'    => $users->lastPage(),
+                    'total'        => $users->total(),
+                    'per_page'     => $users->perPage(),
+                    'stats'        => $stats,
+                ]
             ], 200);
         } catch (Exception $e) {
             Log::error('UserController@index: ' . $e->getMessage());
@@ -310,7 +335,9 @@ class UserController extends Controller
         // Jika $user adalah array (dari format lain), handle gracefully
         if (is_array($user)) return $user;
         
-        $actual = $this->getLastLoginActual($user);
+        // Gunakan nilai dari subquery jika ada, jika tidak baru panggil helper
+        $actual = $user->last_login_actual ?? $this->getLastLoginActual($user);
+        
         return [
             'id'            => $user->id,
             'name'          => $user->name,

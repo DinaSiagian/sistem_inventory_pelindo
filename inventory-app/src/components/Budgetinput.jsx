@@ -3580,10 +3580,19 @@ function OpexModule({ masterList, setMasterList }) {
   const prevMastersRef = React.useRef([]);
 
   useEffect(() => {
+    // 1. Load dari Cache agar INSTAN
+    const cachedOpex = localStorage.getItem("budget_cache_opex");
+    if (cachedOpex) {
+      setMasters(JSON.parse(cachedOpex));
+      prevMastersRef.current = JSON.parse(cachedOpex);
+      setIsInitialLoad(false);
+    }
+
     budgetAPI.getOpex().then(res => {
       if (res.data && res.data.success) {
         setMasters(res.data.data);
         prevMastersRef.current = res.data.data;
+        localStorage.setItem("budget_cache_opex", JSON.stringify(res.data.data));
       }
       setIsInitialLoad(false);
     }).catch(console.error);
@@ -5335,10 +5344,19 @@ function CapexModule({ capexList, setCapexList }) {
   const prevCapexRef = React.useRef([]);
 
   useEffect(() => {
+    // 1. Load dari Cache agar INSTAN
+    const cachedCapex = localStorage.getItem("budget_cache_capex");
+    if (cachedCapex) {
+      setCapexList(JSON.parse(cachedCapex));
+      prevCapexRef.current = JSON.parse(cachedCapex);
+      setIsInitialLoad(false);
+    }
+
     budgetAPI.getCapex().then(res => {
       if (res.data && res.data.success) {
         setCapexList(res.data.data);
         prevCapexRef.current = res.data.data;
+        localStorage.setItem("budget_cache_capex", JSON.stringify(res.data.data));
       }
       setIsInitialLoad(false);
     }).catch(console.error);

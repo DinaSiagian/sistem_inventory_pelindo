@@ -99,5 +99,11 @@ $router->group(['prefix' => 'api'], function () use ($router) {
         // ══════════════════════════════════════════════
         $router->put('/budget/projects/{id}',    'BudgetController@updateProject');
         $router->delete('/budget/projects/{id}', 'BudgetController@destroyProject');
+
+        // ══════════════════════════════════════════════
+        // INVENTORY: BARANG (ASET)
+        // ══════════════════════════════════════════════
+        $router->get('/barang',  'BarangController@index');
+        $router->post('/barang', 'BarangController@store');
     });
 });

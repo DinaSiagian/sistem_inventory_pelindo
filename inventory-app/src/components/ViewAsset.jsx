@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
+import { barangAPI } from "../services/api";
 import "./ViewAsset.css";
-
 // ── CAPEX ANGGARAN MASTER (thn_anggaran → nm_anggaran → pekerjaan) ─────
 const CAPEX_ANGGARAN = [
   {
@@ -2136,8 +2136,8 @@ const SmartLocationInput = ({ value, onChange, placeholder = "Pilih Branch / Zon
     options = Object.values(BRANCH_BY_ENTITY).flat().map(b => b.name);
     stepLabel = "Pilih Branch";
   } else if (currentPartIdx === 1) {
-    options = LOCATION_MAP[branch] 
-      ? Object.keys(LOCATION_MAP[branch]) 
+    options = LOCATION_MAP[branch]
+      ? Object.keys(LOCATION_MAP[branch])
       : ZONA_LIST.map(z => z.name);
     stepLabel = `Zona di ${branch || 'Branch'}`;
   } else if (currentPartIdx === 2) {
@@ -2195,7 +2195,7 @@ const SmartLocationInput = ({ value, onChange, placeholder = "Pilih Branch / Zon
           }}
         />
         {valStr && (
-          <button 
+          <button
             type="button"
             onClick={() => { onChange(""); setIsOpen(false); }}
             style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: 4 }}
@@ -2223,7 +2223,7 @@ const SmartLocationInput = ({ value, onChange, placeholder = "Pilih Branch / Zon
           <div style={{ padding: "8px 12px", fontSize: "10px", fontWeight: 800, color: "#64748b", background: "#f8fafc", borderBottom: "1px solid #e2e8f0", textTransform: "uppercase", position: "sticky", top: 0, zIndex: 2 }}>
             {stepLabel}
           </div>
-          
+
           {filteredOptions.map((opt, i) => (
             <div
               key={i}
@@ -2274,329 +2274,20 @@ const SmartLocationInput = ({ value, onChange, placeholder = "Pilih Branch / Zon
 
 // ── MAIN COMPONENT ────────────────────────────────────────────────
 const ViewAsset = () => {
-  const [assets, setAssets] = useState([
-    {
-      id: "CCTV-24BLW-001",
-      name: "CCTV Hikvision DS-2CD2143G2-I",
-      category: "CCTV",
-      tipeAset: "DS-2CD2143G2-I",
-      status: "Tersedia",
-      entitas: "Pelindo Multi Terminal",
-      branch: "Belawan",
-      zona: "LPG",
-      subzona: "DMG",
-      value: 6000000,
-      id_pekerjaan: "PKJ-2440015-001",
-      quantity: 2,
-      units: [
-        { serialNumber: "SN-CCTV-001", location: "Belawan / Lapangan / Dermaga" },
-        { serialNumber: "SN-CCTV-002", location: "Belawan / Lapangan / Dermaga" },
-      ],
-      photo: "/assets/img/cctv.png",
-      specs: [
-        { spec_label: "Resolusi", value: "4", default_unit: "MP" },
-        { spec_label: "Lensa", value: "2.8", default_unit: "mm" },
-        { spec_label: "Night Vision", value: "30", default_unit: "m" },
-        { spec_label: "IP Rating", value: "IP67", default_unit: "" },
-      ],
-      customSpecs: [],
-    },
-    {
-      id: "ALAT-25DMI-001",
-      name: "Excavator CAT 336",
-      category: "Alat Berat",
-      tipeAset: "336",
-      status: "Maintenance",
-      entitas: "Pelindo Multi Terminal",
-      branch: "Dumai",
-      zona: "GDG",
-      subzona: "DMG",
-      value: 1200000000,
-      id_pekerjaan: "PKJ-2540011-001",
-      quantity: 1,
-      units: [
-        { serialNumber: "SN-EXC-336-01", location: "Dumai / Gedung / Dermaga" },
-      ],
-      photo: "/assets/img/excavator.png",
-      specs: [
-        { spec_label: "Nomor Mesin", value: "C9.3B-2024", default_unit: "" },
-        { spec_label: "Kapasitas Angkat", value: "36", default_unit: "ton" },
-        { spec_label: "Daya Mesin", value: "270", default_unit: "kW" },
-        { spec_label: "Tahun Pembuatan", value: "2025", default_unit: "tahun" },
-      ],
-      customSpecs: [{ spec_label: "Jam Kerja Saat Ini", value: "1240", default_unit: "jam" }],
-    },
-    {
-      id: "MAT-25BLW-001",
-      name: "Jasa Pemasangan Perangkat / Kabel",
-      category: "Material",
-      tipeAset: "Jasa Pemasangan",
-      status: "Tersedia",
-      entitas: "Pelindo Multi Terminal",
-      branch: "Belawan",
-      zona: "LPG",
-      subzona: "DMG",
-      value: 15000000,
-      id_pekerjaan: "PKJ-2440015-001",
-      quantity: 1,
-      units: [
-        { serialNumber: "MAT-PMS-001", location: "Belawan / Lapangan / Dermaga" },
-      ],
-      photo: "/assets/img/installation.png",
-      specs: [],
-      customSpecs: [{ spec_label: "Lingkup Pekerjaan", value: "Penarikan Kabel & Konfigurasi", default_unit: "" }],
-    },
-    {
-      id: "MAT-26BLW-002",
-      name: "Jasa Pemeliharaan / Maintenance",
-      category: "Material",
-      tipeAset: "Jasa Pemeliharaan",
-      status: "Tersedia",
-      entitas: "Pelindo Multi Terminal",
-      branch: "Belawan",
-      zona: "GDG",
-      subzona: "SRV",
-      value: 5000000,
-      id_pekerjaan: "PKJ-OPX-6-001",
-      quantity: 1,
-      units: [
-        { serialNumber: "MAT-MLH-001", location: "Belawan / Gedung / Server Room" },
-      ],
-      photo: "/assets/img/services.png",
-      specs: [],
-      customSpecs: [{ spec_label: "Periode", value: "Q1 2026", default_unit: "" }],
-    },
-    {
-      id: "SRV-25LHK-001",
-      name: "Server Dell PowerEdge R740",
-      category: "Server",
-      tipeAset: "R740",
-      status: "Tersedia",
-      entitas: "Pelindo Multi Terminal",
-      branch: "Lhokseumawe",
-      zona: "DTC",
-      subzona: "PKR",
-      value: 180000000,
-      id_pekerjaan: "PKJ-2440013-001",
-      quantity: 2,
-      units: [
-        { serialNumber: "SN-DELL-R740-01", location: "Lhokseumawe / DTC / Data Center" },
-        { serialNumber: "SN-DELL-R740-02", location: "Lhokseumawe / DTC / Ruang Server" },
-      ],
-      photo: "/assets/img/server.png",
-      specs: [
-        { spec_label: "Processor (CPU)", value: "2x Intel Xeon Gold 6230R", default_unit: "" },
-        { spec_label: "RAM", value: "128", default_unit: "GB RAM" },
-        { spec_label: "Storage", value: "4", default_unit: "TB" },
-        { spec_label: "Operating System", value: "Windows Server 2022", default_unit: "" },
-      ],
-      customSpecs: [{ spec_label: "Slot GPU", value: "2x PCIe 3.0 x16", default_unit: "" }, { spec_label: "PSU", value: "750", default_unit: "W" }],
-    },
-    {
-      id: "KND-24BLW-001",
-      name: "Toyota Hilux Pickup",
-      category: "Kendaraan",
-      tipeAset: "Hilux Pickup",
-      status: "Dipinjam",
-      entitas: "Pelindo Multi Terminal",
-      branch: "Belawan",
-      zona: "LPG",
-      subzona: "PKR",
-      value: 350000000,
-      id_pekerjaan: "OPEX-5",
-      quantity: 1,
-      units: [
-        { serialNumber: "BK 1234 ZZ", location: "Belawan / Lapangan / Parkir" },
-      ],
-      photo: "/assets/img/hilux.png",
-      specs: [
-        { spec_label: "Plat Nomor", value: "BK 1234 ZZ", default_unit: "" },
-        { spec_label: "Nomor Mesin", value: "1GD-0045221", default_unit: "" },
-        { spec_label: "Tahun Pembuatan", value: "2024", default_unit: "tahun" },
-        { spec_label: "Kapasitas Mesin", value: "2755", default_unit: "cc" },
-      ],
-      customSpecs: [{ spec_label: "Warna", value: "Silver Metallic", default_unit: "" }],
-    },
-    {
-      id: "FURN-26TJP-001",
-      name: "Meja Kerja Direktori",
-      category: "Furniture",
-      tipeAset: "Meja Kerja Direktori",
-      status: "Tersedia",
-      entitas: "PT Pelabuhan Indonesia",
-      branch: "Tanjung Priok",
-      zona: "GDG",
-      subzona: "DMG",
-      value: 8500000,
-      id_pekerjaan: "OPEX-3",
-      quantity: 2,
-      units: [
-        { serialNumber: "SN-MEJA-001", location: "Tanjung Priok / Gedung / Dermaga" },
-        { serialNumber: "SN-MEJA-002", location: "Tanjung Priok / Gedung / Dermaga" },
-      ],
-      photo: "/assets/img/desk.png",
-      specs: [
-        { spec_label: "Bahan Material", value: "MDF + Veneer Kayu Jati", default_unit: "" },
-        { spec_label: "Panjang", value: "180", default_unit: "cm" },
-        { spec_label: "Lebar", value: "80", default_unit: "cm" },
-        { spec_label: "Tinggi", value: "75", default_unit: "cm" },
-        { spec_label: "Warna Dominan", value: "Cokelat Walnut", default_unit: "" },
-      ],
-      customSpecs: [],
-    },
-    {
-      id: "SWT-25MLH-001",
-      name: "Switch Cisco Catalyst 9300L",
-      category: "Switch",
-      tipeAset: "Catalyst 9300L",
-      status: "Tersedia",
-      entitas: "Pelindo Multi Terminal",
-      branch: "Malahayati",
-      zona: "DTC",
-      subzona: "PKR",
-      value: 45000000,
-      id_pekerjaan: "PKJ-2440013-001",
-      quantity: 2,
-      units: [
-        { serialNumber: "SN-CISCO-9300-01", location: "Malahayati / Data Center / Parkir" },
-        { serialNumber: "SN-CISCO-9300-02", location: "Malahayati / Data Center / Parkir" },
-      ],
-      photo: "/assets/img/switch.png",
-      specs: [
-        { spec_label: "Processor (CPU)", value: "1.0", default_unit: "GHz" },
-        { spec_label: "RAM", value: "256", default_unit: "MB RAM" },
-        { spec_label: "Storage", value: "128", default_unit: "MB" },
-        { spec_label: "Operating System", value: "Cisco IOS 15.2", default_unit: "" },
-      ],
-      customSpecs: [{ spec_label: "Jumlah Port", value: "48x GE + 4x SFP+", default_unit: "" }, { spec_label: "PoE Budget", value: "740", default_unit: "W" }],
-    },
-    {
-      id: "SFT-26KPT-001",
-      name: "Lisensi Antivirus Kaspersky",
-      category: "Software",
-      tipeAset: "Kaspersky Endpoint",
-      status: "Tersedia",
-      entitas: "Pelindo Multi Terminal",
-      branch: "Kantor Pusat",
-      zona: "GDG",
-      subzona: "OFC",
-      value: 8500000,
-      id_pekerjaan: "PKJ-OPX-1-001",
-      quantity: 1,
-      units: [{ serialNumber: "SN-KASP-001", location: "Kantor Pusat" }],
-      photo: "/assets/img/kaspersky.png",
-      specs: [],
-      customSpecs: [],
-    },
-    {
-      id: "SFT-26KPT-002",
-      name: "Pembayaran Lisensi Microsoft Office 365",
-      category: "Software",
-      tipeAset: "Office 365 Business",
-      status: "Tersedia",
-      entitas: "Pelindo Multi Terminal",
-      branch: "Kantor Pusat",
-      zona: "GDG",
-      subzona: "OFC",
-      value: 15000000,
-      id_pekerjaan: "PKJ-OPX-1-001",
-      quantity: 1,
-      units: [{ serialNumber: "SN-O365-001", location: "Kantor Pusat" }],
-      photo: "/assets/img/office.png",
-      specs: [],
-      customSpecs: [],
-    },
-    {
-      id: "SFT-26KPT-003",
-      name: "Langganan Adobe Creative Cloud Team",
-      category: "Software",
-      tipeAset: "Creative Cloud All Apps",
-      status: "Tersedia",
-      entitas: "Pelindo Multi Terminal",
-      branch: "Kantor Pusat",
-      zona: "GDG",
-      subzona: "OFC",
-      value: 12500000,
-      id_pekerjaan: "PKJ-OPX-1-001",
-      quantity: 1,
-      units: [{ serialNumber: "SN-ADOB-123", location: "Kantor Pusat" }],
-      photo: "/assets/img/adobe.png",
-      specs: [],
-      customSpecs: [],
-    },
-    {
-      id: "SFT-26KPT-004",
-      name: "Lisensi Zoom Business (10 Host)",
-      category: "Software",
-      tipeAset: "Zoom Business",
-      status: "Tersedia",
-      entitas: "Pelindo Multi Terminal",
-      branch: "Kantor Pusat",
-      zona: "GDG",
-      subzona: "OFC",
-      value: 4500000,
-      id_pekerjaan: "PKJ-OPX-1-001",
-      quantity: 1,
-      units: [{ serialNumber: "SN-ZOOM-001", location: "Kantor Pusat" }],
-      photo: "/assets/img/zoom.png",
-      specs: [],
-      customSpecs: [],
-    },
-    {
-      id: "NET-26BLW-001",
-      name: "Tagihan MPLS Januari 2026",
-      category: "Software",
-      tipeAset: "Koneksi MPLS",
-      status: "Tersedia",
-      entitas: "Pelindo Multi Terminal",
-      branch: "Belawan",
-      zona: "DTC",
-      subzona: "SRV",
-      value: 24000000,
-      id_pekerjaan: "PKJ-OPX-2-001",
-      quantity: 1,
-      units: [{ serialNumber: "NET-MPLS-001", location: "Belawan / DTC" }],
-      photo: "/assets/img/mpls.png",
-      specs: [],
-      customSpecs: [],
-    },
-    {
-      id: "MAT-26KPT-001",
-      name: "Konsultan IT Masterplan Tahap 1",
-      category: "Material",
-      tipeAset: "Jasa Konsultasi",
-      status: "Tersedia",
-      entitas: "Pelindo Multi Terminal",
-      branch: "Kantor Pusat",
-      zona: "GDG",
-      subzona: "OFC",
-      value: 150000000,
-      id_pekerjaan: "PKJ-OPX-4-001",
-      quantity: 1,
-      units: [{ serialNumber: "SRV-CON-001", location: "Kantor Pusat" }],
-      photo: "/assets/img/masterplan.png",
-      specs: [],
-      customSpecs: [],
-    },
-    {
-      id: "HW-26BLW-001",
-      name: "Ganti Baterai UPS 10kVA",
-      category: "Hardware",
-      tipeAset: "Battery Kit 12V 9Ah",
-      status: "Tersedia",
-      entitas: "Pelindo Multi Terminal",
-      branch: "Belawan",
-      zona: "DTC",
-      subzona: "SRV",
-      value: 12500000,
-      id_pekerjaan: "PKJ-OPX-6-001",
-      quantity: 1,
-      units: [{ serialNumber: "SN-UPS-BATT-001", location: "Server Room BLW" }],
-      photo: "/assets/img/ups_battery.png",
-      specs: [],
-      customSpecs: [],
-    },
-  ]);
+  const [assets, setAssets] = useState([]);
+
+  const fetchAssets = async () => {
+    try {
+      const res = await barangAPI.getAll();
+      setAssets(res.data);
+    } catch (err) {
+      console.error("Gagal mengambil data aset", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchAssets();
+  }, []);
 
   // Routing State
   const [currentView, setCurrentView] = useState("list");
@@ -2974,7 +2665,7 @@ const ViewAsset = () => {
     });
   };
 
-  const handleSave = (goToBarcode = false) => {
+  const handleSave = async (goToBarcode = false) => {
     // ID akan di-generate otomatis jika masih kosong
     let startId = formData.assetId;
     const prefix = `${CATEGORY_PREFIX[formData.category] || "BRG"}-`;
@@ -3000,8 +2691,8 @@ const ViewAsset = () => {
       category: formData.category,
       tipeAset: formData.tipeAset || formData.name || "-",
       status: formData.status,
-      entitas: formData.entitas,
-      branch: formData.branch,
+      entitas: formData.entitasCode, // menggunakan code
+      branch: formData.branchCode,
       zona: formData.zonaCode,
       subzona: formData.subzonaCode,
       value: parseFloat(formData.value) || 0,
@@ -3021,14 +2712,20 @@ const ViewAsset = () => {
       customSpecs: customSpecs.map(({ _unitMode, ...s }) => s),
     };
 
-    setAssets([groupedAsset, ...assets]);
-    if (goToBarcode) {
-      setSelectedAsset(groupedAsset);
-      setBarcodeReturnView("add");
-      setCurrentView("barcode");
-    } else {
-      setCurrentView("list");
-      resetForm();
+    try {
+      await barangAPI.create(groupedAsset);
+      setAssets([groupedAsset, ...assets]);
+      if (goToBarcode) {
+        setSelectedAsset(groupedAsset);
+        setBarcodeReturnView("add");
+        setCurrentView("barcode");
+      } else {
+        setCurrentView("list");
+        resetForm();
+      }
+    } catch (err) {
+      alert("Gagal menyimpan ke database: " + err.message);
+      console.error(err);
     }
   };
 
@@ -3552,6 +3249,7 @@ const ViewAsset = () => {
                       </select>
                     </div>
                   </th>
+                  <th>LOKASI</th>
                   <th>KUANTITAS</th>
                   <th>TOTAL NILAI</th>
                   <th>AKSI</th>
@@ -3625,6 +3323,19 @@ const ViewAsset = () => {
                         </td>
                         <td>
                           <span className="cat-badge">{asset.category}</span>
+                        </td>
+                        <td>
+                          <div style={{
+                            fontSize: "13px",
+                            maxWidth: "180px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            fontWeight: asset.units?.[0]?.location ? "700" : "400",
+                            color: asset.units?.[0]?.location ? "var(--blue)" : "#475569"
+                          }} title={asset.units?.[0]?.location || ""}>
+                            {asset.units?.[0]?.location || [asset.branch, asset.zona].filter(Boolean).join(" / ") || "—"}
+                          </div>
                         </td>
                         <td>
                           <span
@@ -3892,14 +3603,14 @@ const ViewAsset = () => {
                               value: a.value || "",
                               id_pekerjaan: a.id_pekerjaan || "",
                               units: a.units && a.units.length > 0
-                                ? a.units.map(u => ({ 
-                                    serialNumber: u.serialNumber, 
-                                    location: u.location || [a.branch, zonaName, subzonaName].filter(Boolean).join(" / ")
-                                  }))
-                                : [{ 
-                                    serialNumber: "", 
-                                    location: [a.branch, zonaName, subzonaName].filter(Boolean).join(" / ")
-                                  }],
+                                ? a.units.map(u => ({
+                                  serialNumber: u.serialNumber,
+                                  location: u.location || [a.branch, zonaName, subzonaName].filter(Boolean).join(" / ")
+                                }))
+                                : [{
+                                  serialNumber: "",
+                                  location: [a.branch, zonaName, subzonaName].filter(Boolean).join(" / ")
+                                }],
                               quantity: a.quantity || (a.units ? a.units.length : 1),
                             }));
                             const tpl = a.specs
@@ -4019,9 +3730,9 @@ const ViewAsset = () => {
                       if (clamped > newUnits.length) {
                         const diff = clamped - newUnits.length;
                         for (let i = 0; i < diff; i++) {
-                          newUnits.push({ 
-                            serialNumber: "", 
-                            location: [p.branch, p.zona, p.subzona].filter(Boolean).join(" / ") 
+                          newUnits.push({
+                            serialNumber: "",
+                            location: [p.branch, p.zona, p.subzona].filter(Boolean).join(" / ")
                           });
                         }
                       } else if (clamped < newUnits.length) {
@@ -4042,6 +3753,44 @@ const ViewAsset = () => {
                   }}
                 />
               )}
+            </TableRow>
+            <TableRow label="Nilai Aset (Per Unit)" required>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", width: "100%" }}>
+                <div style={{ position: "relative", flex: 1 }}>
+                  <span style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", fontSize: "14px", color: "#64748b", fontWeight: "bold" }}>Rp</span>
+                  <input
+                    type="number"
+                    placeholder="0"
+                    value={formData.value}
+                    onChange={(e) => setFormData(p => ({ ...p, value: e.target.value }))}
+                    style={{ ...modernInputStyle, paddingLeft: "36px" }}
+                  />
+                </div>
+                {formData.value > 0 && (
+                  <span style={{ fontSize: "13px", fontWeight: "700", color: "#2563eb", background: "#eff6ff", padding: "6px 12px", borderRadius: "8px" }}>
+                    {fmt(formData.value)}
+                  </span>
+                )}
+              </div>
+            </TableRow>
+            <TableRow label="Nilai Aset (Per Unit)" required>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", width: "100%" }}>
+                <div style={{ position: "relative", flex: 1 }}>
+                  <span style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", fontSize: "14px", color: "#64748b", fontWeight: "bold" }}>Rp</span>
+                  <input
+                    type="number"
+                    placeholder="0"
+                    value={formData.value}
+                    onChange={(e) => setFormData(p => ({ ...p, value: e.target.value }))}
+                    style={{ ...modernInputStyle, paddingLeft: "36px" }}
+                  />
+                </div>
+                {formData.value > 0 && (
+                  <span style={{ fontSize: "13px", fontWeight: "700", color: "#2563eb", background: "#eff6ff", padding: "6px 12px", borderRadius: "8px" }}>
+                    {fmt(formData.value)}
+                  </span>
+                )}
+              </div>
             </TableRow>
           </ModernTable>
 
@@ -4669,6 +4418,25 @@ const ViewAsset = () => {
                 {editData.quantity} Unit barang
               </div>
             </TableRow>
+            <TableRow label="Nilai Aset (Per Unit)" required>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", width: "100%" }}>
+                <div style={{ position: "relative", flex: 1 }}>
+                  <span style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", fontSize: "14px", color: "#64748b", fontWeight: "bold" }}>Rp</span>
+                  <input
+                    type="number"
+                    placeholder="0"
+                    value={editData.value}
+                    onChange={(e) => setEditData(p => ({ ...p, value: e.target.value }))}
+                    style={{ ...modernInputStyle, paddingLeft: "36px" }}
+                  />
+                </div>
+                {editData.value > 0 && (
+                  <span style={{ fontSize: "13px", fontWeight: "700", color: "#2563eb", background: "#eff6ff", padding: "6px 12px", borderRadius: "8px" }}>
+                    {fmt(editData.value)}
+                  </span>
+                )}
+              </div>
+            </TableRow>
             <TableRow label="Kategori" required>
               <select
                 value={editData.category || ""}
@@ -4928,7 +4696,7 @@ const ViewAsset = () => {
                           borderBottom: "1px solid #f1f5f9",
                         }}
                       >
-                        <div 
+                        <div
                           onClick={(e) => { e.stopPropagation(); if (!isLocEditing) setIsEditingUnit({ [`${i}-loc`]: true }); }}
                           className="unit-edit-input"
                         >
@@ -5522,6 +5290,17 @@ const ViewAsset = () => {
                   {a.status}
                 </span>
               </TableRow>
+              <TableRow label="Nilai Aset">
+                <span
+                  style={{
+                    fontSize: "15px",
+                    fontWeight: "800",
+                    color: "#059669",
+                  }}
+                >
+                  {fmt(a.value)}
+                </span>
+              </TableRow>
             </ModernTable>
 
             <h3
@@ -5538,22 +5317,21 @@ const ViewAsset = () => {
               <Icon.MapPin /> Lokasi & Administrasi
             </h3>
             <ModernTable>
-              <TableRow label="Entitas">
-                <span style={{ fontSize: "14px", color: "#334155" }}>
-                  {a.entitas}
-                </span>
-              </TableRow>
-              <TableRow label="Cabang / Lokasi">
-                <span
-                  style={{
+              {/* Entitas dan Cabang/Lokasi dihapus karena redundan dengan Lokasi Penempatan */}
+              {a.units?.[0]?.location && (
+                <TableRow label="Lokasi Penempatan">
+                  <span style={{
                     fontSize: "14px",
-                    color: "#334155",
-                    fontWeight: "600",
-                  }}
-                >
-                  {[a.branch, a.zona, a.subzona].filter(Boolean).join(" / ")}
-                </span>
-              </TableRow>
+                    color: "var(--blue)",
+                    fontWeight: "800",
+                    padding: "4px 8px",
+                    background: "var(--blue-lt)",
+                    borderRadius: "4px"
+                  }}>
+                    {a.units[0].location}
+                  </span>
+                </TableRow>
+              )}
               <TableRow label="Tipe Anggaran">
                 <span
                   style={{

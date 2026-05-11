@@ -14,11 +14,18 @@ class LogController extends Controller
     public function index(Request $request)
     {
         try {
-            $logs = ActivityLog::orderBy('created_at', 'desc')->get();
+            // Batasi pengambilan log terakhir (default 100) agar tidak memberatkan loading
+            $logs = ActivityLog::orderBy('created_at', 'desc')
+                ->paginate($request->input('per_page', 100));
 
             return response()->json([
                 'success' => true,
-                'data'    => $logs,
+                'data'    => $logs->items(),
+                'meta'    => [
+                    'current_page' => $logs->currentPage(),
+                    'last_page'    => $logs->lastPage(),
+                    'total'        => $logs->total(),
+                ]
             ], 200);
         } catch (Exception $e) {
             return response()->json([

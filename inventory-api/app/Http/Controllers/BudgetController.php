@@ -326,6 +326,7 @@ class BudgetController extends Controller
     {
         try {
             $assets = $request->assets ?? [];
+            Log::info("Sync Assets called for $type Parent: $parentId. Items: " . count($assets));
 
             // Ambil semua project DB milik parent ini
             $query = BudgetProject::where('jenis_anggaran', $type);
@@ -337,13 +338,20 @@ class BudgetController extends Controller
             $projectIds = $query->pluck('id_pekerjaan')->toArray();
 
             // Hapus semua items lama
-            BudgetItem::whereIn('id_pekerjaan', $projectIds)->delete();
+            if (!empty($projectIds)) {
+                BudgetItem::whereIn('id_pekerjaan', $projectIds)->delete();
+            }
 
             // Insert items baru
             $inserted = [];
             foreach ($assets as $ast) {
                 $projId = (int) ($ast['id_pekerjaan'] ?? 0);
-                if (!$projId || !in_array($projId, $projectIds)) continue;
+                
+                // Skip jika id_pekerjaan tidak valid atau tidak milik parent ini
+                if (!$projId || !in_array($projId, $projectIds)) {
+                    Log::warning("Skipping asset entry: ProjID $projId not in " . implode(',', $projectIds));
+                    continue;
+                }
 
                 $item = BudgetItem::create([
                     'id_pekerjaan'      => $projId,
@@ -356,14 +364,51 @@ class BudgetController extends Controller
                     'asset_code'        => $ast['asset_code']        ?? null,
                     'keterangan'        => $ast['keterangan']        ?? null,
                     'units_json'        => $ast['units']             ?? [],
-                    'created_at'        => now(),
+                    'created_at'        => \Carbon\Carbon::now(),
                 ]);
+
+                // SYNC BACK TO BARANG MASTER TABLE
+                if (!empty($ast['asset_code'])) {
+                    // Update main barang table
+                    // Kita masukkan lokasi pertama ke 'subzonaCode' agar muncul di View Asset Identitas
+                    $firstLocation = $ast['units'][0]['location'] ?? null;
+                    
+                    Log::info("Updating barang " . $ast['asset_code'] . " with location: " . $firstLocation);
+                    DB::table('barang')
+                        ->where('assetId', $ast['asset_code'])
+                        ->update([
+                            'value' => $ast['acquisition_value'] ?? 0,
+                            'id_pekerjaan' => $projId,
+                            'subzonaCode' => $firstLocation, // Set lokasi realisasi ke subzona agar tampil
+                            'updated_at' => \Carbon\Carbon::now()
+                        ]);
+
+                    // Sync units (Serial Numbers & Locations)
+                    if (!empty($ast['units']) && is_array($ast['units'])) {
+                        foreach ($ast['units'] as $u) {
+                            if (!empty($u['serialNumber'])) {
+                                DB::table('barang_units')->updateOrInsert(
+                                    [
+                                        'assetId' => $ast['asset_code'],
+                                        'serialNumber' => $u['serialNumber']
+                                    ],
+                                    [
+                                        'location' => $u['location'] ?? null,
+                                        'status' => 'Tersedia',
+                                        'condition' => 'Baik',
+                                        'updated_at' => \Carbon\Carbon::now()
+                                    ]
+                                );
+                            }
+                        }
+                    }
+                }
                 $inserted[] = $this->formatItem($item);
             }
 
             return response()->json(['success' => true, 'data' => $inserted]);
-        } catch (Exception $e) {
-            Log::error('Sync Assets Error: ' . $e->getMessage());
+        } catch (\Throwable $e) {
+            Log::error('Sync Assets Error: ' . $e->getMessage() . " at " . $e->getFile() . ":" . $e->getLine());
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
