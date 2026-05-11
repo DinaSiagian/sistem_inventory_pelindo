@@ -103,7 +103,9 @@ $router->group(['prefix' => 'api'], function () use ($router) {
         // ══════════════════════════════════════════════
         // INVENTORY: BARANG (ASET)
         // ══════════════════════════════════════════════
-        $router->get('/barang',  'BarangController@index');
-        $router->post('/barang', 'BarangController@store');
+        $router->get('/barang',    'BarangController@index');
+        $router->post('/barang',   'BarangController@store');
+        $router->put('/barang/{id}', 'BarangController@update');
+        $router->delete('/barang/{id}', 'BarangController@destroy');
     });
 });

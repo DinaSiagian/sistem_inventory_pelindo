@@ -11,6 +11,8 @@ import {
   FaChevronRight,
   FaHandHolding,
   FaClipboardList,
+  FaHistory,
+  FaExchangeAlt,
 } from "react-icons/fa";
 import "./Layout.css";
 
@@ -31,9 +33,14 @@ const Layout = () => {
     { category: "Manajemen Aset" },
     { path: "/assets", label: "List Barang", icon: <FaBox /> },
     {
+      // BAST Aset — submenu Daftar Serah Terima & Riwayat Pengembalian
       path: "/peminjaman",
       label: "BAST Aset",
       icon: <FaHandHolding />,
+      submenu: [
+        { path: "/peminjaman/serah-terima", label: "Daftar Serah Terima", icon: <FaExchangeAlt /> },
+        { path: "/peminjaman/riwayat", label: "Riwayat Pengembalian", icon: <FaHistory /> },
+      ],
     },
     { category: "Keuangan & Proyek" },
     {
@@ -222,6 +229,11 @@ const Layout = () => {
                         className={`menu-item submenu-item ${location.pathname.startsWith(subItem.path) ? "active" : ""}`}
                         onClick={() => handleMenuClick(subItem.path)}
                       >
+                        {subItem.icon && (
+                          <div className="menu-icon" style={{ fontSize: "0.8rem", opacity: 0.8 }}>
+                            {subItem.icon}
+                          </div>
+                        )}
                         <span className="menu-text">{subItem.label}</span>
                       </Link>
                     ))}
@@ -284,3 +296,5 @@ const Layout = () => {
 };
 
 export default Layout;
+
+

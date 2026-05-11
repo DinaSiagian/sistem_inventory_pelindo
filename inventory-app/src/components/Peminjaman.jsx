@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
 
 const Icon = {
-  Search: (props) => (
+  Search: () => (
     <svg
       width="13"
       height="13"
@@ -11,13 +11,12 @@ const Icon = {
       strokeWidth="2.5"
       strokeLinecap="round"
       strokeLinejoin="round"
-      {...props}
     >
       <circle cx="11" cy="11" r="8" />
       <line x1="21" y1="21" x2="16.65" y2="16.65" />
     </svg>
   ),
-  Plus: (props) => (
+  Plus: () => (
     <svg
       width="13"
       height="13"
@@ -27,13 +26,12 @@ const Icon = {
       strokeWidth="2.5"
       strokeLinecap="round"
       strokeLinejoin="round"
-      {...props}
     >
       <line x1="12" y1="5" x2="12" y2="19" />
       <line x1="5" y1="12" x2="19" y2="12" />
     </svg>
   ),
-  Edit: (props) => (
+  Edit: () => (
     <svg
       width="12"
       height="12"
@@ -43,13 +41,12 @@ const Icon = {
       strokeWidth="2.5"
       strokeLinecap="round"
       strokeLinejoin="round"
-      {...props}
     >
       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
     </svg>
   ),
-  Trash: (props) => (
+  Trash: () => (
     <svg
       width="12"
       height="12"
@@ -59,7 +56,6 @@ const Icon = {
       strokeWidth="2.5"
       strokeLinecap="round"
       strokeLinejoin="round"
-      {...props}
     >
       <polyline points="3 6 5 6 21 6" />
       <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
@@ -67,7 +63,7 @@ const Icon = {
       <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
     </svg>
   ),
-  Eye: (props) => (
+  Eye: () => (
     <svg
       width="12"
       height="12"
@@ -77,13 +73,12 @@ const Icon = {
       strokeWidth="2.5"
       strokeLinecap="round"
       strokeLinejoin="round"
-      {...props}
     >
       <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
       <circle cx="12" cy="12" r="3" />
     </svg>
   ),
-  Times: (props) => (
+  Times: () => (
     <svg
       width="11"
       height="11"
@@ -93,13 +88,12 @@ const Icon = {
       strokeWidth="2.5"
       strokeLinecap="round"
       strokeLinejoin="round"
-      {...props}
     >
       <line x1="18" y1="6" x2="6" y2="18" />
       <line x1="6" y1="6" x2="18" y2="18" />
     </svg>
   ),
-  Check: (props) => (
+  Check: () => (
     <svg
       width="13"
       height="13"
@@ -109,7 +103,6 @@ const Icon = {
       strokeWidth="2.5"
       strokeLinecap="round"
       strokeLinejoin="round"
-      {...props}
     >
       <polyline points="20 6 9 17 4 12" />
     </svg>
@@ -175,7 +168,7 @@ const Icon = {
       <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
     </svg>
   ),
-  User: (props) => (
+  User: () => (
     <svg
       width="13"
       height="13"
@@ -185,7 +178,6 @@ const Icon = {
       strokeWidth="2.5"
       strokeLinecap="round"
       strokeLinejoin="round"
-      {...props}
     >
       <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
       <circle cx="12" cy="7" r="4" />
@@ -221,7 +213,7 @@ const Icon = {
       <path d="M7 11V7a5 5 0 0 1 9.9-1" />
     </svg>
   ),
-  MapPin: (props) => (
+  MapPin: () => (
     <svg
       width="11"
       height="11"
@@ -231,7 +223,6 @@ const Icon = {
       strokeWidth="2.5"
       strokeLinecap="round"
       strokeLinejoin="round"
-      {...props}
     >
       <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
       <circle cx="12" cy="10" r="3" />
@@ -252,7 +243,7 @@ const Icon = {
       <polyline points="12 6 12 12 16 14" />
     </svg>
   ),
-  ChevronDown: (props) => (
+  ChevronDown: () => (
     <svg
       width="11"
       height="11"
@@ -262,7 +253,6 @@ const Icon = {
       strokeWidth="2.5"
       strokeLinecap="round"
       strokeLinejoin="round"
-      {...props}
     >
       <polyline points="6 9 12 15 18 9" />
     </svg>
@@ -424,7 +414,7 @@ const Icon = {
       <polyline points="10 9 9 9 8 9" />
     </svg>
   ),
-  ArrowRight: (props) => (
+  ArrowRight: () => (
     <svg
       width="10"
       height="10"
@@ -434,7 +424,6 @@ const Icon = {
       strokeWidth="2.5"
       strokeLinecap="round"
       strokeLinejoin="round"
-      {...props}
     >
       <line x1="5" y1="12" x2="19" y2="12" />
       <polyline points="12 5 19 12 12 19" />
@@ -471,7 +460,7 @@ const Icon = {
       <rect x="6" y="14" width="12" height="8" />
     </svg>
   ),
-  Briefcase: (props) => (
+  Briefcase: () => (
     <svg
       width="13"
       height="13"
@@ -481,7 +470,6 @@ const Icon = {
       strokeWidth="2.5"
       strokeLinecap="round"
       strokeLinejoin="round"
-      {...props}
     >
       <rect x="2" y="7" width="20" height="14" rx="2" />
       <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
@@ -630,118 +618,47 @@ const mockPekerjaan = [
 ];
 
 const mockAssets = [
-  {
-    code: "SPMT-LPT-01",
-    name: "Laptop Lenovo ThinkPad X1",
-    zone: "Ruang IT",
-    pekerjaan_kode: "2540011-C",
-    status_id: 2, // Used
-  },
-  {
-    code: "SPMT-LPT-02",
-    name: "Laptop Dell Latitude 5420",
-    zone: "Terminal 1",
-    pekerjaan_kode: "2440020-A",
-    status_id: 1, // Available
-  },
-  {
-    code: "SPMT-LPT-03",
-    name: "Laptop HP EliteBook 840",
-    zone: "Terminal 2",
-    pekerjaan_kode: "2440020-A",
-    status_id: 1, // Available
-  },
-  {
-    code: "SPMT-LPT-03-B",
-    name: "Laptop HP EliteBook 840",
-    zone: "Terminal 2",
-    pekerjaan_kode: "2440020-A",
-    status_id: 1, // Available
-  },
-  {
-    code: "SPMT-PC-01",
-    name: "PC Desktop HP EliteDesk",
-    zone: "Ruang Admin",
-    pekerjaan_kode: "2440020-B",
-    status_id: 2, // Used
-  },
-  {
-    code: "SPMT-PC-02",
-    name: "PC Desktop Dell OptiPlex",
-    zone: "Terminal 1",
-    pekerjaan_kode: "2440020-B",
-    status_id: 1, // Available
-  },
-  {
-    code: "SPMT-SRV-01",
-    name: "Server HP ProLiant DL380",
-    zone: "Data Center",
-    pekerjaan_kode: "2540011-C",
-    status_id: 1, // Available
-  },
-  {
-    code: "SPMT-SWT-01",
-    name: "Switch Cisco Catalyst 9300",
-    zone: "Ruang Network",
-    pekerjaan_kode: "2540011-C",
-    status_id: 2, // Used
-  },
-  {
-    code: "SPMT-RTR-01",
-    name: "Router Mikrotik CCR2004",
-    zone: "Ruang Network",
-    pekerjaan_kode: "2540012-A",
-    status_id: 1, // Available
-  },
-  {
-    code: "SPMT-UPS-01",
-    name: "UPS APC Smart-UPS 3000",
-    zone: "Data Center",
-    pekerjaan_kode: "2540011-D",
-    status_id: 1, // Available
-  },
-  {
-    code: "SPMT-NET-01",
-    name: "Access Point Ubiquiti UniFi",
-    zone: "Terminal 1",
-    pekerjaan_kode: "2540011-A",
-    status_id: 1, // Available
-  },
-  {
-    code: "SPMT-NET-01-B",
-    name: "Access Point Ubiquiti UniFi",
-    zone: "Terminal 1",
-    pekerjaan_kode: "2540011-A",
-    status_id: 1, // Available
-  },
-  {
-    code: "SPMT-NET-02",
-    name: "CCTV Hikvision DS-2CD",
-    zone: "Gate Area",
-    pekerjaan_kode: "2540011-D",
-    status_id: 1, // Available
-  },
-  {
-    code: "SPMT-NET-03",
-    name: "Public Announcer Bosch Praesideo",
-    zone: "Terminal 2",
-    pekerjaan_kode: "2540011-B",
-    status_id: 1, // Available
-  },
-  {
-    code: "SPMT-NET-04",
-    name: "Radio Point-To-Point Ubiquiti",
-    zone: "Ruang Network",
-    pekerjaan_kode: "2440020-B",
-    status_id: 1, // Available
-  },
-  {
-    code: "SPMT-NET-05",
-    name: "Firewall Fortinet FortiGate",
-    zone: "Data Center",
-    pekerjaan_kode: "2540010-A",
-    status_id: 1, // Available
-  },
+  { code: "SPMT-LPT-X1-001", name: "Laptop Lenovo ThinkPad X1", zone: "Ruang IT", pekerjaan_kode: "2540011-C", status_id: 2, owner_id: 3 },
+  { code: "SPMT-LPT-X1-002", name: "Laptop Lenovo ThinkPad X1", zone: "Gudang", pekerjaan_kode: "2540011-C", status_id: 1 },
+
+  { code: "SPMT-LPT-DL-001", name: "Laptop Dell Latitude 5420", zone: "Terminal 1", pekerjaan_kode: "2440020-A", status_id: 1 },
+  { code: "SPMT-LPT-DL-002", name: "Laptop Dell Latitude 5420", zone: "Gudang", pekerjaan_kode: "2440020-A", status_id: 1 },
+
+  { code: "SPMT-LPT-HP-001", name: "Laptop HP EliteBook 840", zone: "Terminal 2", pekerjaan_kode: "2440020-A", status_id: 1 },
+  { code: "SPMT-LPT-HP-002", name: "Laptop HP EliteBook 840", zone: "Gudang", pekerjaan_kode: "2440020-A", status_id: 1 },
+
+  { code: "SPMT-PC-HP-001", name: "PC Desktop HP EliteDesk", zone: "Ruang Admin", pekerjaan_kode: "2440020-B", status_id: 2, owner_id: 2 },
+  { code: "SPMT-PC-HP-002", name: "PC Desktop HP EliteDesk", zone: "Gudang", pekerjaan_kode: "2440020-B", status_id: 1 },
+
+  { code: "SPMT-PC-DL-001", name: "PC Desktop Dell OptiPlex", zone: "Terminal 1", pekerjaan_kode: "2440020-B", status_id: 1 },
+  { code: "SPMT-PC-DL-002", name: "PC Desktop Dell OptiPlex", zone: "Gudang", pekerjaan_kode: "2440020-B", status_id: 1 },
+
+  { code: "SPMT-SRV-HP-001", name: "Server HP ProLiant DL380", zone: "Data Center", pekerjaan_kode: "2540011-C", status_id: 1 },
+  { code: "SPMT-SRV-HP-002", name: "Server HP ProLiant DL380", zone: "Gudang", pekerjaan_kode: "2540011-C", status_id: 1 },
+
+  { code: "SPMT-SWT-CS-001", name: "Switch Cisco Catalyst 9300", zone: "Ruang Network", pekerjaan_kode: "2540011-C", status_id: 2, owner_id: 1 },
+  { code: "SPMT-SWT-CS-002", name: "Switch Cisco Catalyst 9300", zone: "Gudang", pekerjaan_kode: "2540011-C", status_id: 1 },
+
+  { code: "SPMT-RTR-MT-001", name: "Router Mikrotik CCR2004", zone: "Ruang Network", pekerjaan_kode: "2540012-A", status_id: 1 },
+  { code: "SPMT-RTR-MT-002", name: "Router Mikrotik CCR2004", zone: "Gudang", pekerjaan_kode: "2540012-A", status_id: 1 },
+
+  { code: "SPMT-UPS-AP-001", name: "UPS APC Smart-UPS 3000", zone: "Data Center", pekerjaan_kode: "2540011-D", status_id: 1 },
+  { code: "SPMT-UPS-AP-002", name: "UPS APC Smart-UPS 3000", zone: "Gudang", pekerjaan_kode: "2540011-D", status_id: 1 },
+
+  { code: "SPMT-NET-AP-001", name: "Access Point Ubiquiti UniFi", zone: "Terminal 1", pekerjaan_kode: "2540011-A", status_id: 1 },
+  { code: "SPMT-NET-AP-002", name: "Access Point Ubiquiti UniFi", zone: "Gudang", pekerjaan_kode: "2540011-A", status_id: 1 },
+
+  { code: "SPMT-NET-CV-001", name: "CCTV Hikvision DS-2CD", zone: "Gate Area", pekerjaan_kode: "2540011-D", status_id: 1 },
+  { code: "SPMT-NET-CV-002", name: "CCTV Hikvision DS-2CD", zone: "Gudang", pekerjaan_kode: "2540011-D", status_id: 1 },
+
+  { code: "SPMT-NET-PA-001", name: "Public Announcer Bosch Praesideo", zone: "Terminal 2", pekerjaan_kode: "2540011-B", status_id: 1 },
+  { code: "SPMT-NET-PA-002", name: "Public Announcer Bosch Praesideo", zone: "Gudang", pekerjaan_kode: "2540011-B", status_id: 1 },
+
+  { code: "SPMT-NET-RD-001", name: "Radio Point-To-Point Ubiquiti", zone: "Ruang Network", pekerjaan_kode: "2440020-B", status_id: 1 },
+  { code: "SPMT-NET-RD-002", name: "Radio Point-To-Point Ubiquiti", zone: "Gudang", pekerjaan_kode: "2440020-B", status_id: 1 },
+
+  { code: "SPMT-NET-FW-001", name: "Firewall Fortinet FortiGate", zone: "Data Center", pekerjaan_kode: "2540010-A", status_id: 1 },
+  { code: "SPMT-NET-FW-002", name: "Firewall Fortinet FortiGate", zone: "Gudang", pekerjaan_kode: "2540010-A", status_id: 1 },
 ];
 
 const mockUsers = [
@@ -778,7 +695,7 @@ const initBorrows = [
   {
     id: 1,
     pekerjaan_kode: "2540011-C",
-    code: "SPMT-LPT-01",
+    code: "SPMT-LPT-X1-001",
     name: "Laptop Lenovo ThinkPad X1",
     borrow_date: "2026-02-10T09:00:00",
     due_date: "2026-03-10",
@@ -796,7 +713,7 @@ const initBorrows = [
   {
     id: 2,
     pekerjaan_kode: "2440020-A",
-    code: "SPMT-LPT-03",
+    code: "SPMT-LPT-HP-001",
     name: "Laptop HP EliteBook 840",
     borrow_date: "2026-02-20T10:00:00",
     due_date: "2026-03-05",
@@ -814,7 +731,7 @@ const initBorrows = [
   {
     id: 3,
     pekerjaan_kode: "2440020-B",
-    code: "SPMT-PC-01",
+    code: "SPMT-PC-HP-001",
     name: "PC Desktop HP EliteDesk",
     borrow_date: "2026-01-15T08:00:00",
     due_date: "2026-02-15",
@@ -832,7 +749,7 @@ const initBorrows = [
   {
     id: 4,
     pekerjaan_kode: "2540011-C",
-    code: "SPMT-SWT-01",
+    code: "SPMT-SWT-CS-001",
     name: "Switch Cisco Catalyst 9300",
     borrow_date: "2026-02-28T14:00:00",
     due_date: "2026-03-28",
@@ -850,7 +767,7 @@ const initBorrows = [
   {
     id: 5,
     pekerjaan_kode: "2440020-A",
-    code: "SPMT-LPT-02",
+    code: "SPMT-LPT-DL-001",
     name: "Laptop Dell Latitude 5420",
     borrow_date: "2026-03-01T11:00:00",
     due_date: "2026-04-01",
@@ -872,7 +789,7 @@ const initReturns = [
     id: 101,
     original_id: 3,
     pekerjaan_kode: "2440020-B",
-    code: "SPMT-PC-02",
+    code: "SPMT-PC-DL-001",
     name: "PC Desktop Dell OptiPlex",
     borrow_date: "2025-11-01T09:00:00",
     return_date: "2025-12-01T14:30:00",
@@ -890,7 +807,7 @@ const initReturns = [
     id: 102,
     original_id: null,
     pekerjaan_kode: "2540011-D",
-    code: "SPMT-UPS-01",
+    code: "SPMT-UPS-AP-001",
     name: "UPS APC Smart-UPS 3000",
     borrow_date: "2025-10-05T08:00:00",
     return_date: "2025-11-05T10:00:00",
@@ -908,7 +825,7 @@ const initReturns = [
     id: 103,
     original_id: 1,
     pekerjaan_kode: "2540011-C",
-    code: "SPMT-LPT-01",
+    code: "SPMT-LPT-X1-001",
     name: "Laptop Lenovo ThinkPad X1",
     borrow_date: "2025-09-10T09:00:00",
     return_date: "2025-10-10T16:00:00",
@@ -954,18 +871,10 @@ const fmtDT = (d) =>
       minute: "2-digit",
     })
     : "—";
-
-const getLocalISO = () => {
-  const d = new Date();
-  const pad = (n) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-};
 const isOverdue = (due) => due && new Date(due) < new Date();
 const genNomorBAST = (id, date) => {
-  const d = date ? new Date(date) : new Date();
-  const year = isNaN(d.getFullYear()) ? new Date().getFullYear() : d.getFullYear();
-  const month = isNaN(d.getMonth()) ? (new Date().getMonth() + 1) : (d.getMonth() + 1);
-  return `BAST-IT/${year}/${String(month).padStart(2, "0")}/${String(id || 0).padStart(4, "0")}`;
+  const d = new Date(date);
+  return `BAST-IT/${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, "0")}/${String(id).padStart(4, "0")}`;
 };
 
 const generateBAST = (item, type = "borrow") => {
@@ -983,110 +892,6 @@ const generateBAST = (item, type = "borrow") => {
   const win = window.open(url, "_blank");
   if (win) win.focus();
 };
-
-// ── Searchable Filter Component ──────────────────────────────
-function SearchableFilter({ value, options, onChange, icon: IconComp, placeholder }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const dropdownRef = useRef(null);
-
-  useEffect(() => {
-    const handleClick = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setIsOpen(false);
-    };
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
-
-  const filteredOptions = options.filter(opt =>
-    opt.label.toLowerCase().includes(search.toLowerCase()) ||
-    (opt.sub && opt.sub.toLowerCase().includes(search.toLowerCase()))
-  );
-
-  const selectedOpt = options.find(opt => String(opt.value) === String(value));
-
-  return (
-    <div style={S.comboWrap} ref={dropdownRef}>
-      <div
-        style={{
-          ...S.filterWrap,
-          cursor: 'pointer',
-          background: isOpen ? '#f1f5f9' : '#fff',
-          borderColor: value !== "semua" ? "#2563eb" : "#e2e8f0"
-        }}
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        <span style={{ color: value !== "semua" ? "#2563eb" : "#94a3b8", display: "flex" }}>
-          {IconComp && <IconComp size={14} />}
-        </span>
-        <div style={{
-          ...S.filterSelect,
-          color: value !== "semua" ? "#0f172a" : "#64748b",
-          fontWeight: value !== "semua" ? 700 : 500,
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          maxWidth: 120
-        }}>
-          {selectedOpt ? selectedOpt.label : placeholder}
-        </div>
-        <Icon.ChevronDown size={12} style={{ marginLeft: 'auto', color: '#cbd5e1', transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
-      </div>
-
-      {isOpen && (
-        <div style={{ ...S.comboDropdown, width: 260, top: 'calc(100% + 8px)', padding: '4px' }}>
-          <div style={{ padding: '4px 4px 8px', borderBottom: '1px solid #f1f5f9' }}>
-            <div style={{ ...S.searchWrap, background: '#f8fafc', padding: '6px 10px' }}>
-              <Icon.Search size={12} style={{ color: '#94a3b8' }} />
-              <input
-                autoFocus
-                placeholder={`Cari ${placeholder}...`}
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                style={{ ...S.searchInput, background: 'transparent' }}
-              />
-            </div>
-          </div>
-          <div className="no-scrollbar" style={{ maxHeight: 220, overflowY: 'auto', marginTop: 4 }}>
-            <button
-              style={{
-                ...S.comboItem,
-                background: value === 'semua' ? '#eff6ff' : 'transparent',
-                fontWeight: value === 'semua' ? 700 : 400,
-                color: value === 'semua' ? '#2563eb' : '#0f172a'
-              }}
-              onClick={() => { onChange('semua'); setIsOpen(false); setSearch(""); }}
-            >
-              Semua {placeholder}
-            </button>
-            {filteredOptions.map(opt => (
-              <button
-                key={opt.value}
-                style={{
-                  ...S.comboItem,
-                  background: String(value) === String(opt.value) ? '#eff6ff' : 'transparent',
-                  color: String(value) === String(opt.value) ? '#2563eb' : '#0f172a'
-                }}
-                onClick={() => { onChange(opt.value); setIsOpen(false); setSearch(""); }}
-              >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  <span style={{ fontWeight: String(value) === String(opt.value) ? 700 : 600, fontSize: '.78rem' }}>{opt.label}</span>
-                  {opt.sub && <span style={{ fontSize: '.65rem', color: String(value) === String(opt.value) ? '#60a5fa' : '#94a3b8' }}>{opt.sub}</span>}
-                </div>
-              </button>
-            ))}
-            {filteredOptions.length === 0 && (
-              <div style={{ padding: '20px 10px', textAlign: 'center', color: '#94a3b8', fontSize: '.75rem' }}>
-                <Icon.Search size={20} style={{ marginBottom: 8, opacity: 0.3 }} />
-                <div>Data tidak ditemukan</div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
 
 // ─── CSS ───────────────────────────────────────────────────────
 const S = {
@@ -1147,22 +952,21 @@ const S = {
     lineHeight: 1,
   },
   statL: { fontSize: "0.7rem", color: "#64748b", marginTop: 2 },
-  tabSw: {
+  subNav: {
     display: "flex",
-    gap: 0,
-    marginBottom: ".85rem",
-    background: "#fff",
-    border: "1px solid #e2e8f0",
-    borderRadius: 12,
+    alignItems: "center",
+    gap: 2,
+    background: "#f1f5f9",
+    borderRadius: 10,
     padding: 3,
     width: "fit-content",
-    boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+    marginBottom: ".85rem",
   },
-  tabBtn: {
+  subNavBtn: {
     display: "inline-flex",
     alignItems: "center",
     gap: ".4rem",
-    padding: ".45rem 1rem",
+    padding: ".42rem 1rem",
     borderRadius: 8,
     border: "none",
     fontSize: "0.78rem",
@@ -1172,9 +976,14 @@ const S = {
     background: "transparent",
     fontFamily: "inherit",
     transition: "all .15s",
+    whiteSpace: "nowrap",
   },
-  tabBtnBlue: { background: "#eff6ff", color: "#2563eb" },
-  tabBtnGreen: { background: "#dcfce7", color: "#16a34a" },
+  subNavBtnActive: {
+    background: "#fff",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+  },
+  subNavBtnBlue: { color: "#2563eb" },
+  subNavBtnGreen: { color: "#16a34a" },
   tabBadge: {
     fontSize: "0.65rem",
     fontWeight: 700,
@@ -1204,7 +1013,6 @@ const S = {
     border: "1.5px solid #e2e8f0",
     borderRadius: 9,
     padding: ".45rem .8rem",
-    position: "relative",
   },
   searchInput: {
     border: "none",
@@ -1707,8 +1515,6 @@ const S = {
     gap: ".3rem",
     maxHeight: 220,
     overflowY: "auto",
-    scrollbarWidth: "none",
-    msOverflowStyle: "none",
   },
   pkjItem: {
     display: "flex",
@@ -1753,8 +1559,6 @@ const S = {
     zIndex: 200,
     maxHeight: 220,
     overflowY: "auto",
-    scrollbarWidth: "none",
-    msOverflowStyle: "none",
   },
   comboItem: {
     padding: ".45rem .75rem",
@@ -1797,30 +1601,6 @@ const S = {
     gridTemplateColumns: "1fr 1fr",
     gap: "1rem 1.5rem",
     padding: "1rem 1.25rem",
-  },
-  assetSuggestionBox: {
-    position: "absolute",
-    top: "calc(100% + 5px)",
-    left: 0,
-    right: 0,
-    background: "#fff",
-    border: "1.5px solid #e2e8f0",
-    borderRadius: 12,
-    boxShadow: "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-    zIndex: 1000,
-    maxHeight: 250,
-    overflowY: "auto",
-    scrollbarWidth: "none",
-    msOverflowStyle: "none",
-  },
-  assetSuggestionItem: {
-    padding: ".6rem 1rem",
-    cursor: "pointer",
-    borderBottom: "1px solid #f1f5f9",
-    transition: "all .15s",
-    display: "flex",
-    flexDirection: "column",
-    gap: 2,
   },
 };
 
@@ -1906,6 +1686,7 @@ function SearchCombobox({
   renderSub,
   hasError,
   disabled,
+  minChars = 0,
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -1933,8 +1714,9 @@ function SearchCombobox({
         style={{
           ...S.comboInput,
           ...(hasError ? { borderColor: "#dc2626" } : {}),
+          cursor: (disabled || selected) ? "default" : "pointer",
         }}
-        onClick={() => !disabled && setOpen(!open)}
+        onClick={() => !disabled && !selected && setOpen(!open)}
       >
         <span style={{ color: "#94a3b8", display: "flex" }}>
           <Icon.Search />
@@ -2002,7 +1784,7 @@ function SearchCombobox({
         </span>
       </div>
       {open && (
-        <div style={S.comboDropdown} className="no-scrollbar">
+        <div style={S.comboDropdown}>
           {selected && (
             <div
               style={{
@@ -2034,7 +1816,18 @@ function SearchCombobox({
               />
             </div>
           )}
-          {filtered.length === 0 ? (
+          {query.length < minChars ? (
+            <div
+              style={{
+                padding: ".85rem",
+                textAlign: "center",
+                fontSize: ".77rem",
+                color: "#94a3b8",
+              }}
+            >
+              Ketik minimal {minChars} karakter untuk mencari...
+            </div>
+          ) : filtered.length === 0 ? (
             <div
               style={{
                 padding: ".85rem",
@@ -2490,12 +2283,7 @@ function BorrowDetailPage({
             >
               <Icon.Exchange />
             </span>
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              <div style={S.pageTitle}>Detail Serah Terima Aset</div>
-              <div style={{ fontSize: ".7rem", color: "#7c3aed", fontWeight: 800, fontFamily: "monospace", marginTop: 2 }}>
-                {genNomorBAST(item.id, item.borrow_date)}
-              </div>
-            </div>
+            Detail Serah Terima
             {over && <span style={S.overduePill}>⚠ Terlambat</span>}
           </div>
           <div style={{ display: "flex", gap: 6 }}>
@@ -2758,11 +2546,22 @@ function ReturnDetailPage({ item, borrows, returns, onBack, onViewHistory }) {
       </div>
       <div style={S.page}>
         <div style={{ ...S.pageHeader, borderTop: "3px solid #16a34a" }}>
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <div style={S.pageTitle}>Detail Pengembalian Aset</div>
-            <div style={{ fontSize: ".7rem", color: "#7c3aed", fontWeight: 800, fontFamily: "monospace", marginTop: 2 }}>
-              {genNomorBAST(item.id, item.borrow_date)}
-            </div>
+          <div style={S.pageTitle}>
+            <span
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: 7,
+                background: "#dcfce7",
+                color: "#16a34a",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Icon.CheckCircle />
+            </span>
+            Detail Pengembalian
           </div>
           <div style={{ display: "flex", gap: 6 }}>
             <button
@@ -3374,7 +3173,6 @@ function BorrowFormPage({ borrow, onBack, onSave }) {
   const [pihak1, setPihak1] = useState({ id: "", locked: false }); // Penerima/User
   const [pihak2, setPihak2] = useState({ id: "", locked: false }); // Pemberi/IT
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedSearchResults, setSelectedSearchResults] = useState([]);
 
   // Pending items in the current Berita Acara draft
   const [baDraft, setBaDraft] = useState([]); // Array of { item, actionStatus }
@@ -3382,52 +3180,39 @@ function BorrowFormPage({ borrow, onBack, onSave }) {
   // Current status selection for search results
   const [tempStatuses, setTempStatuses] = useState({});
 
-  const userOptions = mockUsers.map((u) => ({
-    value: u.id,
-    label: u.name,
-    sub: u.branch,
-  }));
+  const userOptions1 = mockUsers
+    .filter(u => String(u.id) !== String(pihak2.id))
+    .map((u) => ({ value: u.id, label: u.name, sub: u.branch }));
 
-  const giverOptions = userOptions.filter((u) => u.value !== Number(pihak1.id));
+  const userOptions2 = mockUsers
+    .filter(u => String(u.id) !== String(pihak1.id))
+    .map((u) => ({ value: u.id, label: u.name, sub: u.branch }));
 
-  const assetResults = (searchQuery.trim().length > 0 && pihak1.id && pihak2.id)
-    ? Array.from(new Set(mockAssets
-      .filter(a => {
-        const qWords = searchQuery.toLowerCase().split(/\s+/).filter(Boolean);
-        const code = a.code.toLowerCase();
-        const name = a.name.toLowerCase();
+  const [selectedAsset, setSelectedAsset] = useState("");
 
-        const match = qWords.every(word => code.includes(word) || name.includes(word));
+  const assetOptions = useMemo(() => {
+    // Filter mockAssets to only include units that are Available OR owned by Pihak 1/2
+    const validUnits = mockAssets.filter(a =>
+      a.status_id === 1 ||
+      a.owner_id === Number(pihak1.id) ||
+      a.owner_id === Number(pihak2.id)
+    );
 
-        // Must match ownership/availability context
-        const isContextValid = a.status_id === 1 ||
-          a.owner_id === Number(pihak1.id) ||
-          a.owner_id === Number(pihak2.id);
+    const names = [...new Set(validUnits.map(a => a.name))];
+    return names.map(name => ({
+      value: name,
+      label: name,
+      sub: `${validUnits.filter(a => a.name === name).length} unit`
+    }));
+  }, [pihak1.id, pihak2.id]);
 
-        return match && isContextValid;
-      })
-      .map(a => a.name)
-    )).map(name => mockAssets.find(a => a.name === name))
-    : [];
-
-  const handleSelectRecommendation = (item) => {
-    if (!pihak1.id || !pihak2.id) {
-      alert("Pilih Pihak 1 dan Pihak 2 terlebih dahulu.");
-      return;
-    }
-    // Find all units for this asset name that are relevant to Pihak 1 (return) or Pihak 2/Gudang (give)
-    const units = mockAssets
-      .filter(a => a.name === item.name && (
+  const assetResults = selectedAsset
+    ? mockAssets.filter(a => a.name === selectedAsset && (
         a.status_id === 1 ||
         a.owner_id === Number(pihak1.id) ||
         a.owner_id === Number(pihak2.id)
       ))
-      .map(u => ({ ...u, name: item.name }));
-
-    // Only show the units for the SELECTED asset (reset table for each new selection)
-    setSelectedSearchResults(units);
-    setSearchQuery("");
-  };
+    : [];
 
   const addToDraft = (item) => {
     const status = tempStatuses[item.code];
@@ -3548,12 +3333,11 @@ function BorrowFormPage({ borrow, onBack, onSave }) {
               <div style={{ flex: 1, display: "flex", gap: "8px", alignItems: "center" }}>
                 <div style={{ flex: 1 }}>
                   <SearchCombobox
-                    options={userOptions}
+                    options={userOptions1}
                     value={pihak1.id}
                     onChange={(id) => {
                       setPihak1({ ...pihak1, id });
                       setBaDraft([]);
-                      setSelectedSearchResults([]); // Clear search results when party changes
                     }}
                     disabled={pihak1.locked}
                     placeholder="Cari user penerima..."
@@ -3582,12 +3366,11 @@ function BorrowFormPage({ borrow, onBack, onSave }) {
               <div style={{ flex: 1, display: "flex", gap: "8px", alignItems: "center" }}>
                 <div style={{ flex: 1 }}>
                   <SearchCombobox
-                    options={giverOptions}
+                    options={userOptions2}
                     value={pihak2.id}
                     onChange={(id) => {
                       setPihak2({ ...pihak2, id });
                       setBaDraft([]);
-                      setSelectedSearchResults([]); // Clear search results when party changes
                     }}
                     disabled={pihak2.locked}
                     placeholder="Cari user pemberi..."
@@ -3615,38 +3398,17 @@ function BorrowFormPage({ borrow, onBack, onSave }) {
           {/* ── SECTION 2: SEARCH RESULTS ── */}
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             <div style={S.fg}>
-              <label style={S.flabel}>Cari Barang</label>
-              <div style={S.searchWrap}>
-                <Icon.Search />
-                <input
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Ketik Kode/Nama Barang..."
-                  style={S.searchInput}
-                />
-
-                {assetResults.length > 0 && (
-                  <div className="no-scrollbar" style={S.assetSuggestionBox}>
-                    <div style={{ padding: "8px 12px", background: "#f8fafc", fontSize: ".65rem", fontWeight: 700, color: "#64748b", borderBottom: "1px solid #e2e8f0" }}>
-                      REKOMENDASI ASET
-                    </div>
-                    {assetResults.map(item => (
-                      <div
-                        key={item.code}
-                        style={S.assetSuggestionItem}
-                        onClick={() => handleSelectRecommendation(item)}
-                        onMouseOver={(e) => e.currentTarget.style.background = "#eff6ff"}
-                        onMouseOut={(e) => e.currentTarget.style.background = "transparent"}
-                      >
-                        <div style={{ fontWeight: 700, fontSize: ".75rem", color: "#1e293b" }}>{item.name}</div>
-                        <div style={{ fontSize: ".65rem", color: "#2563eb", fontWeight: 600 }}>
-                          {mockAssets.filter(a => a.name === item.name && a.status_id === 1).length} Unit Tersedia
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <label style={S.flabel}>Cari Barang Berdasarkan Nama / Kode</label>
+              <SearchCombobox
+                options={assetOptions}
+                value={selectedAsset}
+                onChange={(val) => setSelectedAsset(val)}
+                placeholder={(!pihak1.id || !pihak2.id) ? "Pilih Pihak 1 & 2 Terlebih Dahulu..." : "Ketik Nama Barang (Contoh: Laptop, CCTV, UPS)..."}
+                renderLabel={(o) => o.label}
+                renderSub={(o) => o.sub}
+                minChars={1}
+                disabled={!pihak1.id || !pihak2.id}
+              />
             </div>
 
             <div style={{ ...S.tableCard }}>
@@ -3659,19 +3421,19 @@ function BorrowFormPage({ borrow, onBack, onSave }) {
                     <th style={{ ...S.th, width: 40 }}>No</th>
                     <th style={S.th}>Nama Barang</th>
                     <th style={S.th}>SN</th>
-                    <th style={S.th}>Lokasi</th>
-                    <th style={S.th}>Pekerjaan</th>
+                    <th style={S.th}>Kepemilikan</th>
+                    <th style={S.th}>Anggaran</th>
                     <th style={S.th}>Status BA</th>
                     <th style={{ ...S.th, width: 40 }}>Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {(!pihak1.id || !pihak2.id) ? (
-                    <tr><td colSpan="7" style={{ ...S.td, textAlign: "center", color: "#e11d48", fontWeight: 600 }}>Pilih User Penerima dan User Pemberi terlebih dahulu.</td></tr>
-                  ) : selectedSearchResults.length === 0 ? (
-                    <tr><td colSpan="7" style={{ ...S.td, textAlign: "center", color: "#94a3b8" }}>Belum ada barang dipilih. Gunakan pencarian di atas untuk memilih barang.</td></tr>
+                  {!selectedAsset ? (
+                    <tr><td colSpan="7" style={{ ...S.td, textAlign: "center", color: "#94a3b8", padding: "2rem" }}>Pilih rekomendasi barang dari kotak pencarian di atas untuk melihat daftar unit</td></tr>
+                  ) : assetResults.length === 0 ? (
+                    <tr><td colSpan="7" style={{ ...S.td, textAlign: "center", color: "#94a3b8", padding: "2rem" }}>Tidak ada barang ditemukan untuk pihak yang dipilih</td></tr>
                   ) : (
-                    selectedSearchResults.map((item, idx) => {
+                    assetResults.map((item, idx) => {
                       const pkj = mockPekerjaan.find(p => p.kode === item.pekerjaan_kode);
                       const isOwnedByP1 = item.owner_id === Number(pihak1.id);
                       const isOwnedByP2 = item.owner_id === Number(pihak2.id);
@@ -3714,22 +3476,12 @@ function BorrowFormPage({ borrow, onBack, onSave }) {
                             </select>
                           </td>
                           <td style={S.td}>
-                            <div style={{ display: "flex", gap: 4 }}>
-                              <button
-                                onClick={() => addToDraft(item)}
-                                style={{ background: "none", border: "none", color: "#2563eb", cursor: "pointer" }}
-                                title="Tambahkan ke Draft BA"
-                              >
-                                <Icon.Plus />
-                              </button>
-                              <button
-                                onClick={() => setSelectedSearchResults(selectedSearchResults.filter(s => s.code !== item.code))}
-                                style={{ background: "none", border: "none", color: "#ef4444", cursor: "pointer" }}
-                                title="Hapus dari hasil pencarian"
-                              >
-                                <Icon.Times />
-                              </button>
-                            </div>
+                            <button
+                              onClick={() => addToDraft(item)}
+                              style={{ background: "none", border: "none", color: "#2563eb", cursor: "pointer" }}
+                            >
+                              <Icon.Plus />
+                            </button>
                           </td>
                         </tr>
                       );
@@ -3828,21 +3580,12 @@ function ReturnFormPage({ borrow, onBack, onSave }) {
   const giver = getUser(borrow.giver_id);
   const receiver = getUser(borrow.receiver_id);
   const pekerjaan = getPekerjaan(borrow.pekerjaan_kode);
-  const [isLive, setIsLive] = useState(true);
   const [form, setForm] = useState({
-    return_date: getLocalISO(),
+    return_date: new Date().toISOString().slice(0, 16),
     return_condition: "GOOD",
     return_notes: "",
     attachmentFile: null,
   });
-
-  useEffect(() => {
-    if (!isLive) return;
-    const timer = setInterval(() => {
-      setForm(prev => ({ ...prev, return_date: getLocalISO() }));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [isLive]);
 
   const handleSave = () => {
     onSave({
@@ -4044,64 +3787,14 @@ function ReturnFormPage({ borrow, onBack, onSave }) {
             </div>
           </FHRow>
           <FHRow label="Tanggal Pengembalian">
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-              <input
-                type="datetime-local"
-                value={form.return_date}
-                onChange={(e) => {
-                  setForm({ ...form, return_date: e.target.value });
-                  setIsLive(false);
-                }}
-                onFocus={() => setIsLive(false)}
-                style={{ ...S.finput, paddingRight: 75 }}
-              />
-              {isLive && (
-                <div style={{ 
-                  position: 'absolute', 
-                  right: 12, 
-                  background: '#dcfce7', 
-                  color: '#16a34a', 
-                  fontSize: '0.6rem', 
-                  fontWeight: 800, 
-                  padding: '2px 6px', 
-                  borderRadius: 4,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 4,
-                  pointerEvents: 'none'
-                }}>
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#16a34a', animation: 'pulse 1.5s infinite' }} />
-                  LIVE
-                </div>
-              )}
-              {!isLive && (
-                <button
-                  type="button"
-                  onClick={() => setIsLive(true)}
-                  style={{
-                    position: 'absolute',
-                    right: 8,
-                    background: '#eff6ff',
-                    color: '#2563eb',
-                    border: '1px solid #bfdbfe',
-                    borderRadius: 4,
-                    fontSize: '0.6rem',
-                    fontWeight: 700,
-                    padding: '3px 8px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  LIVE?
-                </button>
-              )}
-            </div>
-            <style>{`
-              @keyframes pulse {
-                0% { opacity: 1; }
-                50% { opacity: 0.4; }
-                100% { opacity: 1; }
+            <input
+              type="datetime-local"
+              value={form.return_date}
+              onChange={(e) =>
+                setForm({ ...form, return_date: e.target.value })
               }
-            `}</style>
+              style={S.finput}
+            />
           </FHRow>
           <FHRow label="Catatan Pengembalian" last>
             <textarea
@@ -4190,17 +3883,24 @@ function DeletePage({ item, onBack, onConfirm }) {
 }
 
 // ─── MAIN ──────────────────────────────────────────────────────
-export default function Peminjaman() {
+export default function Peminjaman({ forcedTab }) {
   const [borrows, setBorrows] = useState(initBorrows);
   const [returns, setReturns] = useState(initReturns);
-  const [activeTab, setActiveTab] = useState("borrow");
+  // forcedTab dari route menentukan tab aktif; fallback ke "borrow"
+  const [activeTab, setActiveTab] = useState(forcedTab || "borrow");
   const [search, setSearch] = useState("");
   const [filterUser, setFilterUser] = useState("semua");
   const [filterPekerjaan, setFilterPekerjaan] = useState("semua");
-  const [filterLokasi, setFilterLokasi] = useState("semua");
-  const [filterKondisi, setFilterKondisi] = useState("semua");
   const [nav, setNav] = useState(null);
   const [openCats, setOpenCats] = useState({});
+
+  // Sync activeTab setiap kali forcedTab berubah (pindah route sidebar)
+  useEffect(() => {
+    if (forcedTab) {
+      setActiveTab(forcedTab);
+      setSearch("");
+    }
+  }, [forcedTab]);
 
   const activeBorrows = borrows.filter((b) => !b.is_returned);
   const filteredBorrows = activeBorrows.filter((b) => {
@@ -4212,22 +3912,11 @@ export default function Peminjaman() {
     const mu = filterUser === "semua" || b.receiver_id === parseInt(filterUser);
     const mp =
       filterPekerjaan === "semua" || b.pekerjaan_kode === filterPekerjaan;
-    const ml = filterLokasi === "semua" || b.to_zone === filterLokasi;
-    const mc = filterKondisi === "semua" || b.condition === filterKondisi;
-    return ms && mu && mp && ml && mc;
+    return ms && mu && mp;
   });
   const filteredReturns = returns.filter((r) => {
     const q = search.toLowerCase();
-    const ms =
-      r.code.toLowerCase().includes(q) ||
-      r.name.toLowerCase().includes(q) ||
-      r.to_zone.toLowerCase().includes(q);
-    const mu = filterUser === "semua" || r.giver_id === parseInt(filterUser);
-    const mp =
-      filterPekerjaan === "semua" || r.pekerjaan_kode === filterPekerjaan;
-    const ml = filterLokasi === "semua" || r.to_zone === filterLokasi;
-    const mc = filterKondisi === "semua" || r.return_condition === filterKondisi;
-    return ms && mu && mp && ml && mc;
+    return r.code.toLowerCase().includes(q) || r.name.toLowerCase().includes(q);
   });
   const groupedBorrows = useMemo(() => {
     const g = {};
@@ -4330,26 +4019,29 @@ export default function Peminjaman() {
 
   return (
     <div style={S.root}>
-      <style>{`
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
+      {/* ── HEADER ── */}
       <div style={S.header}>
         <div>
-          <h1 style={S.title}>BAST Aset</h1>
+          <h1 style={S.title}>
+            {activeTab === "return" ? "Riwayat Pengembalian" : "Daftar Serah Terima"}
+          </h1>
           <p style={S.subtitle}>
-            Kelola pencatatan BAST aset IT — peminjaman dan pengembalian per
-            kategori
+            {activeTab === "return"
+              ? "Rekap pengembalian aset IT yang telah selesai"
+              : "Kelola pencatatan BAST aset IT — peminjaman dan pengembalian per kategori"}
           </p>
         </div>
-        <button
-          style={{ ...S.btnBlue, padding: ".5rem 1.2rem", fontSize: ".84rem" }}
-          onClick={() => setNav({ page: "borrow-form", data: null })}
-        >
-          <Icon.Plus /> Catat Serah Terima
-        </button>
+        {activeTab === "borrow" && (
+          <button
+            style={{ ...S.btnBlue, padding: ".5rem 1.2rem", fontSize: ".84rem" }}
+            onClick={() => setNav({ page: "borrow-form", data: null })}
+          >
+            <Icon.Plus /> Catat Serah Terima
+          </button>
+        )}
       </div>
 
+      {/* ── STATS ── */}
       <div style={S.statsGrid}>
         {[
           {
@@ -4401,45 +4093,50 @@ export default function Peminjaman() {
         ))}
       </div>
 
-      <div style={S.tabSw}>
-        <button
-          style={{
-            ...S.tabBtn,
-            ...(activeTab === "borrow" ? S.tabBtnBlue : {}),
-          }}
-          onClick={() => {
-            setActiveTab("borrow");
-            setSearch("");
-          }}
-        >
-          <Icon.Exchange /> Daftar Serah Terima
-          <span
+      {/* Sub-nav internal hanya ditampilkan jika TIDAK ada forcedTab (fallback route /peminjaman langsung) */}
+      {!forcedTab && (
+        <div style={S.subNav}>
+          <button
+            id="subnav-daftar-serah-terima"
             style={{
-              ...S.tabBadge,
-              ...(overdueCount > 0 && activeTab !== "borrow"
-                ? S.tabBadgeWarn
-                : {}),
+              ...S.subNavBtn,
+              ...(activeTab === "borrow" ? { ...S.subNavBtnActive, ...S.subNavBtnBlue } : {}),
             }}
+            onClick={() => { setActiveTab("borrow"); setSearch(""); }}
           >
-            {activeBorrows.length}
-          </span>
-        </button>
-        <button
-          style={{
-            ...S.tabBtn,
-            ...(activeTab === "return" ? S.tabBtnGreen : {}),
-          }}
-          onClick={() => {
-            setActiveTab("return");
-            setSearch("");
-          }}
-        >
-          <Icon.History /> Riwayat Pengembalian
-          <span style={{ ...S.tabBadge, ...S.tabBadgeGreen }}>
-            {returns.length}
-          </span>
-        </button>
-      </div>
+            <Icon.Exchange />
+            Daftar Serah Terima
+            <span
+              style={{
+                ...S.tabBadge,
+                ...(activeTab === "borrow" ? { background: "#dbeafe", color: "#2563eb" } : {}),
+                ...(overdueCount > 0 && activeTab !== "borrow" ? S.tabBadgeWarn : {}),
+              }}
+            >
+              {activeBorrows.length}
+            </span>
+          </button>
+          <button
+            id="subnav-riwayat-pengembalian"
+            style={{
+              ...S.subNavBtn,
+              ...(activeTab === "return" ? { ...S.subNavBtnActive, ...S.subNavBtnGreen } : {}),
+            }}
+            onClick={() => { setActiveTab("return"); setSearch(""); }}
+          >
+            <Icon.History />
+            Riwayat Pengembalian
+            <span
+              style={{
+                ...S.tabBadge,
+                ...(activeTab === "return" ? S.tabBadgeGreen : {}),
+              }}
+            >
+              {returns.length}
+            </span>
+          </button>
+        </div>
+      )}
 
       <div style={S.toolbar}>
         <div style={S.searchWrap}>
@@ -4470,60 +4167,38 @@ export default function Peminjaman() {
             </button>
           )}
         </div>
-        {(activeTab === "borrow" || activeTab === "return") && (
+        {activeTab === "borrow" && (
           <>
-            <SearchableFilter
-              placeholder="Pekerjaan"
-              value={filterPekerjaan}
-              icon={Icon.Briefcase}
-              options={mockPekerjaan.map(p => ({
-                value: p.kode,
-                label: p.no_anggaran,
-                sub: p.nama
-              }))}
-              onChange={setFilterPekerjaan}
-            />
-
-            <SearchableFilter
-              placeholder={activeTab === "borrow" ? "Penerima" : "Pengembali"}
-              value={filterUser}
-              icon={Icon.User}
-              options={mockUsers.map(u => ({
-                value: u.id,
-                label: u.name,
-                sub: u.jabatan
-              }))}
-              onChange={setFilterUser}
-            />
-
-            <SearchableFilter
-              placeholder="Lokasi"
-              value={filterLokasi}
-              icon={Icon.MapPin}
-              options={mockSubzona.map(sz => ({
-                value: sz,
-                label: sz
-              }))}
-              onChange={setFilterLokasi}
-            />
-
             <div style={S.filterWrap}>
-              <span style={{ color: filterKondisi !== "semua" ? "#2563eb" : "#94a3b8", display: "flex" }}>
-                <Icon.CheckCircle size={14} />
+              <span style={{ color: "#94a3b8", display: "flex" }}>
+                <Icon.Briefcase />
               </span>
               <select
-                value={filterKondisi}
-                onChange={(e) => setFilterKondisi(e.target.value)}
-                style={{
-                  ...S.filterSelect,
-                  color: filterKondisi !== "semua" ? "#0f172a" : "#64748b",
-                  fontWeight: filterKondisi !== "semua" ? 700 : 500
-                }}
+                value={filterPekerjaan}
+                onChange={(e) => setFilterPekerjaan(e.target.value)}
+                style={S.filterSelect}
               >
-                <option value="semua">Kondisi</option>
-                {Object.entries(conditionConfig).map(([key, cfg]) => (
-                  <option key={key} value={key}>
-                    {cfg.label}
+                <option value="semua">Semua Pekerjaan</option>
+                {mockPekerjaan.map((p) => (
+                  <option key={p.kode} value={p.kode}>
+                    {p.no_anggaran} — {p.nama.slice(0, 40)}…
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div style={S.filterWrap}>
+              <span style={{ color: "#94a3b8", display: "flex" }}>
+                <Icon.User />
+              </span>
+              <select
+                value={filterUser}
+                onChange={(e) => setFilterUser(e.target.value)}
+                style={S.filterSelect}
+              >
+                <option value="semua">Semua Penerima</option>
+                {mockUsers.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.name}
                   </option>
                 ))}
               </select>
@@ -4622,12 +4297,12 @@ export default function Peminjaman() {
                             }}
                           >
                             {[
-                              "No",
-                              "No BAST / Tanggal",
-                              "Barang & SN",
-                              "Pemberi → Penerima",
+                              "Aset",
                               "Pekerjaan",
-                              "Kondisi / Deadline",
+                              "Dari → Ke",
+                              "Penerima",
+                              "Jatuh Tempo",
+                              "Kondisi",
                             ].map((h) => (
                               <th key={h} style={S.th}>
                                 {h}
@@ -4639,7 +4314,7 @@ export default function Peminjaman() {
                           </tr>
                         </thead>
                         <tbody>
-                          {items.map((b, idx) => {
+                          {items.map((b) => {
                             const over = isOverdue(b.due_date);
                             const receiver = getUser(b.receiver_id);
                             const cond = conditionConfig[b.condition];
@@ -4652,78 +4327,124 @@ export default function Peminjaman() {
                                   setNav({ page: "borrow-detail", data: b })
                                 }
                               >
-                                <td style={{ ...S.td, textAlign: "center" }}>{idx + 1}</td>
                                 <td style={S.td}>
-                                  <div style={{ fontSize: ".7rem", fontWeight: 800, color: "#7c3aed", fontFamily: "monospace" }}>
-                                    {genNomorBAST(b.id, b.borrow_date)}
-                                  </div>
-                                  <div style={{ fontSize: ".65rem", color: "#94a3b8", marginTop: 2 }}>
-                                    {fmtDateShort(b.borrow_date)}
-                                  </div>
-                                </td>
-                                <td style={S.td}>
+                                  <code style={S.code}>{b.code}</code>
                                   <div style={S.assetName}>{b.name}</div>
-                                  <code style={{ ...S.code, fontSize: ".65rem" }}>{b.code}</code>
-                                </td>
-                                <td style={S.td}>
-                                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                                      <div style={{ ...S.avatar, background: "#fef3c7", color: "#d97706" }}>{getUser(b.giver_id).name.charAt(0)}</div>
-                                      <div style={{ fontSize: ".65rem" }}>
-                                        <div style={{ color: "#94a3b8", fontWeight: 700, fontSize: ".55rem" }}>PEMBERI</div>
-                                        <div style={{ fontWeight: 600 }}>{getUser(b.giver_id).name}</div>
-                                      </div>
-                                    </div>
-                                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                                      <div style={{ ...S.avatar, background: "#dbeafe", color: "#2563eb" }}>{receiver.name.charAt(0)}</div>
-                                      <div style={{ fontSize: ".65rem" }}>
-                                        <div style={{ color: "#2563eb", fontWeight: 700, fontSize: ".55rem" }}>PENERIMA</div>
-                                        <div style={{ fontWeight: 700 }}>{receiver.name}</div>
-                                      </div>
-                                    </div>
-                                  </div>
                                 </td>
                                 <td style={S.td}>
                                   {pkj ? (
-                                    <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                                      <span style={{ ...S.pill, background: pkj.jenis === "Capex" ? "#eff6ff" : "#f0fdf4", color: pkj.jenis === "Capex" ? "#2563eb" : "#16a34a", width: "fit-content" }}>
-                                        {pkj.jenis === "Capex" ? "CP" : "OP"}
+                                    <div>
+                                      <span style={S.pkjBadge}>
+                                        {pkj.no_anggaran}
                                       </span>
-                                      <code style={{ fontSize: ".65rem", color: "#64748b" }}>{pkj.no_anggaran}</code>
+                                      <div
+                                        style={{
+                                          fontSize: ".67rem",
+                                          color: "#64748b",
+                                          marginTop: 2,
+                                          maxWidth: 160,
+                                          overflow: "hidden",
+                                          textOverflow: "ellipsis",
+                                          whiteSpace: "nowrap",
+                                        }}
+                                      >
+                                        {pkj.nama.slice(0, 50)}…
+                                      </div>
                                     </div>
                                   ) : (
                                     <span style={S.muted}>—</span>
                                   )}
                                 </td>
                                 <td style={S.td}>
-                                  <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                                    {cond && (
-                                      <span
-                                        style={{
-                                          ...S.pill,
-                                          background: cond.bg,
-                                          color: cond.color,
-                                          width: "fit-content"
-                                        }}
-                                      >
-                                        {cond.label}
-                                      </span>
-                                    )}
+                                  <div style={S.locFlow}>
                                     <span
                                       style={{
-                                        fontSize: ".68rem",
-                                        fontWeight: 600,
-                                        color: over ? "#dc2626" : "#64748b",
-                                        display: "inline-flex",
-                                        alignItems: "center",
-                                        gap: 3,
-                                        whiteSpace: "nowrap",
+                                        fontSize: ".72rem",
+                                        color: "#64748b",
                                       }}
                                     >
-                                      {over && <Icon.Clock />}
-                                      {fmtDateShort(b.due_date)}
+                                      {b.from_zone}
+                                    </span>
+                                    <span
+                                      style={{
+                                        color: "#94a3b8",
+                                        display: "flex",
+                                      }}
+                                    >
+                                      <Icon.ArrowRight />
+                                    </span>
+                                    <span
+                                      style={{
+                                        fontSize: ".72rem",
+                                        color: "#2563eb",
+                                        fontWeight: 600,
+                                      }}
+                                    >
+                                      {b.to_zone}
                                     </span>
                                   </div>
+                                </td>
+                                <td style={S.td}>
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: 6,
+                                    }}
+                                  >
+                                    <div
+                                      style={{
+                                        ...S.avatar,
+                                        background: "#dbeafe",
+                                        color: "#2563eb",
+                                      }}
+                                    >
+                                      {receiver.name.charAt(0)}
+                                    </div>
+                                    <div>
+                                      <div
+                                        style={{
+                                          fontSize: ".74rem",
+                                          fontWeight: 600,
+                                          color: "#1e293b",
+                                        }}
+                                      >
+                                        {receiver.name}
+                                      </div>
+                                      <div style={S.muted}>
+                                        {receiver.branch}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td style={S.td}>
+                                  <span
+                                    style={{
+                                      fontSize: ".73rem",
+                                      fontWeight: 600,
+                                      color: over ? "#dc2626" : "#64748b",
+                                      display: "inline-flex",
+                                      alignItems: "center",
+                                      gap: 3,
+                                      whiteSpace: "nowrap",
+                                    }}
+                                  >
+                                    {over && <Icon.Clock />}
+                                    {fmtDateShort(b.due_date)}
+                                  </span>
+                                </td>
+                                <td style={S.td}>
+                                  {cond && (
+                                    <span
+                                      style={{
+                                        ...S.pill,
+                                        background: cond.bg,
+                                        color: cond.color,
+                                      }}
+                                    >
+                                      {cond.label}
+                                    </span>
+                                  )}
                                 </td>
                                 <td
                                   style={{ ...S.td, textAlign: "center" }}
@@ -4849,11 +4570,11 @@ export default function Peminjaman() {
                   <thead>
                     <tr style={{ ...S.thead, ...S.theadGreen }}>
                       {[
-                        "No",
-                        "No BAST / Tgl Kembali",
-                        "Barang & SN",
-                        "Penerima → Pemberi",
+                        "Aset",
                         "Pekerjaan",
+                        "Dari → Ke",
+                        "Dikembalikan Oleh",
+                        "Tgl Kembali",
                         "Kondisi",
                       ].map((h) => (
                         <th key={h} style={S.th}>
@@ -4864,7 +4585,7 @@ export default function Peminjaman() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredReturns.map((r, idx) => {
+                    {filteredReturns.map((r) => {
                       const cond = conditionConfig[r.return_condition];
                       const returner = getUser(r.giver_id);
                       const pkj = getPekerjaan(r.pekerjaan_kode);
@@ -4876,74 +4597,111 @@ export default function Peminjaman() {
                             setNav({ page: "return-detail", data: r })
                           }
                         >
-                          <td style={{ ...S.td, textAlign: "center" }}>{idx + 1}</td>
                           <td style={S.td}>
-                            <div style={{ fontSize: ".7rem", fontWeight: 800, color: "#7c3aed", fontFamily: "monospace" }}>
-                              {genNomorBAST(r.id, r.borrow_date)}
-                            </div>
-                            <div style={{ fontSize: ".65rem", color: "#16a34a", fontWeight: 700, marginTop: 2 }}>
-                              {fmtDateShort(r.return_date)}
-                            </div>
-                          </td>
-                          <td style={S.td}>
+                            <code style={S.code}>{r.code}</code>
                             <div style={S.assetName}>{r.name}</div>
-                            <code style={{ ...S.code, fontSize: ".65rem" }}>{r.code}</code>
-                          </td>
-                          <td style={S.td}>
-                            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                                <div style={{ ...S.avatar, background: "#dbeafe", color: "#2563eb" }}>{getUser(r.giver_id).name.charAt(0)}</div>
-                                <div style={{ fontSize: ".65rem" }}>
-                                  <div style={{ color: "#94a3b8", fontWeight: 700, fontSize: ".55rem" }}>PENGEMBALI</div>
-                                  <div style={{ fontWeight: 600 }}>{getUser(r.giver_id).name}</div>
-                                </div>
-                              </div>
-                              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                                <div style={{ ...S.avatar, background: "#fef3c7", color: "#d97706" }}>{getUser(r.receiver_id).name.charAt(0)}</div>
-                                <div style={{ fontSize: ".65rem" }}>
-                                  <div style={{ color: "#d97706", fontWeight: 700, fontSize: ".55rem" }}>PENERIMA KEMBALI</div>
-                                  <div style={{ fontWeight: 700 }}>{getUser(r.receiver_id).name}</div>
-                                </div>
-                              </div>
-                            </div>
                           </td>
                           <td style={S.td}>
                             {pkj ? (
-                              <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                                <span style={{ ...S.pill, background: pkj.jenis === "Capex" ? "#eff6ff" : "#f0fdf4", color: pkj.jenis === "Capex" ? "#2563eb" : "#16a34a", width: "fit-content" }}>
-                                  {pkj.jenis === "Capex" ? "CP" : "OP"}
+                              <div>
+                                <span style={S.pkjBadge}>
+                                  {pkj.no_anggaran}
                                 </span>
-                                <code style={{ fontSize: ".65rem", color: "#64748b" }}>{pkj.no_anggaran}</code>
+                                <div
+                                  style={{
+                                    fontSize: ".67rem",
+                                    color: "#64748b",
+                                    marginTop: 2,
+                                    maxWidth: 160,
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    whiteSpace: "nowrap",
+                                  }}
+                                >
+                                  {pkj.nama.slice(0, 50)}…
+                                </div>
                               </div>
                             ) : (
                               <span style={S.muted}>—</span>
                             )}
                           </td>
                           <td style={S.td}>
-                            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                              {cond && (
-                                <span
-                                  style={{
-                                    ...S.pill,
-                                    background: cond.bg,
-                                    color: cond.color,
-                                    width: "fit-content"
-                                  }}
-                                >
-                                  {cond.label}
-                                </span>
-                              )}
+                            <div style={S.locFlow}>
+                              <span
+                                style={{ fontSize: ".72rem", color: "#64748b" }}
+                              >
+                                {r.from_zone}
+                              </span>
+                              <span
+                                style={{ color: "#94a3b8", display: "flex" }}
+                              >
+                                <Icon.ArrowRight />
+                              </span>
                               <span
                                 style={{
-                                  fontSize: ".74rem",
+                                  fontSize: ".72rem",
                                   color: "#16a34a",
                                   fontWeight: 600,
-                                  whiteSpace: "nowrap",
                                 }}
                               >
-                                {fmtDateShort(r.return_date)}
+                                {r.to_zone}
                               </span>
                             </div>
+                          </td>
+                          <td style={S.td}>
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 6,
+                              }}
+                            >
+                              <div
+                                style={{
+                                  ...S.avatar,
+                                  background: "#dcfce7",
+                                  color: "#16a34a",
+                                }}
+                              >
+                                {returner.name.charAt(0)}
+                              </div>
+                              <div>
+                                <div
+                                  style={{
+                                    fontSize: ".74rem",
+                                    fontWeight: 600,
+                                    color: "#1e293b",
+                                  }}
+                                >
+                                  {returner.name}
+                                </div>
+                                <div style={S.muted}>{returner.branch}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td
+                            style={{
+                              ...S.td,
+                              fontSize: ".74rem",
+                              color: "#16a34a",
+                              fontWeight: 600,
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {fmtDateShort(r.return_date)}
+                          </td>
+                          <td style={S.td}>
+                            {cond && (
+                              <span
+                                style={{
+                                  ...S.pill,
+                                  background: cond.bg,
+                                  color: cond.color,
+                                }}
+                              >
+                                {cond.label}
+                              </span>
+                            )}
                           </td>
                           <td
                             style={{ ...S.td, textAlign: "center" }}

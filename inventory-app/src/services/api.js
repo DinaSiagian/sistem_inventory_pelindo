@@ -109,6 +109,8 @@ export const budgetAPI = {
 export const barangAPI = {
   getAll: () => api.get('/barang'),
   create: (data) => api.post('/barang', data),
+  update: (id, data) => api.put(`/barang/${id}`, data),
+  delete: (id) => api.delete(`/barang/${id}`),
 };
 
 export default api;

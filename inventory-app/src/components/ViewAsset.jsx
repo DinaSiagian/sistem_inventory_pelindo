@@ -2275,13 +2275,18 @@ const SmartLocationInput = ({ value, onChange, placeholder = "Pilih Branch / Zon
 // ── MAIN COMPONENT ────────────────────────────────────────────────
 const ViewAsset = () => {
   const [assets, setAssets] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const fetchAssets = async () => {
+    setLoading(true);
     try {
       const res = await barangAPI.getAll();
       setAssets(res.data);
     } catch (err) {
       console.error("Gagal mengambil data aset", err);
+    } finally {
+      // Small delay for quick but visible processing feedback
+      setTimeout(() => setLoading(false), 300);
     }
   };
 
@@ -2752,10 +2757,18 @@ const ViewAsset = () => {
     setCurrentView("barcode");
   };
 
-  const handleDelete = () => {
-    setAssets(assets.filter((a) => a.id !== selectedAsset.id));
-    setCurrentView("list");
-    setSelectedAsset(null);
+  const handleDelete = async () => {
+    if (!selectedAsset) return;
+    try {
+      await barangAPI.delete(selectedAsset.id);
+      setAssets(assets.filter((a) => a.id !== selectedAsset.id));
+      setCurrentView("list");
+      setSelectedAsset(null);
+      alert("Barang berhasil dihapus dari database.");
+    } catch (err) {
+      console.error("Gagal menghapus barang:", err);
+      alert("Gagal menghapus barang: " + (err.response?.data?.message || err.message));
+    }
   };
 
   const openEditPage = (asset) => {
@@ -2803,41 +2816,53 @@ const ViewAsset = () => {
     setCurrentView("edit");
   };
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     const resolvedId =
       editData.id_pekerjaan ||
       (editData.kd_anggaran
         ? OPEX_ANGGARAN.find((o) => o.kd_anggaran === editData.kd_anggaran)
           ?.id_pekerjaan || null
         : null);
+    
     const cleanSpecs = editSpecsData.specs.map(({ _unitMode, ...s }) => s);
     const cleanCustom = editSpecsData.customSpecs.map(
       ({ _unitMode, ...s }) => s,
     );
 
-    const saveData = { ...editData, id_pekerjaan: resolvedId };
-    const updated = assets.map((a) =>
-      a.id === selectedAsset.id
-        ? {
-          ...a,
-          ...saveData,
-          value: parseFloat(editData.value) || 0,
-          photo: editPhoto,
-          specs: cleanSpecs,
-          customSpecs: cleanCustom,
-        }
-        : a,
-    );
-    setAssets(updated);
-    setSelectedAsset((prev) => ({
-      ...prev,
-      ...saveData,
+    const saveData = { 
+      ...editData, 
+      id_pekerjaan: resolvedId,
+      name: editData.name,
+      category: editData.category,
+      tipeAset: editData.tipeAset || editData.name,
       value: parseFloat(editData.value) || 0,
       photo: editPhoto,
       specs: cleanSpecs,
-      customSpecs: cleanCustom,
-    }));
-    setCurrentView("list");
+      customSpecs: cleanCustom
+    };
+
+    try {
+      await barangAPI.update(selectedAsset.id, saveData);
+      
+      const updated = assets.map((a) =>
+        a.id === selectedAsset.id
+          ? {
+            ...a,
+            ...saveData,
+          }
+          : a,
+      );
+      setAssets(updated);
+      setSelectedAsset((prev) => ({
+        ...prev,
+        ...saveData,
+      }));
+      setCurrentView("list");
+      alert("Perubahan barang berhasil disimpan dan disesuaikan ke pekerjaan terkait.");
+    } catch (err) {
+      console.error("Gagal menyimpan edit barang:", err);
+      alert("Gagal menyimpan perubahan: " + (err.response?.data?.message || err.message));
+    }
   };
 
   const handleExport = () => {
@@ -3076,7 +3101,42 @@ const ViewAsset = () => {
 
 
 
-        <div className="table-container">
+        <div className="table-container" style={{ position: "relative", minHeight: loading ? "300px" : "auto" }}>
+          {loading && (
+            <div style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: "rgba(255, 255, 255, 0.7)",
+              zIndex: 10,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "12px",
+              backdropFilter: "blur(2px)",
+              borderRadius: "16px"
+            }}>
+              <style>{`
+                .spinner-loader {
+                  width: 32px;
+                  height: 32px;
+                  border: 3px solid #f3f3f3;
+                  border-top: 3px solid #2563eb;
+                  border-radius: 50%;
+                  animation: spin-loader 0.8s linear infinite;
+                }
+                @keyframes spin-loader {
+                  0% { transform: rotate(0deg); }
+                  100% { transform: rotate(360deg); }
+                }
+              `}</style>
+              <div className="spinner-loader"></div>
+              <span style={{ fontSize: "12px", fontWeight: "700", color: "#475569", letterSpacing: "0.5px" }}>MEMUAT DATA...</span>
+            </div>
+          )}
           <div className="table-info-bar">
             <span>
               Menampilkan <strong>{paginated.length}</strong> dari{" "}
@@ -3754,44 +3814,6 @@ const ViewAsset = () => {
                 />
               )}
             </TableRow>
-            <TableRow label="Nilai Aset (Per Unit)" required>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", width: "100%" }}>
-                <div style={{ position: "relative", flex: 1 }}>
-                  <span style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", fontSize: "14px", color: "#64748b", fontWeight: "bold" }}>Rp</span>
-                  <input
-                    type="number"
-                    placeholder="0"
-                    value={formData.value}
-                    onChange={(e) => setFormData(p => ({ ...p, value: e.target.value }))}
-                    style={{ ...modernInputStyle, paddingLeft: "36px" }}
-                  />
-                </div>
-                {formData.value > 0 && (
-                  <span style={{ fontSize: "13px", fontWeight: "700", color: "#2563eb", background: "#eff6ff", padding: "6px 12px", borderRadius: "8px" }}>
-                    {fmt(formData.value)}
-                  </span>
-                )}
-              </div>
-            </TableRow>
-            <TableRow label="Nilai Aset (Per Unit)" required>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", width: "100%" }}>
-                <div style={{ position: "relative", flex: 1 }}>
-                  <span style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", fontSize: "14px", color: "#64748b", fontWeight: "bold" }}>Rp</span>
-                  <input
-                    type="number"
-                    placeholder="0"
-                    value={formData.value}
-                    onChange={(e) => setFormData(p => ({ ...p, value: e.target.value }))}
-                    style={{ ...modernInputStyle, paddingLeft: "36px" }}
-                  />
-                </div>
-                {formData.value > 0 && (
-                  <span style={{ fontSize: "13px", fontWeight: "700", color: "#2563eb", background: "#eff6ff", padding: "6px 12px", borderRadius: "8px" }}>
-                    {fmt(formData.value)}
-                  </span>
-                )}
-              </div>
-            </TableRow>
           </ModernTable>
 
           <h3
@@ -4418,23 +4440,9 @@ const ViewAsset = () => {
                 {editData.quantity} Unit barang
               </div>
             </TableRow>
-            <TableRow label="Nilai Aset (Per Unit)" required>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", width: "100%" }}>
-                <div style={{ position: "relative", flex: 1 }}>
-                  <span style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", fontSize: "14px", color: "#64748b", fontWeight: "bold" }}>Rp</span>
-                  <input
-                    type="number"
-                    placeholder="0"
-                    value={editData.value}
-                    onChange={(e) => setEditData(p => ({ ...p, value: e.target.value }))}
-                    style={{ ...modernInputStyle, paddingLeft: "36px" }}
-                  />
-                </div>
-                {editData.value > 0 && (
-                  <span style={{ fontSize: "13px", fontWeight: "700", color: "#2563eb", background: "#eff6ff", padding: "6px 12px", borderRadius: "8px" }}>
-                    {fmt(editData.value)}
-                  </span>
-                )}
+            <TableRow label="Nilai Aset">
+              <div style={{ fontSize: "15px", fontWeight: "800", color: "#059669" }}>
+                {fmt(editData.value)}
               </div>
             </TableRow>
             <TableRow label="Kategori" required>

@@ -1647,10 +1647,22 @@ function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
   const handleSave = () => {
     if (!form.nm_pekerjaan) return;
     const nilaiKontrak = parseFloat(form.nilai_kontrak) || 0;
+    const nilaiRab = parseFloat(form.nilai_rab) || 0;
+
+    if (!form.nilai_rab || nilaiRab <= 0) {
+      alert("Nilai RAB wajib diisi dan harus lebih besar dari 0");
+      return;
+    }
+    if (nilaiRab > anggaran.nilai_kad) {
+      alert(`Nilai RAB tidak boleh melebihi Nilai KAD (${fmt(anggaran.nilai_kad)})`);
+      return;
+    }
+    if (!form.nilai_kontrak || nilaiKontrak <= 0) {
+      alert("Nilai Kontrak wajib diisi dan harus lebih besar dari 0");
+      return;
+    }
     if (nilaiKontrak > anggaran.nilai_kad) {
-      alert(
-        `Nilai Kontrak tidak boleh melebihi Nilai KAD (${fmt(anggaran.nilai_kad)})`,
-      );
+      alert(`Nilai Kontrak tidak boleh melebihi Nilai KAD (${fmt(anggaran.nilai_kad)})`);
       return;
     }
     onSave({
@@ -1726,7 +1738,7 @@ function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
               rows={2}
             />
           </TFld>
-          <TFld label="Nilai RAB (IDR)">
+          <TFld label="Nilai RAB (IDR)" req>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <input
                 type="number"
@@ -1749,7 +1761,7 @@ function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
               )}
             </div>
           </TFld>
-          <TFld label="Nilai Kontrak (IDR)">
+          <TFld label="Nilai Kontrak (IDR)" req>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <input
                 type="number"
@@ -2757,10 +2769,22 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
   const up = (k, v) => setForm((f) => ({ ...f, [k]: v }));
   const handleSave = () => {
     const nilaiKontrak = parseFloat(form.nilai_kontrak) || 0;
+    const nilaiRab = parseFloat(form.nilai_rab) || 0;
+
+    if (!form.nilai_rab || nilaiRab <= 0) {
+      showToast("Nilai RAB wajib diisi dan harus lebih besar dari 0");
+      return;
+    }
+    if (nilaiRab > anggaran.nilai_kad) {
+      showToast(`Nilai RAB tidak boleh melebihi Nilai KAD (${fmt(anggaran.nilai_kad)})`);
+      return;
+    }
+    if (!form.nilai_kontrak || nilaiKontrak <= 0) {
+      showToast("Nilai Kontrak wajib diisi dan harus lebih besar dari 0");
+      return;
+    }
     if (nilaiKontrak > anggaran.nilai_kad) {
-      showToast(
-        `Nilai Kontrak tidak boleh melebihi Nilai KAD (${fmt(anggaran.nilai_kad)})`,
-      );
+      showToast(`Nilai Kontrak tidak boleh melebihi Nilai KAD (${fmt(anggaran.nilai_kad)})`);
       return;
     }
     onSave(project.id, {
@@ -2814,7 +2838,7 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
               onChange={(e) => up("nm_pekerjaan", e.target.value)}
             />
           </HFld>
-          <HFld label="Nilai RAB (IDR)">
+          <HFld label="Nilai RAB (IDR)" req>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <input
                 type="number"
@@ -2829,7 +2853,7 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
               )}
             </div>
           </HFld>
-          <HFld label="Nilai Kontrak (IDR)">
+          <HFld label="Nilai Kontrak (IDR)" req>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <input
                 type="number"
@@ -2933,6 +2957,15 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
       return;
     }
     const amount = parseFloat(form.acquisition_value) || 0;
+    const totalNew = form.items.length * amount;
+    const existingTotal = (anggaran.assets || [])
+      .filter(a => a.id_pekerjaan === project.id)
+      .reduce((s, a) => s + ((a.jumlah || 1) * (a.acquisition_value || 0)), 0);
+
+    if (project?.nilai_kontrak > 0 && (existingTotal + totalNew) > project.nilai_kontrak) {
+      showToast(`Total nilai barang (${fmt(existingTotal + totalNew)}) melebihi Nilai Kontrak (${fmt(project.nilai_kontrak)})`);
+      return;
+    }
     const newAsset = {
       id: newId(),
       name: ASSET_DB_DYN[form.items[0]?.asset_code]?.name || `${form.category} ${form.model}`,
@@ -3190,6 +3223,16 @@ function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) 
   const save = () => {
     if (!form.items?.length || !form.acquisition_value) {
       showToast("Lengkapi data barang");
+      return;
+    }
+    const amount = parseFloat(form.acquisition_value) || 0;
+    const totalNew = form.items.length * amount;
+    const existingOtherTotal = (anggaran.assets || [])
+      .filter(a => a.id_pekerjaan === project.id && a.id !== asset.id)
+      .reduce((s, a) => s + ((a.jumlah || 1) * (a.acquisition_value || 0)), 0);
+
+    if (project?.nilai_kontrak > 0 && (existingOtherTotal + totalNew) > project.nilai_kontrak) {
+      showToast(`Total nilai barang (${fmt(existingOtherTotal + totalNew)}) melebihi Nilai Kontrak (${fmt(project.nilai_kontrak)})`);
       return;
     }
     const consolidatedAsset = {
@@ -3550,7 +3593,12 @@ function AssetTablePage({
             ))}
           </select>
         </div>
-        <button className={`btn ${anggaran.type === 'opex' ? 'btn-green' : 'btn-prim'}`} onClick={onEntryNew}>
+        <button 
+          className={`btn ${anggaran.type === 'opex' ? 'btn-green' : 'btn-prim'}`} 
+          onClick={onEntryNew}
+          disabled={!project?.nilai_kontrak || project.nilai_kontrak <= 0 || !project?.nilai_rab || project.nilai_rab <= 0}
+          title={(!project?.nilai_kontrak || !project?.nilai_rab) ? "Isi Nilai RAB dan Kontrak terlebih dahulu di Edit Pekerjaan" : ""}
+        >
           <Icon d={I.plus} size={13} /> Entry Barang Baru
         </button>
         <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
