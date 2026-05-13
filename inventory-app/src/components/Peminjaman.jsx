@@ -3183,7 +3183,7 @@ function HistoryPage({ assetCode, assetName, borrows, returns, onBack }) {
 }
 
 // ─── PAGE: CATAT SERAH TERIMA (REVISED) ──────────────────────
-function BorrowFormPage({ borrow, borrows, onBack, onSave }) {
+function BorrowFormPage({ borrow, borrows, onBack, onSave, setNav }) {
   const [pihak1, setPihak1] = useState({ id: "", locked: false }); // Pemberi
   const [pihak2, setPihak2] = useState({ id: "", locked: false }); // Penerima
   
@@ -3616,15 +3616,36 @@ function BorrowFormPage({ borrow, borrows, onBack, onSave }) {
                     <td style={{ ...S.td, fontWeight: 700 }}>{getUser(Number(pihak1.id)).name}</td>
                     <td style={{ ...S.td, fontWeight: 700 }}>{getUser(Number(pihak2.id)).name}</td>
                     <td style={{ ...S.td, textAlign: "center" }}>
-                      <span style={{ 
-                        background: "#eff6ff", 
-                        color: "#2563eb", 
-                        padding: "2px 10px", 
-                        borderRadius: "12px", 
-                        fontWeight: 800,
-                        fontSize: ".75rem",
-                        border: "1px solid #bfdbfe"
-                      }}>
+                      <span 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setNav({ 
+                            page: "ba-item-list", 
+                            from: "borrow-form", // Track where we came from
+                            prevData: borrow,    // Save current form state if any
+                            data: { items: baDraft, title: "Preview Berita Acara" } 
+                          });
+                        }}
+                        style={{ 
+                          background: "#eff6ff", 
+                          color: "#2563eb", 
+                          padding: "2px 10px", 
+                          borderRadius: "12px", 
+                          fontWeight: 800,
+                          fontSize: ".75rem",
+                          border: "1px solid #bfdbfe",
+                          cursor: "pointer",
+                          transition: "all 0.2s"
+                        }}
+                        onMouseOver={(e) => {
+                          e.currentTarget.style.background = "#2563eb";
+                          e.currentTarget.style.color = "#fff";
+                        }}
+                        onMouseOut={(e) => {
+                          e.currentTarget.style.background = "#eff6ff";
+                          e.currentTarget.style.color = "#2563eb";
+                        }}
+                      >
                         {baDraft.length} Item
                       </span>
                     </td>
@@ -4085,6 +4106,98 @@ function ReturnFormPage({ borrow, onBack, onSave }) {
   );
 }
 
+// ─── PAGE: BA ITEM LIST ──────────────────────────────────────
+function BaItemListPage({ data, onBack }) {
+  // Use fallbacks if data is missing
+  const { items = [], title = "Detail Berita Acara" } = data || {};
+  
+  return (
+    <div style={{ animation: "fadeIn 0.2s ease" }}>
+      <div style={{ ...S.pageHeader, background: "transparent", padding: "0 0 1.5rem 0" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          <button style={S.backBtn} onClick={onBack}><Icon.ArrowLeft /> Kembali</button>
+          <div>
+            <h2 style={S.pageTitle}>
+              <Icon.Briefcase /> Detail Item: <span style={{ color: "#2563eb", marginLeft: 5 }}>{title}</span>
+            </h2>
+            <p style={S.muted}>Daftar aset yang termasuk dalam berita acara ini</p>
+          </div>
+        </div>
+        <div style={S.countBadge}>
+          Total: <strong>{items.length} Item</strong>
+        </div>
+      </div>
+
+      <div style={S.page}>
+        <div style={{ padding: "10px 15px", background: "#f8fafc", borderBottom: "1px solid #e2e8f0", fontWeight: 700, fontSize: ".7rem", color: "#64748b" }}>
+          DETAIL DAFTAR BARANG DALAM BERITA ACARA
+        </div>
+        <table style={S.table}>
+          <thead style={S.thead}>
+            <tr>
+              <th style={{ ...S.th, width: 40, textAlign: "center" }}>No</th>
+              <th style={S.th}>SN / Kode</th>
+              <th style={S.th}>Nama Barang</th>
+              <th style={{ ...S.th, width: 60, textAlign: "center" }}>CP/OP</th>
+              <th style={S.th}>Nama Pekerjaan</th>
+              <th style={{ ...S.th, width: 100, textAlign: "center" }}>Thn Pengadaan</th>
+              <th style={{ ...S.th, width: 80, textAlign: "center" }}>Kondisi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((entry, idx) => {
+              // entry might be { item: ... } if from baDraft or just the item itself if from tx.items
+              const item = entry.item || entry;
+              const pkj = mockPekerjaan.find(p => p.kode === item.pekerjaan_kode);
+              const thnPengadaan = item.tahun_pengadaan || "2023";
+              const kondisi = item.kondisi || item.condition || "BAIK";
+
+              return (
+                <tr key={idx} style={S.tr}>
+                  <td style={{ ...S.td, textAlign: "center", color: "#94a3b8", fontWeight: 700 }}>{idx + 1}</td>
+                  <td style={S.td}>
+                    <code style={{ ...S.code, fontSize: ".68rem" }}>{item.code}</code>
+                  </td>
+                  <td style={S.td}>
+                    <div style={{ fontWeight: 600, color: "#1e293b", fontSize: ".78rem" }}>{item.name}</div>
+                  </td>
+                  <td style={{ ...S.td, textAlign: "center" }}>
+                    <span style={{ 
+                      ...S.pill, 
+                      background: pkj?.jenis === "Capex" ? "#eff6ff" : "#f0fdf4", 
+                      color: pkj?.jenis === "Capex" ? "#2563eb" : "#16a34a" 
+                    }}>
+                      {pkj?.jenis === "Capex" ? "CP" : "OP"}
+                    </span>
+                  </td>
+                  <td style={{ ...S.td, maxWidth: "300px" }}>
+                    <div style={{ fontSize: ".7rem", lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "#475569" }} title={pkj?.nama}>
+                      {pkj?.nama || "—"}
+                    </div>
+                  </td>
+                  <td style={{ ...S.td, textAlign: "center", fontWeight: 600, color: "#64748b", fontSize: ".75rem" }}>
+                    {thnPengadaan}
+                  </td>
+                  <td style={{ ...S.td, textAlign: "center" }}>
+                    <span style={{ 
+                      fontSize: ".65rem", fontWeight: 800,
+                      padding: "2px 8px", borderRadius: "4px",
+                      background: kondisi === "BAIK" || kondisi === "GOOD" ? "#f0fdf4" : "#fff1f2",
+                      color: kondisi === "BAIK" || kondisi === "GOOD" ? "#16a34a" : "#dc2626"
+                    }}>
+                      {kondisi === "BAIK" || kondisi === "GOOD" ? "BAIK" : "RUSAK"}
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 // ─── PAGE: DELETE CONFIRM ─────────────────────────────────────
 function DeletePage({ item, onBack, onConfirm }) {
   if (!item) return null;
@@ -4205,6 +4318,24 @@ export default function Peminjaman() {
     setOpenCats((o) => ({ ...o, [catKey]: !o[catKey] }));
   const isCatOpen = (catKey) => openCats[catKey] !== false;
 
+  // ─── PAGE SWITCHER ──────────────────────────────────────────
+  if (nav?.page === "ba-item-list")
+    return (
+      <div style={S.root}>
+        <BaItemListPage 
+          data={nav.data} 
+          onBack={() => {
+            // If we came from borrow-form, go back there, else go to list
+            if (nav.from === "borrow-form") {
+              setNav({ page: "borrow-form", data: nav.prevData });
+            } else {
+              setNav(null);
+            }
+          }} 
+        />
+      </div>
+    );
+
   if (nav?.page === "borrow-detail")
     return (
       <div style={S.root}>
@@ -4229,6 +4360,7 @@ export default function Peminjaman() {
           returns={returns}
           onBack={goBack}
           onSave={handleSaveBorrow}
+          setNav={setNav}
         />
       </div>
     );
@@ -4254,6 +4386,8 @@ export default function Peminjaman() {
         />
       </div>
     );
+
+
 
   if (nav?.page === "delete")
     return (
@@ -4469,14 +4603,30 @@ export default function Peminjaman() {
                         </div>
                       </td>
                       <td style={{ ...S.td, textAlign: "center" }}>
-                        <span style={{ 
-                          background: "#eff6ff", 
-                          color: "#2563eb", 
-                          padding: "2px 8px", 
-                          borderRadius: "12px", 
-                          fontWeight: 700, 
-                          fontSize: ".7rem" 
-                        }}>
+                        <span 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setNav({ page: "ba-item-list", data: { items: tx.items, title: bastNo } });
+                          }}
+                          style={{ 
+                            background: "#eff6ff", 
+                            color: "#2563eb", 
+                            padding: "2px 8px", 
+                            borderRadius: "12px", 
+                            fontWeight: 700, 
+                            fontSize: ".7rem",
+                            cursor: "pointer",
+                            transition: "all 0.2s"
+                          }}
+                          onMouseOver={(e) => {
+                            e.currentTarget.style.background = "#2563eb";
+                            e.currentTarget.style.color = "#fff";
+                          }}
+                          onMouseOut={(e) => {
+                            e.currentTarget.style.background = "#eff6ff";
+                            e.currentTarget.style.color = "#2563eb";
+                          }}
+                        >
                           {tx.items.length} Item
                         </span>
                       </td>
