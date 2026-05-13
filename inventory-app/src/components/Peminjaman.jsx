@@ -520,14 +520,46 @@ const Icon = {
       <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
     </svg>
   ),
+  Info: () => (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="16" x2="12" y2="12" />
+      <line x1="12" y1="8" x2="12.01" y2="8" />
+    </svg>
+  ),
+  Database: () => (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <ellipse cx="12" cy="5" rx="9" ry="3" />
+      <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+      <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+    </svg>
+  ),
 };
 
 const LOGGED_IN_ADMIN_ID = 1;
 
 const conditionConfig = {
-  GOOD: { label: "Baik", color: "#16a34a", bg: "#dcfce7" },
-  MINOR_DAMAGE: { label: "Rusak Ringan", color: "#d97706", bg: "#fef3c7" },
-  DAMAGED: { label: "Rusak Berat", color: "#dc2626", bg: "#fee2e2" },
+  BAIK: { label: "Baik", color: "#16a34a", bg: "#dcfce7" },
+  RUSAK_RINGAN: { label: "Rusak Ringan", color: "#d97706", bg: "#fef3c7" },
+  RUSAK_BERAT: { label: "Rusak Berat", color: "#dc2626", bg: "#fee2e2" },
 };
 
 const assetCategories = {
@@ -719,7 +751,7 @@ const initBorrows = [
     from_zone: "Ruang IT",
     to_zone: "Terminal 2",
     reason: "Kebutuhan operasional proyek",
-    condition: "GOOD",
+    condition: "BAIK",
     attachment: "ba_pinjam_lpt01.pdf",
     notes: "Dibawa ke lokasi proyek",
     is_returned: false,
@@ -737,7 +769,7 @@ const initBorrows = [
     from_zone: "Terminal 2",
     to_zone: "Terminal 1",
     reason: "Rotasi aset antar terminal",
-    condition: "GOOD",
+    condition: "BAIK",
     attachment: null,
     notes: "",
     is_returned: false,
@@ -755,7 +787,7 @@ const initBorrows = [
     from_zone: "Ruang Admin",
     to_zone: "Terminal 3",
     reason: "Penggantian sementara unit rusak",
-    condition: "GOOD",
+    condition: "BAIK",
     attachment: "ba_pinjam_pc01.pdf",
     notes: "Unit pengganti sementara",
     is_returned: false,
@@ -773,7 +805,7 @@ const initBorrows = [
     from_zone: "Ruang Network",
     to_zone: "Data Center",
     reason: "Upgrade infrastruktur jaringan",
-    condition: "GOOD",
+    condition: "BAIK",
     attachment: null,
     notes: "",
     is_returned: false,
@@ -791,7 +823,7 @@ const initBorrows = [
     from_zone: "Terminal 1",
     to_zone: "Medan - Kantor Cabang",
     reason: "Keperluan dinas luar kota",
-    condition: "GOOD",
+    condition: "BAIK",
     attachment: "ba_pinjam_lpt02.pdf",
     notes: "",
     is_returned: false,
@@ -813,7 +845,7 @@ const initReturns = [
     from_zone: "Ruang Admin",
     to_zone: "Terminal 1",
     reason: "Keperluan proyek",
-    return_condition: "GOOD",
+    return_condition: "BAIK",
     return_notes: "Dikembalikan dalam kondisi baik",
     attachment: "ba_kembali_pc02.pdf",
   },
@@ -831,7 +863,7 @@ const initReturns = [
     from_zone: "Data Center",
     to_zone: "Terminal 2",
     reason: "Backup power darurat",
-    return_condition: "MINOR_DAMAGE",
+    return_condition: "RUSAK_RINGAN",
     return_notes: "Terdapat goresan pada casing",
     attachment: null,
   },
@@ -849,7 +881,7 @@ const initReturns = [
     from_zone: "Ruang IT",
     to_zone: "Terminal 3",
     reason: "Dinas luar kantor",
-    return_condition: "GOOD",
+    return_condition: "BAIK",
     return_notes: "",
     attachment: "ba_kembali_lpt01.pdf",
   },
@@ -857,6 +889,12 @@ const initReturns = [
 
 const getUser = (id) =>
   mockUsers.find((u) => u.id === id) || { name: "—", branch: "", jabatan: "" };
+
+const isITorAdmin = (userId) => {
+  const u = getUser(userId);
+  const j = (u.jabatan || "").toLowerCase();
+  return j.includes("it") || j.includes("admin");
+};
 const getAsset = (code) => mockAssets.find((a) => a.code === code);
 const getPekerjaan = (kode) => mockPekerjaan.find((p) => p.kode === kode);
 const fmtDate = (d) =>
@@ -2242,286 +2280,281 @@ function PdfUpload({ value, onChange }) {
 
 // ─── PAGE: BORROW DETAIL ──────────────────────────────────────
 function BorrowDetailPage({
-  item,
-  borrows,
-  returns,
+  data,
   onBack,
   onEdit,
   onReturn,
-  onViewHistory,
 }) {
-  if (!item) return null;
-  const giver = getUser(item.giver_id);
-  const receiver = getUser(item.receiver_id);
-  const performer = getUser(item.performed_by_id);
-  const cond = conditionConfig[item.condition];
-  const over = isOverdue(item.due_date);
-  const cat = assetCategories[getCategory(item.code)];
-  const pekerjaan = getPekerjaan(item.pekerjaan_kode);
-  const histCount = [
-    ...borrows.filter((b) => b.code === item.code),
-    ...returns.filter((r) => r.code === item.code),
-  ].length;
+  const [selectedItem, setSelectedItem] = React.useState(null);
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const itemsPerPage = 10;
+  
+  if (!data) return null;
+  
+  const { date, giver_id, receiver_id, items = [] } = data;
+  const giver = getUser(giver_id);
+  const receiver = getUser(receiver_id);
+  const bastNo = `BAST/${new Date(date).getFullYear()}/${(data.id || 0).toString().padStart(3, '0')}`;
+
+  const totalPages = Math.ceil(items.length / itemsPerPage) || 1;
+  const paginatedItems = items.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  const renderModal = () => {
+    if (!selectedItem) return null;
+    const pkj = getPekerjaan(selectedItem.pekerjaan_kode);
+    const mockPrice = 15000000; 
+
+    const rows = [
+      { l: "Nama Barang", v: selectedItem.name, i: <Icon.Laptop />, b: true, c1: "#eff6ff", c2: "#2563eb" },
+      { l: "Serial Number", v: selectedItem.code, i: <Icon.Info />, c: true, c1: "#f1f5f9", c2: "#475569" },
+      { l: "Keterangan", v: selectedItem.notes || "Tidak ada catatan", i: <Icon.FileText />, c1: "#fdf4ff", c2: "#a21caf" },
+      { l: "Kondisi", v: <span style={{ color: conditionConfig[selectedItem.condition]?.color, fontWeight: 800 }}>{conditionConfig[selectedItem.condition]?.label}</span>, i: <Icon.CheckCircle />, c1: conditionConfig[selectedItem.condition]?.bg, c2: conditionConfig[selectedItem.condition]?.color },
+      { l: "Jenis Anggaran", v: <span style={{ ...S.pill, background: pkj?.jenis === "Capex" ? "#eff6ff" : "#f0fdf4", color: pkj?.jenis === "Capex" ? "#2563eb" : "#16a34a", padding: "2px 10px" }}>{pkj?.jenis || "Capex"}</span>, i: <Icon.Briefcase />, c1: pkj?.jenis === "Capex" ? "#eff6ff" : "#f0fdf4", c2: pkj?.jenis === "Capex" ? "#2563eb" : "#16a34a" },
+      { l: "Nilai Barang", v: <span style={{ fontWeight: 800, color: "#0f172a", fontSize: "1rem" }}>Rp {mockPrice.toLocaleString('id-ID')}</span>, i: <Icon.Database />, c1: "#ecfdf5", c2: "#10b981" },
+    ];
+
+    return (
+      <div style={{
+        position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+        background: "rgba(15, 23, 42, 0.4)", backdropFilter: "blur(8px)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        zIndex: 9999, animation: "fadeIn 0.2s ease"
+      }} onClick={() => setSelectedItem(null)}>
+        <div style={{
+          background: "#fff", width: "100%", maxWidth: 480,
+          borderRadius: 24, boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.3)",
+          overflow: "hidden", animation: "slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)"
+        }} onClick={e => e.stopPropagation()}>
+          {/* COLORFUL HEADER */}
+          <div style={{ 
+            padding: "1.5rem 1.75rem", 
+            background: "linear-gradient(135deg, #003675 0%, #005bb7 100%)", 
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+            position: "relative", overflow: "hidden"
+          }}>
+            <div style={{ position: "absolute", top: -20, right: -20, width: 100, height: 100, background: "rgba(255,255,255,0.1)", borderRadius: "50%" }} />
+            <div>
+              <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800, color: "#fff", letterSpacing: "-0.01em" }}>Informasi Detail Barang</h3>
+              <p style={{ margin: "2px 0 0", fontSize: ".72rem", color: "rgba(255,255,255,0.8)", fontWeight: 500 }}>ID Transaksi: #{data.id || "000"}</p>
+            </div>
+            <button style={{ border: "none", background: "rgba(255,255,255,0.2)", borderRadius: 10, padding: 8, cursor: "pointer", color: "#fff", display: "flex" }} onClick={() => setSelectedItem(null)}>
+              <Icon.Times />
+            </button>
+          </div>
+          
+          <div style={{ padding: "1.75rem", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+            {rows.map((row, i) => (
+              <div key={i} style={{ 
+                display: "flex", alignItems: "center", gap: "1rem",
+                padding: "10px 0", borderBottom: i === rows.length - 1 ? "none" : "1px solid #f1f5f9"
+              }}>
+                <div style={{ 
+                  width: 34, height: 34, borderRadius: 10, 
+                  background: row.c1, color: row.c2, 
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  flexShrink: 0
+                }}>
+                  {React.cloneElement(row.i, { width: 16, height: 16 })}
+                </div>
+                
+                <div style={{ display: "flex", flex: 1, alignItems: "center" }}>
+                  <div style={{ 
+                    width: 130, fontSize: ".72rem", fontWeight: 700, 
+                    color: "#64748b", textTransform: "uppercase", letterSpacing: ".02em" 
+                  }}>
+                    {row.l}
+                  </div>
+                  
+                  <div style={{ color: "#cbd5e1", marginRight: "1rem" }}>:</div>
+                  
+                  <div style={{ 
+                    flex: 1, 
+                    fontSize: row.b ? ".9rem" : ".85rem", 
+                    fontWeight: row.b ? 800 : 600, 
+                    color: "#1e293b",
+                    fontFamily: row.c ? "monospace" : "inherit",
+                    lineHeight: 1.4,
+                    wordBreak: "break-word"
+                  }}>
+                    {row.v}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ padding: "1.25rem 1.75rem", background: "#f8fafc", borderTop: "1px solid #f1f5f9", textAlign: "right" }}>
+            <button 
+              style={{ 
+                ...S.btnBlue, 
+                padding: "10px 32px", 
+                borderRadius: 12, 
+                boxShadow: "0 4px 12px rgba(37, 99, 235, 0.25)" 
+              }} 
+              onClick={() => setSelectedItem(null)}
+            >
+              Tutup Detail
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-          marginBottom: "1rem",
-          flexWrap: "wrap",
-        }}
-      >
+    <div style={{ animation: "fadeIn 0.2s ease" }}>
+      {renderModal()}
+      
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: "1rem" }}>
         <button style={S.backBtn} onClick={onBack}>
           <Icon.ArrowLeft /> Kembali
         </button>
         <span style={{ fontSize: ".75rem", color: "#94a3b8" }}>
-          / Detail Serah Terima
+          / Detail Berita Acara Serah Terima
         </span>
       </div>
+
       <div style={S.page}>
-        <div style={{ ...S.pageHeader, borderTop: "3px solid #2563eb" }}>
-          <div style={S.pageTitle}>
-            <span
-              style={{
-                width: 28,
-                height: 28,
-                borderRadius: 7,
-                background: "#eff6ff",
-                color: "#2563eb",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Icon.Exchange />
-            </span>
-            Detail Serah Terima
-            {over && <span style={S.overduePill}>⚠ Terlambat</span>}
+        {/* SUMMARY CARD */}
+        <div style={{ 
+          padding: "1.5rem", 
+          background: "linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%)", 
+          borderBottom: "1px solid #e2e8f0",
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+          gap: "1.5rem"
+        }}>
+          <div>
+            <div style={{ fontSize: ".65rem", fontWeight: 800, color: "#64748b", textTransform: "uppercase", marginBottom: 5 }}>Nomor BAST</div>
+            <code style={{ fontSize: "1rem", fontWeight: 800, color: "#1e293b", background: "#fff", padding: "4px 10px", borderRadius: 6, border: "1px solid #cbd5e1" }}>
+              {bastNo}
+            </code>
+            <div style={{ fontSize: ".7rem", color: "#64748b", marginTop: 8 }}>
+              Tanggal: <strong>{fmtDateShort(date)}</strong>
+            </div>
           </div>
-          <div style={{ display: "flex", gap: 6 }}>
-            <button
-              style={{
-                ...S.btnGhost,
-                color: "#7c3aed",
-                borderColor: "#c4b5fd",
-              }}
-              onClick={() => onViewHistory(item)}
-            >
-              <Icon.History /> Riwayat ({histCount})
-            </button>
-            <button
-              style={{
-                ...S.btnGhost,
-                color: "#7c3aed",
-                borderColor: "#c4b5fd",
-              }}
-              onClick={() => generateBAST(item, "borrow")}
-            >
-              <Icon.Printer /> BAST
-            </button>
-            <button style={S.btnGhost} onClick={() => onEdit(item)}>
-              <Icon.Edit /> Edit
-            </button>
-            <button style={S.btnGreen} onClick={() => onReturn(item)}>
-              <Icon.Undo /> Catat Kembali
-            </button>
-          </div>
-        </div>
-        {pekerjaan && (
-          <div
-            style={{
-              padding: "1rem 1.25rem",
-              borderBottom: "1px solid #f1f5f9",
-            }}
-          >
-            <div style={S.sectionLabel}>Pekerjaan / Anggaran</div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "flex-start",
-                gap: ".5rem",
-                padding: ".6rem .9rem",
-                background: "#ecfeff",
-                border: "1px solid #a5f3fc",
-                borderRadius: 9,
-              }}
-            >
-              <span style={{ color: "#0891b2", display: "flex", marginTop: 2 }}>
-                <Icon.Briefcase />
-              </span>
+
+          <div>
+            <div style={{ fontSize: ".65rem", fontWeight: 800, color: "#64748b", textTransform: "uppercase", marginBottom: 5 }}>Pihak Pertama (Pemberi)</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ ...S.avatar, width: 32, height: 32, background: "#fff", color: "#64748b", border: "1px solid #e2e8f0" }}>{giver.name.charAt(0)}</div>
               <div>
-                <div style={S.pkjInfoName}>{pekerjaan.nama}</div>
-                <div style={S.pkjInfoMeta}>
-                  {pekerjaan.no_anggaran} · {pekerjaan.jenis}
-                </div>
+                <div style={{ fontWeight: 700, color: "#1e293b", fontSize: ".85rem" }}>{giver.name}</div>
+                <div style={{ fontSize: ".7rem", color: "#64748b" }}>NIP/ID: {giver.id}</div>
               </div>
             </div>
           </div>
-        )}
-        <div
-          style={{ padding: "1rem 1.25rem", borderBottom: "1px solid #f1f5f9" }}
-        >
-          <div style={S.sectionLabel}>Informasi Aset</div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: ".75rem",
-              padding: ".75rem .9rem",
-              background: "#f8fafc",
-              border: "1px solid #e2e8f0",
-              borderRadius: 9,
-            }}
-          >
-            <div
-              style={{
-                ...S.catIco,
-                background: cat.bg,
-                color: cat.color,
-                width: 34,
-                height: 34,
-                borderRadius: 9,
-              }}
-            >
-              {cat.icon}
-            </div>
-            <div>
-              <code style={S.code}>{item.code}</code>
-              <div style={{ ...S.assetName, fontSize: ".85rem", marginTop: 3 }}>
-                {item.name}
+
+          <div>
+            <div style={{ fontSize: ".65rem", fontWeight: 800, color: "#64748b", textTransform: "uppercase", marginBottom: 5 }}>Pihak Kedua (Penerima)</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ ...S.avatar, width: 32, height: 32, background: "#2563eb", color: "#fff" }}>{receiver.name.charAt(0)}</div>
+              <div>
+                <div style={{ fontWeight: 700, color: "#1e293b", fontSize: ".85rem" }}>{receiver.name}</div>
+                <div style={{ fontSize: ".7rem", color: "#64748b" }}>NIP/ID: {receiver.id}</div>
               </div>
             </div>
           </div>
+          
+          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "flex-end", gap: 8 }}>
+            <button style={{ ...S.btnGhost, padding: "8px 12px" }} onClick={() => generateBAST(items[0], "borrow")}>
+              <Icon.Printer /> Cetak BAST
+            </button>
+          </div>
         </div>
-        <div
-          style={{ padding: "1rem 1.25rem", borderBottom: "1px solid #f1f5f9" }}
-        >
-          <div style={S.sectionLabel}>Detail Transaksi</div>
-          <HRow label="Tanggal Serah Terima">{fmtDT(item.borrow_date)}</HRow>
-          <HRow label="Jatuh Tempo">
-            <span
-              style={{ fontWeight: 700, color: over ? "#dc2626" : "#0f172a" }}
-            >
-              {fmtDate(item.due_date)}
-            </span>
-          </HRow>
-          <HRow label="Dari Lokasi">{item.from_zone}</HRow>
-          <HRow label="Ke Lokasi">
-            <span style={{ color: "#2563eb", fontWeight: 600 }}>
-              {item.to_zone}
-            </span>
-          </HRow>
-          <HRow label="Kondisi Aset">
-            {cond && (
-              <span
-                style={{ ...S.pill, background: cond.bg, color: cond.color }}
-              >
-                {cond.label}
-              </span>
-            )}
-          </HRow>
-          <HRow label="Nomor BAST">
-            <span
-              style={{
-                fontFamily: "monospace",
-                fontSize: ".75rem",
-                color: "#7c3aed",
-              }}
-            >
-              {genNomorBAST(item.id, item.borrow_date)}
-            </span>
-          </HRow>
-          {item.reason && <HRow label="Alasan / Keperluan">{item.reason}</HRow>}
-          {item.notes && <HRow label="Catatan">{item.notes}</HRow>}
-          {item.attachment && (
-            <HRow label="Lampiran" last>
-              <span
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 5,
-                  color: "#2563eb",
-                }}
-              >
-                <Icon.Paperclip />
-                {item.attachment}
-              </span>
-            </HRow>
-          )}
-        </div>
-        <div style={{ padding: "1rem 1.25rem" }}>
-          <div style={S.sectionLabel}>Pihak yang Terlibat</div>
-          <table style={{ ...S.table, marginTop: 8 }}>
+
+        {/* ITEM TABLE */}
+        <div style={{ padding: "0" }}>
+          <div style={{ padding: "12px 1.5rem", background: "#fff", borderBottom: "2px solid #f1f5f9", fontWeight: 800, fontSize: ".7rem", color: "#64748b", display: "flex", alignItems: "center", gap: 8 }}>
+            <Icon.Briefcase /> DAFTAR BARANG DALAM BERITA ACARA ({items.length})
+          </div>
+          <table style={S.table}>
             <thead style={S.thead}>
               <tr>
-                <th style={S.th}>Peran</th>
-                <th style={S.th}>Nama</th>
-                <th style={S.th}>Jabatan</th>
-                <th style={S.th}>Cabang</th>
+                <th style={{ ...S.th, width: 40, textAlign: "center" }}>No</th>
+                <th style={{ ...S.th, width: 150 }}>SN / Kode</th>
+                <th style={S.th}>Nama Barang</th>
+                <th style={{ ...S.th, width: 120, textAlign: "center" }}>Kondisi</th>
+                <th style={S.th}>Keterangan</th>
+                <th style={{ ...S.th, width: 100, textAlign: "center" }}>Aksi</th>
               </tr>
             </thead>
             <tbody>
-              {[
-                {
-                  peran: "Pemberi / Penyerah",
-                  user: giver,
-                  bg: "#fef3c7",
-                  color: "#d97706",
-                },
-                {
-                  peran: "Penerima",
-                  user: receiver,
-                  bg: "#dbeafe",
-                  color: "#2563eb",
-                },
-                {
-                  peran: "Dicatat oleh (Admin IT)",
-                  user: performer,
-                  bg: "#ede9fe",
-                  color: "#7c3aed",
-                },
-              ].map((p) => (
-                <tr key={p.peran} style={{ borderBottom: "1px solid #f1f5f9" }}>
-                  <td style={{ ...S.td, fontSize: ".74rem", color: "#64748b" }}>
-                    {p.peran}
-                  </td>
-                  <td style={S.td}>
-                    <div
-                      style={{ display: "flex", alignItems: "center", gap: 7 }}
-                    >
-                      <div
-                        style={{
-                          ...S.avatar,
-                          background: p.bg,
-                          color: p.color,
-                        }}
-                      >
-                        {p.user.name.charAt(0)}
-                      </div>
-                      <span
-                        style={{
-                          fontSize: ".78rem",
-                          fontWeight: 600,
-                          color: "#0f172a",
-                        }}
-                      >
-                        {p.user.name}
+              {paginatedItems.map((it, idx) => {
+                const realIdx = (currentPage - 1) * itemsPerPage + idx + 1;
+                return (
+                  <tr key={it.id} style={S.tr}>
+                    <td style={{ ...S.td, textAlign: "center", color: "#94a3b8", fontWeight: 700 }}>{realIdx}</td>
+                    <td style={S.td}>
+                      <code style={{ ...S.code, fontSize: ".7rem" }}>{it.code}</code>
+                    </td>
+                    <td style={S.td}>
+                      <div style={{ fontWeight: 700, color: "#1e293b", fontSize: ".8rem" }}>{it.name}</div>
+                    </td>
+                    <td style={{ ...S.td, textAlign: "center" }}>
+                      <span style={{ 
+                        fontSize: ".65rem", 
+                        fontWeight: 800,
+                        padding: "2px 10px", 
+                        borderRadius: "6px",
+                        background: it.condition === "BAIK" ? "#f0fdf4" : "#fff1f2",
+                        color: it.condition === "BAIK" ? "#16a34a" : "#dc2626",
+                        border: `1px solid ${it.condition === "BAIK" ? "#bcf0da" : "#fecaca"}`
+                      }}>
+                        {(it.condition || "BAIK").toUpperCase()}
                       </span>
-                    </div>
-                  </td>
-                  <td style={{ ...S.td, fontSize: ".74rem", color: "#64748b" }}>
-                    {p.user.jabatan}
-                  </td>
-                  <td style={{ ...S.td, fontSize: ".74rem", color: "#64748b" }}>
-                    {p.user.branch}
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td style={{ ...S.td, fontSize: ".75rem", color: "#475569" }}>
+                      {it.notes || "—"}
+                    </td>
+                    <td style={{ ...S.td, textAlign: "center" }}>
+                      <button 
+                        style={{ ...S.btnGhostSm, color: "#2563eb", borderColor: "#dbeafe" }}
+                        onClick={() => setSelectedItem(it)}
+                      >
+                        <Icon.Eye /> Detail
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
+
+          {/* PAGINATION */}
+          {totalPages > 1 && (
+            <div style={{ padding: "1rem 1.5rem", borderTop: "1px solid #f1f5f9", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#fff" }}>
+              <div style={{ fontSize: ".74rem", color: "#64748b" }}>
+                Menampilkan <strong>{paginatedItems.length}</strong> dari <strong>{items.length}</strong> barang
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: ".5rem" }}>
+                <button 
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(p => p - 1)}
+                  style={{ ...S.iconBtn, color: "#475569", border: "1px solid #e2e8f0", background: currentPage === 1 ? "#f8fafc" : "#fff", opacity: currentPage === 1 ? 0.4 : 1, cursor: currentPage === 1 ? "not-allowed" : "pointer", padding: "6px 14px" }}
+                >
+                  <Icon.ArrowLeft /> Prev
+                </button>
+                <div style={{ fontSize: ".74rem", fontWeight: 700, color: "#1e293b", background: "#f1f5f9", padding: "6px 14px", borderRadius: 6, border: "1px solid #e2e8f0" }}>
+                  Page {currentPage} of {totalPages}
+                </div>
+                <button 
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(p => p + 1)}
+                  style={{ ...S.iconBtn, color: "#475569", border: "1px solid #e2e8f0", background: currentPage === totalPages ? "#f8fafc" : "#fff", opacity: currentPage === totalPages ? 0.4 : 1, cursor: currentPage === totalPages ? "not-allowed" : "pointer", padding: "6px 14px" }}
+                >
+                  Next <Icon.ArrowRight />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
+      </div>
+      
+      <div style={{ ...S.btnRow, marginTop: "1.5rem", justifyContent: "flex-start" }}>
+        <button style={S.btnGhost} onClick={onBack}>
+          <Icon.ArrowLeft /> Kembali ke Daftar
+        </button>
       </div>
     </div>
   );
@@ -3226,7 +3259,11 @@ function BorrowFormPage({ borrow, borrows, onBack, onSave, setNav }) {
       alert("Barang ini sudah ada di daftar Berita Acara.");
       return;
     }
-    setBaDraft([...baDraft, { item, actionStatus: "Diserahkan" }]);
+    setBaDraft([...baDraft, { item, condition: item.kondisi || "BAIK", notes: "" }]);
+  };
+
+  const updateDraftItem = (code, field, value) => {
+    setBaDraft(prev => prev.map(d => d.item.code === code ? { ...d, [field]: value } : d));
   };
 
   const removeFromDraft = (code) => {
@@ -3478,6 +3515,7 @@ function BorrowFormPage({ borrow, borrows, onBack, onSave, setNav }) {
                   <tr>
                     <th style={{ ...S.th, width: 40 }}>No</th>
                     <th style={S.th}>SN</th>
+                    <th style={S.th}>Nama Barang</th>
                     <th style={{ ...S.th, width: 60 }}>CP/OP</th>
                     <th style={S.th}>Nama Pekerjaan</th>
                     <th style={{ ...S.th, width: 100 }}>Thn Pengadaan</th>
@@ -3508,6 +3546,7 @@ function BorrowFormPage({ borrow, borrows, onBack, onSave, setNav }) {
                         }}>
                           <td style={{ ...S.td, textAlign: "center" }}>{idx + 1}</td>
                           <td style={S.td}><code style={S.code}>{item.code}</code></td>
+                          <td style={{ ...S.td, fontWeight: 700, fontSize: ".7rem", color: "#1e293b" }}>{item.name}</td>
                           <td style={{ ...S.td, textAlign: "center" }}>
                             <span style={{ 
                               ...S.pill, 
@@ -3592,86 +3631,154 @@ function BorrowFormPage({ borrow, borrows, onBack, onSave, setNav }) {
               <table style={S.table}>
                 <thead style={{ ...S.thead, background: "#f8fafc" }}>
                   <tr>
-                    <th style={{ ...S.th, width: 40 }}>No</th>
-                    <th style={S.th}>No.BAST</th>
-                    <th style={S.th}>Tgl BAST</th>
-                    <th style={S.th}>Pemberi</th>
-                    <th style={S.th}>Penerima</th>
-                    <th style={{ ...S.th, width: 100 }}>Jumlah Item</th>
+                    <th style={{ ...S.th, width: 30 }}>No</th>
+                    <th style={{ ...S.th, width: 110 }}>No.BAST</th>
+                    <th style={{ ...S.th, width: 80 }}>Tgl BAST</th>
+                    <th style={S.th}>Barang / SN</th>
+                    <th style={S.th}>Pemberi / Penerima</th>
+                    <th style={{ ...S.th, width: 110 }}>Kondisi</th>
+                    <th style={S.th}>Keterangan (Notes)</th>
+                    <th style={{ ...S.th, width: 50 }}>Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr style={S.tr}>
-                    <td style={{ ...S.td, textAlign: "center" }}>1</td>
-                    <td style={S.td}>
-                      <code style={{ ...S.code, color: "#1e293b", background: "#f1f5f9" }}>
-                        BAST/{new Date().getFullYear()}/{((borrows?.length || 0) + 1).toString().padStart(3, '0')}
-                      </code>
-                    </td>
-                    <td style={S.td}>
-                      {backdateMode === "now" 
-                        ? fmtDateShort(new Date().toISOString()) 
-                        : fmtDateShort(backdateValue)}
-                    </td>
-                    <td style={{ ...S.td, fontWeight: 700 }}>{getUser(Number(pihak1.id)).name}</td>
-                    <td style={{ ...S.td, fontWeight: 700 }}>{getUser(Number(pihak2.id)).name}</td>
-                    <td style={{ ...S.td, textAlign: "center" }}>
-                      <span 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setNav({ 
-                            page: "ba-item-list", 
-                            from: "borrow-form", // Track where we came from
-                            prevData: borrow,    // Save current form state if any
-                            data: { items: baDraft, title: "Preview Berita Acara" } 
-                          });
-                        }}
-                        style={{ 
-                          background: "#eff6ff", 
-                          color: "#2563eb", 
-                          padding: "2px 10px", 
-                          borderRadius: "12px", 
-                          fontWeight: 800,
-                          fontSize: ".75rem",
-                          border: "1px solid #bfdbfe",
-                          cursor: "pointer",
-                          transition: "all 0.2s"
-                        }}
-                        onMouseOver={(e) => {
-                          e.currentTarget.style.background = "#2563eb";
-                          e.currentTarget.style.color = "#fff";
-                        }}
-                        onMouseOut={(e) => {
-                          e.currentTarget.style.background = "#eff6ff";
-                          e.currentTarget.style.color = "#2563eb";
-                        }}
-                      >
-                        {baDraft.length} Item
-                      </span>
-                    </td>
-                  </tr>
+                  {baDraft.map((d, i) => {
+                    const bastNo = `BAST/${new Date().getFullYear()}/${((borrows?.length || 0) + 1).toString().padStart(3, '0')}`;
+                    const p1 = getUser(Number(pihak1.id));
+                    const p2 = getUser(Number(pihak2.id));
+                    const bastDate = backdateMode === "now" 
+                      ? fmtDateShort(new Date().toISOString()) 
+                      : fmtDateShort(backdateValue);
+
+                    return (
+                      <tr key={d.item.code} style={S.tr}>
+                        <td style={{ ...S.td, textAlign: "center", color: "#94a3b8" }}>{i + 1}</td>
+                        <td style={S.td}>
+                          <code style={{ ...S.code, color: "#1e293b", background: "#f1f5f9", fontSize: ".65rem" }}>{bastNo}</code>
+                        </td>
+                        <td style={{ ...S.td, fontSize: ".65rem", color: "#64748b" }}>{bastDate}</td>
+                        <td style={S.td}>
+                          <div style={{ fontWeight: 700, color: "#2563eb", fontSize: ".75rem" }}>{d.item.name}</div>
+                          <code style={{ fontSize: ".6rem", color: "#64748b" }}>{d.item.code}</code>
+                        </td>
+                        <td style={S.td}>
+                          <div style={{ fontSize: ".7rem", color: "#64748b" }}>P: <strong style={{ color: "#1e293b" }}>{p1.name}</strong></div>
+                          <div style={{ fontSize: ".7rem", color: "#64748b" }}>R: <strong style={{ color: "#1e293b" }}>{p2.name}</strong></div>
+                        </td>
+                        <td style={S.td}>
+                          <select 
+                            value={d.condition || "BAIK"}
+                            onChange={(e) => updateDraftItem(d.item.code, "condition", e.target.value)}
+                            style={{ ...S.finput, padding: "4px 8px", fontSize: ".7rem", height: "auto" }}
+                          >
+                            <option value="BAIK">BAIK</option>
+                            <option value="RUSAK">RUSAK</option>
+                            <option value="HILANG">HILANG</option>
+                            <option value="DIPERBAIKI">DIPERBAIKI</option>
+                          </select>
+                        </td>
+                        <td style={S.td}>
+                          <input 
+                            type="text"
+                            value={d.notes || ""}
+                            onChange={(e) => updateDraftItem(d.item.code, "notes", e.target.value)}
+                            placeholder='Contoh: "Terbentur meja"'
+                            style={{ ...S.finput, padding: "4px 8px", fontSize: ".7rem", height: "auto" }}
+                          />
+                        </td>
+                        <td style={{ ...S.td, textAlign: "center" }}>
+                          <button 
+                            onClick={() => removeFromDraft(d.item.code)}
+                            style={{ background: "none", border: "none", color: "#ef4444", cursor: "pointer" }}
+                          >
+                            <Icon.Trash />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
 
-              {/* Official Narrative Summary */}
-              <div style={{ padding: "1rem", background: "#f8fafc", borderTop: "2px solid #2563eb" }}>
-                <div style={{ fontSize: ".7rem", fontWeight: 800, color: "#64748b", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                  Narasi Berita Acara:
+              {/* Dynamic Automated Narrative Section */}
+              <div style={{ 
+                padding: "1.25rem", 
+                background: "#f8fafc", 
+                borderTop: "2px solid #2563eb",
+                marginTop: "1px"
+              }}>
+                <div style={{ 
+                  fontSize: ".7rem", 
+                  fontWeight: 800, 
+                  color: "#64748b", 
+                  marginBottom: "12px", 
+                  textTransform: "uppercase", 
+                  letterSpacing: "1px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px"
+                }}>
+                  <Icon.Edit /> Draft Narasi Berita Acara (Otomatis):
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                
+                <div style={{ 
+                  display: "flex", 
+                  flexDirection: "column", 
+                  gap: "12px",
+                  background: "#fff",
+                  padding: "1.5rem",
+                  borderRadius: "10px",
+                  border: "1px solid #e2e8f0",
+                  boxShadow: "inset 0 2px 4px rgba(0,0,0,0.02)"
+                }}>
                   {baDraft.map((d, i) => {
-                    const p1Name = getUser(Number(pihak1.id)).name; // Pemberi
-                    const p2Name = getUser(Number(pihak2.id)).name; // Penerima
-                    
+                    const p1Name = getUser(Number(pihak1.id)).name || "—";
+                    const p2Name = getUser(Number(pihak2.id)).name || "—";
+                    const condText = (d.condition || "BAIK").toLowerCase();
+                    const notesText = d.notes ? ` dengan keterangan: "${d.notes}"` : "";
+
                     return (
-                      <div key={i} style={{ fontSize: ".75rem", color: "#1e293b", lineHeight: 1.5, display: "flex", gap: "8px" }}>
-                        <span style={{ color: "#2563eb", fontWeight: 700 }}>•</span>
+                      <div key={i} style={{ 
+                        fontSize: ".8rem", 
+                        color: "#1e293b", 
+                        lineHeight: 1.6, 
+                        display: "flex", 
+                        gap: "12px",
+                        paddingBottom: i === baDraft.length - 1 ? 0 : "12px",
+                        borderBottom: i === baDraft.length - 1 ? "none" : "1px dashed #e2e8f0"
+                      }}>
+                        <span style={{ 
+                          width: "20px", 
+                          height: "20px", 
+                          background: "#eff6ff", 
+                          color: "#2563eb", 
+                          borderRadius: "50%", 
+                          display: "flex", 
+                          alignItems: "center", 
+                          justifyContent: "center",
+                          fontSize: ".65rem",
+                          fontWeight: 800,
+                          flexShrink: 0
+                        }}>
+                          {i + 1}
+                        </span>
                         <span>
-                          Barang <strong>{d.item.name}</strong> ({d.item.code}) diserahkan dari <strong>{p1Name}</strong> (Pemberi) kepada <strong>{p2Name}</strong> (Penerima).
+                          Pihak Pertama (<strong>{p1Name}</strong>) menyerahkan barang <strong>{d.item.name}</strong> dengan nomor seri <code>{d.item.code}</code> kepada Pihak Kedua (<strong>{p2Name}</strong>) dalam kondisi <strong>{condText.toUpperCase()}</strong>{notesText}.
                         </span>
                       </div>
                     );
                   })}
+                  
+                  <div style={{ 
+                    marginTop: "8px", 
+                    paddingTop: "12px", 
+                    borderTop: "2px solid #f1f5f9", 
+                    fontSize: ".75rem", 
+                    fontStyle: "italic", 
+                    color: "#64748b" 
+                  }}>
+                    Demikian Berita Acara ini dibuat untuk dapat dipergunakan sebagaimana mestinya.
+                  </div>
                 </div>
               </div>
             </div>
@@ -4106,98 +4213,6 @@ function ReturnFormPage({ borrow, onBack, onSave }) {
   );
 }
 
-// ─── PAGE: BA ITEM LIST ──────────────────────────────────────
-function BaItemListPage({ data, onBack }) {
-  // Use fallbacks if data is missing
-  const { items = [], title = "Detail Berita Acara" } = data || {};
-  
-  return (
-    <div style={{ animation: "fadeIn 0.2s ease" }}>
-      <div style={{ ...S.pageHeader, background: "transparent", padding: "0 0 1.5rem 0" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-          <button style={S.backBtn} onClick={onBack}><Icon.ArrowLeft /> Kembali</button>
-          <div>
-            <h2 style={S.pageTitle}>
-              <Icon.Briefcase /> Detail Item: <span style={{ color: "#2563eb", marginLeft: 5 }}>{title}</span>
-            </h2>
-            <p style={S.muted}>Daftar aset yang termasuk dalam berita acara ini</p>
-          </div>
-        </div>
-        <div style={S.countBadge}>
-          Total: <strong>{items.length} Item</strong>
-        </div>
-      </div>
-
-      <div style={S.page}>
-        <div style={{ padding: "10px 15px", background: "#f8fafc", borderBottom: "1px solid #e2e8f0", fontWeight: 700, fontSize: ".7rem", color: "#64748b" }}>
-          DETAIL DAFTAR BARANG DALAM BERITA ACARA
-        </div>
-        <table style={S.table}>
-          <thead style={S.thead}>
-            <tr>
-              <th style={{ ...S.th, width: 40, textAlign: "center" }}>No</th>
-              <th style={S.th}>SN / Kode</th>
-              <th style={S.th}>Nama Barang</th>
-              <th style={{ ...S.th, width: 60, textAlign: "center" }}>CP/OP</th>
-              <th style={S.th}>Nama Pekerjaan</th>
-              <th style={{ ...S.th, width: 100, textAlign: "center" }}>Thn Pengadaan</th>
-              <th style={{ ...S.th, width: 80, textAlign: "center" }}>Kondisi</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((entry, idx) => {
-              // entry might be { item: ... } if from baDraft or just the item itself if from tx.items
-              const item = entry.item || entry;
-              const pkj = mockPekerjaan.find(p => p.kode === item.pekerjaan_kode);
-              const thnPengadaan = item.tahun_pengadaan || "2023";
-              const kondisi = item.kondisi || item.condition || "BAIK";
-
-              return (
-                <tr key={idx} style={S.tr}>
-                  <td style={{ ...S.td, textAlign: "center", color: "#94a3b8", fontWeight: 700 }}>{idx + 1}</td>
-                  <td style={S.td}>
-                    <code style={{ ...S.code, fontSize: ".68rem" }}>{item.code}</code>
-                  </td>
-                  <td style={S.td}>
-                    <div style={{ fontWeight: 600, color: "#1e293b", fontSize: ".78rem" }}>{item.name}</div>
-                  </td>
-                  <td style={{ ...S.td, textAlign: "center" }}>
-                    <span style={{ 
-                      ...S.pill, 
-                      background: pkj?.jenis === "Capex" ? "#eff6ff" : "#f0fdf4", 
-                      color: pkj?.jenis === "Capex" ? "#2563eb" : "#16a34a" 
-                    }}>
-                      {pkj?.jenis === "Capex" ? "CP" : "OP"}
-                    </span>
-                  </td>
-                  <td style={{ ...S.td, maxWidth: "300px" }}>
-                    <div style={{ fontSize: ".7rem", lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "#475569" }} title={pkj?.nama}>
-                      {pkj?.nama || "—"}
-                    </div>
-                  </td>
-                  <td style={{ ...S.td, textAlign: "center", fontWeight: 600, color: "#64748b", fontSize: ".75rem" }}>
-                    {thnPengadaan}
-                  </td>
-                  <td style={{ ...S.td, textAlign: "center" }}>
-                    <span style={{ 
-                      fontSize: ".65rem", fontWeight: 800,
-                      padding: "2px 8px", borderRadius: "4px",
-                      background: kondisi === "BAIK" || kondisi === "GOOD" ? "#f0fdf4" : "#fff1f2",
-                      color: kondisi === "BAIK" || kondisi === "GOOD" ? "#16a34a" : "#dc2626"
-                    }}>
-                      {kondisi === "BAIK" || kondisi === "GOOD" ? "BAIK" : "RUSAK"}
-                    </span>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
 // ─── PAGE: DELETE CONFIRM ─────────────────────────────────────
 function DeletePage({ item, onBack, onConfirm }) {
   if (!item) return null;
@@ -4248,6 +4263,162 @@ function DeletePage({ item, onBack, onConfirm }) {
   );
 }
 
+// ─── PAGE: AVAILABLE ASSET LIST ────────────────────────────────
+function AvailableAssetListPage({ borrows, onBack }) {
+  const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  const allAvailableAssets = useMemo(() => {
+    // Assets are available if:
+    // 1. Not currently borrowed
+    // 2. OR borrowed by IT/Admin
+    const activeBorrowsByOthers = borrows.filter(b => !b.is_returned && !isITorAdmin(b.receiver_id));
+    const borrowedByOthersSNs = new Set(activeBorrowsByOthers.map(b => b.code));
+    
+    return mockAssets.filter(a => !borrowedByOthersSNs.has(a.code)).map(a => ({
+      ...a,
+      pkj: getPekerjaan(a.pekerjaan_kode)
+    }));
+  }, [borrows]);
+
+  const filteredAssets = useMemo(() => {
+    const q = search.toLowerCase();
+    return allAvailableAssets.filter(a => 
+      a.code.toLowerCase().includes(q) || 
+      a.name.toLowerCase().includes(q)
+    );
+  }, [allAvailableAssets, search]);
+
+  const totalPages = Math.ceil(filteredAssets.length / itemsPerPage) || 1;
+  const paginatedAssets = filteredAssets.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  // Reset to page 1 on search
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
+
+  return (
+    <div style={{ animation: "fadeIn 0.2s ease" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: "1rem" }}>
+        <button style={S.backBtn} onClick={onBack}>
+          <Icon.ArrowLeft /> Kembali
+        </button>
+        <span style={{ fontSize: ".75rem", color: "#94a3b8" }}>
+          / Daftar Barang Available
+        </span>
+      </div>
+
+      <div style={S.page}>
+        <div style={{ padding: "1.25rem 1.5rem", borderBottom: "1px solid #f1f5f9", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
+          <div>
+            <h2 style={S.pageTitle}><Icon.CheckCircle /> Barang Ready / Available</h2>
+            <p style={{ fontSize: ".7rem", color: "#64748b", marginTop: 4 }}>Daftar stok barang yang siap didistribusikan</p>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: ".75rem" }}>
+            <div style={{ ...S.searchWrap, width: 240, flex: "none" }}>
+              <Icon.Search />
+              <input 
+                placeholder="Cari SN atau Nama..." 
+                value={search} 
+                onChange={e => setSearch(e.target.value)} 
+                style={S.searchInput} 
+              />
+              {search && <button style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", display: "flex" }} onClick={() => setSearch("")}><Icon.Times /></button>}
+            </div>
+            <div style={S.countBadge}>Total: <strong>{filteredAssets.length} Item</strong></div>
+          </div>
+        </div>
+        
+        <div style={{ overflowX: "auto" }}>
+          <table style={S.table}>
+            <thead style={S.thead}>
+              <tr>
+                <th style={{ ...S.th, width: 40, textAlign: "center" }}>No</th>
+                <th style={{ ...S.th, width: 140 }}>SN / Kode</th>
+                <th style={S.th}>Nama Barang</th>
+                <th style={{ ...S.th, width: 80, textAlign: "center" }}>CP/OP</th>
+                <th style={S.th}>Referensi Pengadaan</th>
+                <th style={{ ...S.th, width: 80, textAlign: "center" }}>Tahun</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedAssets.length === 0 ? (
+                <tr><td colSpan="6" style={{ ...S.td, textAlign: "center", padding: "3rem", color: "#94a3b8" }}>{search ? "Barang tidak ditemukan." : "Semua barang sedang dipinjam."}</td></tr>
+              ) : (
+                paginatedAssets.map((item, idx) => {
+                  const thn = item.pkj?.no_anggaran ? `20${item.pkj.no_anggaran.substring(0, 2)}` : "2024";
+                  const realIdx = (currentPage - 1) * itemsPerPage + idx + 1;
+                  return (
+                    <tr key={item.code} style={S.tr}>
+                      <td style={{ ...S.td, textAlign: "center", color: "#94a3b8", fontWeight: 700 }}>{realIdx}</td>
+                      <td style={S.td}><code style={S.code}>{item.code}</code></td>
+                      <td style={S.td}><div style={{ fontWeight: 600, color: "#1e293b" }}>{item.name}</div></td>
+                      <td style={{ ...S.td, textAlign: "center" }}>
+                        <span style={{ 
+                          ...S.pill, 
+                          background: item.pkj?.jenis === "Capex" ? "#eff6ff" : "#f0fdf4", 
+                          color: item.pkj?.jenis === "Capex" ? "#2563eb" : "#16a34a" 
+                        }}>
+                          {item.pkj?.jenis === "Capex" ? "CP" : "OP"}
+                        </span>
+                      </td>
+                      <td style={S.td}><div style={{ fontSize: ".72rem", color: "#64748b", maxWidth: 300, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={item.pkj?.nama}>{item.pkj?.nama || "—"}</div></td>
+                      <td style={{ ...S.td, textAlign: "center", fontWeight: 700, color: "#475569" }}>{thn}</td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* ── PAGINATION ── */}
+        <div style={{ padding: "1rem 1.5rem", borderTop: "1px solid #f1f5f9", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ fontSize: ".74rem", color: "#64748b" }}>
+            Menampilkan <strong>{paginatedAssets.length}</strong> dari <strong>{filteredAssets.length}</strong> item
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: ".5rem" }}>
+            <button 
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(p => p - 1)}
+              style={{ 
+                ...S.iconBtn, 
+                color: "#475569",
+                border: "1px solid #e2e8f0", 
+                background: currentPage === 1 ? "#f8fafc" : "#fff", 
+                opacity: currentPage === 1 ? 0.4 : 1, 
+                cursor: currentPage === 1 ? "not-allowed" : "pointer", 
+                padding: "6px 14px" 
+              }}
+            >
+              <Icon.ArrowLeft /> Prev
+            </button>
+            <div style={{ fontSize: ".74rem", fontWeight: 700, color: "#1e293b", background: "#f1f5f9", padding: "6px 14px", borderRadius: 6, border: "1px solid #e2e8f0" }}>
+              Page {currentPage} of {totalPages}
+            </div>
+            <button 
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(p => p + 1)}
+              style={{ 
+                ...S.iconBtn, 
+                color: "#475569",
+                border: "1px solid #e2e8f0", 
+                background: currentPage === totalPages ? "#f8fafc" : "#fff", 
+                opacity: currentPage === totalPages ? 0.4 : 1, 
+                cursor: currentPage === totalPages ? "not-allowed" : "pointer", 
+                padding: "6px 14px" 
+              }}
+            >
+              Next <Icon.ArrowRight />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── MAIN ──────────────────────────────────────────────────────
 export default function Peminjaman() {
   const [borrows, setBorrows] = useState(initBorrows);
@@ -4257,7 +4428,6 @@ export default function Peminjaman() {
   const [filterPekerjaan, setFilterPekerjaan] = useState("semua");
   const [nav, setNav] = useState(null);
   const [openCats, setOpenCats] = useState({});
-
 
   const activeBorrows = borrows.filter((b) => !b.is_returned);
   const filteredBorrows = activeBorrows.filter((b) => {
@@ -4272,18 +4442,16 @@ export default function Peminjaman() {
     return ms && mu && mp;
   });
 
-  // Grouping by "Transaction" (simulated BAST)
   const groupedTransactions = useMemo(() => {
     const groups = {};
     filteredBorrows.forEach((b) => {
-      // Create a unique key for the transaction
-      const dateKey = b.borrow_date.split('T')[0];
+      const dStr = b.borrow_date || "";
+      const dateKey = dStr.includes('T') ? dStr.split('T')[0] : (dStr.split(' ')[0] || "unknown");
       const key = `${dateKey}_${b.giver_id}_${b.receiver_id}`;
-      
       if (!groups[key]) {
         groups[key] = {
-          id: b.id, // Use the first item's ID as transaction ref
-          date: b.borrow_date,
+          id: b.id, 
+          date: b.borrow_date || new Date().toISOString(),
           giver_id: b.giver_id,
           receiver_id: b.receiver_id,
           items: [],
@@ -4292,357 +4460,104 @@ export default function Peminjaman() {
       }
       groups[key].items.push(b);
     });
-    // Convert to array and sort by date desc
-    return Object.values(groups).sort((a, b) => new Date(b.date) - new Date(a.date));
+    return Object.values(groups).sort((a, b) => {
+      const da = new Date(a.date || 0).getTime();
+      const db = new Date(b.date || 0).getTime();
+      return db - da;
+    });
   }, [filteredBorrows]);
-  const overdueCount = activeBorrows.filter((b) =>
-    isOverdue(b.due_date),
-  ).length;
 
+  const overdueCount = activeBorrows.filter((b) => isOverdue(b.due_date)).length;
   const handleSaveBorrow = (data) => {
     if (borrows.find((b) => b.id === data.id))
       setBorrows(borrows.map((b) => (b.id === data.id ? data : b)));
     else setBorrows([data, ...borrows]);
   };
   const handleReturn = (ret) => {
-    setBorrows(
-      borrows.map((b) =>
-        b.id === ret.original_id ? { ...b, is_returned: true } : b,
-      ),
-    );
+    setBorrows(borrows.map((b) => b.id === ret.original_id ? { ...b, is_returned: true } : b));
     setReturns([ret, ...returns]);
   };
   const handleDelete = (id) => setBorrows(borrows.filter((b) => b.id !== id));
   const goBack = () => setNav(null);
-  const toggleCat = (catKey) =>
-    setOpenCats((o) => ({ ...o, [catKey]: !o[catKey] }));
-  const isCatOpen = (catKey) => openCats[catKey] !== false;
 
   // ─── PAGE SWITCHER ──────────────────────────────────────────
-  if (nav?.page === "ba-item-list")
-    return (
-      <div style={S.root}>
-        <BaItemListPage 
-          data={nav.data} 
-          onBack={() => {
-            // If we came from borrow-form, go back there, else go to list
-            if (nav.from === "borrow-form") {
-              setNav({ page: "borrow-form", data: nav.prevData });
-            } else {
-              setNav(null);
-            }
-          }} 
-        />
-      </div>
-    );
-
   if (nav?.page === "borrow-detail")
-    return (
-      <div style={S.root}>
-        <BorrowDetailPage
-          item={nav.data}
-          borrows={borrows}
-          returns={returns}
-          onBack={goBack}
-          onEdit={(d) => setNav({ page: "borrow-form", data: d })}
-          onReturn={(d) => setNav({ page: "return-form", data: d })}
-          onViewHistory={(d) => setNav({ page: "history", data: d })}
-        />
-      </div>
-    );
+    return <div style={S.root}><BorrowDetailPage data={nav.data} onBack={goBack} onEdit={(d) => setNav({ page: "borrow-form", data: d })} onReturn={(d) => setNav({ page: "return-form", data: d })} /></div>;
 
   if (nav?.page === "borrow-form")
-    return (
-      <div style={S.root}>
-        <BorrowFormPage
-          borrow={nav.data}
-          borrows={borrows}
-          returns={returns}
-          onBack={goBack}
-          onSave={handleSaveBorrow}
-          setNav={setNav}
-        />
-      </div>
-    );
+    return <div style={S.root}><BorrowFormPage borrow={nav.data} borrows={borrows} returns={returns} onBack={goBack} onSave={handleSaveBorrow} setNav={setNav} /></div>;
 
   if (nav?.page === "user-receiver-list")
-    return (
-      <div style={S.root}>
-        <UserReceiverListPage
-          borrows={borrows}
-          onBack={goBack}
-          onDetail={(u) => setNav({ page: "user-asset-detail", data: u })}
-        />
-      </div>
-    );
+    return <div style={S.root}><UserReceiverListPage borrows={borrows} onBack={goBack} onDetail={(u) => setNav({ page: "user-asset-detail", data: u })} /></div>;
 
   if (nav?.page === "user-asset-detail")
-    return (
-      <div style={S.root}>
-        <UserAssetDetailPage
-          user={nav.data}
-          borrows={borrows}
-          onBack={() => setNav({ page: "user-receiver-list", data: null })}
-        />
-      </div>
-    );
+    return <div style={S.root}><UserAssetDetailPage user={nav.data} borrows={borrows} onBack={() => setNav({ page: "user-receiver-list", data: null })} /></div>;
 
-
+  if (nav?.page === "available-asset-list")
+    return <div style={S.root}><AvailableAssetListPage borrows={borrows} onBack={goBack} /></div>;
 
   if (nav?.page === "delete")
-    return (
-      <div style={S.root}>
-        <DeletePage item={nav.data} onBack={goBack} onConfirm={handleDelete} />
-      </div>
-    );
+    return <div style={S.root}><DeletePage item={nav.data} onBack={goBack} onConfirm={handleDelete} /></div>;
 
   return (
     <div style={S.root}>
-      {/* ── HEADER ── */}
       <div style={S.header}>
-        <div>
-          <h1 style={S.title}>BAST Aset</h1>
-          <p style={S.subtitle}>
-            Kelola pencatatan BAST aset IT — peminjaman dan pengembalian per kategori
-          </p>
-        </div>
-        <button
-          style={{ ...S.btnBlue, padding: ".5rem 1.2rem", fontSize: ".84rem" }}
-          onClick={() => setNav({ page: "borrow-form", data: null })}
-        >
-          <Icon.Plus /> Catat Serah Terima
-        </button>
+        <div><h1 style={S.title}>BAST Barang</h1><p style={S.subtitle}>Kelola pencatatan BAST barang IT — peminjaman dan pengembalian per kategori</p></div>
+        <button style={{ ...S.btnBlue, padding: ".5rem 1.2rem", fontSize: ".84rem" }} onClick={() => setNav({ page: "borrow-form", data: null })}><Icon.Plus /> Catat Serah Terima</button>
       </div>
 
-      {/* ── STATS ── */}
       <div style={S.statsGrid}>
         {[
-          {
-            ico: <Icon.FileText />,
-            n: groupedTransactions.length,
-            l: "Jumlah BAST",
-            bg: "#eff6ff",
-            c: "#2563eb",
-          },
-          {
-            ico: <Icon.User />,
-            n: [...new Set(activeBorrows.map((b) => b.receiver_id))].length,
-            l: "Jumlah User Penerima",
-            bg: "#f5f3ff",
-            c: "#7c3aed",
-            onClick: () => setNav({ page: "user-receiver-list", data: null }),
-          },
-          {
-            ico: <Icon.CheckCircle />,
-            n: mockAssets.length - activeBorrows.length,
-            l: "Jumlah Barang Available",
-            bg: "#ecfdf5",
-            c: "#10b981",
-            onClick: () => setNav({ page: "available-asset-list", data: null }),
+          { ico: <Icon.FileText />, n: groupedTransactions.length, l: "Jumlah BAST", bg: "#eff6ff", c: "#2563eb" },
+          { ico: <Icon.User />, n: [...new Set(activeBorrows.map((b) => b.receiver_id))].length, l: "Jumlah User Penerima", bg: "#f5f3ff", c: "#7c3aed", onClick: () => setNav({ page: "user-receiver-list", data: null }) },
+          { 
+            ico: <Icon.CheckCircle />, 
+            n: mockAssets.filter(a => {
+              const activeBorrow = activeBorrows.find(b => b.code === a.code);
+              return !activeBorrow || isITorAdmin(activeBorrow.receiver_id);
+            }).length,
+            l: "Jumlah Barang Available", 
+            bg: "#ecfdf5", 
+            c: "#10b981", 
+            onClick: () => setNav({ page: "available-asset-list", data: null }) 
           },
         ].map((s, i) => (
-          <div
-            key={i}
-            onClick={s.onClick}
-            style={{ 
-              ...S.statCard, 
-              ...(s.warn ? S.statCardWarn : {}),
-              cursor: s.onClick ? "pointer" : "default",
-              transition: "all 0.2s ease",
-              background: s.onClick ? `${s.c}08` : "#fff", // Subtle tint for clickable cards
-              border: s.onClick ? `1.5px solid ${s.c}20` : S.statCard.border,
-            }}
-            onMouseOver={(e) => {
-              if (s.onClick) {
-                e.currentTarget.style.transform = "translateY(-4px)";
-                e.currentTarget.style.boxShadow = `0 12px 20px -5px ${s.c}30`;
-                e.currentTarget.style.background = `${s.c}15`; // Darker tint on hover
-                e.currentTarget.style.borderColor = `${s.c}40`;
-              }
-            }}
-            onMouseOut={(e) => {
-              if (s.onClick) {
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.05)";
-                e.currentTarget.style.background = `${s.c}08`;
-                e.currentTarget.style.borderColor = `${s.c}20`;
-              }
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-              <div style={{ ...S.statIco, background: s.bg, color: s.c }}>
-                {s.ico}
-              </div>
-              <div>
-                <div
-                  style={{ ...S.statN, ...(s.warn ? { color: "#dc2626" } : {}) }}
-                >
-                  {s.n}
-                </div>
-                <div style={S.statL}>{s.l}</div>
-              </div>
-            </div>
+          <div key={i} onClick={s.onClick} style={{ ...S.statCard, cursor: s.onClick ? "pointer" : "default", transition: "all 0.2s ease", background: s.onClick ? `${s.c}08` : "#fff", border: s.onClick ? `1.5px solid ${s.c}20` : S.statCard.border }} onMouseOver={(e) => { if (s.onClick) { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = `0 12px 20px -5px ${s.c}30`; e.currentTarget.style.background = `${s.c}15`; e.currentTarget.style.borderColor = `${s.c}40`; } }} onMouseOut={(e) => { if (s.onClick) { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.05)"; e.currentTarget.style.background = `${s.c}08`; e.currentTarget.style.borderColor = `${s.c}20`; } }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}><div style={{ ...S.statIco, background: s.bg, color: s.c }}>{s.ico}</div><div><div style={S.statN}>{s.n}</div><div style={S.statL}>{s.l}</div></div></div>
           </div>
         ))}
       </div>
 
-
-
       <div style={S.toolbar}>
-        <div style={S.searchWrap}>
-          <Icon.Search />
-          <input
-            placeholder="Cari kode, nama aset, atau lokasi…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            style={S.searchInput}
-          />
-          {search && (
-            <button
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                color: "#94a3b8",
-                padding: 0,
-                display: "flex",
-              }}
-              onClick={() => setSearch("")}
-            >
-              <Icon.Times />
-            </button>
-          )}
-        </div>
-        <>
-          <div style={S.filterWrap}>
-            <span style={{ color: "#94a3b8", display: "flex" }}>
-              <Icon.Briefcase />
-            </span>
-            <select
-              value={filterPekerjaan}
-              onChange={(e) => setFilterPekerjaan(e.target.value)}
-              style={S.filterSelect}
-            >
-              <option value="semua">Semua Pekerjaan</option>
-              {mockPekerjaan.map((p) => (
-                <option key={p.kode} value={p.kode}>
-                  {p.no_anggaran} — {p.nama.slice(0, 40)}…
-                </option>
-              ))}
-            </select>
-          </div>
-          <div style={S.filterWrap}>
-            <span style={{ color: "#94a3b8", display: "flex" }}>
-              <Icon.User />
-            </span>
-            <select
-              value={filterUser}
-              onChange={(e) => setFilterUser(e.target.value)}
-              style={S.filterSelect}
-            >
-              <option value="semua">Semua Penerima</option>
-              {mockUsers.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        </>
-        <div style={S.countBadge}>{filteredBorrows.length} aset</div>
+        <div style={S.searchWrap}><Icon.Search /><input placeholder="Cari kode, nama barang, atau lokasi…" value={search} onChange={(e) => setSearch(e.target.value)} style={S.searchInput} />{search && <button style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", padding: 0, display: "flex" }} onClick={() => setSearch("")}><Icon.Times /></button>}</div>
+        <div style={S.filterWrap}><Icon.Briefcase /><select value={filterPekerjaan} onChange={(e) => setFilterPekerjaan(e.target.value)} style={S.filterSelect}><option value="semua">Semua Pekerjaan</option>{mockPekerjaan.map((p) => (<option key={p.kode} value={p.kode}>{p.no_anggaran} — {p.nama.slice(0, 40)}…</option>))}</select></div>
+        <div style={S.filterWrap}><Icon.User /><select value={filterUser} onChange={(e) => setFilterUser(e.target.value)} style={S.filterSelect}><option value="semua">Semua Penerima</option>{mockUsers.map((u) => (<option key={u.id} value={u.id}>{u.name}</option>))}</select></div>
+        <div style={S.countBadge}>{filteredBorrows.length} barang</div>
       </div>
 
-
-      <div
-        style={{ display: "flex", flexDirection: "column", gap: ".65rem" }}
-      >
       <div style={{ ...S.page }}>
         <div style={{ overflowX: "auto" }}>
           <table style={S.table}>
             <thead style={S.thead}>
-              <tr>
-                <th style={{ ...S.th, width: 40 }}>No</th>
-                <th style={S.th}>No.BAST</th>
-                <th style={S.th}>Tgl BAST</th>
-                <th style={S.th}>Pemberi</th>
-                <th style={S.th}>Penerima</th>
-                <th style={{ ...S.th, width: 100 }}>Jumlah Item</th>
-                <th style={{ ...S.th, textAlign: "center" }}>Aksi</th>
-              </tr>
+              <tr><th style={{ ...S.th, width: 40 }}>No</th><th style={S.th}>No.BAST</th><th style={S.th}>Tgl BAST</th><th style={S.th}>Pemberi</th><th style={S.th}>Penerima</th><th style={{ ...S.th, width: 100 }}>Jumlah Item</th><th style={{ ...S.th, textAlign: "center" }}>Aksi</th></tr>
             </thead>
             <tbody>
               {groupedTransactions.length === 0 ? (
-                <tr>
-                  <td colSpan="7" style={{ ...S.td, textAlign: "center", padding: "3rem", color: "#94a3b8" }}>
-                    Tidak ada data serah terima yang ditemukan.
-                  </td>
-                </tr>
+                <tr><td colSpan="7" style={{ ...S.td, textAlign: "center", padding: "3rem", color: "#94a3b8" }}>Tidak ada data serah terima yang ditemukan.</td></tr>
               ) : (
                 groupedTransactions.map((tx, idx) => {
                   const giver = getUser(tx.giver_id);
                   const receiver = getUser(tx.receiver_id);
                   const bastNo = `BAST/${new Date(tx.date).getFullYear()}/${(borrows.length - idx).toString().padStart(3, '0')}`;
-                  
                   return (
-                    <tr key={idx} style={S.tr} onClick={() => setNav({ page: "borrow-detail", data: tx.items[0] })}>
+                    <tr key={idx} style={S.tr} onClick={() => setNav({ page: "borrow-detail", data: tx })}>
                       <td style={{ ...S.td, textAlign: "center" }}>{idx + 1}</td>
-                      <td style={S.td}>
-                        <code style={{ ...S.code, color: "#1e293b", background: "#f1f5f9" }}>{bastNo}</code>
-                      </td>
+                      <td style={S.td}><code style={{ ...S.code, color: "#1e293b", background: "#f1f5f9" }}>{bastNo}</code></td>
                       <td style={S.td}>{fmtDateShort(tx.date)}</td>
-                      <td style={S.td}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                          <div style={{ ...S.avatar, background: "#f1f5f9", color: "#64748b" }}>{giver.name.charAt(0)}</div>
-                          <span style={{ fontWeight: 600 }}>{giver.name}</span>
-                        </div>
-                      </td>
-                      <td style={S.td}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                          <div style={{ ...S.avatar, background: "#dbeafe", color: "#2563eb" }}>{receiver.name.charAt(0)}</div>
-                          <span style={{ fontWeight: 600 }}>{receiver.name}</span>
-                        </div>
-                      </td>
-                      <td style={{ ...S.td, textAlign: "center" }}>
-                        <span 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setNav({ page: "ba-item-list", data: { items: tx.items, title: bastNo } });
-                          }}
-                          style={{ 
-                            background: "#eff6ff", 
-                            color: "#2563eb", 
-                            padding: "2px 8px", 
-                            borderRadius: "12px", 
-                            fontWeight: 700, 
-                            fontSize: ".7rem",
-                            cursor: "pointer",
-                            transition: "all 0.2s"
-                          }}
-                          onMouseOver={(e) => {
-                            e.currentTarget.style.background = "#2563eb";
-                            e.currentTarget.style.color = "#fff";
-                          }}
-                          onMouseOut={(e) => {
-                            e.currentTarget.style.background = "#eff6ff";
-                            e.currentTarget.style.color = "#2563eb";
-                          }}
-                        >
-                          {tx.items.length} Item
-                        </span>
-                      </td>
-                      <td style={{ ...S.td, textAlign: "center" }} onClick={(e) => e.stopPropagation()}>
-                        <div style={S.actionRow}>
-                          <button style={{ ...S.iconBtn, color: "#2563eb" }} title="Detail" onClick={() => setNav({ page: "borrow-detail", data: tx.items[0] })}>
-                            <Icon.Eye />
-                          </button>
-                          <button style={{ ...S.iconBtn, color: "#7c3aed" }} title="Cetak BAST" onClick={() => generateBAST(tx.items[0], "borrow")}>
-                            <Icon.Printer />
-                          </button>
-                          <button style={{ ...S.iconBtn, color: "#dc2626" }} title="Hapus" onClick={() => setNav({ page: "delete", data: tx.items[0] })}>
-                            <Icon.Trash />
-                          </button>
-                        </div>
-                      </td>
+                      <td style={S.td}><div style={{ display: "flex", alignItems: "center", gap: 6 }}><div style={{ ...S.avatar, background: "#f1f5f9", color: "#64748b" }}>{giver.name.charAt(0)}</div><span style={{ fontWeight: 600 }}>{giver.name}</span></div></td>
+                      <td style={S.td}><div style={{ display: "flex", alignItems: "center", gap: 6 }}><div style={{ ...S.avatar, background: "#dbeafe", color: "#2563eb" }}>{receiver.name.charAt(0)}</div><span style={{ fontWeight: 600 }}>{receiver.name}</span></div></td>
+                      <td style={{ ...S.td, textAlign: "center" }}><span style={{ background: "#f1f5f9", color: "#64748b", padding: "2px 8px", borderRadius: "12px", fontWeight: 700, fontSize: ".7rem", border: "1px solid #e2e8f0" }}>{tx.items.length} Item</span></td>
+                      <td style={{ ...S.td, textAlign: "center" }} onClick={(e) => e.stopPropagation()}><div style={S.actionRow}><button style={{ ...S.iconBtn, color: "#2563eb" }} title="Detail" onClick={() => setNav({ page: "borrow-detail", data: tx })}><Icon.Eye /></button><button style={{ ...S.iconBtn, color: "#7c3aed" }} title="Cetak BAST" onClick={() => generateBAST(tx.items[0], "borrow")}><Icon.Printer /></button><button style={{ ...S.iconBtn, color: "#dc2626" }} title="Hapus" onClick={() => setNav({ page: "delete", data: tx.items[0] })}><Icon.Trash /></button></div></td>
                     </tr>
                   );
                 })
@@ -4651,8 +4566,6 @@ export default function Peminjaman() {
           </table>
         </div>
       </div>
-      </div>
-
     </div>
   );
 }
