@@ -58,6 +58,10 @@ export const masterDataAPI = {
   updateBranch: (code, data) => api.put(`/master-data/branches/${code}`, data),
   deleteBranch: (code) => api.delete(`/master-data/branches/${code}`),
 
+  // Zonas & Subzonas
+  getZonas: (params) => api.get("/master-data/zonas", { params }),
+  getSubzonas: (params) => api.get("/master-data/subzonas", { params }),
+
   // Divisions
   getDivisions: () => api.get("/master-data/divisions"),
   addDivision: (data) => api.post("/master-data/divisions", data),
@@ -108,9 +112,16 @@ export const budgetAPI = {
 
 export const barangAPI = {
   getAll: () => api.get('/barang'),
+  getDevices: () => api.get('/devices'),
   create: (data) => api.post('/barang', data),
   update: (id, data) => api.put(`/barang/${id}`, data),
   delete: (id) => api.delete(`/barang/${id}`),
+};
+
+export const transactionAPI = {
+  getAll: () => api.get('/transactions'),
+  create: (data) => api.post('/transactions', data),
+  returnAsset: (data) => api.post('/transactions/return', data),
 };
 
 export default api;

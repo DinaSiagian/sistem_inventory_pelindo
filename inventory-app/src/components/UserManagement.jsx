@@ -464,6 +464,7 @@ function Pagination({
   accentColor = "#2563eb",
   accentBg = "#dbeafe",
   accentRing = "rgba(37,99,235,.08)",
+  className = "um-pagination"
 }) {
   if (totalPages <= 1) return null;
   const from = Math.min((page - 1) * perPage + 1, total);
@@ -485,47 +486,15 @@ function Pagination({
     pages.push(totalPages);
   }
 
-  const btnStyle = (active) => ({
-    minWidth: 28,
-    height: 28,
-    borderRadius: 6,
-    border: `1.5px solid ${active ? accentColor : "#e2e8f0"}`,
-    background: active ? accentColor : "#fff",
-    cursor: active ? "default" : "pointer",
-    fontSize: ".72rem",
-    fontWeight: 600,
-    color: active ? "#fff" : "#64748b",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: "0 5px",
-    fontFamily: "inherit",
-    transition: "all .12s",
-  });
-
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        padding: ".6rem .9rem",
-        borderTop: "1px solid #f1f5f9",
-        background: "#fafbff",
-        flexWrap: "wrap",
-        gap: ".4rem",
-      }}
-    >
-      <span style={{ fontSize: ".72rem", color: "#64748b" }}>
-        {from}–{to} dari {total} data
+    <div className={className}>
+      <span className="al-page-info">
+        Menampilkan {from}–{to} dari {total} data
       </span>
-      <div style={{ display: "flex", gap: ".3rem", alignItems: "center" }}>
+      <div className="al-page-btns">
         <button
-          style={{
-            ...btnStyle(false),
-            opacity: page === 1 ? 0.4 : 1,
-            cursor: page === 1 ? "not-allowed" : "pointer",
-          }}
+          className="al-page-btn"
+          style={{ opacity: page === 1 ? 0.4 : 1 }}
           onClick={() => page > 1 && onPageChange(page - 1)}
           disabled={page === 1}
         >
@@ -533,16 +502,12 @@ function Pagination({
         </button>
         {pages.map((p, i) =>
           p === "..." ? (
-            <span
-              key={`e${i}`}
-              style={{ fontSize: ".72rem", color: "#94a3b8", padding: "0 2px" }}
-            >
-              …
-            </span>
+            <span key={`e${i}`} style={{ fontSize: ".72rem", color: "#94a3b8", padding: "0 2px" }}>…</span>
           ) : (
             <button
               key={p}
-              style={btnStyle(p === page)}
+              className={`al-page-btn ${p === page ? "active" : ""}`}
+              style={p === page ? { background: accentColor, borderColor: accentColor, color: '#fff' } : {}}
               onClick={() => p !== page && onPageChange(p)}
             >
               {p}
@@ -550,11 +515,8 @@ function Pagination({
           ),
         )}
         <button
-          style={{
-            ...btnStyle(false),
-            opacity: page === totalPages ? 0.4 : 1,
-            cursor: page === totalPages ? "not-allowed" : "pointer",
-          }}
+          className="al-page-btn"
+          style={{ opacity: page === totalPages ? 0.4 : 1 }}
           onClick={() => page < totalPages && onPageChange(page + 1)}
           disabled={page === totalPages}
         >
@@ -630,18 +592,25 @@ const css = `
 
 /* ── ROOT ── */
 .um-root{padding:1rem 1.25rem;max-width:1400px;margin:0 auto;font-family:"Plus Jakarta Sans","Inter",sans-serif;background:var(--bg);min-height:100vh;}
+@media(max-width:640px){.um-root{padding:.75rem .6rem;}}
 
 /* ── PAGE HEADER ── */
 .um-page-header{display:flex;align-items:center;gap:.65rem;margin-bottom:0.9rem;flex-wrap:wrap;}
 .um-back-btn{display:inline-flex;align-items:center;gap:.35rem;padding:.38rem .75rem;border-radius:8px;border:1.5px solid var(--border);background:#fff;color:var(--slate-6);cursor:pointer;font-size:.78rem;font-weight:600;font-family:inherit;transition:all .15s;}
 .um-back-btn:hover{background:var(--bg);color:var(--slate);}
-.um-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.9rem;flex-wrap:wrap;gap:.6rem;}
+.um-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.9rem;flex-wrap:wrap;gap:.75rem;}
+@media(max-width:640px){
+  .um-header{flex-direction:column;align-items:flex-start;gap:.85rem;}
+  .um-header > button{width:100%;justify-content:center;padding:.6rem;}
+}
 .um-title{font-size:1.25rem;font-weight:800;color:var(--slate);margin:0 0 2px;letter-spacing:-.02em;}
-.um-subtitle{font-size:.775rem;color:var(--slate-6);margin:0;}
+@media(max-width:640px){.um-title{font-size:1.15rem;}}
+.um-subtitle{font-size:.775rem;color:var(--slate-6);margin:0;line-height:1.4;}
 
 /* ── STATS ── */
 .um-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:.65rem;margin-bottom:.9rem;}
-@media(max-width:900px){.um-stats{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:1024px){.um-stats{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:480px){.um-stats{grid-template-columns:1fr;}}
 .um-stat-card{background:#fff;border-radius:var(--r);border:1px solid var(--border);padding:.7rem .9rem;display:flex;align-items:center;gap:.65rem;box-shadow:var(--sh);transition:box-shadow .2s,transform .2s;}
 .um-stat-card:hover{box-shadow:var(--sh-md);transform:translateY(-1px);}
 .um-stat-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
@@ -652,12 +621,22 @@ const css = `
 
 /* ── TOOLBAR ── */
 .um-toolbar{display:flex;align-items:center;gap:.5rem;margin-bottom:.7rem;flex-wrap:wrap;}
+@media(max-width:768px){
+  .um-toolbar{gap:.4rem;}
+  .um-toolbar > * { flex: 1 1 calc(50% - .4rem); min-width: 140px; }
+  .um-search-wrap{order:-1;flex: 1 1 100%!important;}
+  .um-count{flex: 1 1 100%!important; justify-content: center; text-align: center;}
+  .um-filter-chips{flex: 1 1 100%!important;}
+}
+@media(max-width:480px){
+  .um-toolbar > * { flex: 1 1 100%!important; }
+}
 .um-search-wrap{flex:1;min-width:200px;display:flex;align-items:center;gap:.45rem;background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:.4rem .75rem;transition:border-color .15s;}
 .um-search-wrap:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.08);}
 .um-search-wrap input{border:none;outline:none;font-size:.8rem;flex:1;color:var(--slate);background:#fff;font-family:inherit;}
-.um-filter-wrap{display:flex;align-items:center;gap:.35rem;background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:.38rem .7rem;}
-.um-filter-wrap select{border:none;outline:none;font-size:.775rem;color:#334155;background:#fff;cursor:pointer;font-family:inherit;}
-.um-count{font-size:.75rem;font-weight:600;color:var(--slate-6);background:#fff;border:1px solid var(--border);border-radius:7px;padding:.32rem .65rem;white-space:nowrap;}
+.um-filter-wrap{display:flex;align-items:center;gap:.35rem;background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:.38rem .7rem;transition:all .15s;}
+.um-filter-wrap select{border:none;outline:none;font-size:.775rem;color:#334155;background:#fff;cursor:pointer;font-family:inherit;width:100%;}
+.um-count{font-size:.75rem;font-weight:600;color:var(--slate-6);background:#fff;border:1px solid var(--border);border-radius:7px;padding:.32rem .65rem;white-space:nowrap;display:flex;align-items:center;}
 .um-filter-disabled{opacity:.5;pointer-events:none;}
 .um-filter-chips{display:flex;gap:.3rem;flex-wrap:wrap;align-items:center;}
 .um-chip{display:inline-flex;align-items:center;gap:.3rem;background:#dbeafe;color:#1d4ed8;border-radius:99px;padding:1px 8px;font-size:.68rem;font-weight:600;white-space:nowrap;}
@@ -665,15 +644,35 @@ const css = `
 .um-chip button:hover{opacity:1;}
 
 /* ── TABLE ── */
-.um-table-wrap{background:#fff;border-radius:12px;border:1px solid var(--border);overflow-x:auto;box-shadow:var(--sh);}
+.um-table-wrap{background:#fff;border-radius:12px;border:1px solid var(--border);overflow-x:auto;box-shadow:var(--sh);margin-bottom:1rem;}
 .um-table{width:100%;border-collapse:collapse;font-size:.775rem;}
 .um-table thead tr{background:linear-gradient(135deg,#1e3a8a,var(--blue));}
-.um-table thead th{color:#fff;padding:.55rem .8rem;text-align:left;font-weight:600;font-size:.72rem;white-space:nowrap;}
+.um-table thead th{color:#fff;padding:.7rem .8rem;text-align:left;font-weight:600;font-size:.72rem;white-space:nowrap;}
 .um-table tbody tr{border-bottom:1px solid #f1f5f9;transition:background .12s;}
 .um-table tbody tr:last-child{border-bottom:none;}
 .um-table tbody tr:hover{background:#fafbff;}
-.um-table tbody td{padding:.55rem .8rem;vertical-align:middle;}
-.um-empty{text-align:center;color:var(--slate-4);padding:2rem!important;}
+.um-table tbody td{padding:.7rem .8rem;vertical-align:middle;}
+.um-empty{text-align:center;color:var(--slate-4);padding:2.5rem!important;}
+
+@media(max-width:1024px){
+  .um-table{min-width: 600px;}
+  .um-table-wrap{border-radius: 8px; overflow-x: auto;}
+  .um-table tbody td{padding: .6rem .7rem;}
+  /* Hide secondary columns in User Table on mobile */
+  .um-table th:nth-child(2), .um-table td:nth-child(2),
+  .um-table th:nth-child(3), .um-table td:nth-child(3),
+  .um-table th:nth-child(4), .um-table td:nth-child(4),
+  .um-table th:nth-child(5), .um-table td:nth-child(5),
+  .um-table th:nth-child(7), .um-table td:nth-child(7),
+  .um-table th:nth-child(8), .um-table td:nth-child(8) { display: none; }
+  .um-table{min-width: unset;}
+}
+@media(max-width:480px){
+  .um-table thead th, .um-table tbody td { padding: .5rem .4rem; }
+  .um-user-cell { gap: .35rem; }
+  .um-avatar { width: 24px; height: 24px; font-size: .65rem; }
+  .um-user-name { font-size: .72rem; }
+}
 
 /* ── USER CELL ── */
 .um-user-cell{display:flex;align-items:center;gap:.5rem;}
@@ -681,24 +680,26 @@ const css = `
 .um-avatar--blue{background:#dbeafe;color:#1d4ed8;}.um-avatar--purple{background:#ede9fe;color:#7c3aed;}
 .um-avatar--lg{width:42px;height:42px;font-size:.9rem;border-radius:10px;}
 .um-user-name{font-size:.775rem;font-weight:600;color:#1e293b;}
-.um-user-email{font-size:.68rem;color:var(--slate-6);}
-.um-username{font-family:"Courier New",monospace;font-size:.7rem;font-weight:700;color:var(--blue);background:var(--blue-lt);padding:1px 6px;border-radius:4px;white-space:nowrap;}
+.um-user-email{font-size:.68rem;color:var(--slate-6);word-break:break-all;}
+.um-username{font-family:inherit;font-size:.72rem;font-weight:700;color:var(--blue);background:var(--blue-lt);padding:2px 7px;border-radius:6px;white-space:nowrap;}
 .um-entity-cell{display:flex;flex-direction:column;gap:1px;}
-.um-entity-code{font-size:.67rem;font-weight:700;color:#7c3aed;background:#ede9fe;padding:1px 5px;border-radius:3px;width:fit-content;}
+.um-entity-code{font-size:.67rem;font-weight:700;color:#7c3aed;background:#ede9fe;padding:2px 6px;border-radius:4px;width:fit-content;}
 .um-entity-name{font-size:.7rem;color:var(--slate-6);}
-.um-role-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:99px;font-size:.69rem;font-weight:600;white-space:nowrap;}
-.um-status-toggle-btn{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:99px;font-size:.69rem;font-weight:600;border:none;cursor:pointer;font-family:inherit;transition:all .15s;}
+.um-role-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:99px;font-size:.69rem;font-weight:600;white-space:nowrap;}
+.um-status-toggle-btn{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:99px;font-size:.69rem;font-weight:600;border:none;cursor:pointer;font-family:inherit;transition:all .15s;}
 .um-status-toggle-btn--aktif{background:var(--green-lt);color:var(--green);}
 .um-status-toggle-btn--nonaktif{background:#f1f5f9;color:var(--slate-6);}
-.um-status-toggle-btn:hover{filter:brightness(.9);}
+.um-status-toggle-btn:hover{filter:brightness(.95);transform:scale(1.02);}
 .um-last-login{font-size:.72rem;color:var(--slate-6);white-space:nowrap;}
 
 /* ── DROPDOWN ACTIONS ── */
 .um-dd-wrap{position:relative;}
-.um-dd-btn{width:28px;height:28px;border-radius:7px;border:1.5px solid var(--border);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--slate-6);transition:all .15s;}
+.um-dd-btn{width:32px;height:32px;border-radius:8px;border:1.5px solid var(--border);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--slate-6);transition:all .15s;}
+@media(max-width:1024px){.um-dd-btn{width:36px;height:36px;}}
 .um-dd-btn:hover{background:var(--bg);border-color:var(--slate-4);}
-.um-dd-menu{position:absolute;right:0;top:calc(100% + 4px);background:#fff;border:1.5px solid var(--border);border-radius:10px;box-shadow:var(--sh-md);min-width:155px;z-index:200;overflow:hidden;}
-.um-dd-item{display:flex;align-items:center;gap:.5rem;padding:.48rem .75rem;font-size:.775rem;font-weight:500;cursor:pointer;color:var(--slate);transition:background .1s;}
+.um-dd-menu{position:absolute;right:0;top:calc(100% + 6px);background:#fff;border:1.5px solid var(--border);border-radius:10px;box-shadow:var(--sh-md);min-width:170px;z-index:200;overflow:hidden;}
+@media(max-width:1024px){.um-dd-menu{right:0;left:auto;}}
+.um-dd-item{display:flex;align-items:center;gap:.6rem;padding:.6rem .85rem;font-size:.8rem;font-weight:500;cursor:pointer;color:var(--slate);transition:background .1s;}
 .um-dd-item:hover{background:#f8fafc;}
 .um-dd-item--danger{color:var(--red);}
 .um-dd-item--danger:hover{background:var(--red-lt);}
@@ -706,7 +707,7 @@ const css = `
 
 /* ── BUTTONS ── */
 .um-btn{display:inline-flex;align-items:center;gap:.35rem;padding:.42rem .9rem;border-radius:8px;font-size:.8rem;font-weight:600;border:none;cursor:pointer;transition:all .18s;font-family:inherit;}
-.um-btn-lg{padding:.5rem 1.1rem;font-size:.84rem;}
+.um-btn-lg{padding:.55rem 1.25rem;font-size:.84rem;}
 .um-btn-primary{background:linear-gradient(135deg,#1d4ed8,#2563eb);color:#fff;box-shadow:0 2px 6px rgba(37,99,235,.22);}
 .um-btn-primary:hover{filter:brightness(1.1);transform:translateY(-1px);}
 .um-btn-secondary{background:var(--bg);color:#475569;border:1.5px solid var(--border);}
@@ -716,83 +717,103 @@ const css = `
 
 /* ── DETAIL PAGE ── */
 .um-detail-root{padding:1rem 1.25rem;max-width:1400px;margin:0 auto;font-family:"Plus Jakarta Sans","Inter",sans-serif;background:var(--bg);min-height:100vh;}
-.um-detail-card{background:#fff;border-radius:12px;border:1px solid var(--border);box-shadow:var(--sh);margin-bottom:.9rem;}
-.um-detail-card-header{padding:.8rem 1.1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.5rem;font-size:.82rem;font-weight:700;color:var(--slate);}
-.um-detail-card-body{padding:1rem 1.1rem;}
-.um-detail-profile{display:flex;align-items:center;gap:.85rem;padding:.85rem;background:var(--bg);border:1px solid var(--border);border-radius:10px;margin-bottom:1rem;}
-.um-detail-name{font-size:.92rem;font-weight:700;color:var(--slate);}
-.um-detail-badges{display:flex;gap:7px;flex-wrap:wrap;margin-top:5px;}
-.um-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:.65rem 1.25rem;}
-@media(max-width:600px){.um-detail-grid{grid-template-columns:1fr;}}
-.um-detail-item{display:flex;flex-direction:column;gap:2px;}
+@media(max-width:640px){.um-detail-root{padding:.75rem .6rem;}}
+.um-detail-card{background:#fff;border-radius:12px;border:1px solid var(--border);box-shadow:var(--sh);margin-bottom:.9rem;overflow:hidden;}
+.um-detail-card-header{padding:.9rem 1.2rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.55rem;font-size:.84rem;font-weight:700;color:var(--slate);}
+.um-detail-card-body{padding:1.1rem 1.2rem;}
+.um-detail-profile{display:flex;align-items:center;gap:1rem;padding:1rem;background:var(--bg);border:1px solid var(--border);border-radius:12px;margin-bottom:1.25rem;}
+@media(max-width:480px){.um-detail-profile{flex-direction:column;text-align:center;}}
+.um-detail-name{font-size:.95rem;font-weight:700;color:var(--slate);}
+.um-detail-badges{display:flex;gap:7px;flex-wrap:wrap;margin-top:7px;}
+@media(max-width:480px){.um-detail-badges{justify-content:center;}}
+.um-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:.8rem 1.5rem;}
+@media(max-width:768px){.um-detail-grid{grid-template-columns:1fr; gap:.9rem;}}
+.um-detail-item{display:flex;flex-direction:column;gap:3px;}
 .um-detail-label{font-size:.67rem;font-weight:700;color:var(--slate-4);text-transform:uppercase;letter-spacing:.04em;}
-.um-detail-val{font-size:.78rem;color:var(--slate);}
-.um-detail-actions{display:flex;gap:.5rem;flex-wrap:wrap;padding:.8rem 1.1rem;border-top:1px solid var(--border);}
+.um-detail-val{font-size:.8rem;color:var(--slate);line-height:1.4;}
+.um-detail-actions{display:flex;gap:.6rem;flex-wrap:wrap;padding:1rem 1.2rem;border-top:1px solid var(--border);background:#fafafa;}
+@media(max-width:480px){.um-detail-actions button{width:100%; justify-content:center;}}
 
 /* ── FORM PAGE ── */
-.um-form-root{padding:1rem 1.25rem;max-width:660px;margin:0 auto;font-family:"Plus Jakarta Sans","Inter",sans-serif;background:var(--bg);min-height:100vh;}
-.um-form-card{background:#fff;border-radius:12px;border:1px solid var(--border);box-shadow:var(--sh);padding:1.25rem;display:flex;flex-direction:column;gap:.8rem;}
-.um-form-row{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;}
-@media(max-width:520px){.um-form-row{grid-template-columns:1fr;}}
-.um-form-group{display:flex;flex-direction:column;gap:.28rem;}
-.um-form-group label{font-size:.75rem;font-weight:600;color:#475569;display:flex;align-items:center;gap:4px;}
-.um-form-group input,.um-form-group select{padding:.42rem .7rem;border-radius:8px;border:1.5px solid var(--border);font-size:.8rem;outline:none;transition:border .15s,box-shadow .15s;font-family:inherit;background:#fff!important;color:var(--slate)!important;}
+.um-form-root{padding:1.5rem 1.25rem;max-width:680px;margin:0 auto;font-family:"Plus Jakarta Sans","Inter",sans-serif;background:var(--bg);min-height:100vh;}
+@media(max-width:640px){.um-form-root{padding:1rem .6rem;}}
+.um-form-card{background:#fff;border-radius:12px;border:1px solid var(--border);box-shadow:var(--sh);padding:1.5rem;display:flex;flex-direction:column;gap:.9rem;}
+@media(max-width:480px){.um-form-card{padding:1rem;}}
+.um-form-row{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;}
+@media(max-width:520px){.um-form-row{grid-template-columns:1fr; gap:.8rem;}}
+.um-form-group{display:flex;flex-direction:column;gap:.35rem;}
+.um-form-group label{font-size:.78rem;font-weight:600;color:#475569;display:flex;align-items:center;gap:5px;}
+.um-form-group input,.um-form-group select{padding:.5rem .8rem;border-radius:8px;border:1.5px solid var(--border);font-size:.82rem;outline:none;transition:border .15s,box-shadow .15s;font-family:inherit;background:#fff!important;color:var(--slate)!important;width:100%;}
 .um-form-group input:focus,.um-form-group select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.09);}
 .um-input-error{border-color:var(--red)!important;}
-.um-error{font-size:.7rem;color:var(--red);}
+.um-error{font-size:.72rem;color:var(--red);margin-top:2px;}
 .um-hint{font-size:.7rem;color:var(--slate-4);}
 .um-req{color:var(--red);}
 .um-pass-wrap{position:relative;}
-.um-pass-wrap input{width:100%;padding-right:2.3rem;}
-.um-pass-toggle{position:absolute;right:.55rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--slate-4);display:flex;align-items:center;padding:0;}
+.um-pass-wrap input{padding-right:2.5rem;}
+.um-pass-toggle{position:absolute;right:.7rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--slate-4);display:flex;align-items:center;padding:0;height:100%;}
 .um-pass-toggle:hover{color:var(--slate-6);}
-.um-pass-toggle svg{width:13px;height:13px;display:block;}
-.um-role-options{display:flex;gap:.4rem;flex-wrap:wrap;}
-.um-role-opt{display:flex;align-items:center;gap:.4rem;padding:.35rem .75rem;border-radius:99px;border:1.5px solid var(--border);cursor:pointer;font-size:.76rem;font-weight:600;color:var(--slate-6);background:#fff;transition:all .14s;}
+.um-pass-toggle svg{width:15px;height:15px;display:block;}
+.um-role-options{display:flex;gap:.5rem;flex-wrap:wrap;}
+.um-role-opt{display:flex;align-items:center;gap:.45rem;padding:.4rem .9rem;border-radius:99px;border:1.5px solid var(--border);cursor:pointer;font-size:.78rem;font-weight:600;color:var(--slate-6);background:#fff;transition:all .14s;}
+@media(max-width:480px){.um-role-opt{flex:1 1 calc(50% - .5rem); justify-content:center;}}
 .um-role-opt input[type="radio"]{display:none;}
 .um-role-opt.active{font-weight:700;}
-.um-role-opt svg{width:12px;height:12px;display:block;}
-.um-status-toggle{display:flex;gap:.4rem;}
-.um-status-btn{display:inline-flex;align-items:center;gap:.35rem;padding:.35rem .75rem;border-radius:99px;border:1.5px solid var(--border);cursor:pointer;font-size:.76rem;font-weight:600;background:#fff;color:var(--slate-6);font-family:inherit;transition:all .14rem;}
+.um-status-toggle{display:flex;gap:.5rem;}
+@media(max-width:480px){.um-status-toggle{flex-direction:column;}}
+.um-status-btn{display:inline-flex;align-items:center;gap:.4rem;padding:.45rem .95rem;border-radius:99px;border:1.5px solid var(--border);cursor:pointer;font-size:.78rem;font-weight:600;background:#fff;color:var(--slate-6);font-family:inherit;transition:all .14s;}
+@media(max-width:480px){.um-status-btn{justify-content:center;}}
 .um-status-btn.active-green{background:var(--green-lt);color:var(--green);border-color:var(--green);}
 .um-status-btn.active-red{background:var(--red-lt);color:var(--red);border-color:var(--red);}
-.um-status-btn svg{width:12px;height:12px;display:block;}
-.um-form-footer{display:flex;gap:.5rem;justify-content:flex-end;padding-top:.5rem;border-top:1px solid var(--border);}
+.um-form-footer{display:flex;gap:.6rem;justify-content:flex-end;padding-top:1rem;border-top:1px solid var(--border);margin-top:.5rem;}
+@media(max-width:480px){.um-form-footer{flex-direction:column-reverse;} .um-form-footer button{width:100%; justify-content:center;}}
 
 /* ── CONFIRM PAGE (reset / delete) ── */
-.um-confirm-root{padding:1rem 1.25rem;max-width:440px;margin:0 auto;font-family:"Plus Jakarta Sans","Inter",sans-serif;background:var(--bg);min-height:100vh;}
-.um-confirm-card{background:#fff;border-radius:12px;border:1px solid var(--border);box-shadow:var(--sh);padding:2rem 1.5rem;text-align:center;}
-.um-confirm-icon{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;}
+.um-confirm-root{padding:2rem 1.25rem;max-width:460px;margin:0 auto;font-family:"Plus Jakarta Sans","Inter",sans-serif;background:var(--bg);min-height:100vh;}
+@media(max-width:480px){.um-confirm-root{padding:1rem .6rem;}}
+.um-confirm-card{background:#fff;border-radius:16px;border:1px solid var(--border);box-shadow:var(--sh-md);padding:2.5rem 1.5rem;text-align:center;}
+.um-confirm-icon{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;}
 .um-confirm-icon--warn{background:var(--warn-lt);color:var(--warn);}
 .um-confirm-icon--danger{background:var(--red-lt);color:var(--red);}
 .um-confirm-icon--success{background:var(--green-lt);color:var(--green);}
-.um-confirm-title{font-size:1rem;font-weight:700;color:var(--slate);margin-bottom:.4rem;}
-.um-confirm-desc{font-size:.8rem;color:var(--slate-6);line-height:1.6;}
-.um-confirm-footer{display:flex;gap:.5rem;justify-content:center;margin-top:1.25rem;}
+.um-confirm-title{font-size:1.1rem;font-weight:700;color:var(--slate);margin-bottom:.5rem;}
+.um-confirm-desc{font-size:.85rem;color:var(--slate-6);line-height:1.6;margin-bottom:1.5rem;}
+.um-confirm-footer{display:flex;gap:.6rem;justify-content:center;margin-top:1.5rem;}
+@media(max-width:480px){.um-confirm-footer{flex-direction:column-reverse;} .um-confirm-footer button{width:100%; justify-content:center;}}
 
 /* ── ACTIVITY LOG ── */
-.al-section{margin-top:1rem;border-radius:12px;border:1px solid var(--teal-ring);overflow:hidden;box-shadow:var(--sh);}
-.al-header{background:linear-gradient(135deg,var(--teal-lt),#ecfeff);padding:.65rem 1rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;border-bottom:1px solid var(--teal-ring);transition:background .15s;}
+.al-section{margin-top:1.5rem;border-radius:12px;border:1px solid var(--teal-ring);overflow:hidden;box-shadow:var(--sh);}
+.al-header{background:linear-gradient(135deg,var(--teal-lt),#ecfeff);padding:.8rem 1.1rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;border-bottom:1px solid var(--teal-ring);transition:background .15s;}
 .al-header:hover{background:linear-gradient(135deg,#d1fae5,#cffafe);}
-.al-header-left{display:flex;align-items:center;gap:.55rem;}
-.al-header-title{font-size:.84rem;font-weight:700;color:var(--teal);}
-.al-header-count{font-size:.68rem;font-weight:600;color:#0d9488;background:#fff;border:1px solid var(--teal-ring);border-radius:99px;padding:1px 8px;}
+.al-header-left{display:flex;align-items:center;gap:.6rem;}
+.al-header-title{font-size:.88rem;font-weight:700;color:var(--teal);}
+.al-header-count{font-size:.7rem;font-weight:600;color:#0d9488;background:#fff;border:1px solid var(--teal-ring);border-radius:99px;padding:2px 10px;}
 .al-body{background:#fff;}
-.al-toolbar{display:flex;align-items:center;gap:.55rem;padding:.7rem .9rem;border-bottom:1px solid #f0fdf4;flex-wrap:wrap;}
-.al-search-wrap{flex:1;min-width:180px;display:flex;align-items:center;gap:.4rem;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:.38rem .7rem;transition:border-color .15s;}
+.al-toolbar{display:flex;align-items:center;gap:.6rem;padding:.9rem 1.1rem;border-bottom:1px solid #f0fdf4;flex-wrap:wrap;}
+@media(max-width:768px){
+  .al-toolbar > * { flex: 1 1 100%; }
+  .al-toolbar span { text-align: center; }
+}
+.al-search-wrap{flex:1;min-width:200px;display:flex;align-items:center;gap:.45rem;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:.42rem .8rem;transition:border-color .15s;}
 .al-search-wrap:focus-within{border-color:#14b8a6;box-shadow:0 0 0 3px rgba(20,184,166,.1);}
-.al-search-wrap input{border:none;outline:none;font-size:.775rem;flex:1;color:var(--slate);background:transparent;font-family:inherit;}
-.al-filter-wrap{display:flex;align-items:center;gap:.35rem;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:.36rem .65rem;}
-.al-filter-wrap select{border:none;outline:none;font-size:.75rem;color:#334155;background:transparent;cursor:pointer;font-family:inherit;}
+.al-search-wrap input{border:none;outline:none;font-size:.8rem;flex:1;color:var(--slate);background:transparent;font-family:inherit;}
+.al-filter-wrap{display:flex;align-items:center;gap:.4rem;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:.4rem .75rem;}
+.al-filter-wrap select{border:none;outline:none;font-size:.78rem;color:#334155;background:transparent;cursor:pointer;font-family:inherit;width:100%;}
 .al-table-wrap{overflow-x:auto;}
 .al-table{width:100%;border-collapse:collapse;font-size:.755rem;}
 .al-table thead tr{background:linear-gradient(135deg,var(--teal),var(--teal-dk));}
-.al-table thead th{color:#fff;padding:.5rem .8rem;text-align:left;font-weight:600;font-size:.7rem;white-space:nowrap;}
+.al-table thead th{color:#fff;padding:.7rem .9rem;text-align:left;font-weight:600;font-size:.72rem;white-space:nowrap;}
 .al-table tbody tr{border-bottom:1px solid #f0fdf4;transition:background .12s;}
-.al-table tbody tr:last-child{border-bottom:none;}
 .al-table tbody tr:hover{background:#f0fdf4;}
-.al-table tbody td{padding:.5rem .8rem;vertical-align:middle;}
-.al-empty{text-align:center;color:var(--slate-4);padding:2rem!important;}
+@media(max-width:1024px){
+  .al-table{min-width: unset;}
+  .al-table tbody td{padding: .6rem .8rem;}
+  /* Hide secondary columns in Log Table on mobile */
+  .al-table th:nth-child(4), .al-table td:nth-child(4),
+  .al-table th:nth-child(5), .al-table td:nth-child(5),
+  .al-table th:nth-child(6), .al-table td:nth-child(6),
+  .al-table th:nth-child(7), .al-table td:nth-child(7) { display: none; }
+}
 .al-timestamp-date{font-size:.72rem;font-weight:600;color:#334155;}
 .al-timestamp-time{font-size:.66rem;color:var(--slate-4);}
 .al-user-cell{display:flex;align-items:center;gap:.45rem;}
@@ -822,126 +843,119 @@ const css = `
 .al-diff-null{font-style:italic;color:var(--slate-4);}
 
 /* ── MASTER DATA MANAGEMENT SECTIONS ── */
-.md-section{margin-top:1rem;border-radius:12px;overflow:hidden;box-shadow:var(--sh);}
+.md-section{margin-top:1.25rem;border-radius:12px;overflow:hidden;box-shadow:var(--sh);}
 .md-section--entity{border:1px solid #c7d2fe;}
 .md-section--branch{border:1px solid #bfdbfe;}
 .md-section--division{border:1px solid #bbf7d0;}
-
-.md-header{padding:.65rem 1rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;transition:background .15s;}
+.md-header{padding:.75rem 1.1rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;transition:background .15s;}
 .md-header--entity{background:linear-gradient(135deg,#eef2ff,#e0e7ff);border-bottom:1px solid #c7d2fe;}
 .md-header--entity:hover{background:linear-gradient(135deg,#e0e7ff,#c7d2fe);}
 .md-header--branch{background:linear-gradient(135deg,#eff6ff,#dbeafe);border-bottom:1px solid #bfdbfe;}
 .md-header--branch:hover{background:linear-gradient(135deg,#dbeafe,#bfdbfe);}
 .md-header--division{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-bottom:1px solid #bbf7d0;}
 .md-header--division:hover{background:linear-gradient(135deg,#dcfce7,#bbf7d0);}
-
 .md-header-left{display:flex;align-items:center;gap:.55rem;}
-.md-header-title--entity{font-size:.84rem;font-weight:700;color:var(--indigo);}
-.md-header-title--branch{font-size:.84rem;font-weight:700;color:var(--blue-dk);}
-.md-header-title--division{font-size:.84rem;font-weight:700;color:var(--green);}
-.md-header-count--entity{font-size:.68rem;font-weight:600;color:var(--indigo);background:#fff;border:1px solid #c7d2fe;border-radius:99px;padding:1px 8px;}
-.md-header-count--branch{font-size:.68rem;font-weight:600;color:var(--blue-dk);background:#fff;border:1px solid #bfdbfe;border-radius:99px;padding:1px 8px;}
-.md-header-count--division{font-size:.68rem;font-weight:600;color:var(--green);background:#fff;border:1px solid #bbf7d0;border-radius:99px;padding:1px 8px;}
-
+.md-header-title--entity{font-size:.88rem;font-weight:700;color:var(--indigo);}
+.md-header-title--branch{font-size:.88rem;font-weight:700;color:var(--blue-dk);}
+.md-header-title--division{font-size:.88rem;font-weight:700;color:var(--green);}
+.md-header-count--entity{font-size:.7rem;font-weight:600;color:var(--indigo);background:#fff;border:1px solid #c7d2fe;border-radius:99px;padding:2px 10px;white-space:nowrap;}
+.md-header-count--branch{font-size:.7rem;font-weight:600;color:var(--blue-dk);background:#fff;border:1px solid #bfdbfe;border-radius:99px;padding:2px 10px;white-space:nowrap;}
+.md-header-count--division{font-size:.7rem;font-weight:600;color:var(--green);background:#fff;border:1px solid #bbf7d0;border-radius:99px;padding:2px 10px;white-space:nowrap;}
 .md-body{background:#fff;}
-.md-toolbar{display:flex;align-items:center;gap:.55rem;padding:.65rem .9rem;flex-wrap:wrap;}
+.md-toolbar{display:flex;align-items:center;gap:.6rem;padding:.75rem 1.1rem;flex-wrap:wrap;}
 .md-toolbar--entity{border-bottom:1px solid #eef2ff;}
 .md-toolbar--branch{border-bottom:1px solid #eff6ff;}
 .md-toolbar--division{border-bottom:1px solid #f0fdf4;}
-
-.md-search-wrap{flex:1;min-width:160px;display:flex;align-items:center;gap:.4rem;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:.36rem .65rem;transition:border-color .15s;}
-.md-search-wrap input{border:none;outline:none;font-size:.775rem;flex:1;color:var(--slate);background:transparent;font-family:inherit;}
+@media(max-width:768px){
+  .md-toolbar > * { flex: 1 1 100%; }
+  .md-toolbar span { text-align: center; }
+  .md-add-btn { margin-left: 0!important; justify-content: center; width: 100%; padding: .6rem; }
+}
+.md-search-wrap{flex:1;min-width:180px;display:flex;align-items:center;gap:.45rem;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:.42rem .8rem;transition:border-color .15s;}
+.md-search-wrap input{border:none;outline:none;font-size:.8rem;flex:1;color:var(--slate);background:transparent;font-family:inherit;}
 .md-search-wrap:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.08);}
-
-.md-filter-wrap{display:flex;align-items:center;gap:.35rem;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:.34rem .6rem;}
-.md-filter-wrap select{border:none;outline:none;font-size:.75rem;color:#334155;background:transparent;cursor:pointer;font-family:inherit;}
-
-.md-add-btn{display:inline-flex;align-items:center;gap:.3rem;padding:.34rem .75rem;border-radius:8px;font-size:.75rem;font-weight:600;border:none;cursor:pointer;transition:all .15s;font-family:inherit;margin-left:auto;}
+.md-filter-wrap{display:flex;align-items:center;gap:.4rem;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:.4rem .75rem;}
+.md-filter-wrap select{border:none;outline:none;font-size:.78rem;color:#334155;background:transparent;cursor:pointer;font-family:inherit;width:100%;}
+.md-add-btn{display:inline-flex;align-items:center;gap:.35rem;padding:.42rem .95rem;border-radius:8px;font-size:.78rem;font-weight:600;border:none;cursor:pointer;transition:all .15s;font-family:inherit;margin-left:auto;}
 .md-add-btn--entity{background:var(--indigo-lt);color:var(--indigo);}
 .md-add-btn--entity:hover{background:#c7d2fe;color:#3730a3;}
 .md-add-btn--branch{background:var(--blue-lt);color:var(--blue-dk);}
 .md-add-btn--branch:hover{background:#bfdbfe;color:#1e40af;}
 .md-add-btn--division{background:var(--green-lt);color:var(--green);}
 .md-add-btn--division:hover{background:#bbf7d0;color:#15803d;}
-
 .md-table-wrap{overflow-x:auto;}
 .md-table{width:100%;border-collapse:collapse;font-size:.765rem;}
 .md-table--entity thead tr{background:linear-gradient(135deg,#3730a3,var(--indigo));}
 .md-table--branch thead tr{background:linear-gradient(135deg,#1e40af,var(--blue));}
 .md-table--division thead tr{background:linear-gradient(135deg,#15803d,var(--green));}
-.md-table thead th{color:#fff;padding:.5rem .8rem;text-align:left;font-weight:600;font-size:.7rem;white-space:nowrap;}
+.md-table thead th{color:#fff;padding:.7rem .9rem;text-align:left;font-weight:600;font-size:.72rem;white-space:nowrap;}
 .md-table tbody tr{border-bottom:1px solid #f8fafc;transition:background .12s;}
 .md-table tbody tr:last-child{border-bottom:none;}
 .md-table--entity tbody tr:hover{background:#eef2ff;}
 .md-table--branch tbody tr:hover{background:#eff6ff;}
 .md-table--division tbody tr:hover{background:#f0fdf4;}
-.md-table tbody td{padding:.5rem .8rem;vertical-align:middle;}
-.md-empty{text-align:center;color:var(--slate-4);padding:1.5rem!important;}
-
+.md-table tbody td{padding:.7rem .9rem;vertical-align:middle;}
+.md-empty{text-align:center;color:var(--slate-4);padding:2.5rem!important;}
 .md-code-badge{font-family:"Courier New",monospace;font-size:.7rem;font-weight:700;padding:2px 7px;border-radius:4px;}
 .md-code-badge--entity{color:var(--indigo);background:var(--indigo-lt);}
 .md-code-badge--branch{color:var(--blue-dk);background:var(--blue-lt);}
 .md-code-badge--division{color:var(--green);background:var(--green-lt);}
-
-.md-name-text{font-size:.78rem;font-weight:600;color:#1e293b;}
-.md-parent-badge{font-size:.67rem;color:var(--slate-6);background:#f1f5f9;padding:1px 6px;border-radius:3px;font-family:"Courier New",monospace;}
-
-.md-action-row{display:flex;gap:.3rem;align-items:center;}
-.md-icon-btn{width:26px;height:26px;border-radius:6px;border:1.5px solid var(--border);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--slate-6);transition:all .14s;flex-shrink:0;}
+.md-name-text{font-size:.8rem;font-weight:600;color:#1e293b;}
+.md-parent-badge{font-size:.68rem;color:var(--slate-6);background:#f1f5f9;padding:1px 7px;border-radius:3px;font-family:"Courier New",monospace;}
+.md-action-row{display:flex;gap:.35rem;align-items:center;}
+.md-icon-btn{width:28px;height:28px;border-radius:7px;border:1.5px solid var(--border);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--slate-6);transition:all .14s;flex-shrink:0;}
 .md-icon-btn--edit:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-lt);}
 .md-icon-btn--del:hover{border-color:var(--red);color:var(--red);background:var(--red-lt);}
+@media(max-width:768px){
+  .md-table{min-width: unset;}
+  .md-table tbody td{padding: .6rem .8rem;}
+}
+@media(max-width:480px){
+  .md-table thead th, .md-table tbody td { padding: .5rem .4rem; }
+  .md-table { font-size: .7rem; }
+  .md-code-badge { padding: 1px 4px; font-size: .65rem; }
+  .md-name-text { font-size: .75rem; }
+  .md-icon-btn { width: 24px; height: 24px; }
+  .md-action-row { gap: .25rem; }
+}
 
 /* ── INLINE MODAL ── */
-.md-modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.4);backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;z-index:500;padding:1rem;}
-.md-modal{background:#fff;border-radius:14px;width:100%;max-width:460px;box-shadow:0 12px 40px rgba(0,0,0,.15);overflow:hidden;}
-.md-modal-header{padding:.85rem 1.1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
-.md-modal-title{font-size:.88rem;font-weight:700;color:var(--slate);display:flex;align-items:center;gap:.4rem;}
-.md-modal-close{background:none;border:none;cursor:pointer;color:var(--slate-4);border-radius:6px;padding:.2rem;display:flex;align-items:center;justify-content:center;}
-.md-modal-close:hover{background:var(--bg);color:var(--slate-6);}
-.md-modal-body{padding:1rem 1.1rem;display:flex;flex-direction:column;gap:.65rem;}
-.md-modal-footer{padding:.8rem 1.1rem;border-top:1px solid var(--border);display:flex;gap:.45rem;justify-content:flex-end;}
-.md-modal-field{display:flex;flex-direction:column;gap:.25rem;}
-.md-modal-field label{font-size:.73rem;font-weight:600;color:#475569;display:flex;align-items:center;gap:4px;}
-
-/* ── FIX: input & select warna putih di dalam modal master data ── */
-.md-modal-field input,
-.md-modal-field select {
-  padding:.4rem .65rem;
-  border-radius:8px;
-  border:1.5px solid var(--border);
-  font-size:.78rem;
-  outline:none;
-  transition:border .15s;
-  font-family:inherit;
-  background:#ffffff !important;
-  color:#0f172a !important;
-  -webkit-text-fill-color:#0f172a !important;
+.md-modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:1000;padding:1rem;}
+.md-modal{background:#fff;border-radius:16px;width:100%;max-width:500px;box-shadow:0 20px 50px rgba(0,0,0,.2);overflow:hidden;animation: modalAppear .25s ease-out;}
+@keyframes modalAppear { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
+@media(max-width:480px){.md-modal{max-height: 90vh; display: flex; flex-direction: column;}}
+.md-modal-header{padding:1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:#fafafa;}
+.md-modal-title{font-size:.9rem;font-weight:700;color:var(--slate);display:flex;align-items:center;gap:.45rem;}
+.md-modal-close{background:none;border:none;cursor:pointer;color:var(--slate-4);border-radius:8px;padding:.25rem;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.md-modal-close:hover{background:#f1f5f9;color:var(--slate-6);}
+.md-modal-body{padding:1.25rem;display:flex;flex-direction:column;gap:.85rem;overflow-y:auto;}
+.md-modal-footer{padding:1rem 1.25rem;border-top:1px solid var(--border);display:flex;gap:.6rem;justify-content:flex-end;background:#fafafa;}
+@media(max-width:480px){.md-modal-footer{flex-direction:column-reverse;} .md-modal-footer button{width:100%; justify-content:center;}}
+.md-modal-field{display:flex;flex-direction:column;gap:.3rem;}
+.md-modal-field label{font-size:.76rem;font-weight:600;color:#475569;display:flex;align-items:center;gap:5px;}
+.md-modal-field input, .md-modal-field select {
+  padding:.55rem .85rem; border-radius:8px; border:1.5px solid var(--border); font-size:.84rem; outline:none; transition:border .15s; font-family:inherit; background:#ffffff !important; color:#0f172a !important; width: 100%;
 }
-.md-modal-field input:focus,
-.md-modal-field select:focus {
-  border-color:var(--blue);
-  box-shadow:0 0 0 3px rgba(37,99,235,.08);
-}
-.md-modal-field input:disabled,
-.md-modal-field select:disabled {
-  background:#f8fafc !important;
-  color:#94a3b8 !important;
-  -webkit-text-fill-color:#94a3b8 !important;
-  cursor:not-allowed;
-}
-.md-modal-field input::placeholder {
-  color:#94a3b8 !important;
-  -webkit-text-fill-color:#94a3b8 !important;
-}
-
+@media(max-width:480px){.md-modal-field input, .md-modal-field select { font-size: 16px; }}
+.md-modal-field input:focus, .md-modal-field select:focus { border-color:var(--blue); box-shadow:0 0 0 3px rgba(37,99,235,.08); }
 .md-modal-field-error{border-color:var(--red)!important;}
-.md-modal-err{font-size:.7rem;color:var(--red);}
-.md-del-confirm-icon{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto .65rem;}
+.md-modal-err{font-size:.72rem;color:var(--red);}
+.md-del-confirm-icon{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto .75rem;}
+
+/* ── PAGINATION ── */
+.al-pagination, .um-pagination, .md-pagination {
+  display: flex; align-items: center; justify-content: space-between; padding: 1rem; flex-wrap: wrap; gap: .75rem;
+}
+@media(max-width:640px){
+  .al-pagination, .um-pagination, .md-pagination {
+    flex-direction: column; align-items: flex-end; text-align: right;
+  }
+}
 
 /* ── MASTER SECTIONS WRAPPER ── */
-.md-sections-wrapper{margin-top:1rem;}
-.md-sections-header{display:flex;align-items:center;gap:.5rem;margin-bottom:.6rem;}
-.md-sections-title{font-size:.82rem;font-weight:700;color:var(--slate-6);text-transform:uppercase;letter-spacing:.06em;}
+.md-sections-wrapper{margin-top:1.5rem;}
+.md-sections-header{display:flex;align-items:center;gap:.6rem;margin-bottom:.8rem;}
+.md-sections-title{font-size:.88rem;font-weight:700;color:var(--slate-6);text-transform:uppercase;letter-spacing:.08em;}
 `;
 
 // ─── DIFF POPOVER ─────────────────────────────────────────────
@@ -1080,7 +1094,7 @@ function ActivityLogSection({ logs, users }) {
             <table className="al-table">
               <thead>
                 <tr>
-                  <th>
+                  <th data-label="Waktu">
                     <Ico
                       n="clock"
                       size={10}
@@ -1088,7 +1102,7 @@ function ActivityLogSection({ logs, users }) {
                     />{" "}
                     Waktu
                   </th>
-                  <th>
+                  <th data-label="Pegawai">
                     <Ico
                       n="user"
                       size={10}
@@ -1096,7 +1110,7 @@ function ActivityLogSection({ logs, users }) {
                     />{" "}
                     Pegawai
                   </th>
-                  <th>
+                  <th data-label="Aksi">
                     <Ico
                       n="activity"
                       size={10}
@@ -1104,7 +1118,7 @@ function ActivityLogSection({ logs, users }) {
                     />{" "}
                     Aksi
                   </th>
-                  <th>
+                  <th data-label="Tabel">
                     <Ico
                       n="database"
                       size={10}
@@ -1112,9 +1126,9 @@ function ActivityLogSection({ logs, users }) {
                     />{" "}
                     Tabel
                   </th>
-                  <th>Record ID</th>
-                  <th>Perubahan</th>
-                  <th>
+                  <th data-label="Record ID">Record ID</th>
+                  <th data-label="Perubahan">Perubahan</th>
+                  <th data-label="IP Address">
                     <Ico
                       n="globe"
                       size={10}
@@ -1154,11 +1168,11 @@ function ActivityLogSection({ logs, users }) {
                       log.old_value !== null || log.new_value !== null;
                     return (
                       <tr key={log.log_id}>
-                        <td>
+                        <td data-label="Waktu">
                           <div className="al-timestamp-date">{dateStr}</div>
                           <div className="al-timestamp-time">{timeStr}</div>
                         </td>
-                        <td>
+                        <td data-label="Pegawai">
                           {user ? (
                             <div className="al-user-cell">
                               <div
@@ -1199,7 +1213,7 @@ function ActivityLogSection({ logs, users }) {
                             </span>
                           )}
                         </td>
-                        <td>
+                        <td data-label="Aksi">
                           <span
                             className="al-action-badge"
                             style={{ color: ac.color, background: ac.bg }}
@@ -1207,15 +1221,15 @@ function ActivityLogSection({ logs, users }) {
                             {ac.label}
                           </span>
                         </td>
-                        <td>
+                        <td data-label="Tabel">
                           <span className="al-table-name">
                             {log.table_name}
                           </span>
                         </td>
-                        <td>
+                        <td data-label="Record ID">
                           <span className="al-record-id">#{log.record_id}</span>
                         </td>
-                        <td>
+                        <td data-label="Perubahan">
                           {hasDiff ? (
                             <button
                               className="al-diff-btn"
@@ -1236,7 +1250,7 @@ function ActivityLogSection({ logs, users }) {
                             </span>
                           )}
                         </td>
-                        <td>
+                        <td data-label="IP Address">
                           <span className="al-ip">{log.ip_address || "—"}</span>
                         </td>
                       </tr>
@@ -1245,16 +1259,17 @@ function ActivityLogSection({ logs, users }) {
                 )}
               </tbody>
             </table>
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              total={filtered.length}
+              perPage={LOGS_PER_PAGE}
+              onPageChange={setPage}
+              accentColor="#0f766e"
+              accentBg="#ccfbf1"
+              className="al-pagination"
+            />
           </div>
-          <Pagination
-            page={page}
-            totalPages={totalPages}
-            total={filtered.length}
-            perPage={LOGS_PER_PAGE}
-            onPageChange={setPage}
-            accentColor="#0f766e"
-            accentBg="#ccfbf1"
-          />
         </div>
       )}
       {diff && (
@@ -1552,15 +1567,15 @@ function EntitySection({ entityList, setEntityList }) {
                 ) : (
                   paginated.map((e) => (
                     <tr key={e.entity_code}>
-                      <td>
+                      <td data-label="Kode Entitas">
                         <span className="md-code-badge md-code-badge--entity">
                           {e.entity_code}
                         </span>
                       </td>
-                      <td>
+                      <td data-label="Nama Entitas">
                         <span className="md-name-text">{e.name}</span>
                       </td>
-                      <td>
+                      <td data-label="Aksi">
                         <div
                           className="md-action-row"
                           style={{ justifyContent: "center" }}
@@ -1588,16 +1603,17 @@ function EntitySection({ entityList, setEntityList }) {
                 )}
               </tbody>
             </table>
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              total={filtered.length}
+              perPage={MD_PER_PAGE}
+              onPageChange={setPage}
+              accentColor="#4338ca"
+              accentBg="#eef2ff"
+              className="md-pagination"
+            />
           </div>
-          <Pagination
-            page={page}
-            totalPages={totalPages}
-            total={filtered.length}
-            perPage={MD_PER_PAGE}
-            onPageChange={setPage}
-            accentColor="#4338ca"
-            accentBg="#eef2ff"
-          />
         </div>
       )}
 
@@ -1837,20 +1853,21 @@ function BranchSection({ branchList, setBranchList, entityList }) {
                 ) : (
                   paginated.map((b) => (
                     <tr key={b.branch_code}>
-                      <td>
+                      <td data-label="Kode Cabang">
                         <span className="md-code-badge md-code-badge--branch">
                           {b.branch_code}
                         </span>
                       </td>
-                      <td>
+                      <td data-label="Nama Cabang">
                         <span className="md-name-text">{b.name}</span>
                       </td>
-                      <td>
+                      <td data-label="Entitas">
                         <div
                           style={{
                             display: "flex",
                             flexDirection: "column",
                             gap: 2,
+                            alignItems: "inherit"
                           }}
                         >
                           <span
@@ -1866,7 +1883,7 @@ function BranchSection({ branchList, setBranchList, entityList }) {
                           </span>
                         </div>
                       </td>
-                      <td>
+                      <td data-label="Aksi">
                         <div
                           className="md-action-row"
                           style={{ justifyContent: "center" }}
@@ -1894,16 +1911,17 @@ function BranchSection({ branchList, setBranchList, entityList }) {
                 )}
               </tbody>
             </table>
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              total={filtered.length}
+              perPage={MD_PER_PAGE}
+              onPageChange={setPage}
+              accentColor="#1d4ed8"
+              accentBg="#dbeafe"
+              className="md-pagination"
+            />
           </div>
-          <Pagination
-            page={page}
-            totalPages={totalPages}
-            total={filtered.length}
-            perPage={MD_PER_PAGE}
-            onPageChange={setPage}
-            accentColor="#1d4ed8"
-            accentBg="#dbeafe"
-          />
         </div>
       )}
 
@@ -2298,20 +2316,21 @@ function DivisionSection({
                 ) : (
                   paginated.map((d) => (
                     <tr key={d.division_code}>
-                      <td>
+                      <td data-label="Kode Divisi">
                         <span className="md-code-badge md-code-badge--division">
                           {d.division_code}
                         </span>
                       </td>
-                      <td>
+                      <td data-label="Nama Divisi">
                         <span className="md-name-text">{d.name}</span>
                       </td>
-                      <td>
+                      <td data-label="Cabang">
                         <div
                           style={{
                             display: "flex",
                             flexDirection: "column",
                             gap: 2,
+                            alignItems: "inherit"
                           }}
                         >
                           <span
@@ -2327,7 +2346,7 @@ function DivisionSection({
                           </span>
                         </div>
                       </td>
-                      <td>
+                      <td data-label="Aksi">
                         <div
                           className="md-action-row"
                           style={{ justifyContent: "center" }}
@@ -2355,16 +2374,17 @@ function DivisionSection({
                 )}
               </tbody>
             </table>
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              total={filtered.length}
+              perPage={MD_PER_PAGE}
+              onPageChange={setPage}
+              accentColor="#15803d"
+              accentBg="#dcfce7"
+              className="md-pagination"
+            />
           </div>
-          <Pagination
-            page={page}
-            totalPages={totalPages}
-            total={filtered.length}
-            perPage={MD_PER_PAGE}
-            onPageChange={setPage}
-            accentColor="#15803d"
-            accentBg="#dcfce7"
-          />
         </div>
       )}
 
@@ -2579,15 +2599,15 @@ function RoleSection({ roleList, setRoleList }) {
                 ) : (
                   paginated.map((e) => (
                     <tr key={e.role_code}>
-                      <td>
+                      <td data-label="Kode Role">
                         <span className="md-code-badge md-code-badge--role" style={{ background: "#fef3c7", color: "#b45309" }}>
                           {e.role_code}
                         </span>
                       </td>
-                      <td>
+                      <td data-label="Nama Role">
                         <span className="md-name-text">{e.name}</span>
                       </td>
-                      <td>
+                      <td data-label="Aksi">
                         <div
                           className="md-action-row"
                           style={{ justifyContent: "center" }}
@@ -2615,16 +2635,17 @@ function RoleSection({ roleList, setRoleList }) {
                 )}
               </tbody>
             </table>
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              total={filtered.length}
+              perPage={MD_PER_PAGE}
+              onPageChange={setPage}
+              accentColor="#f59e0b"
+              accentBg="#fef3c7"
+              className="md-pagination"
+            />
           </div>
-          <Pagination
-            page={page}
-            totalPages={totalPages}
-            total={filtered.length}
-            perPage={MD_PER_PAGE}
-            onPageChange={setPage}
-            accentColor="#f59e0b"
-            accentBg="#fef3c7"
-          />
         </div>
       )}
 
@@ -3902,7 +3923,7 @@ const UserManagement = () => {
                 const isAdmin = u.role_code === "superadmin" || u.role_code === "admin";
                 return (
                   <tr key={u.id}>
-                    <td>
+                    <td data-label="User">
                       <div className="um-user-cell">
                         <div
                           className={`um-avatar um-avatar--${isAdmin ? "purple" : "blue"}`}
@@ -3915,13 +3936,13 @@ const UserManagement = () => {
                         </div>
                       </div>
                     </td>
-                    <td>
+                    <td data-label="NIP">
                       <code className="um-username">{u.nip || "—"}</code>
                     </td>
-                    <td>
+                    <td data-label="Username">
                       <code className="um-username">@{u.username}</code>
                     </td>
-                    <td>
+                    <td data-label="Entitas">
                       <div className="um-entity-cell">
                         <span className="um-entity-code">{u.entity_code}</span>
                         <span
@@ -3932,7 +3953,7 @@ const UserManagement = () => {
                         </span>
                       </div>
                     </td>
-                    <td>
+                    <td data-label="Branch / Divisi">
                       <div className="um-entity-cell">
                         <span
                           className="um-entity-code"
@@ -3948,7 +3969,7 @@ const UserManagement = () => {
                         </span>
                       </div>
                     </td>
-                    <td>
+                    <td data-label="Role">
                       <span
                         className="um-role-badge"
                         style={{ color: rc.color, background: rc.bg }}
@@ -3956,7 +3977,7 @@ const UserManagement = () => {
                         <Ico n={rc.iconName} size={11} /> {rc.label}
                       </span>
                     </td>
-                    <td>
+                    <td data-label="Status">
                       <button
                         className={`um-status-toggle-btn um-status-toggle-btn--${u.is_active ? "aktif" : "nonaktif"}`}
                         onClick={() => handleToggle(u.id)}
@@ -3969,8 +3990,8 @@ const UserManagement = () => {
                         {u.is_active ? "Aktif" : "Nonaktif"}
                       </button>
                     </td>
-                    <td className="um-last-login">{fmt(u.last_login)}</td>
-                    <td style={{ textAlign: "center" }}>
+                    <td data-label="Login Terakhir" className="um-last-login">{fmt(u.last_login)}</td>
+                    <td data-label="Aksi" style={{ textAlign: "center" }}>
                       <ActionDropdown
                         user={u}
                         onDetail={goDetail}

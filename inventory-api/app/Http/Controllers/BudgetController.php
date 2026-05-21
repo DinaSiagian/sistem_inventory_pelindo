@@ -324,6 +324,7 @@ class BudgetController extends Controller
      */
     public function syncAssets(Request $request, $parentId, $type = 'capex')
     {
+        DB::beginTransaction();
         try {
             $assets = $request->assets ?? [];
             Log::info("Sync Assets called for $type Parent: $parentId. Items: " . count($assets));
@@ -336,6 +337,12 @@ class BudgetController extends Controller
                 $query->where('id_opex', (int) $parentId);
             }
             $projectIds = $query->pluck('id_pekerjaan')->toArray();
+
+            // Disassociate all current assets and units of these projects by setting id_pekerjaan to null
+            if (!empty($projectIds)) {
+                DB::table('assets')->whereIn('id_pekerjaan', $projectIds)->update(['id_pekerjaan' => null]);
+                DB::table('barang')->whereIn('id_pekerjaan', $projectIds)->update(['id_pekerjaan' => null]);
+            }
 
             // Hapus semua items lama
             if (!empty($projectIds)) {
@@ -353,65 +360,308 @@ class BudgetController extends Controller
                     continue;
                 }
 
+                // Skip completely if the asset is empty/invalid (no name and no category/device)
+                $name = trim($ast['name'] ?? '');
+                $category = trim($ast['category'] ?? '');
+                if (empty($name) && empty($category)) {
+                    Log::warning("Skipping empty/invalid asset entry.");
+                    continue;
+                }
+
+                // Generate or use existing asset_code
+                $assetCode = $ast['asset_code'] ?? null;
+
+                if (empty($assetCode)) {
+                    $assetCode = 'AST-' . strtoupper(uniqid());
+                }
+
+                // Ensure device exists
+                $deviceCode = $ast['category'] ?? 'GEN';
+                $deviceExists = DB::table('device')->where('device_code', $deviceCode)->exists();
+                if (!$deviceExists) {
+                    DB::table('device')->insert([
+                        'device_code' => $deviceCode,
+                        'name' => $deviceCode,
+                        'is_active' => true,
+                        'created_at' => \Carbon\Carbon::now(),
+                    ]);
+                }
+
+                // Validation check for single-unit asset already assigned to another project
+                $existingAsset = DB::table('assets')->where('asset_code', $assetCode)->first();
+                if ($existingAsset && !empty($existingAsset->id_pekerjaan)) {
+                    if ($existingAsset->id_pekerjaan != $projId) {
+                        $unitCount = DB::table('barang')->where('asset_code', $assetCode)->count();
+                        if ($unitCount <= 1) {
+                            throw new \Exception("Aset '" . ($existingAsset->name ?: $assetCode) . "' sudah dialokasikan ke pekerjaan lain dan hanya memiliki 1 unit barang.");
+                        }
+                    }
+                }
+
+                // Upsert to assets table
+                DB::table('assets')->updateOrInsert(
+                    ['asset_code' => $assetCode],
+                    [
+                        'name' => $ast['name'] ?? '-',
+                        'device_code' => $deviceCode,
+                        'id_pekerjaan' => $projId,
+                        'acquisition_value' => $ast['acquisition_value'] ?? 0,
+                        'procurement_date' => $ast['procurement_date'] ?: null,
+                        'updated_at' => \Carbon\Carbon::now()
+                    ]
+                );
+
+                // Insert into budget_items
                 $item = BudgetItem::create([
-                    'id_pekerjaan'      => $projId,
-                    'nama_barang'       => $ast['name']              ?? '',
-                    'model'             => $ast['model']             ?? null,
-                    'kategori'          => $ast['category']          ?? null,
-                    'jumlah'            => $ast['jumlah']            ?? 1,
-                    'acquisition_value' => $ast['acquisition_value'] ?? 0,
-                    'procurement_date'  => $ast['procurement_date']  ?: null,
-                    'asset_code'        => $ast['asset_code']        ?? null,
-                    'keterangan'        => $ast['keterangan']        ?? null,
-                    'units_json'        => $ast['units']             ?? [],
-                    'created_at'        => \Carbon\Carbon::now(),
+                    'id_pekerjaan' => $projId,
+                    'jumlah'       => $ast['jumlah'] ?? 1,
+                    'asset_code'   => $assetCode,
+                    'keterangan'   => $ast['keterangan'] ?? null,
+                    'created_at'   => \Carbon\Carbon::now(),
                 ]);
 
-                // SYNC BACK TO BARANG MASTER TABLE
-                if (!empty($ast['asset_code'])) {
-                    // Update main barang table
-                    // Kita masukkan lokasi pertama ke 'subzonaCode' agar muncul di View Asset Identitas
-                    $firstLocation = $ast['units'][0]['location'] ?? null;
-                    
-                    Log::info("Updating barang " . $ast['asset_code'] . " with location: " . $firstLocation);
-                    DB::table('barang')
-                        ->where('assetId', $ast['asset_code'])
-                        ->update([
-                            'value' => $ast['acquisition_value'] ?? 0,
-                            'id_pekerjaan' => $projId,
-                            'subzonaCode' => $firstLocation, // Set lokasi realisasi ke subzona agar tampil
-                            'updated_at' => \Carbon\Carbon::now()
-                        ]);
+                // Fetch existing units of this asset to find which ones to delete/update
+                $existingUnits = DB::table('barang')->where('asset_code', $assetCode)->get();
+                $incomingSns = [];
 
-                    // Sync units (Serial Numbers & Locations)
-                    if (!empty($ast['units']) && is_array($ast['units'])) {
-                        foreach ($ast['units'] as $u) {
-                            if (!empty($u['serialNumber'])) {
-                                DB::table('barang_units')->updateOrInsert(
-                                    [
-                                        'assetId' => $ast['asset_code'],
-                                        'serialNumber' => $u['serialNumber']
-                                    ],
-                                    [
-                                        'location' => $u['location'] ?? null,
-                                        'status' => 'Tersedia',
-                                        'condition' => 'Baik',
-                                        'updated_at' => \Carbon\Carbon::now()
-                                    ]
-                                );
+                if (!empty($ast['units']) && is_array($ast['units'])) {
+                    foreach ($ast['units'] as $idx => $u) {
+                        $sn = !empty($u['serialNumber']) ? trim($u['serialNumber']) : null;
+                        if (empty($sn)) {
+                            $sn = $assetCode . '-SN-' . str_pad($idx + 1, 3, '0', STR_PAD_LEFT);
+                        }
+                        $incomingSns[] = $sn;
+
+                        $subzonaCode = $this->resolveSubzonaCode($u['location'] ?? null);
+                        Log::info("Syncing unit: $sn", ['location_in' => $u['location'] ?? null, 'resolved' => $subzonaCode]);
+
+                        // Check if this unit already exists in the DB
+                        $exists = DB::table('barang')->where('serial_number', $sn)->first();
+                        if (!$exists) {
+                            DB::table('barang')->insert([
+                                'asset_code' => $assetCode,
+                                'serial_number' => $sn,
+                                'subzona_code' => $subzonaCode,
+                                'id_pekerjaan' => $projId,
+                                'created_at' => \Carbon\Carbon::now(),
+                            ]);
+                        } else {
+                            // Update it only if it is unassigned or already belongs to this project
+                            if (empty($exists->id_pekerjaan) || $exists->id_pekerjaan == $projId) {
+                                DB::table('barang')->where('serial_number', $sn)->update([
+                                    'subzona_code' => $subzonaCode,
+                                    'id_pekerjaan' => $projId,
+                                ]);
                             }
                         }
                     }
                 }
+
+
+
                 $inserted[] = $this->formatItem($item);
             }
 
+            DB::commit();
             return response()->json(['success' => true, 'data' => $inserted]);
         } catch (\Throwable $e) {
+            DB::rollBack();
             Log::error('Sync Assets Error: ' . $e->getMessage() . " at " . $e->getFile() . ":" . $e->getLine());
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
+
+    private function generateSmartCode($name) {
+        $upper = strtoupper(trim($name));
+        if (preg_match('/LANTAI\s*(\d+)/i', $upper, $matches)) return 'LT' . substr($matches[1], 0, 1);
+        if (strpos($upper, 'GEDUNG') !== false) return 'GDG';
+        if (strpos($upper, 'LAPANGAN') !== false) return 'LPG';
+        if (strpos($upper, 'DERMAGA') !== false) return 'DMG';
+        if (strpos($upper, 'RUANG SERVER') !== false || strpos($upper, 'SERVER') !== false) return 'SRV';
+        if (strpos($upper, 'DATA CENTER') !== false) return 'DTC';
+        
+        $words = preg_split('/[\s\-]+/', $upper);
+        if (count($words) >= 3) {
+            $code = substr($words[0], 0, 1) . substr($words[1], 0, 1) . substr($words[2], 0, 1);
+        } elseif (count($words) == 2) {
+            $code = substr($words[0], 0, 2) . substr($words[1], 0, 1);
+        } else {
+            $code = substr(preg_replace('/[^A-Z0-9]/', '', $upper), 0, 3);
+        }
+        return str_pad($code, 3, 'X');
+    }
+
+    private function resolveSubzonaCode($location, $fallback = null)
+    {
+        if (empty($location)) return $fallback;
+
+        $parts = array_map('trim', explode('/', $location));
+        $subzonaName = end($parts);
+
+        if (empty($subzonaName)) return $fallback;
+
+        // Hierarchical resolution if full path is provided (creates missing nodes)
+        if (count($parts) >= 3) {
+            $branchName = $parts[0];
+            $zonaName = $parts[1];
+
+            // 1. Resolve or create branch
+            $branch = DB::table('branches')->where('name', $branchName)->first();
+            if (!$branch) {
+                $branchCode = $this->generateSmartCode($branchName);
+                $suffix = 1;
+                $originalBranchCode = $branchCode;
+                while (DB::table('branches')->where('branch_code', $branchCode)->exists()) {
+                    $branchCode = $originalBranchCode . $suffix;
+                    $suffix++;
+                }
+
+                $entity = DB::table('entities')->where('is_active', true)->first();
+                $entityCode = $entity ? $entity->entity_code : 'SPMT';
+
+                DB::table('branches')->insert([
+                    'branch_code' => $branchCode,
+                    'entity_code' => $entityCode,
+                    'name'        => $branchName,
+                    'is_active'   => true,
+                    'created_at'  => \Carbon\Carbon::now(),
+                    'updated_at'  => \Carbon\Carbon::now(),
+                ]);
+
+                $branch = DB::table('branches')->where('branch_code', $branchCode)->first();
+            }
+            $branchCode = $branch->branch_code;
+
+            // 2. Resolve or create zona
+            $zona = DB::table('zonas')
+                ->where('name', $zonaName)
+                ->where('branch_code', $branchCode)
+                ->first();
+            if (!$zona) {
+                $zonaShort = $this->generateSmartCode($zonaName);
+                $zonaCode = $branchCode . '-' . $zonaShort;
+                $suffix = 1;
+                $originalZonaCode = $zonaCode;
+                while (DB::table('zonas')->where('zona_code', $zonaCode)->exists()) {
+                    $zonaCode = $originalZonaCode . $suffix;
+                    $suffix++;
+                }
+
+                DB::table('zonas')->insert([
+                    'zona_code'   => $zonaCode,
+                    'branch_code' => $branchCode,
+                    'name'        => $zonaName,
+                ]);
+
+                $zona = DB::table('zonas')->where('zona_code', $zonaCode)->first();
+            }
+            $zonaCode = $zona->zona_code;
+
+            // 3. Resolve or create subzona
+            $sub = DB::table('subzona')
+                ->where('name', $subzonaName)
+                ->where('zona_code', $zonaCode)
+                ->first();
+            if ($sub) return $sub->subzona_code;
+
+            $byCode = DB::table('subzona')
+                ->where('subzona_code', $subzonaName)
+                ->where('zona_code', $zonaCode)
+                ->first();
+            if ($byCode) return $byCode->subzona_code;
+
+            // Create subzona
+            $subShort = $this->generateSmartCode($subzonaName);
+            $subCode = $zonaCode . '-' . $subShort;
+            $suffix = 1;
+            $originalSubCode = $subCode;
+            while (DB::table('subzona')->where('subzona_code', $subCode)->exists()) {
+                $subCode = $originalSubCode . $suffix;
+                $suffix++;
+            }
+
+            DB::table('subzona')->insert([
+                'subzona_code' => $subCode,
+                'zona_code'    => $zonaCode,
+                'name'         => $subzonaName,
+            ]);
+
+            return $subCode;
+        }
+
+        // Fallback for short location strings: search or create under default branch/zona
+        $sub = DB::table('subzona')->where('name', $subzonaName)->first();
+        if ($sub) return $sub->subzona_code;
+
+        $byCode = DB::table('subzona')->where('subzona_code', $subzonaName)->first();
+        if ($byCode) return $byCode->subzona_code;
+
+        // Create under default/first branch and zona
+        $branch = DB::table('branches')->first();
+        if (!$branch) {
+            $branchCode = 'BLW';
+            $entity = DB::table('entities')->first();
+            $entityCode = $entity ? $entity->entity_code : 'SPMT';
+            DB::table('branches')->insert([
+                'branch_code' => $branchCode,
+                'entity_code' => $entityCode,
+                'name'        => 'Belawan',
+                'is_active'   => true,
+                'created_at'  => \Carbon\Carbon::now(),
+                'updated_at'  => \Carbon\Carbon::now(),
+            ]);
+            $branch = DB::table('branches')->first();
+        }
+        $branchCode = $branch->branch_code;
+
+        $zona = DB::table('zonas')->where('branch_code', $branchCode)->first();
+        if (!$zona) {
+            $zonaCode = $branchCode . '-GDG';
+            DB::table('zonas')->insert([
+                'zona_code'   => $zonaCode,
+                'branch_code' => $branchCode,
+                'name'        => 'Gedung',
+            ]);
+            $zona = DB::table('zonas')->where('zona_code', $zonaCode)->first();
+        }
+        $zonaCode = $zona->zona_code;
+
+        $subShort = $this->generateSmartCode($subzonaName);
+        $subCode = $zonaCode . '-' . $subShort;
+        $suffix = 1;
+        $originalSubCode = $subCode;
+        while (DB::table('subzona')->where('subzona_code', $subCode)->exists()) {
+            $subCode = $originalSubCode . $suffix;
+            $suffix++;
+        }
+
+        DB::table('subzona')->insert([
+            'subzona_code' => $subCode,
+            'zona_code'    => $zonaCode,
+            'name'         => $subzonaName,
+        ]);
+
+        return $subCode;
+    }
+
+    private function getFullLocationString($subzonaCode)
+    {
+        if (empty($subzonaCode)) return '';
+
+        $loc = DB::table('subzona')
+            ->join('zonas', 'subzona.zona_code', '=', 'zonas.zona_code')
+            ->join('branches', 'zonas.branch_code', '=', 'branches.branch_code')
+            ->where('subzona.subzona_code', $subzonaCode)
+            ->select('subzona.name as sub', 'zonas.name as zon', 'branches.name as br')
+            ->first();
+
+        if ($loc) {
+            return $loc->br . ' / ' . $loc->zon . ' / ' . $loc->sub;
+        }
+
+        return $subzonaCode;
+    }
+
 
     // ══════════════════════════════════════════════════════
     //  HELPERS
@@ -519,18 +769,33 @@ class BudgetController extends Controller
 
     private function formatItem(BudgetItem $i): array
     {
+        $assetCode = $i->asset_code;
+        $asset = $assetCode ? DB::table('assets')->where('asset_code', $assetCode)->first() : null;
+        
+        $units = $assetCode ? DB::table('barang')
+            ->where('asset_code', $assetCode)
+            ->where('id_pekerjaan', $i->id_pekerjaan)
+            ->get() : collect();
+        $unitsArray = $units->map(function ($u) {
+            return [
+                'serialNumber' => $u->serial_number,
+                'location' => $this->getFullLocationString($u->subzona_code),
+                'id_pekerjaan' => $u->id_pekerjaan
+            ];
+        })->toArray();
+
         return [
             'id'                => $i->id_item,
             'id_pekerjaan'      => $i->id_pekerjaan,
-            'name'              => $i->nama_barang       ?? '',
-            'model'             => $i->model             ?? '',
-            'category'          => $i->kategori          ?? '',
-            'jumlah'            => (int) ($i->jumlah     ?? 1),
-            'acquisition_value' => (float) ($i->acquisition_value ?? 0),
-            'procurement_date'  => $i->procurement_date  ?? '',
-            'asset_code'        => $i->asset_code        ?? '',
-            'keterangan'        => $i->keterangan        ?? '',
-            'units'             => $i->units_json        ?? [],
+            'name'              => $asset ? $asset->name : '',
+            'model'             => $asset ? $asset->name : '', // using name as model
+            'category'          => $asset ? $asset->device_code : '',
+            'jumlah'            => (int) ($i->jumlah ?? 1),
+            'acquisition_value' => (float) ($asset ? $asset->acquisition_value : 0),
+            'procurement_date'  => $asset ? $asset->procurement_date : '',
+            'asset_code'        => $assetCode ?? '',
+            'keterangan'        => $i->keterangan ?? '',
+            'units'             => $unitsArray,
         ];
     }
 }

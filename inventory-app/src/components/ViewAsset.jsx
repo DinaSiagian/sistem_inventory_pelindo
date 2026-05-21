@@ -1,15 +1,15 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
-import { barangAPI } from "../services/api";
+import { barangAPI, budgetAPI, masterDataAPI } from "../services/api";
 import "./ViewAsset.css";
 // ── CAPEX ANGGARAN MASTER (thn_anggaran → nm_anggaran → pekerjaan) ─────
-const CAPEX_ANGGARAN = [
+let CAPEX_ANGGARAN = [
   {
     kd_anggaran: "2440015",
     nm_anggaran: "Implementasi dan Standarisasi IT Infrastruktur",
     thn_anggaran: 2024,
     pekerjaan: [
       {
-        id_pekerjaan: "PKJ-2440015-001",
+        id_pekerjaan: 6,
         nm_pekerjaan: "Pekerjaan Implementasi CCTV",
       },
       {
@@ -47,7 +47,7 @@ const CAPEX_ANGGARAN = [
     thn_anggaran: 2024,
     pekerjaan: [
       {
-        id_pekerjaan: "PKJ-2440013-001",
+        id_pekerjaan: 1,
         nm_pekerjaan: "Pengadaan Server dan Network",
       },
     ],
@@ -86,7 +86,7 @@ const CAPEX_ANGGARAN = [
     thn_anggaran: 2025,
     pekerjaan: [
       {
-        id_pekerjaan: "PKJ-2540011-001",
+        id_pekerjaan: 11,
         nm_pekerjaan: "Penyediaan Alat Berat Excavator",
       },
       {
@@ -134,81 +134,91 @@ const CAPEX_ANGGARAN = [
 ];
 
 // ── OPEX ANGGARAN (thn_anggaran → nm_anggaran, tanpa pekerjaan) ───
-const OPEX_ANGGARAN = [
+let OPEX_ANGGARAN = [
   {
     kd_anggaran: "OPEX-5030",
     nm_anggaran: "Beban Pemeliharaan Software",
     kd_akun: "5030905000",
     thn_anggaran: 2024,
-    id_pekerjaan: "OPEX-1",
+    id_pekerjaan: 101,
+    nm_pekerjaan: "Pemeliharaan Lisensi Perangkat Lunak",
   },
   {
     kd_anggaran: "OPEX-5021A",
     nm_anggaran: "Beban Jaringan dan Koneksi Data",
     kd_akun: "5021300000",
     thn_anggaran: 2024,
-    id_pekerjaan: "OPEX-2",
+    id_pekerjaan: 102,
+    nm_pekerjaan: "Pemeliharaan Jaringan Dan Internet Branch",
   },
   {
     kd_anggaran: "OPEX-5021B",
     nm_anggaran: "Beban Perlengkapan Kantor",
     kd_akun: "5021200000",
     thn_anggaran: 2024,
-    id_pekerjaan: "OPEX-3",
+    id_pekerjaan: 103,
+    nm_pekerjaan: "Pengadaan Suku Cadang Dan Hardware Branch",
   },
   {
     kd_anggaran: "OPEX-5081",
     nm_anggaran: "Beban Jasa Konsultan",
     kd_akun: "5081500000",
     thn_anggaran: 2024,
-    id_pekerjaan: "OPEX-4",
+    id_pekerjaan: 104,
+    nm_pekerjaan: "Penyusunan IT Masterplan Dan Blueprint",
   },
   {
     kd_anggaran: "OPEX-5060",
     nm_anggaran: "Beban Sumber Daya Pihak Ketiga Peralatan",
     kd_akun: "5060700000",
     thn_anggaran: 2024,
-    id_pekerjaan: "OPEX-5",
+    id_pekerjaan: 105,
+    nm_pekerjaan: "Perbaikan Dan Kalibrasi UPS Power Branch",
   },
   {
     kd_anggaran: "OPEX-5030B",
     nm_anggaran: "Beban Pemeliharaan Software",
     kd_akun: "5030905000",
     thn_anggaran: 2025,
-    id_pekerjaan: "OPEX-1",
+    id_pekerjaan: 101,
+    nm_pekerjaan: "Pemeliharaan Lisensi Perangkat Lunak",
   },
   {
     kd_anggaran: "OPEX-5021C",
     nm_anggaran: "Beban Jaringan dan Koneksi Data",
     kd_akun: "5021300000",
     thn_anggaran: 2025,
-    id_pekerjaan: "OPEX-2",
+    id_pekerjaan: 102,
+    nm_pekerjaan: "Pemeliharaan Jaringan Dan Internet Branch",
   },
   {
     kd_anggaran: "OPEX-5021D",
     nm_anggaran: "Beban Perlengkapan Kantor",
     kd_akun: "5021200000",
     thn_anggaran: 2025,
-    id_pekerjaan: "OPEX-3",
+    id_pekerjaan: 103,
+    nm_pekerjaan: "Pengadaan Suku Cadang Dan Hardware Branch",
   },
   {
     kd_anggaran: "OPEX-5081B",
     nm_anggaran: "Beban Jasa Konsultan",
     kd_akun: "5081500000",
     thn_anggaran: 2025,
-    id_pekerjaan: "OPEX-4",
+    id_pekerjaan: 104,
+    nm_pekerjaan: "Penyusunan IT Masterplan Dan Blueprint",
   },
   {
     kd_anggaran: "OPEX-5060B",
     nm_anggaran: "Beban Sumber Daya Pihak Ketiga Peralatan",
     kd_akun: "5060700000",
     thn_anggaran: 2025,
-    id_pekerjaan: "OPEX-5",
+    id_pekerjaan: 105,
+    nm_pekerjaan: "Perbaikan Dan Kalibrasi UPS Power Branch",
   },
 ];
 
 // ── DERIVED FLAT LIST (for lookup/table/export) ───────────────────
-const ALL_PROJECTS = [
+let ALL_PROJECTS = [
   ...CAPEX_ANGGARAN.flatMap((a) =>
     a.pekerjaan.map((p) => ({
       ...p,
@@ -220,7 +230,7 @@ const ALL_PROJECTS = [
   ),
   ...OPEX_ANGGARAN.map((o) => ({
     id_pekerjaan: o.id_pekerjaan,
-    nm_pekerjaan: o.nm_anggaran,
+    nm_pekerjaan: o.nm_pekerjaan || o.nm_anggaran,
     jenis: "OPEX",
     kd_anggaran: o.kd_anggaran,
     nm_anggaran: o.nm_anggaran,
@@ -407,6 +417,18 @@ const CATEGORY_IMAGES = {
     "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=400&h=300&fit=crop",
   Furniture:
     "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&h=300&fit=crop",
+  // Short codes
+  LPT: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
+  CTV: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
+  RTR: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
+  PC: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
+  SRV: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
+  SWT: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
+  PRN: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
+  OTH: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
+  KND: "https://images.unsplash.com/photo-1547036967-23d11aacaee0?w=400&h=300&fit=crop",
+  AB: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=400&h=300&fit=crop",
+  FRN: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&h=300&fit=crop",
 };
 
 const conditionConfig = {
@@ -454,7 +476,7 @@ const SUBZONA_LIST = [
   { name: "Dermaga", code: "DMG" },
   { name: "Parkir", code: "PKR" },
   { name: "Jalan", code: "JLN" },
-  { name: "Taman/Parkir", code: "TPK" },
+  { name: "Taman", code: "TPK" },
 ];
 const ITEMS_PER_PAGE = 8;
 
@@ -473,6 +495,67 @@ const SPEC_UNIT_OPTIONS = [
 ];
 
 const SPEC_TEMPLATES_BY_CATEGORY = {
+  LPT: [
+    { spec_label: "Processor", default_unit: "GHz", input_type: "text" },
+    { spec_label: "RAM", default_unit: "GB RAM", input_type: "number" },
+    { spec_label: "Storage", default_unit: "GB", input_type: "number" },
+    { spec_label: "Resolusi Layar", default_unit: "inch", input_type: "text" },
+  ],
+  CTV: [
+    { spec_label: "Resolusi", default_unit: "MP", input_type: "text" },
+    { spec_label: "Lensa", default_unit: "mm", input_type: "text" },
+    { spec_label: "Jangkauan IR", default_unit: "m", input_type: "number" },
+  ],
+  RTR: [
+    { spec_label: "Kecepatan", default_unit: "Mbps", input_type: "number" },
+    { spec_label: "Port", default_unit: "-", input_type: "text" },
+    { spec_label: "Frekuensi", default_unit: "GHz", input_type: "text" },
+  ],
+  PC: [
+    { spec_label: "Processor", default_unit: "GHz", input_type: "text" },
+    { spec_label: "RAM", default_unit: "GB RAM", input_type: "number" },
+    { spec_label: "Storage", default_unit: "GB", input_type: "number" },
+  ],
+  SRV: [
+    { spec_label: "Processor", default_unit: "GHz", input_type: "text" },
+    { spec_label: "RAM", default_unit: "GB", input_type: "number" },
+    { spec_label: "Storage", default_unit: "TB", input_type: "number" },
+    { spec_label: "Power Supply", default_unit: "W", input_type: "number" },
+  ],
+  SWT: [
+    { spec_label: "Jumlah Port", default_unit: "-", input_type: "number" },
+    { spec_label: "Kecepatan", default_unit: "Mbps", input_type: "number" },
+    { spec_label: "Manageable", default_unit: "-", input_type: "text" },
+  ],
+  PRN: [
+    { spec_label: "Tipe Printer", default_unit: "-", input_type: "text" },
+    { spec_label: "Fungsi", default_unit: "-", input_type: "text" },
+    { spec_label: "Konektivitas", default_unit: "-", input_type: "text" },
+  ],
+  OTH: [
+    { spec_label: "Spesifikasi Utama", default_unit: "-", input_type: "text" },
+    { spec_label: "Keterangan Tambahan", default_unit: "-", input_type: "text" }
+  ],
+  KND: [
+    { spec_label: "Plat Nomor", default_unit: "-", input_type: "text" },
+    { spec_label: "Nomor Mesin", default_unit: "-", input_type: "text" },
+    {
+      spec_label: "Tahun Pembuatan",
+      default_unit: "tahun",
+      input_type: "number",
+    },
+    { spec_label: "Merk / Brand", default_unit: "-", input_type: "text" },
+    { spec_label: "Kapasitas Mesin", default_unit: "cc", input_type: "number" },
+  ],
+  AB: [
+    { spec_label: "Plat / Lambung", default_unit: "-", input_type: "text" },
+    { spec_label: "Nomor Mesin", default_unit: "-", input_type: "text" },
+    {
+      spec_label: "Tahun Pembuatan",
+      default_unit: "tahun",
+      input_type: "number",
+    },
+  ],
   Laptop: [
     { spec_label: "Processor", default_unit: "GHz", input_type: "text" },
     { spec_label: "RAM", default_unit: "GB RAM", input_type: "number" },
@@ -2087,19 +2170,73 @@ const LOCATION_MAP = {
   }
 };
 
-const SmartLocationInput = ({ value, onChange, placeholder = "Pilih Branch / Zona / Subzona", readOnly = false }) => {
+const SmartLocationInput = ({ value, onChange, placeholder = "Pilih Branch / Zona / Subzona", readOnly = false, dbLocations = { branches: [], zonas: [], subzonas: [] } }) => {
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef(null);
+
+  const { branches = [], zonas = [], subzonas = [] } = dbLocations;
 
   useEffect(() => {
     function handleClickOutside(e) {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
         setIsOpen(false);
+        
+        // Validate and sanitize location string
+        const valStr = value || "";
+        const parts = valStr.split(" / ").map(p => p.trim()).filter(Boolean);
+        let validParts = [];
+        
+        if (branches.length > 0) {
+          // Validate using database
+          const brObj = branches.find(b => b.name.toLowerCase() === parts[0]?.toLowerCase());
+          if (brObj) {
+            validParts.push(brObj.name);
+            if (parts[1]) {
+              const zoObj = zonas.find(z => z.name.toLowerCase() === parts[1].toLowerCase() && z.branch_code === brObj.branch_code);
+              if (zoObj) {
+                validParts.push(zoObj.name);
+                if (parts[2]) {
+                  const szObj = subzonas.find(s => s.name.toLowerCase() === parts[2].toLowerCase() && s.zona_code === zoObj.zona_code);
+                  if (szObj) {
+                    validParts.push(szObj.name);
+                  }
+                }
+              }
+            }
+          }
+        } else {
+          // Fallback to static maps
+          const allBranches = Object.values(BRANCH_BY_ENTITY).flat();
+          const brObj = allBranches.find(b => b.name.toLowerCase() === parts[0]?.toLowerCase());
+          if (brObj) {
+            validParts.push(brObj.name);
+            const branchName = brObj.name;
+            if (parts[1]) {
+              const zones = LOCATION_MAP[branchName] ? Object.keys(LOCATION_MAP[branchName]) : ZONA_LIST.map(z => z.name);
+              const matchedZone = zones.find(z => z.toLowerCase() === parts[1].toLowerCase());
+              if (matchedZone) {
+                validParts.push(matchedZone);
+                if (parts[2]) {
+                  const subzones = LOCATION_MAP[branchName]?.[matchedZone] || [];
+                  const matchedSub = subzones.find(s => s.toLowerCase() === parts[2].toLowerCase());
+                  if (matchedSub) {
+                    validParts.push(matchedSub);
+                  }
+                }
+              }
+            }
+          }
+        }
+        
+        const validatedVal = validParts.join(" / ") + (validParts.length > 0 && validParts.length < 3 ? " / " : "");
+        if (validatedVal !== valStr) {
+          onChange(validatedVal);
+        }
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [value, onChange, branches, zonas, subzonas]);
 
   if (readOnly) {
     if (!value) return null;
@@ -2132,18 +2269,43 @@ const SmartLocationInput = ({ value, onChange, placeholder = "Pilih Branch / Zon
   const branch = (parts[0] || "").trim();
   const zone = (parts[1] || "").trim();
 
+  const hasDbData = branches.length > 0;
+
   if (currentPartIdx === 0) {
-    options = Object.values(BRANCH_BY_ENTITY).flat().map(b => b.name);
+    if (hasDbData) {
+      options = branches.map(b => b.name);
+    } else {
+      options = Object.values(BRANCH_BY_ENTITY).flat().map(b => b.name);
+    }
     stepLabel = "Pilih Branch";
   } else if (currentPartIdx === 1) {
-    options = LOCATION_MAP[branch]
-      ? Object.keys(LOCATION_MAP[branch])
-      : ZONA_LIST.map(z => z.name);
+    if (hasDbData) {
+      const branchObj = branches.find(b => b.name.toLowerCase() === branch.toLowerCase());
+      if (branchObj) {
+        options = zonas.filter(z => z.branch_code === branchObj.branch_code).map(z => z.name);
+      } else {
+        options = [];
+      }
+    } else {
+      options = LOCATION_MAP[branch]
+        ? Object.keys(LOCATION_MAP[branch])
+        : ZONA_LIST.map(z => z.name);
+    }
     stepLabel = `Zona di ${branch || 'Branch'}`;
   } else if (currentPartIdx === 2) {
-    options = (LOCATION_MAP[branch] && LOCATION_MAP[branch][zone])
-      ? LOCATION_MAP[branch][zone]
-      : SUBZONA_LIST.map(s => s.name);
+    if (hasDbData) {
+      const branchObj = branches.find(b => b.name.toLowerCase() === branch.toLowerCase());
+      const zoneObj = branchObj ? zonas.find(z => z.name.toLowerCase() === zone.toLowerCase() && z.branch_code === branchObj.branch_code) : null;
+      if (zoneObj) {
+        options = subzonas.filter(s => s.zona_code === zoneObj.zona_code).map(s => s.name);
+      } else {
+        options = [];
+      }
+    } else {
+      options = (LOCATION_MAP[branch] && LOCATION_MAP[branch][zone])
+        ? LOCATION_MAP[branch][zone]
+        : [];
+    }
     stepLabel = `Subzona di ${zone || 'Zona'}`;
   }
 
@@ -2156,16 +2318,6 @@ const SmartLocationInput = ({ value, onChange, placeholder = "Pilih Branch / Zon
     const nextVal = newParts.join(" / ") + (currentPartIdx < 2 ? " / " : "");
     onChange(nextVal);
     if (currentPartIdx >= 2) setIsOpen(false);
-  };
-
-  const handleCustom = () => {
-    if (!currentText) return;
-    const newParts = [...parts];
-    newParts[currentPartIdx] = currentText;
-    const nextVal = newParts.join(" / ") + (currentPartIdx < 2 ? " / " : "");
-    onChange(nextVal);
-    if (currentPartIdx >= 2) setIsOpen(false);
-    else setIsOpen(true);
   };
 
   return (
@@ -2246,26 +2398,6 @@ const SmartLocationInput = ({ value, onChange, placeholder = "Pilih Branch / Zon
               {opt}
             </div>
           ))}
-
-          {currentText && !exactMatch && (
-            <div
-              onClick={handleCustom}
-              style={{
-                padding: "12px",
-                fontSize: "13px",
-                cursor: "pointer",
-                background: "#f0fdf4",
-                color: "#16a34a",
-                fontWeight: 600,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                borderTop: filteredOptions.length > 0 ? "1px dashed #bbf7d0" : "none"
-              }}
-            >
-              <Icon.Plus /> Gunakan "{currentText}" (Custom)
-            </div>
-          )}
         </div>
       )}
     </div>
@@ -2275,13 +2407,94 @@ const SmartLocationInput = ({ value, onChange, placeholder = "Pilih Branch / Zon
 // ── MAIN COMPONENT ────────────────────────────────────────────────
 const ViewAsset = () => {
   const [assets, setAssets] = useState([]);
+  const [dbCategories, setDbCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [dbLocations, setDbLocations] = useState({ branches: [], zonas: [], subzonas: [] });
 
   const fetchAssets = async () => {
     setLoading(true);
     try {
-      const res = await barangAPI.getAll();
-      setAssets(res.data);
+      const [resAssets, resDevices, resCapex, resOpex, resB, resZ, resS] = await Promise.all([
+        barangAPI.getAll(),
+        barangAPI.getDevices(),
+        budgetAPI.getCapex(),
+        budgetAPI.getOpex(),
+        masterDataAPI.getBranches(),
+        masterDataAPI.getZonas(),
+        masterDataAPI.getSubzonas()
+      ]);
+      setAssets(resAssets.data);
+      setDbCategories(resDevices.data || []);
+
+      if (resB.data?.success && resZ.data?.success && resS.data?.success) {
+        setDbLocations({
+          branches: resB.data.data || [],
+          zonas: resZ.data.data || [],
+          subzonas: resS.data.data || []
+        });
+      }
+
+      // Rebuild CAPEX_ANGGARAN from database
+      const newCapex = [];
+      const capexData = resCapex.data?.data || resCapex.data || [];
+      if (Array.isArray(capexData)) {
+        capexData.forEach(a => {
+          const projects = a.projects || [];
+          newCapex.push({
+            kd_anggaran: String(a.db_id || a.id || a.kode),
+            nm_anggaran: a.nama || "",
+            thn_anggaran: a.thn_anggaran || 2026,
+            pekerjaan: projects.map(p => ({
+              id_pekerjaan: p.id,
+              nm_pekerjaan: p.nm_pekerjaan || ""
+            }))
+          });
+        });
+      }
+
+      // Rebuild OPEX_ANGGARAN from database
+      const newOpex = [];
+      const opexData = resOpex.data?.data || resOpex.data || [];
+      if (Array.isArray(opexData)) {
+        opexData.forEach(o => {
+          const projects = o.projects || [];
+          projects.forEach(p => {
+            newOpex.push({
+              kd_anggaran: String(o.db_id || o.id || o.kode),
+              nm_anggaran: o.nama || "",
+              kd_akun: o.kode || "",
+              thn_anggaran: o.thn_anggaran || 2026,
+              id_pekerjaan: p.id,
+              nm_pekerjaan: p.nm_pekerjaan || ""
+            });
+          });
+        });
+      }
+
+      if (newCapex.length > 0) CAPEX_ANGGARAN = newCapex;
+      if (newOpex.length > 0) OPEX_ANGGARAN = newOpex;
+
+      ALL_PROJECTS = [
+        ...CAPEX_ANGGARAN.flatMap((a) =>
+          (a.pekerjaan || []).map((p) => ({
+            ...p,
+            jenis: "CAPEX",
+            kd_anggaran: a.kd_anggaran,
+            nm_anggaran: a.nm_anggaran,
+            thn_anggaran: a.thn_anggaran,
+          })),
+        ),
+        ...OPEX_ANGGARAN.map((o) => ({
+          id_pekerjaan: o.id_pekerjaan,
+          nm_pekerjaan: o.nm_pekerjaan || o.nm_anggaran,
+          jenis: "OPEX",
+          kd_anggaran: o.kd_anggaran,
+          nm_anggaran: o.nm_anggaran,
+          thn_anggaran: o.thn_anggaran,
+          kd_akun: o.kd_akun,
+        })),
+      ];
+
     } catch (err) {
       console.error("Gagal mengambil data aset", err);
     } finally {
@@ -2379,8 +2592,40 @@ const ViewAsset = () => {
     return () => document.removeEventListener("mousedown", handleOutsideEdit);
   }, [isEditingUnit]);
 
+  // Pemetaan Nama Lengkap Kategori berdasarkan Device Code
+  const CATEGORY_NAMES = {
+    LPT: "LAPTOP",
+    CTV: "CCTV CAMERA",
+    RTR: "ROUTER / JARINGAN",
+    PC: "PC DESKTOP",
+    SRV: "SERVER",
+    SWT: "SWITCH",
+    PRN: "PRINTER",
+    KND: "KENDARAAN",
+    AB: "ALAT BERAT",
+    FRN: "FURNITURE",
+    MAT: "MATERIAL",
+    SFT: "SOFTWARE LICENSE",
+    HDW: "HARDWARE",
+    OTH: "IT LAINNYA"
+  };
+
   // Pemetaan Prefix berdasarkan Kategori
   const CATEGORY_PREFIX = {
+    "LPT": "LAP",
+    "CTV": "CCTV",
+    "RTR": "RTR",
+    "PC": "PC",
+    "SRV": "SRV",
+    "SWT": "SWT",
+    "PRN": "PRN",
+    "KND": "KND",
+    "AB": "ALAT",
+    "FRN": "FURN",
+    "MAT": "MAT",
+    "SFT": "SFT",
+    "HDW": "HW",
+    "OTH": "BRG",
     "Laptop": "LAP",
     "CCTV": "CCTV",
     "Router": "RTR",
@@ -2708,9 +2953,10 @@ const ViewAsset = () => {
             ?.id_pekerjaan || null
           : null),
       quantity: formData.quantity,
-      units: formData.units.map((unit) => ({
-        serialNumber: unit.serialNumber,
-        location: unit.location,
+      units: formData.units.map((unit, index) => ({
+        serialNumber: unit.serialNumber?.trim() || `${startId}-SN-${String(index + 1).padStart(3, "0")}`,
+        location: unit.location || "",
+        id_pekerjaan: unit.id_pekerjaan || null,
       })),
       photo: formPhoto,
       specs: templateSpecs.map(({ _unitMode, ...s }) => s),
@@ -2805,8 +3051,34 @@ const ViewAsset = () => {
     });
     setEditPhoto(asset.photo || null);
 
+    const defaultTpl = SPEC_TEMPLATES_BY_CATEGORY[asset.category] || [];
+    const mergedSpecs = defaultTpl.map((t) => {
+      const existing = (asset.specs || []).find(
+        (s) => s.spec_label.toLowerCase() === t.spec_label.toLowerCase()
+      );
+      return {
+        ...t,
+        value: existing ? existing.value : "",
+        _unitMode: "pick",
+      };
+    });
+
+    // If there are other template specs loaded from the database that don't match defaultTpl,
+    // we can still append them to mergedSpecs so they don't get lost.
+    (asset.specs || []).forEach((s) => {
+      const alreadyAdded = mergedSpecs.some(
+        (m) => m.spec_label.toLowerCase() === s.spec_label.toLowerCase()
+      );
+      if (!alreadyAdded) {
+        mergedSpecs.push({
+          ...s,
+          _unitMode: "pick",
+        });
+      }
+    });
+
     setEditSpecsData({
-      specs: (asset.specs || []).map((s) => ({ ...s, _unitMode: "pick" })),
+      specs: mergedSpecs,
       customSpecs: (asset.customSpecs || []).map((s) => ({
         ...s,
         _unitMode: "pick",
@@ -2823,19 +3095,24 @@ const ViewAsset = () => {
         ? OPEX_ANGGARAN.find((o) => o.kd_anggaran === editData.kd_anggaran)
           ?.id_pekerjaan || null
         : null);
-    
+
     const cleanSpecs = editSpecsData.specs.map(({ _unitMode, ...s }) => s);
     const cleanCustom = editSpecsData.customSpecs.map(
       ({ _unitMode, ...s }) => s,
     );
 
-    const saveData = { 
-      ...editData, 
+    const saveData = {
+      ...editData,
       id_pekerjaan: resolvedId,
       name: editData.name,
       category: editData.category,
       tipeAset: editData.tipeAset || editData.name,
       value: parseFloat(editData.value) || 0,
+      units: (editData.units || []).map((unit, index) => ({
+        serialNumber: unit.serialNumber?.trim() || `${selectedAsset.id}-SN-${String(index + 1).padStart(3, "0")}`,
+        location: unit.location,
+        id_pekerjaan: unit.id_pekerjaan || null,
+      })),
       photo: editPhoto,
       specs: cleanSpecs,
       customSpecs: cleanCustom
@@ -2843,7 +3120,7 @@ const ViewAsset = () => {
 
     try {
       await barangAPI.update(selectedAsset.id, saveData);
-      
+
       const updated = assets.map((a) =>
         a.id === selectedAsset.id
           ? {
@@ -3217,7 +3494,7 @@ const ViewAsset = () => {
                           <code className="asset-card-id">{asset.id}</code>
                           <div className="asset-card-name">{asset.name}</div>
                           <div className="asset-card-meta">
-                            <span className="cat-badge">{asset.category}</span>
+                            <span className="cat-badge">{CATEGORY_NAMES[asset.category] || asset.category}</span>
                             <span
                               style={{
                                 fontSize: "11px",
@@ -3304,7 +3581,7 @@ const ViewAsset = () => {
                         <option value={filterCategory} hidden>▾</option>
                         <option value="">Semua Kategori</option>
                         {uniqueCategories.map(cat => (
-                          <option key={cat} value={cat}>{cat}</option>
+                          <option key={cat} value={cat}>{CATEGORY_NAMES[cat] || cat}</option>
                         ))}
                       </select>
                     </div>
@@ -3382,7 +3659,7 @@ const ViewAsset = () => {
                           <div className="fw-bold">{asset.name}</div>
                         </td>
                         <td>
-                          <span className="cat-badge">{asset.category}</span>
+                          <span className="cat-badge">{CATEGORY_NAMES[asset.category] || asset.category}</span>
                         </td>
                         <td>
                           <div style={{
@@ -3532,7 +3809,6 @@ const ViewAsset = () => {
       formData.category &&
       formData.tipeAset &&
       formData.units.every((u) => u.serialNumber.trim() !== "") &&
-      templateSpecs.length > 0 &&
       templateSpecs.every((s) => s.value && s.value.toString().trim() !== "");
 
     return (
@@ -3649,6 +3925,7 @@ const ViewAsset = () => {
 
                             setFormData((p) => ({
                               ...p,
+                              assetId: "",
                               cekEksisting: a.tipeAset || a.name || "",
                               category: a.category || "",
                               tipeAset: a.tipeAset || a.name || "",
@@ -3660,16 +3937,17 @@ const ViewAsset = () => {
                               zonaCode: zCode,
                               subzona: subzonaName,
                               subzonaCode: szCode,
-                              value: a.value || "",
-                              id_pekerjaan: a.id_pekerjaan || "",
+                              value: "",
+                              id_pekerjaan: "",
+                              kd_anggaran: "",
                               units: a.units && a.units.length > 0
                                 ? a.units.map(u => ({
-                                  serialNumber: u.serialNumber,
-                                  location: u.location || [a.branch, zonaName, subzonaName].filter(Boolean).join(" / ")
+                                  serialNumber: "",
+                                  location: ""
                                 }))
                                 : [{
                                   serialNumber: "",
-                                  location: [a.branch, zonaName, subzonaName].filter(Boolean).join(" / ")
+                                  location: ""
                                 }],
                               quantity: a.quantity || (a.units ? a.units.length : 1),
                             }));
@@ -3679,6 +3957,8 @@ const ViewAsset = () => {
                                 (t) => ({ ...t, value: "", _unitMode: "pick" })
                               );
                             setTemplateSpecs(tpl);
+                            setCustomSpecs(a.customSpecs ? a.customSpecs.map((c) => ({ ...c, _unitMode: "pick" })) : []);
+                            setFormPhoto(a.photo || null);
                             setShowSuggestions(false);
                           }}
                           onMouseEnter={(e) =>
@@ -3722,20 +4002,9 @@ const ViewAsset = () => {
                 style={modernSelectStyle}
               >
                 <option value="">— Pilih Kategori —</option>
-                <option value="Laptop">Laptop</option>
-                <option value="CCTV">CCTV</option>
-                <option value="Router">Router</option>
-                <option value="PC Desktop">PC Desktop</option>
-                <option value="Server">Server</option>
-                <option value="Switch">Switch</option>
-                <option value="Printer">Printer</option>
-                <option value="Kendaraan">Kendaraan</option>
-                <option value="Alat Berat">Alat Berat</option>
-                <option value="Furniture">Furniture</option>
-                <option value="Material">Material</option>
-                <option value="Software">Software</option>
-                <option value="Hardware">Hardware</option>
-                <option value="Lainnya">IT Lainnya</option>
+                {Object.entries(CATEGORY_NAMES).map(([code, name]) => (
+                  <option key={code} value={code}>{name}</option>
+                ))}
               </select>
             </TableRow>
             <TableRow label="Nama Barang" required>
@@ -3766,53 +4035,47 @@ const ViewAsset = () => {
               />
             </TableRow>
             <TableRow label="Kuantitas" required>
-              {formData.cekEksisting ? (
-                <div style={{ fontSize: "15px", fontWeight: "700", color: "#0f172a" }}>
-                  {formData.quantity} Unit barang
-                </div>
-              ) : (
-                <input
-                  type="number"
-                  min="1"
-                  max="100"
-                  value={formData.quantity}
-                  onChange={(e) => {
-                    const rawValue = e.target.value;
-                    if (rawValue === "") {
-                      setFormData((p) => ({ ...p, quantity: "" }));
-                      return;
-                    }
-                    const val = parseInt(rawValue, 10);
-                    if (isNaN(val)) return;
-                    const clamped = Math.max(1, Math.min(100, val));
-                    setFormData((p) => {
-                      let newUnits = [...p.units];
-                      if (clamped > newUnits.length) {
-                        const diff = clamped - newUnits.length;
-                        for (let i = 0; i < diff; i++) {
-                          newUnits.push({
-                            serialNumber: "",
-                            location: [p.branch, p.zona, p.subzona].filter(Boolean).join(" / ")
-                          });
-                        }
-                      } else if (clamped < newUnits.length) {
-                        newUnits = newUnits.slice(0, clamped);
+              <input
+                type="number"
+                min="1"
+                max="100"
+                value={formData.quantity}
+                onChange={(e) => {
+                  const rawValue = e.target.value;
+                  if (rawValue === "") {
+                    setFormData((p) => ({ ...p, quantity: "" }));
+                    return;
+                  }
+                  const val = parseInt(rawValue, 10);
+                  if (isNaN(val)) return;
+                  const clamped = Math.max(1, Math.min(100, val));
+                  setFormData((p) => {
+                    let newUnits = [...p.units];
+                    if (clamped > newUnits.length) {
+                      const diff = clamped - newUnits.length;
+                      for (let i = 0; i < diff; i++) {
+                        newUnits.push({
+                          serialNumber: "",
+                          location: ""
+                        });
                       }
-                      return { ...p, quantity: clamped, units: newUnits };
-                    });
-                  }}
-                  onBlur={(e) => {
-                    if (e.target.value === "" || parseInt(e.target.value, 10) < 1) {
-                      setFormData((p) => ({ ...p, quantity: Math.max(1, p.units.length) }));
+                    } else if (clamped < newUnits.length) {
+                      newUnits = newUnits.slice(0, clamped);
                     }
-                  }}
-                  style={{
-                    ...modernInputStyle,
-                    width: "120px",
-                    fontWeight: "700",
-                  }}
-                />
-              )}
+                    return { ...p, quantity: clamped, units: newUnits };
+                  });
+                }}
+                onBlur={(e) => {
+                  if (e.target.value === "" || parseInt(e.target.value, 10) < 1) {
+                    setFormData((p) => ({ ...p, quantity: Math.max(1, p.units.length) }));
+                  }
+                }}
+                style={{
+                  ...modernInputStyle,
+                  width: "120px",
+                  fontWeight: "700",
+                }}
+              />
             </TableRow>
           </ModernTable>
 
@@ -3950,6 +4213,7 @@ const ViewAsset = () => {
                           <SmartLocationInput
                             value={unit.location}
                             readOnly={!isLocEditing}
+                            dbLocations={dbLocations}
                             onChange={(val) =>
                               updateUnitField(idx, "location", val)
                             }
@@ -4454,20 +4718,9 @@ const ViewAsset = () => {
                 style={modernSelectStyle}
               >
                 <option value="">— Pilih Kategori —</option>
-                <option value="Laptop">Laptop</option>
-                <option value="CCTV">CCTV</option>
-                <option value="Router">Router</option>
-                <option value="PC Desktop">PC Desktop</option>
-                <option value="Server">Server</option>
-                <option value="Switch">Switch</option>
-                <option value="Printer">Printer</option>
-                <option value="Kendaraan">Kendaraan</option>
-                <option value="Alat Berat">Alat Berat</option>
-                <option value="Furniture">Furniture</option>
-                <option value="Material">Material</option>
-                <option value="Software">Software</option>
-                <option value="Hardware">Hardware</option>
-                <option value="Lainnya">IT Lainnya</option>
+                {Object.entries(CATEGORY_NAMES).map(([code, name]) => (
+                  <option key={code} value={code}>{name}</option>
+                ))}
               </select>
             </TableRow>
             <TableRow label="Status">
@@ -4711,6 +4964,7 @@ const ViewAsset = () => {
                           <SmartLocationInput
                             value={unit.location}
                             readOnly={!isLocEditing}
+                            dbLocations={dbLocations}
                             onChange={(val) =>
                               updateEditUnitField(i, "location", val)
                             }
@@ -5285,7 +5539,7 @@ const ViewAsset = () => {
                     color: "#334155",
                   }}
                 >
-                  {a.category}
+                  {CATEGORY_NAMES[a.category] || a.category}
                 </span>
               </TableRow>
               <TableRow label="Status">
@@ -5347,7 +5601,7 @@ const ViewAsset = () => {
                     color: "#334155",
                   }}
                 >
-                  {isOpexProj ? "OPEX" : "CAPEX"}
+                  {a.id_pekerjaan && proj ? (isOpexProj ? "OPEX" : "CAPEX") : "Belum Ditentukan"}
                 </span>
               </TableRow>
               <TableRow label="Pekerjaan Terkait">

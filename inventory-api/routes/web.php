@@ -8,7 +8,7 @@ $router->get('/', function () use ($router) {
         'status'    => 'OK',
         'message'   => 'Lumen API is running!',
         'version'   => $router->app->version(),
-        'timestamp' => now()->toISOString()
+        'timestamp' => \Carbon\Carbon::now()->toIso8601String()
     ]);
 });
 
@@ -16,7 +16,7 @@ $router->get('/api/test', function () {
     return response()->json([
         'success'   => true,
         'message'   => 'API routing works!',
-        'timestamp' => now()->toISOString()
+        'timestamp' => \Carbon\Carbon::now()->toIso8601String()
     ]);
 });
 
@@ -59,6 +59,10 @@ $router->group(['prefix' => 'api'], function () use ($router) {
         $router->post('/master-data/branches',        'MasterDataController@storeBranch');
         $router->put('/master-data/branches/{code}',  'MasterDataController@updateBranch');
         $router->delete('/master-data/branches/{code}', 'MasterDataController@deleteBranch');
+
+        // ── MASTER DATA: ZONAS & SUBZONAS ──────────
+        $router->get('/master-data/zonas',            'MasterDataController@indexZonas');
+        $router->get('/master-data/subzonas',         'MasterDataController@indexSubzonas');
 
         // ── MASTER DATA: DIVISIONS ─────────────────
         $router->get('/master-data/divisions',         'MasterDataController@indexDivisions');
@@ -104,8 +108,16 @@ $router->group(['prefix' => 'api'], function () use ($router) {
         // INVENTORY: BARANG (ASET)
         // ══════════════════════════════════════════════
         $router->get('/barang',    'BarangController@index');
+        $router->get('/devices',   'BarangController@indexDevices');
         $router->post('/barang',   'BarangController@store');
         $router->put('/barang/{id}', 'BarangController@update');
         $router->delete('/barang/{id}', 'BarangController@destroy');
+
+        // ══════════════════════════════════════════════
+        // INVENTORY: TRANSACTIONS (BAST)
+        // ══════════════════════════════════════════════
+        $router->get('/transactions',         'TransactionController@index');
+        $router->post('/transactions',        'TransactionController@store');
+        $router->post('/transactions/return', 'TransactionController@returnAsset');
     });
 });

@@ -5,6 +5,7 @@
 .bi-root {
   max-width: 1400px;
   margin: 0 auto;
+  /* Test responsive fix */
 }
 
 /* ── Header ──────────────────────────────────────────────────── */
@@ -1401,4 +1402,50 @@
   .bi-custom-form-grid {
     grid-template-columns: 1fr;
   }
+
+/* ── More Responsive Fixes ────────────────────────────────────── */
+@media (max-width: 992px) {
+  .bi-root { padding: 1rem; }
+  .bi-header h1 { font-size: 1.4rem; }
+  .bi-type-cards { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .bi-steps { flex-direction: column; gap: 1rem; padding: 1.2rem; }
+  .bi-step { flex-direction: row; width: 100%; justify-content: flex-start; padding-left: 10%; gap: 12px; }
+  .bi-step-line { width: 2px; height: 20px; margin: -5px 0 -5px 10%; margin-left: calc(10% + 21px); }
+  .bi-actions { flex-direction: column-reverse; padding: 1.2rem; gap: 12px; }
+  .bi-summary { grid-template-columns: 1fr; gap: 0.8rem; }
+  .bi-header { flex-direction: column; align-items: flex-start; }
+}
+
+@media (max-width: 640px) {
+  .bi-header h1 { font-size: 1.25rem; }
+  .bi-form-card { padding: 1.2rem; }
+  .bi-btn-add { width: 100%; justify-content: center; }
+  .bi-form-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .bi-content > div { max-width: 100%; overflow-x: auto; }
+  .bi-asset-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .bi-btn-remove { width: 100%; justify-content: center; }
+
+  /* Row stacking */
+  .bi-modal-row, .bi-edit-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  .bi-modal-label, .bi-edit-label {
+    width: 100% !important;
+    border-right: none !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    padding: 10px 16px !important;
+  }
+  .bi-modal-value, .bi-edit-value {
+    width: 100% !important;
+    padding: 12px 16px !important;
+  }
+  .bi-confirm-box {
+    max-width: 90% !important;
+    padding: 20px !important;
+  }
+}
 }

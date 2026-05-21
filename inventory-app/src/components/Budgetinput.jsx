@@ -22,6 +22,7 @@ import {
   Calendar,
   Pencil,
   PlusCircle,
+  MoreVertical,
 } from "lucide-react";
 import { budgetAPI } from "../services/budget";
 
@@ -340,6 +341,40 @@ body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:var(--bg);c
 @keyframes fadeOvl{from{opacity:0}to{opacity:1}}
 @keyframes modalUp{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes toastIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+.mobile-action-content { display: flex; gap: 5px; justify-content: center; flex-wrap: nowrap; }
+.app-container { padding: 0 2rem 2rem; }
+
+@media(max-width: 1024px) {
+  table th { font-size: 0.65rem !important; padding: 8px 10px !important; }
+  table td { font-size: 0.7rem !important; padding: 8px 10px !important; }
+}
+@media(max-width: 768px) {
+  table th { font-size: 0.6rem !important; padding: 6px 4px !important; min-width: 0 !important; width: auto !important; white-space: normal !important; }
+  table td { font-size: 0.65rem !important; padding: 6px 4px !important; min-width: 0 !important; width: auto !important; white-space: normal !important; word-wrap: break-word !important; }
+  table td span, table td div { font-size: inherit !important; }
+  .btn, .btnOut { font-size: 0.7rem !important; padding: 6px 10px !important; }
+  input, select { font-size: 0.75rem !important; padding: 6px 10px !important; }
+  .bi-edit-row { flex-direction: column !important; min-height: auto !important; }
+  .bi-edit-label { width: 100% !important; border-right: none !important; border-bottom: 1px solid #f1f5f9 !important; padding: 8px 12px !important; }
+  .bi-edit-value { padding: 8px 12px !important; }
+  .cbox { max-width: 90vw !important; margin: 0 16px !important; }
+  .pos-badge-mobile-flat { background: transparent !important; border: none !important; padding: 0 !important; }
+  .hide-on-mobile { display: none !important; }
+  .mobile-stack-grid { grid-template-columns: 1fr !important; }
+  .app-container { padding: 0 0.5rem 1rem !important; }
+  
+  .mobile-action-trigger { display: inline-flex !important; align-items: center; justify-content: center; width: 28px; height: 28px; background: transparent; border: none; color: #475569; }
+  .mobile-action-content { display: none; position: absolute; right: 20px; top: 50%; transform: translateY(-50%); background: white; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); padding: 4px; z-index: 10; flex-direction: row; gap: 4px; }
+  .mobile-action-dropdown { position: relative; }
+  .mobile-action-content button { padding: 6px !important; background: transparent !important; border: none !important; box-shadow: none !important; }
+}
+@media(max-width: 480px) {
+  table th { font-size: 0.55rem !important; padding: 4px 2px !important; }
+  table td { font-size: 0.6rem !important; padding: 4px 2px !important; }
+  .btn { font-size: 0.65rem !important; padding: 5px 8px !important; }
+  input, select { font-size: 0.7rem !important; padding: 5px 8px !important; }
+}
 `;
 
 // ── SHARED STYLES ──────────────────────────────────────────────
@@ -501,7 +536,7 @@ function ToastMsg({ msg, onDone }) {
 function ConfirmBox({ msg, onConfirm, onCancel }) {
   return (
     <div className="overlay" onClick={onCancel}>
-      <div className="cbox" onClick={(e) => e.stopPropagation()}>
+      <div className="cbox bi-confirm-box" onClick={(e) => e.stopPropagation()}>
         <div
           style={{
             width: 48,
@@ -567,16 +602,17 @@ function Fld({ label, required, children, helper }) {
 function ModalFormRow({ label, required, helper, children, noBorder }) {
   return (
     <div
+      className="bi-modal-row"
       style={{
         ...S.mlrRow,
         borderBottom: noBorder ? "none" : "1px solid #f1f5f9",
       }}
     >
-      <div style={S.mlrLabel}>
+      <div className="bi-modal-label" style={S.mlrLabel}>
         {label}
         {required && <span style={{ color: "#ef4444", marginLeft: 2 }}>*</span>}
       </div>
-      <div style={S.mlrValue}>
+      <div className="bi-modal-value" style={S.mlrValue}>
         {children}
         {helper && (
           <span style={{ fontSize: "0.72rem", color: "#94a3b8" }}>
@@ -1159,18 +1195,19 @@ function EditSection({
         ].map((r, i, arr) => (
           <div
             key={r.label}
+            className="bi-edit-row"
             style={{
               ...S.lrRow,
               borderBottom: i < arr.length - 1 ? "1px solid #f1f5f9" : "none",
             }}
           >
-            <div style={S.lrLabel}>
+            <div className="bi-edit-label" style={S.lrLabel}>
               {r.label}
               {r.required && (
                 <span style={{ color: "#ef4444", marginLeft: 2 }}>*</span>
               )}
             </div>
-            <div style={S.lrValue}>{r.content}</div>
+            <div className="bi-edit-value" style={S.lrValue}>{r.content}</div>
           </div>
         ))}
       </div>
@@ -2254,7 +2291,7 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
             </div>
           )}
         </div>
-        
+
         <button
           style={{
             ...S.btn,
@@ -2644,6 +2681,45 @@ function CapexDetailPage({ capex, onBack, setCapexList, toast_ }) {
                   }}
                 >
                   RKAP {capex.thn_rkap_awal} — {capex.thn_rkap_akhir}
+                </span>
+                <span
+                  style={{
+                    fontSize: "0.75rem",
+                    color: "#16a34a",
+                    background: "#f0fdf4",
+                    padding: "2px 8px",
+                    borderRadius: 4,
+                    border: "1px solid #bbf7d0",
+                    fontWeight: 600,
+                  }}
+                >
+                  Thn Anggaran: {capex.thn_anggaran}
+                </span>
+                <span
+                  style={{
+                    fontSize: "0.75rem",
+                    color: "#0f172a",
+                    background: "#f8fafc",
+                    padding: "2px 8px",
+                    borderRadius: 4,
+                    border: "1px solid #e2e8f0",
+                    fontWeight: 700,
+                  }}
+                >
+                  KAD: {fmt(capex.nilai_kad)}
+                </span>
+                <span
+                  style={{
+                    fontSize: "0.75rem",
+                    color: "#0f172a",
+                    background: "#f8fafc",
+                    padding: "2px 8px",
+                    borderRadius: 4,
+                    border: "1px solid #e2e8f0",
+                    fontWeight: 700,
+                  }}
+                >
+                  RKAP: {fmt(capex.nilai_rkap)}
                 </span>
               </div>
             </div>
@@ -3576,6 +3652,7 @@ function OpexMasterFormModal({ title, form, setForm, onSave, onClose }) {
 // ── OPEX MODULE ────────────────────────────────────────────────
 function OpexModule({ masterList, setMasterList }) {
   const [masters, setMasters] = useState([]);
+  const [activeDropdownOpex, setActiveDropdownOpex] = useState(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const prevMastersRef = React.useRef([]);
 
@@ -3603,7 +3680,7 @@ function OpexModule({ masterList, setMasterList }) {
     const prev = prevMastersRef.current;
     const current = masters;
     const prevMap = new Map(prev.map(p => [p.id, p]));
-    
+
     current.forEach(item => {
       const p = prevMap.get(item.id);
       if (!p) {
@@ -3612,7 +3689,7 @@ function OpexModule({ masterList, setMasterList }) {
         budgetAPI.updateOpex(p.db_id || item.id, item).catch(console.error);
       }
     });
-    
+
     const currentIds = new Set(current.map(c => c.id));
     prev.forEach(p => {
       if (!currentIds.has(p.id) && p.db_id) budgetAPI.deleteOpex(p.db_id).catch(console.error);
@@ -3847,7 +3924,7 @@ function OpexModule({ masterList, setMasterList }) {
     }));
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }} onClick={() => setActiveDropdownOpex(null)}>
       {toast && <ToastMsg msg={toast} onDone={() => setToast(null)} />}
       {confirm && (
         <ConfirmBox
@@ -4131,6 +4208,19 @@ function OpexModule({ masterList, setMasterList }) {
                         <span
                           style={{
                             fontSize: "0.75rem",
+                            color: "#64748b",
+                            background: "white",
+                            padding: "2px 8px",
+                            borderRadius: 4,
+                            border: "1px solid #e2e8f0",
+                            fontWeight: 600,
+                          }}
+                        >
+                          Anggaran Total: {fmt(totalR)}
+                        </span>
+                        <span
+                          style={{
+                            fontSize: "0.75rem",
                             background:
                               pct >= 100
                                 ? "#fef2f2"
@@ -4220,6 +4310,7 @@ function OpexModule({ masterList, setMasterList }) {
               </span>
             </div>
             <div
+              className="mobile-stack-grid"
               style={{
                 display: "grid",
                 gridTemplateColumns: "repeat(3,1fr)",
@@ -4603,6 +4694,7 @@ function OpexModule({ masterList, setMasterList }) {
                         ].map((h, i) => (
                           <th
                             key={h}
+                            className={i === 2 || i === 5 ? "hide-on-mobile" : ""}
                             style={{
                               ...S.th,
                               whiteSpace: "nowrap",
@@ -4663,7 +4755,9 @@ function OpexModule({ masterList, setMasterList }) {
                         return (
                           <tr
                             key={m.id}
-                            style={{ background: "white", cursor: "default" }}
+                            className="tr-hover"
+                            style={{ background: "white", cursor: "pointer" }}
+                            onClick={() => setDetailMaster(m)}
                           >
                             <td
                               style={{
@@ -4688,7 +4782,7 @@ function OpexModule({ masterList, setMasterList }) {
                                 {m.nama}
                               </div>
                             </td>
-                            <td style={{ ...S.td, textAlign: "center" }}>
+                            <td className="hide-on-mobile" style={{ ...S.td, textAlign: "center" }}>
                               <span
                                 style={{
                                   fontFamily: "monospace",
@@ -4720,7 +4814,7 @@ function OpexModule({ masterList, setMasterList }) {
                                 {fmt(m.nilai_anggaran)}
                               </span>
                             </td>
-                            <td style={{ ...S.td, textAlign: "right" }}>
+                            <td className="hide-on-mobile" style={{ ...S.td, textAlign: "right" }}>
                               <span
                                 style={{
                                   fontWeight: 700,
@@ -4731,50 +4825,67 @@ function OpexModule({ masterList, setMasterList }) {
                               </span>
                             </td>
                             <td style={{ ...S.td, textAlign: "center" }}>
-                              <div
-                                style={{
-                                  display: "flex",
-                                  gap: 6,
-                                  justifyContent: "center",
-                                }}
-                              >
+                              <div className="mobile-action-dropdown" style={{ display: "flex", gap: 5, justifyContent: "center", flexWrap: "nowrap" }}>
                                 <button
-                                  style={{
-                                    ...S.abtn,
-                                    padding: "6px 10px",
-                                    background: "#eff6ff",
-                                    borderColor: "#bfdbfe",
+                                  className="mobile-action-trigger"
+                                  style={{ display: "none" }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setActiveDropdownOpex(activeDropdownOpex === m.id ? null : m.id);
                                   }}
-                                  title="Lihat Detail Anggaran"
-                                  onClick={() => setDetailMaster(m)}
                                 >
-                                  <Eye
-                                    size={13}
-                                    style={{ color: "#2563eb" }}
-                                  />
+                                  <MoreVertical size={15} />
                                 </button>
+                                <div
+                                  className="mobile-action-content"
+                                  style={
+                                    window.innerWidth <= 768 && activeDropdownOpex === m.id
+                                      ? { display: "flex", flexWrap: "nowrap" }
+                                      : undefined
+                                  }
+                                >
+                                  <button
+                                    style={{
+                                      ...S.abtn,
+                                      padding: "6px 10px",
+                                      background: "#eff6ff",
+                                      borderColor: "#bfdbfe",
+                                    }}
+                                    title="Lihat Detail Anggaran"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setDetailMaster(m);
+                                    }}
+                                  >
+                                    <Eye
+                                      size={13}
+                                      style={{ color: "#2563eb" }}
+                                    />
+                                  </button>
 
-                                <button
-                                  style={{
-                                    ...S.abtn,
-                                    padding: "6px 10px",
-                                    background: m.nilai_anggaran > 0 ? "#f1f5f9" : "#fef2f2",
-                                    borderColor: m.nilai_anggaran > 0 ? "#e2e8f0" : "#fecaca",
-                                    cursor: m.nilai_anggaran > 0 ? "not-allowed" : "pointer",
-                                    opacity: m.nilai_anggaran > 0 ? 0.5 : 1,
-                                  }}
-                                  onClick={() => {
-                                    if (m.nilai_anggaran > 0) return;
-                                    handleDeleteMaster(m.id);
-                                  }}
-                                  disabled={m.nilai_anggaran > 0}
-                                  title={m.nilai_anggaran > 0 ? "Tidak dapat dihapus (sudah ada anggaran)" : "Hapus"}
-                                >
-                                  <Trash2
-                                    size={13}
-                                    style={{ color: m.nilai_anggaran > 0 ? "#94a3b8" : "#ef4444" }}
-                                  />
-                                </button>
+                                  <button
+                                    style={{
+                                      ...S.abtn,
+                                      padding: "6px 10px",
+                                      background: m.nilai_anggaran > 0 ? "#f1f5f9" : "#fef2f2",
+                                      borderColor: m.nilai_anggaran > 0 ? "#e2e8f0" : "#fecaca",
+                                      cursor: m.nilai_anggaran > 0 ? "not-allowed" : "pointer",
+                                      opacity: m.nilai_anggaran > 0 ? 0.5 : 1,
+                                    }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (m.nilai_anggaran > 0) return;
+                                      handleDeleteMaster(m.id);
+                                    }}
+                                    disabled={m.nilai_anggaran > 0}
+                                    title={m.nilai_anggaran > 0 ? "Tidak dapat dihapus (sudah ada anggaran)" : "Hapus"}
+                                  >
+                                    <Trash2
+                                      size={13}
+                                      style={{ color: m.nilai_anggaran > 0 ? "#94a3b8" : "#ef4444" }}
+                                    />
+                                  </button>
+                                </div>
                               </div>
                             </td>
                           </tr>
@@ -5341,6 +5452,7 @@ function CapexEditAnggaranModal({ capexId, anggaran, capex, onSave, onClose }) {
 // ── CAPEX MODULE ───────────────────────────────────────────────
 function CapexModule({ capexList, setCapexList }) {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [activeDropdown, setActiveDropdown] = useState(null);
   const prevCapexRef = React.useRef([]);
 
   useEffect(() => {
@@ -5367,7 +5479,7 @@ function CapexModule({ capexList, setCapexList }) {
     const prev = prevCapexRef.current;
     const current = capexList;
     const prevMap = new Map(prev.map(p => [p.id, p]));
-    
+
     current.forEach(item => {
       const p = prevMap.get(item.id);
       if (!p) {
@@ -5376,7 +5488,7 @@ function CapexModule({ capexList, setCapexList }) {
         budgetAPI.updateCapex(p.db_kd || item.kd_capex || item.id, item).catch(console.error);
       }
     });
-    
+
     const currentIds = new Set(current.map(c => c.id));
     prev.forEach(p => {
       if (!currentIds.has(p.id) && p.db_kd) budgetAPI.deleteCapex(p.db_kd).catch(console.error);
@@ -5610,7 +5722,7 @@ function CapexModule({ capexList, setCapexList }) {
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }} onClick={() => setActiveDropdown(null)}>
       {toast && <ToastMsg msg={toast} onDone={() => setToast(null)} />}
       {confirm && (
         <ConfirmBox
@@ -5656,6 +5768,7 @@ function CapexModule({ capexList, setCapexList }) {
           display: "flex",
           alignItems: "center",
           gap: 14,
+          flexWrap: "wrap",
         }}
       >
         <div
@@ -5702,6 +5815,7 @@ function CapexModule({ capexList, setCapexList }) {
             padding: "4px 10px",
             borderRadius: 99,
             border: "1px solid #bfdbfe",
+            whiteSpace: "nowrap",
           }}
         >
           {capexList.length} data CAPEX
@@ -5738,6 +5852,7 @@ function CapexModule({ capexList, setCapexList }) {
           </span>
         </div>
         <div
+          className="mobile-stack-grid"
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(3,1fr)",
@@ -5888,6 +6003,7 @@ function CapexModule({ capexList, setCapexList }) {
                   return (
                     <th
                       key={h}
+                      className={i === 2 || i === 6 || i === 7 ? "hide-on-mobile" : ""}
                       style={{
                         ...S.th,
                         ...(i === 0 && { width: 48, textAlign: "center" }),
@@ -6004,11 +6120,13 @@ function CapexModule({ capexList, setCapexList }) {
                             fontWeight: 700,
                             fontSize: "0.78rem",
                             color: "#94a3b8",
+                            cursor: "pointer",
                           }}
+                          onClick={() => setDetailCapex({ ...c })}
                         >
                           {idx + 1}
                         </td>
-                        <td style={S.td}>
+                        <td style={{ ...S.td, cursor: "pointer" }} onClick={() => setDetailCapex({ ...c })}>
                           <div
                             style={{
                               fontWeight: 600,
@@ -6020,7 +6138,7 @@ function CapexModule({ capexList, setCapexList }) {
                             {c.nm_anggaran}
                           </div>
                         </td>
-                        <td style={{ ...S.td, textAlign: "center" }}>
+                        <td className="hide-on-mobile" style={{ ...S.td, textAlign: "center" }}>
                           {c.kd_capex ? (
                             <span
                               style={{
@@ -6045,11 +6163,13 @@ function CapexModule({ capexList, setCapexList }) {
                             textAlign: "center",
                             color: "#64748b",
                             fontWeight: 600,
+                            cursor: "pointer",
                           }}
+                          onClick={() => setDetailCapex({ ...c })}
                         >
                           {c.thn_rkap_awal}
                         </td>
-                        <td style={{ ...S.td, textAlign: "center" }}>
+                        <td style={{ ...S.td, textAlign: "center", cursor: "pointer" }} onClick={() => setDetailCapex({ ...c })}>
                           <span
                             style={{
                               background: isLebih ? "#fef3c7" : "#f1f5f9",
@@ -6079,7 +6199,7 @@ function CapexModule({ capexList, setCapexList }) {
                             <span style={{ color: "#cbd5e1" }}>—</span>
                           )}
                         </td>
-                        <td style={{ ...S.td, textAlign: "center" }}>
+                        <td className="hide-on-mobile" style={{ ...S.td, textAlign: "center" }}>
                           <span
                             style={{
                               background: "#f0fdf4",
@@ -6094,7 +6214,7 @@ function CapexModule({ capexList, setCapexList }) {
                             {c.thn_anggaran}
                           </span>
                         </td>
-                        <td style={{ ...S.td, textAlign: "right" }}>
+                        <td className="hide-on-mobile" style={{ ...S.td, textAlign: "right" }}>
                           {c.nilai_rkap > 0 ? (
                             <span
                               style={{
@@ -6110,66 +6230,80 @@ function CapexModule({ capexList, setCapexList }) {
                           )}
                         </td>
                         <td style={{ ...S.td, textAlign: "center" }}>
-                          <div
-                            style={{
-                              display: "flex",
-                              gap: 5,
-                              justifyContent: "center",
-                              flexWrap: "nowrap",
-                            }}
-                          >
+                          <div className="mobile-action-dropdown" style={{ display: "flex", gap: 5, justifyContent: "center", flexWrap: "nowrap" }}>
                             <button
-                              style={{
-                                ...S.abtn,
-                                padding: "5px 8px",
-                                background: "#eff6ff",
-                                borderColor: "#bfdbfe",
+                              className="mobile-action-trigger"
+                              style={{ display: "none" }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveDropdown(activeDropdown === c.id ? null : c.id);
                               }}
-                              title="Detail"
-                              onClick={() => setDetailCapex({ ...c })}
                             >
-                              <Eye size={13} style={{ color: "#2563eb" }} />
+                              <MoreVertical size={15} />
                             </button>
-                            {isLebih && (
+                            <div
+                              className="mobile-action-content"
+                              style={
+                                window.innerWidth <= 768 && activeDropdown === c.id
+                                  ? { display: "flex", flexWrap: "nowrap" }
+                                  : undefined
+                              }
+                            >
+                              <button
+                                style={{
+                                  ...S.abtn,
+                                  padding: "5px 8px",
+                                  background: "#eff6ff",
+                                  borderColor: "#bfdbfe",
+                                }}
+                                title="Detail"
+                                onClick={(e) => { e.stopPropagation(); setDetailCapex({ ...c }); }}
+                              >
+                                <Eye size={13} style={{ color: "#2563eb" }} />
+                              </button>
+                              {isLebih && (
+                                <button
+                                  style={{
+                                    ...S.abtn,
+                                    padding: "5px 8px",
+                                    background: "#fffbeb",
+                                    borderColor: "#fde68a",
+                                    gap: 3,
+                                  }}
+                                  title="Tambah Anggaran"
+                                  onClick={(e) => { e.stopPropagation(); setInputAnggaranCapex({ ...c }); }}
+                                >
+                                  <PlusCircle
+                                    size={12}
+                                    style={{ color: "#d97706" }}
+                                  />
+                                </button>
+                              )}
                               <button
                                 style={{
                                   ...S.abtn,
                                   padding: "5px 8px",
                                   background: "#fffbeb",
                                   borderColor: "#fde68a",
-                                  gap: 3,
                                 }}
-                                title="Tambah Anggaran"
-                                onClick={() => setInputAnggaranCapex({ ...c })}
+                                title="Edit"
+                                onClick={(e) => { e.stopPropagation(); setEditTarget({ ...c }); }}
                               >
-                                <PlusCircle
-                                  size={12}
-                                  style={{ color: "#d97706" }}
-                                />
+                                <Edit size={13} style={{ color: "#d97706" }} />
                               </button>
-                            )}
-                            <button
-                              style={{
-                                ...S.abtn,
-                                padding: "5px 8px",
-                                background: "#fffbeb",
-                                borderColor: "#fde68a",
-                              }}
-                              onClick={() => setEditTarget({ ...c })}
-                            >
-                              <Edit size={13} style={{ color: "#d97706" }} />
-                            </button>
-                            <button
-                              style={{
-                                ...S.abtn,
-                                padding: "5px 8px",
-                                background: "#fef2f2",
-                                borderColor: "#fecaca",
-                              }}
-                              onClick={() => handleDeleteCapex(c.id)}
-                            >
-                              <Trash2 size={13} style={{ color: "#ef4444" }} />
-                            </button>
+                              <button
+                                style={{
+                                  ...S.abtn,
+                                  padding: "5px 8px",
+                                  background: "#fef2f2",
+                                  borderColor: "#fecaca",
+                                }}
+                                title="Hapus"
+                                onClick={(e) => { e.stopPropagation(); handleDeleteCapex(c.id); }}
+                              >
+                                <Trash2 size={13} style={{ color: "#ef4444" }} />
+                              </button>
+                            </div>
                           </div>
                         </td>
                       </tr>,
@@ -6344,10 +6478,10 @@ function CapexModule({ capexList, setCapexList }) {
                           </tr>
                         )),
                       );
-                      
+
                       const subTotalKad = (c.nilai_kad || 0) + c.anggaran_tahunan.reduce((s, a) => s + (a.nilai_kad || 0), 0);
                       const subTotalRkap = (c.nilai_rkap || 0) + c.anggaran_tahunan.reduce((s, a) => s + (a.nilai_anggaran || 0), 0);
-                      
+
                       rows.push(
                         <tr key={`subtotal-${c.id}`} style={{ background: "#eff6ff" }}>
                           <td colSpan={5} style={{ ...S.td, textAlign: "right", fontWeight: 800, color: "#1d4ed8", fontSize: "0.75rem" }}>
@@ -6386,7 +6520,7 @@ export default function App() {
     <div style={{ minHeight: "100vh", background: "#f8fafc" }}>
       <style>{CSS_BM}</style>
       <style>{`*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif!important;}body{-webkit-font-smoothing:antialiased;}`}</style>
-      <div style={{ padding: "0 2rem 2rem", maxWidth: 1400, margin: "0 auto" }}>
+      <div className="app-container" style={{ maxWidth: 1400, margin: "0 auto" }}>
         {children}
       </div>
     </div>

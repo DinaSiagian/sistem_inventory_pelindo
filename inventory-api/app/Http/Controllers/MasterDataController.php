@@ -621,6 +621,56 @@ class MasterDataController extends Controller
         }
     }
 
+    /* ==================== ZONAS & SUBZONAS ==================== */
+    
+    /**
+     * GET /api/master-data/zonas
+     */
+    public function indexZonas(Request $request)
+    {
+        try {
+            $query = \Illuminate\Support\Facades\DB::table('zonas');
+            if ($request->has('branch_code')) {
+                $query->where('branch_code', $request->branch_code);
+            }
+            $zonas = $query->get();
+            return response()->json([
+                'success' => true,
+                'data' => $zonas
+            ], 200);
+        } catch (Exception $e) {
+            Log::error('Get Zonas Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data zona'
+            ], 500);
+        }
+    }
+
+    /**
+     * GET /api/master-data/subzonas
+     */
+    public function indexSubzonas(Request $request)
+    {
+        try {
+            $query = \Illuminate\Support\Facades\DB::table('subzona');
+            if ($request->has('zona_code')) {
+                $query->where('zona_code', $request->zona_code);
+            }
+            $subzonas = $query->get();
+            return response()->json([
+                'success' => true,
+                'data' => $subzonas
+            ], 200);
+        } catch (Exception $e) {
+            Log::error('Get Subzonas Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data subzona'
+            ], 500);
+        }
+    }
+
     /* ==================== COMBINED MASTER DATA ==================== */
     /**
      * GET /api/master-data

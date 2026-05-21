@@ -1,5 +1,21 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { budgetAPI, barangAPI } from '../services/api';
+const CATEGORY_NAMES = {
+  LPT: "LAPTOP",
+  CTV: "CCTV CAMERA",
+  RTR: "ROUTER / JARINGAN",
+  PC: "PC DESKTOP",
+  SRV: "SERVER",
+  SWT: "SWITCH",
+  PRN: "PRINTER",
+  KND: "KENDARAAN",
+  AB: "ALAT BERAT",
+  FRN: "FURNITURE",
+  MAT: "MATERIAL",
+  SFT: "SOFTWARE LICENSE",
+  HDW: "HARDWARE",
+  OTH: "IT LAINNYA"
+};
 const Icon = ({ d, size = 16, style, className }) => (
   <svg
     width={size}
@@ -123,44 +139,119 @@ const ASSET_DB = {};
 
 const SN_DB = {};
 
-let barangCachePromise = null;
-function useAssetDB() {
-  const [data, setData] = useState(() => ({ assetDb: { ...ASSET_DB }, snDb: { ...SN_DB } }));
+function useAssetDB(refreshKey = 0) {
+  const [data, setData] = useState(() => ({ assetDb: { ...ASSET_DB }, snDb: { ...SN_DB }, snAllocatedMap: {} }));
 
   useEffect(() => {
-    if (!barangCachePromise) {
-      barangCachePromise = barangAPI.getAll().then(res => {
-        const aMap = { ...ASSET_DB };
-        const sMap = { ...SN_DB };
-        const dataAset = res.data?.data || res.data;
-        if (dataAset && Array.isArray(dataAset)) {
-          dataAset.forEach(b => {
-            // Menggunakan b.id karena di API Controller mapped ke assetId
-            aMap[b.id] = {
-              name: b.name,
-              brand: "-",
-              model: b.tipeAset || b.name,
-              category: b.category,
-              isDb: true
-            };
-            // Sinkronisasi Serial Numbers (Units)
-            if (b.units && Array.isArray(b.units)) {
-              b.units.forEach(u => {
-                if (u.serialNumber) {
-                  sMap[u.serialNumber] = b.id;
-                }
-              });
+    barangAPI.getAll().then(res => {
+      const aMap = { ...ASSET_DB };
+      const sMap = { ...SN_DB };
+      const snAllocatedMap = {};
+      const dataAset = res.data?.data || res.data;
+      if (dataAset && Array.isArray(dataAset)) {
+        // Parse all database locations from the injected custom _all_locations property
+        const firstItem = dataAset[0];
+        const allLocs = firstItem ? firstItem._all_locations : null;
+        if (Array.isArray(allLocs)) {
+          allLocs.forEach(loc => {
+            const branchName = loc.branch_name;
+            const zonaName = loc.zona_name;
+            const subzonaName = loc.subzona_name;
+            const entityCode = loc.entity_code || 'SPMT';
+
+            if (branchName && zonaName && subzonaName) {
+              if (!BRANCH_BY_ENTITY[entityCode]) {
+                BRANCH_BY_ENTITY[entityCode] = [];
+              }
+              if (!BRANCH_BY_ENTITY[entityCode].some(br => br.name.toLowerCase() === branchName.toLowerCase())) {
+                BRANCH_BY_ENTITY[entityCode].push({
+                  name: branchName,
+                  code: loc.branch_code || branchName.substring(0, 3).toUpperCase()
+                });
+              }
+
+              if (!LOCATION_MAP[branchName]) {
+                LOCATION_MAP[branchName] = {};
+              }
+              if (!LOCATION_MAP[branchName][zonaName]) {
+                LOCATION_MAP[branchName][zonaName] = [];
+              }
+              if (!LOCATION_MAP[branchName][zonaName].includes(subzonaName)) {
+                LOCATION_MAP[branchName][zonaName].push(subzonaName);
+              }
             }
           });
         }
-        return { assetDb: aMap, snDb: sMap };
-      }).catch(err => {
-        console.error("Failed to load barang", err);
-        return { assetDb: ASSET_DB, snDb: SN_DB };
-      });
-    }
-    barangCachePromise.then(d => setData(d));
-  }, []);
+
+        dataAset.forEach(b => {
+          aMap[b.id] = {
+            id: b.id,
+            asset_code: b.id,
+            name: b.name,
+            brand: "-",
+            model: b.tipeAset || b.name,
+            category: b.category,
+            isDb: true,
+            id_pekerjaan: b.id_pekerjaan,
+            quantity: b.quantity,
+            units: b.units || []
+          };
+          // Sinkronisasi Serial Numbers (Units)
+          if (b.units && Array.isArray(b.units)) {
+            b.units.forEach(u => {
+              if (u.serialNumber) {
+                sMap[u.serialNumber] = b.id;
+                // Use the UNIT-LEVEL id_pekerjaan, not the asset master's id_pekerjaan.
+                // Each unit may belong to a different project — only mark it allocated
+                // if that specific unit has been assigned to a project.
+                if (u.id_pekerjaan) {
+                  snAllocatedMap[u.serialNumber] = u.id_pekerjaan;
+                }
+              }
+
+              // Fallback: Parse location of unit if _all_locations was somehow not present
+              if (!allLocs && u.location && typeof u.location === 'string') {
+                const parts = u.location.split('/').map(p => p.trim());
+                if (parts.length >= 3) {
+                  const branchName = parts[0];
+                  const zonaName = parts[1];
+                  const subzonaName = parts[2];
+
+                  let branchExists = false;
+                  for (const ent in BRANCH_BY_ENTITY) {
+                    if (BRANCH_BY_ENTITY[ent].some(br => br.name.toLowerCase() === branchName.toLowerCase())) {
+                      branchExists = true;
+                      break;
+                    }
+                  }
+                  if (!branchExists) {
+                    if (!BRANCH_BY_ENTITY['SPMT']) BRANCH_BY_ENTITY['SPMT'] = [];
+                    BRANCH_BY_ENTITY['SPMT'].push({
+                      name: branchName,
+                      code: branchName.substring(0, 3).toUpperCase()
+                    });
+                  }
+
+                  if (!LOCATION_MAP[branchName]) {
+                    LOCATION_MAP[branchName] = {};
+                  }
+                  if (!LOCATION_MAP[branchName][zonaName]) {
+                    LOCATION_MAP[branchName][zonaName] = [];
+                  }
+                  if (!LOCATION_MAP[branchName][zonaName].includes(subzonaName)) {
+                    LOCATION_MAP[branchName][zonaName].push(subzonaName);
+                  }
+                }
+              }
+            });
+          }
+        });
+      }
+      setData({ assetDb: aMap, snDb: sMap, snAllocatedMap });
+    }).catch(err => {
+      console.error("Failed to load barang", err);
+    });
+  }, [refreshKey]);
 
   return data;
 }
@@ -203,7 +294,7 @@ const SUBZONA_LIST = [
   { name: "Dermaga", code: "DMG" },
   { name: "Parkir", code: "PKR" },
   { name: "Jalan", code: "JLN" },
-  { name: "Taman/Parkir", code: "TPK" },
+  { name: "Taman", code: "TPK" },
   { name: "Gudang", code: "GDN" },
   { name: "Server Room", code: "SRV" },
   { name: "Office", code: "OFC" },
@@ -1158,7 +1249,7 @@ function SmartLocationInput({ value, onChange, placeholder = "Pilih Branch / Zon
   } else if (currentPartIdx === 2) {
     options = (LOCATION_MAP[branch] && LOCATION_MAP[branch][zone])
       ? LOCATION_MAP[branch][zone]
-      : SUBZONA_LIST.map(s => s.name);
+      : [];
     stepLabel = `Subzona di ${zone || 'Zona'}`;
   }
 
@@ -1405,7 +1496,7 @@ function SmartAssetInput({ value, onChange, options, placeholder = "Ketik/Pilih 
               <div style={{ width: 4, height: 4, borderRadius: "50%", background: "var(--blue)" }} />
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <span style={{ fontWeight: 700, color: '#1e293b' }}>{opt.name}</span>
-                <span style={{ fontSize: '0.7rem', color: '#64748b' }}>{opt.model} • {opt.category}</span>
+                <span style={{ fontSize: '0.7rem', color: '#64748b' }}>{opt.model} • {CATEGORY_NAMES[opt.category] || opt.category}</span>
               </div>
             </div>
           ))}
@@ -1461,7 +1552,7 @@ function Confirm({ msg, onConfirm, onCancel }) {
 }
 function CatPill({ cat }) {
   const cls = ["Server", "Network", "Security"].includes(cat) ? cat : "default";
-  return <span className={`cat-pill ${cls}`}>{cat || "—"}</span>;
+  return <span className={`cat-pill ${cls}`}>{CATEGORY_NAMES[cat] || cat || "—"}</span>;
 }
 function PctRing({ pct }) {
   const meta = pctMeta(pct);
@@ -2928,10 +3019,144 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
   );
 }
 // ══════ ASSET ENTRY PAGE (CAPEX) ══════
-function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
-  const { assetDb: ASSET_DB_DYN, snDb: SN_DB_DYN } = useAssetDB();
+function AssetEntryPage({ anggaran, project, onBack, onSave, showToast, allAnggarans = [], refreshKey = 0 }) {
+  const { assetDb: ASSET_DB_DYN, snDb: SN_DB_DYN, snAllocatedMap: SN_ALLOCATED_MAP } = useAssetDB(refreshKey);
   const [form, setForm] = useState({ category: "", model: "", items: [{ id: `new-${Date.now()}-0`, serial_number: "", location: "", asset_code: "" }], acquisition_value: "" });
   const upd = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  // Build a global SN map from ALL anggarans (not just the current one)
+  // so that SNs assigned to projects in other anggarans are also blocked.
+  const screenAssignedSNs = useMemo(() => {
+    const snMap = {};
+    const allSources = allAnggarans.length > 0 ? allAnggarans : [anggaran];
+    allSources.forEach(ang => {
+      (ang.assets || []).forEach(a => {
+        if (a.units) {
+          a.units.forEach(u => {
+            if (u.serialNumber) {
+              snMap[u.serialNumber] = a.id_pekerjaan;
+            }
+          });
+        }
+        // Also handle assets without units array but with serial_number field
+        if (!a.units && a.serial_number && a.id_pekerjaan) {
+          snMap[a.serial_number] = a.id_pekerjaan;
+        }
+      });
+    });
+    return snMap;
+  }, [anggaran, allAnggarans]);
+
+  // Build a map of how many units of each asset are already allocated across ALL anggarans.
+  // This is used for "unit-less" assets (no rows in barang table) to detect full allocation.
+  const allAnggaranAllocatedAssets = useMemo(() => {
+    const allocMap = {};
+    const allSources = allAnggarans.length > 0 ? allAnggarans : [anggaran];
+    allSources.forEach(ang => {
+      (ang.assets || []).forEach(a => {
+        if (a.asset_code && a.id_pekerjaan) {
+          allocMap[a.asset_code] = (allocMap[a.asset_code] || 0) + (a.jumlah || 1);
+        }
+      });
+    });
+    return allocMap;
+  }, [anggaran, allAnggarans]);
+
+  // Build a map of projects that have allocated units of each asset.
+  const allAnggaranAssetProjects = useMemo(() => {
+    const projMap = {};
+    const allSources = allAnggarans.length > 0 ? allAnggarans : [anggaran];
+    allSources.forEach(ang => {
+      (ang.assets || []).forEach(a => {
+        if (a.asset_code && a.id_pekerjaan) {
+          if (!projMap[a.asset_code]) {
+            projMap[a.asset_code] = new Set();
+          }
+          projMap[a.asset_code].add(String(a.id_pekerjaan));
+        }
+      });
+    });
+    return projMap;
+  }, [anggaran, allAnggarans]);
+
+  const isProjectLocal = (projId) => {
+    return allAnggarans.some(ang =>
+      (ang.projects || []).some(p => String(p.id) === String(projId))
+    );
+  };
+
+  const isSNAllocated = (sn) => {
+    // 1. If it is in the frontend screen state, it's definitively allocated right now.
+    if (screenAssignedSNs[sn] !== undefined) return true;
+
+    // 2. If it is NOT in the screen state, check the database.
+    const dbProjId = (SN_ALLOCATED_MAP || {})[sn];
+    if (dbProjId) {
+      // If the DB says it's allocated, but it's not in our screen state,
+      // we check if we HAVE that project loaded locally.
+      // If we do, it means we JUST DELETED it from that project locally. Treat as FREE.
+      if (isProjectLocal(dbProjId)) {
+        return false;
+      }
+      // If we don't have the project locally (e.g. created by someone else), trust the DB.
+      return true;
+    }
+
+    return false;
+  };
+
+  const isAssetFullyAllocated = (assetCode) => {
+    const dbAsset = ASSET_DB_DYN[assetCode];
+    if (!dbAsset) return false;
+    if (!dbAsset.isDb) return false;
+
+    // 1. Physical unit records are the absolute source of truth if they exist.
+    const units = dbAsset.units || [];
+    if (units.length > 0) {
+      return units.every(u => isSNAllocated(u.serialNumber));
+    }
+
+    const assignedProjects = allAnggaranAssetProjects[assetCode];
+
+    // 2. Asset-level project assignment (for unit-less assets or strict locking)
+    if (dbAsset.id_pekerjaan) {
+      if (!assignedProjects || !assignedProjects.has(String(dbAsset.id_pekerjaan))) {
+        // Local state doesn't have it in this project. Did we delete it?
+        if (!isProjectLocal(dbAsset.id_pekerjaan)) {
+          // We don't have this project locally, so trust the DB.
+          if (String(dbAsset.id_pekerjaan) !== String(project.id)) return true;
+        }
+        // Else: we have the project locally but the asset isn't in it -> we deleted it! Ignore DB.
+      } else {
+        // Local state CONFIRMS it's in that project
+        if (String(dbAsset.id_pekerjaan) !== String(project.id)) return true;
+      }
+    }
+
+    // 3. Fallback for unit-less assets (no physical units): check quantity capacity.
+    const totalQty = Math.max(dbAsset.quantity || 0, 1);
+    const allocatedCount = allAnggaranAllocatedAssets[assetCode] || 0;
+    if (allocatedCount >= totalQty) {
+      return true;
+    }
+
+    return false;
+  };
+
+  const isAssetHiddenFromDropdown = (assetCode) => {
+    // Hide if it is fully allocated across projects
+    if (isAssetFullyAllocated(assetCode)) return true;
+
+    // Hide if it's already assigned to the CURRENT project's frontend state.
+    // If it's already here, they shouldn't see it in the dropdown; 
+    // they should use the 'Edit' button on the table to add more units.
+    const assignedProjects = allAnggaranAssetProjects[assetCode];
+    if (assignedProjects && assignedProjects.has(String(project.id))) {
+      return true;
+    }
+
+    return false;
+  };
 
   const amount = parseFloat(form.acquisition_value) || 0;
   const total = (form.items || []).length * amount;
@@ -2939,7 +3164,10 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
   const availCodes = form.category && form.model
     ? Object.keys(ASSET_DB_DYN).filter(c => ASSET_DB_DYN[c].category === form.category && ASSET_DB_DYN[c].model === form.model)
     : [];
-  const availSNs = Object.entries(SN_DB_DYN).filter(([sn, code]) => availCodes.includes(code)).map(([sn]) => sn);
+  // Only surface SNs that are NOT allocated to any project yet
+  const availSNs = Object.entries(SN_DB_DYN)
+    .filter(([sn, code]) => availCodes.includes(code) && !isSNAllocated(sn))
+    .map(([sn]) => sn);
 
   const handleQtyChange = (qty) => {
     const newItems = [...(form.items || [])];
@@ -2956,6 +3184,32 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
       showToast("Lengkapi data barang");
       return;
     }
+
+    // Cek apakah asset terpilih melanggar aturan alokasi
+    const selectedAssetCode = form.items[0]?.asset_code;
+    if (selectedAssetCode && isAssetFullyAllocated(selectedAssetCode)) {
+      showToast("Seluruh unit barang dari aset ini sudah dialokasikan ke pekerjaan lain!");
+      return;
+    }
+
+    // Ensure all serial numbers are selected if asset tracks physical unit records
+    const dbAsset = selectedAssetCode ? ASSET_DB_DYN[selectedAssetCode] : null;
+    if (dbAsset && dbAsset.units && dbAsset.units.length > 0) {
+      for (let i = 0; i < form.items.length; i++) {
+        if (!form.items[i].serial_number) {
+          showToast(`Pilih Serial Number untuk Unit ${i + 1}`);
+          return;
+        }
+      }
+    }
+
+    for (const it of form.items) {
+      if (it.serial_number && isSNAllocated(it.serial_number)) {
+        showToast(`Serial number '${it.serial_number}' sudah dialokasikan ke pekerjaan lain!`);
+        return;
+      }
+    }
+
     const amount = parseFloat(form.acquisition_value) || 0;
     const totalNew = form.items.length * amount;
     const existingTotal = (anggaran.assets || [])
@@ -2982,7 +3236,35 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
       asset_code: form.items[0]?.asset_code || ""
     };
 
-    onSave(anggaran.id, [...(anggaran.assets || []), newAsset]);
+    const existingAssets = anggaran.assets || [];
+    const matchIndex = existingAssets.findIndex(
+      a => a.asset_code === newAsset.asset_code && String(a.id_pekerjaan) === String(project.id)
+    );
+
+    let updatedAssets;
+    if (matchIndex > -1) {
+      const existing = existingAssets[matchIndex];
+      const mergedUnits = [...(existing.units || [])];
+
+      newAsset.units.forEach(nu => {
+        if (!mergedUnits.some(eu => eu.serialNumber === nu.serialNumber)) {
+          mergedUnits.push(nu);
+        }
+      });
+
+      const updatedAsset = {
+        ...existing,
+        jumlah: existing.jumlah + newAsset.jumlah,
+        units: mergedUnits,
+      };
+
+      updatedAssets = [...existingAssets];
+      updatedAssets[matchIndex] = updatedAsset;
+    } else {
+      updatedAssets = [...existingAssets, newAsset];
+    }
+
+    onSave(anggaran.id, updatedAssets);
     showToast("Barang baru berhasil ditambahkan");
     onBack();
   };
@@ -3027,19 +3309,33 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
                 }}
               >
                 <option value="">— Pilih Kategori —</option>
-                {Array.from(new Set(Object.values(ASSET_DB_DYN).map(x => x.category))).map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
+                {Array.from(new Set(Object.values(ASSET_DB_DYN).map(x => x.category).filter(Boolean)))
+                  .filter(cat => {
+                    const assetsInCategory = Object.values(ASSET_DB_DYN).filter(x => x.category === cat);
+                    if (assetsInCategory.length === 0) return false;
+                    return assetsInCategory.some(x => !isAssetHiddenFromDropdown(x.asset_code));
+                  })
+                  .map(cat => (
+                    <option key={cat} value={cat}>{CATEGORY_NAMES[cat] || cat}</option>
+                  ))
+                }
               </select>
             </AEFld>
             {form.category && (
               <AEFld label="Nama Barang" req={true}>
                 <SmartAssetInput
                   value={form.model || ""}
-                  options={Object.values(ASSET_DB_DYN).filter(x => x.category === form.category)}
+                  options={Object.values(ASSET_DB_DYN).filter(x => {
+                    if (x.category !== form.category) return false;
+                    return !isAssetHiddenFromDropdown(x.asset_code);
+                  })}
                   onChange={(val) => {
                     upd("model", val);
-                    upd("items", [{ id: `new-${Date.now()}-0`, serial_number: "", location: "", asset_code: "" }]);
+                    const match = Object.entries(ASSET_DB_DYN).find(([code, x]) =>
+                      x.model === val && x.category === form.category
+                    );
+                    const ac = match ? match[0] : "";
+                    upd("items", [{ id: `new-${Date.now()}-0`, serial_number: "", location: "", asset_code: ac }]);
                   }}
                   placeholder="Ketik nama atau pilih dari daftar..."
                 />
@@ -3066,6 +3362,7 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
                 <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "12px" }}>
                   {form.items.map((item, idx) => {
                     const used = form.items.map((it, i) => i !== idx ? it.serial_number : null).filter(Boolean);
+                    // availSNs is already filtered to only unallocated SNs; just remove ones used in other rows
                     const filteredSNs = availSNs.filter(sn => !used.includes(sn));
 
                     return (
@@ -3128,7 +3425,15 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
                     background: "var(--blue-lt)"
                   }}
                   onClick={() => {
-                    upd("items", [...form.items, { id: `new-${Date.now()}`, serial_number: "", location: "", asset_code: "" }]);
+                    const ac = form.items[0]?.asset_code || "";
+                    // Count how many free (unallocated) SNs remain for this asset
+                    const usedInForm = form.items.map(it => it.serial_number).filter(Boolean);
+                    const freeSNsLeft = availSNs.filter(sn => !usedInForm.includes(sn));
+                    if (freeSNsLeft.length === 0) {
+                      showToast("Semua unit barang ini sudah dialokasikan, tidak bisa menambah unit lagi.");
+                      return;
+                    }
+                    upd("items", [...form.items, { id: `new-${Date.now()}`, serial_number: "", location: "", asset_code: ac }]);
                   }}
                 >
                   <Icon d={I.plus} size={14} /> Tambah Unit (Tambah Kuantitas)
@@ -3174,8 +3479,59 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast }) {
 }
 
 function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) {
-  const { assetDb: ASSET_DB_DYN, snDb: SN_DB_DYN } = useAssetDB();
+  const { assetDb: ASSET_DB_DYN, snDb: SN_DB_DYN, snAllocatedMap: SN_ALLOCATED_MAP } = useAssetDB();
   const isOpx = anggaran.type === 'opex';
+
+  const screenAssignedSNs = useMemo(() => {
+    const snMap = {};
+    (anggaran.assets || []).forEach(a => {
+      if (a.id !== asset.id && a.units) {
+        a.units.forEach(u => {
+          if (u.serialNumber) {
+            snMap[u.serialNumber] = a.id_pekerjaan;
+          }
+        });
+      }
+    });
+    return snMap;
+  }, [anggaran.assets, asset.id]);
+
+  const isSNAllocatedToOther = (sn, currentProjId) => {
+    const dbProjId = (SN_ALLOCATED_MAP || {})[sn];
+    if (dbProjId && String(dbProjId) !== String(currentProjId)) return true;
+    const screenProjId = screenAssignedSNs[sn];
+    if (screenProjId !== undefined) return true;
+    return false;
+  };
+
+  const isAssetFullyAllocated = (assetCode, currentProjId) => {
+    const dbAsset = ASSET_DB_DYN[assetCode];
+    if (!dbAsset) return false;
+    if (!dbAsset.isDb) return false;
+
+    const units = dbAsset.units || [];
+
+    // Case 1: has unit records → fully allocated when ALL units belong to OTHER projects
+    if (units.length > 0) {
+      return units.every(u => isSNAllocatedToOther(u.serialNumber, currentProjId));
+    }
+
+    // Case 2: no unit records, but asset-level id_pekerjaan points to a DIFFERENT project
+    if (dbAsset.id_pekerjaan && String(dbAsset.id_pekerjaan) !== String(currentProjId)) {
+      return true;
+    }
+
+    // Case 3: check SN_DB_DYN — all SNs for this asset are allocated to other projects
+    const allSNsForAsset = Object.entries(SN_DB_DYN)
+      .filter(([, code]) => code === assetCode)
+      .map(([sn]) => sn);
+    if (allSNsForAsset.length > 0) {
+      return allSNsForAsset.every(sn => isSNAllocatedToOther(sn, currentProjId));
+    }
+
+    return false;
+  };
+
   const [form, setForm] = useState(() => {
     const code = asset.asset_code || "";
     const dbInfo = ASSET_DB_DYN[code] || {};
@@ -3212,9 +3568,10 @@ function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) 
 
   const handleQtyChange = (qty) => {
     const newItems = [...(form.items || [])];
+    const code = asset.asset_code || "";
     while (newItems.length < qty) {
       const idx = newItems.length;
-      newItems.push({ id: `new-${Date.now()}-${idx}`, serial_number: "", location: "", asset_code: "" });
+      newItems.push({ id: `new-${Date.now()}-${idx}`, serial_number: "", location: "", asset_code: code });
     }
     if (newItems.length > qty) newItems.length = qty;
     upd("items", newItems);
@@ -3224,6 +3581,29 @@ function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) 
     if (!form.items?.length || !form.acquisition_value) {
       showToast("Lengkapi data barang");
       return;
+    }
+    const selectedAssetCode = form.items[0]?.asset_code || asset.asset_code;
+    if (selectedAssetCode && isAssetFullyAllocated(selectedAssetCode, project.id)) {
+      showToast("Seluruh unit barang dari aset ini sudah dialokasikan ke pekerjaan lain!");
+      return;
+    }
+
+    // Ensure all serial numbers are selected if asset tracks physical unit records
+    const dbAsset = selectedAssetCode ? ASSET_DB_DYN[selectedAssetCode] : null;
+    if (dbAsset && dbAsset.units && dbAsset.units.length > 0) {
+      for (let i = 0; i < form.items.length; i++) {
+        if (!form.items[i].serial_number) {
+          showToast(`Pilih Serial Number untuk Unit ${i + 1}`);
+          return;
+        }
+      }
+    }
+
+    for (const it of form.items) {
+      if (it.serial_number && isSNAllocatedToOther(it.serial_number, project.id)) {
+        showToast(`Serial number '${it.serial_number}' sudah dialokasikan ke pekerjaan lain!`);
+        return;
+      }
     }
     const amount = parseFloat(form.acquisition_value) || 0;
     const totalNew = form.items.length * amount;
@@ -3324,7 +3704,7 @@ function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) 
                 <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                   {form.items.map((item, idx) => {
                     const used = form.items.map((it, i) => i !== idx ? it.serial_number : null).filter(Boolean);
-                    const filteredSNs = availSNs.filter(sn => !used.includes(sn));
+                    const filteredSNs = availSNs.filter(sn => !used.includes(sn) && !isSNAllocatedToOther(sn, project.id));
 
                     return (
                       <div key={idx} style={{ background: "white", padding: "16px", borderRadius: 12, border: "1px solid #e2e8f0", boxShadow: "0 2px 4px rgba(0,0,0,0.04)" }}>
@@ -3383,9 +3763,9 @@ function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) 
                     background: "var(--blue-lt)"
                   }}
                   onClick={() => {
-                    const ac = availCodes[form.items.length] || "";
-                    const sn = ac ? Object.entries(SN_DB_DYN).find(([s, c]) => c === ac)?.[0] || "" : "";
-                    upd("items", [...form.items, { id: `new-${Date.now()}-${form.items.length}`, serial_number: sn, location: "", asset_code: ac }]);
+                    const ac = asset.asset_code || "";
+                    // Allow adding new units freely so users can input new serial numbers
+                    upd("items", [...form.items, { id: `new-${Date.now()}-${form.items.length}`, serial_number: "", location: "", asset_code: ac }]);
                   }}
                 >
                   <Icon d={I.plus} size={14} /> Tambah Unit Baru (Tambah Kuantitas)
@@ -3444,7 +3824,32 @@ function AssetTablePage({
   const [searchQ, setSearchQ] = useState("");
   const [filterYear, setFilterYear] = useState("all");
   const [confirm, setConfirm] = useState(null);
-  const assets = anggaran.assets || [];
+  const allAssets = anggaran.assets || [];
+  const assets = useMemo(() => {
+    const rawFiltered = allAssets.filter((a) => String(a.id_pekerjaan) === String(project.id));
+    const merged = [];
+    const seen = {};
+    rawFiltered.forEach(a => {
+      const code = a.asset_code || "";
+      if (code && seen[code] !== undefined) {
+        const idx = seen[code];
+        merged[idx].jumlah = (merged[idx].jumlah || 1) + (a.jumlah || 1);
+        const existingUnits = merged[idx].units || [];
+        (a.units || []).forEach(nu => {
+          if (!existingUnits.some(eu => eu.serialNumber === nu.serialNumber)) {
+            existingUnits.push(nu);
+          }
+        });
+        merged[idx].units = existingUnits;
+      } else {
+        merged.push({ ...a, jumlah: a.jumlah || 1, units: a.units ? [...a.units] : [] });
+        if (code) {
+          seen[code] = merged.length - 1;
+        }
+      }
+    });
+    return merged;
+  }, [allAssets, project.id]);
 
   const availableYears = useMemo(() => {
     const years = new Set();
@@ -3484,13 +3889,18 @@ function AssetTablePage({
   const totalQty = useMemo(() => assets.reduce((s, a) => s + (a.jumlah || 1), 0), [assets]);
   const filteredQty = useMemo(() => filtered.reduce((s, a) => s + (a.jumlah || 1), 0), [filtered]);
   const sisaProject = (project?.nilai_kontrak || 0) - totalAllAssets;
-  const handleDelete = (id) => {
+  const handleDelete = (itemToDelete) => {
     setConfirm({
       msg: "Hapus barang ini?",
       onConfirm: () => {
         onSaveAssets(
           anggaran.id,
-          assets.filter((a) => a.id !== id),
+          allAssets.filter((a) => {
+            if (itemToDelete.asset_code && a.asset_code === itemToDelete.asset_code) {
+              return String(a.id_pekerjaan) !== String(project.id);
+            }
+            return a.id !== itemToDelete.id;
+          }),
         );
         showToast("Barang dihapus");
         setConfirm(null);
@@ -3593,8 +4003,8 @@ function AssetTablePage({
             ))}
           </select>
         </div>
-        <button 
-          className={`btn ${anggaran.type === 'opex' ? 'btn-green' : 'btn-prim'}`} 
+        <button
+          className={`btn ${anggaran.type === 'opex' ? 'btn-green' : 'btn-prim'}`}
           onClick={onEntryNew}
           disabled={!project?.nilai_kontrak || project.nilai_kontrak <= 0 || !project?.nilai_rab || project.nilai_rab <= 0}
           title={(!project?.nilai_kontrak || !project?.nilai_rab) ? "Isi Nilai RAB dan Kontrak terlebih dahulu di Edit Pekerjaan" : ""}
@@ -3678,7 +4088,7 @@ function AssetTablePage({
                         </button>
                         <button
                           className="abtn del"
-                          onClick={() => handleDelete(a.id)}
+                          onClick={() => handleDelete(a)}
                         >
                           <Icon d={I.trash} size={11} />
                         </button>
@@ -4210,8 +4620,10 @@ export default function BudgetManagement({ forcedType }) {
   const [toast, setToast] = useState(null);
   const [confirm, setConfirm] = useState(null);
   const [capexData, setCapexData] = useState([]);
-  const [opexData, setOpexData]   = useState([]);
+  const [opexData, setOpexData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  // Refresh key: incremented after a successful save to force useAssetDB to re-fetch
+  const [assetDbRefreshKey, setAssetDbRefreshKey] = useState(0);
   const [capexPage, setCapexPage] = useState(1);
   const [opexPage, setOpexPage] = useState(1);
   const [showAddOpex, setShowAddOpex] = useState(false);
@@ -4233,15 +4645,23 @@ export default function BudgetManagement({ forcedType }) {
   useEffect(() => {
     let cancelled = false;
 
+    // Helper to purge orphaned items (e.g. deleted from global assets)
+    const cleanAssets = (angs) => {
+      return angs.map(ang => ({
+        ...ang,
+        assets: (ang.assets || []).filter(a => a.asset_code && a.name && a.name.trim() !== "" && a.name !== "—" && a.name !== "-")
+      }));
+    };
+
     // 1. Load dari Cache agar INSTAN
     const cachedCapex = localStorage.getItem("budget_mgmt_cache_capex");
     const cachedOpex = localStorage.getItem("budget_mgmt_cache_opex");
 
     if (cachedCapex) {
-      setCapexData(JSON.parse(cachedCapex));
+      setCapexData(cleanAssets(JSON.parse(cachedCapex)));
     }
     if (cachedOpex) {
-      setOpexData(JSON.parse(cachedOpex));
+      setOpexData(cleanAssets(JSON.parse(cachedOpex)));
     }
     if (cachedCapex || cachedOpex) {
       setIsLoading(false);
@@ -4250,7 +4670,7 @@ export default function BudgetManagement({ forcedType }) {
     // 2. Fetch CAPEX secara mandiri (Decoupled)
     budgetAPI.getCapex().then(res => {
       if (!cancelled && res.data?.success) {
-        const data = res.data.data ?? [];
+        const data = cleanAssets(res.data.data ?? []);
         setCapexData(data);
         localStorage.setItem("budget_mgmt_cache_capex", JSON.stringify(data));
       }
@@ -4258,14 +4678,14 @@ export default function BudgetManagement({ forcedType }) {
       console.error("Failed to load CAPEX", err);
     }).finally(() => {
       if (!cancelled && !localStorage.getItem("budget_mgmt_cache_opex")) {
-         // Hanya set loading false jika opex juga sudah (atau tidak ada cache)
+        // Hanya set loading false jika opex juga sudah (atau tidak ada cache)
       }
     });
 
     // 3. Fetch OPEX secara mandiri (Decoupled)
     budgetAPI.getOpex().then(res => {
       if (!cancelled && res.data?.success) {
-        const data = res.data.data ?? [];
+        const data = cleanAssets(res.data.data ?? []);
         setOpexData(data);
         localStorage.setItem("budget_mgmt_cache_opex", JSON.stringify(data));
       }
@@ -4520,25 +4940,64 @@ export default function BudgetManagement({ forcedType }) {
     } catch { showToast('Gagal simpan pekerjaan ke server'); }
   };
   const saveAssetsToAnggaran = async (anggaranId, assets) => {
+    // Helper to merge duplicate assets across all projects in this budget
+    const mergeDuplicateAssets = (rawAssets) => {
+      const merged = [];
+      const seen = {};
+      (rawAssets || []).forEach(a => {
+        const code = a.asset_code || "";
+        const projId = a.id_pekerjaan || "";
+        const key = `${code}_${projId}`;
+        if (code && projId && seen[key] !== undefined) {
+          const idx = seen[key];
+          merged[idx].jumlah = (merged[idx].jumlah || 1) + (a.jumlah || 1);
+          const existingUnits = merged[idx].units || [];
+          const incomingUnits = a.units || [];
+          incomingUnits.forEach(nu => {
+            if (!existingUnits.some(eu => eu.serialNumber === nu.serialNumber)) {
+              existingUnits.push(nu);
+            }
+          });
+          merged[idx].units = existingUnits;
+        } else {
+          merged.push({
+            ...a,
+            jumlah: a.jumlah || 1,
+            units: a.units ? [...a.units] : []
+          });
+          if (code && projId) {
+            seen[key] = merged.length - 1;
+          }
+        }
+      });
+      return merged;
+    };
+
+    const mergedAssets = mergeDuplicateAssets(assets);
     const isOpx = opexData.some(a => a.id === anggaranId);
     const setter = isOpx ? setOpexData : setCapexData;
     const selectedSetter = isOpx ? setSelectedOpex : setSelectedAnggaran;
 
     // Optimistic update
-    setter((p) => p.map((ang) => (ang.id === anggaranId ? { ...ang, assets } : ang)));
-    selectedSetter((prev) => prev?.id === anggaranId ? { ...prev, assets } : prev);
+    setter((p) => p.map((ang) => (ang.id === anggaranId ? { ...ang, assets: mergedAssets } : ang)));
+    selectedSetter((prev) => prev?.id === anggaranId ? { ...prev, assets: mergedAssets } : prev);
     setPage((prev) => {
       if (!prev || !prev.data) return prev;
-      if (prev.data.id === anggaranId) return { ...prev, data: { ...prev.data, assets } };
-      if (prev.data.anggaran?.id === anggaranId) return { ...prev, data: { ...prev.data, anggaran: { ...prev.data.anggaran, assets } } };
+      if (prev.data.id === anggaranId) return { ...prev, data: { ...prev.data, assets: mergedAssets } };
+      if (prev.data.anggaran?.id === anggaranId) return { ...prev, data: { ...prev.data, anggaran: { ...prev.data.anggaran, assets: mergedAssets } } };
       return prev;
     });
 
     // Persist ke budget_items table via sync
     try {
-      if (isOpx) await budgetAPI.syncOpexAssets(anggaranId, { assets });
-      else        await budgetAPI.syncCapexAssets(anggaranId, { assets });
-    } catch { showToast('Gagal simpan barang ke server'); }
+      if (isOpx) await budgetAPI.syncOpexAssets(anggaranId, { assets: mergedAssets });
+      else await budgetAPI.syncCapexAssets(anggaranId, { assets: mergedAssets });
+      // Trigger re-fetch of DB barang data so SN allocation map is up-to-date
+      setAssetDbRefreshKey(k => k + 1);
+    } catch (err) {
+      console.error("Sync error:", err);
+      showToast('Gagal simpan barang ke server');
+    }
   };
   const deleteProject = async (projId, angId) => {
     const isOpx = opexData.some(a => a.id === angId);
@@ -4548,12 +5007,12 @@ export default function BudgetManagement({ forcedType }) {
     setter((p) => p.map((ang) => ang.id !== angId ? ang : {
       ...ang,
       projects: (ang.projects || []).filter(pr => pr.id !== projId),
-      assets:   (ang.assets   || []).filter(as => as.id_pekerjaan !== projId),
+      assets: (ang.assets || []).filter(as => as.id_pekerjaan !== projId),
     }));
     selectedSetter((prev) => prev?.id === angId ? {
       ...prev,
       projects: (prev.projects || []).filter(pr => pr.id !== projId),
-      assets:   (prev.assets   || []).filter(as => as.id_pekerjaan !== projId),
+      assets: (prev.assets || []).filter(as => as.id_pekerjaan !== projId),
     } : prev);
     showToast('Pekerjaan dihapus');
 
@@ -4571,7 +5030,7 @@ export default function BudgetManagement({ forcedType }) {
     // Simpan ke budget_projects DULU → dapat DB integer id_pekerjaan
     try {
       const addFn = isOpx ? budgetAPI.addOpexProject : budgetAPI.addCapexProject;
-      const res   = await addFn(angId, proj);
+      const res = await addFn(angId, proj);
       const saved = res.data?.data ?? { ...proj, id: proj.id };
 
       // Update state dengan DB id
@@ -4597,7 +5056,7 @@ export default function BudgetManagement({ forcedType }) {
         showToast(`Anggaran ${label} dihapus`);
         try {
           if (isOpx) await budgetAPI.deleteOpex(id);
-          else       await budgetAPI.deleteCapex(id);
+          else await budgetAPI.deleteCapex(id);
         } catch { showToast('Gagal hapus dari server'); }
       },
     });
@@ -4693,6 +5152,8 @@ export default function BudgetManagement({ forcedType }) {
         onBack={() => setPage({ ...page, type: "assetTable" })}
         onSave={saveAssetsToAnggaran}
         showToast={showToast}
+        allAnggarans={[...capexData, ...opexData]}
+        refreshKey={assetDbRefreshKey}
       />,
     );
   }
@@ -5154,12 +5615,12 @@ export default function BudgetManagement({ forcedType }) {
             setShowAddOpex(false);
             try {
               const res = await budgetAPI.addOpex({
-                nama:         newOpex.nama,
-                kode:         newOpex.kode,
+                nama: newOpex.nama,
+                kode: newOpex.kode,
                 thn_anggaran: newOpex.thn_anggaran,
-                nilai_kad:    newOpex.nilai_kad,
-                projects:     [],
-                assets:       [],
+                nilai_kad: newOpex.nilai_kad,
+                projects: [],
+                assets: [],
               });
               const saved = res.data?.data;
               setOpexData((p) => [...p, saved ?? newOpex]);

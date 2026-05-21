@@ -13,23 +13,15 @@ class BudgetItem extends Model
 
     protected $fillable = [
         'id_pekerjaan',
-        'nama_barang',
-        'model',
-        'kategori',
         'jumlah',
-        'acquisition_value',
-        'procurement_date',
         'asset_code',
         'keterangan',
-        'units_json',
         'created_at',
     ];
 
     protected $casts = [
-        'jumlah'            => 'integer',
-        'acquisition_value' => 'float',
-        'units_json'        => 'array',
-        'id_pekerjaan'      => 'integer',
+        'jumlah'       => 'integer',
+        'id_pekerjaan' => 'integer',
     ];
 
     public function project()
