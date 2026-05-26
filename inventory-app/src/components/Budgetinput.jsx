@@ -31,8 +31,20 @@ const fmt = (n) =>
   new Intl.NumberFormat("id-ID", {
     style: "currency",
     currency: "IDR",
-    maximumFractionDigits: 0,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 10,
   }).format(n || 0);
+// Strip koma dan titik ribuan, kembalikan angka murni
+const parseIDRNum = (val) => Number(String(val || 0).replace(/[.,]/g, "").trim()) || 0;
+// Untuk onChange input uang: hapus koma (ribuan salah input) dan titik lebih dari satu
+const stripMoneyInput = (v) => v.replace(/,/g, "").replace(/[^0-9]/g, "");
+// Format input uang agar selalu rapi dengan format titik (Indonesian thousand separators)
+const formatIDRInput = (val) => {
+  if (val === undefined || val === null || val === "") return "";
+  const clean = String(val).replace(/[^0-9]/g, "");
+  if (!clean) return "";
+  return new Intl.NumberFormat("id-ID").format(Number(clean));
+};
 const fmtDate = (d) =>
   d
     ? new Date(d).toLocaleDateString("id-ID", {
@@ -758,7 +770,7 @@ function InlineHistoryTable({ row, mode = "opex", onUpdateHistoryRecord, onDelet
   const rows = history.map((h) => {
     const isInitial = h.is_initial || h.tipe === "initial";
     let real = null, bymhd = null, jumlah = 0;
-    if (isInitial || h.tipe === "penambahan") {
+    if (isInitial || h.tipe === "penambahan" || h.tipe === "transfer") {
       real = h.nilai;
       totalReal += h.nilai;
       jumlah = h.nilai;
@@ -766,7 +778,7 @@ function InlineHistoryTable({ row, mode = "opex", onUpdateHistoryRecord, onDelet
       real = -h.nilai;
       totalReal -= h.nilai;
       jumlah = -h.nilai;
-    } else if (h.tipe === "bymhd" || h.tipe === "transfer") {
+    } else if (h.tipe === "bymhd") {
       bymhd = h.nilai;
       totalBymhd += h.nilai;
       jumlah = h.nilai;
@@ -1322,8 +1334,8 @@ function RealisasiSection({ master, setMasters, toast_ }) {
             let newMurni = r.realisasi_murni,
               newBymhd = r.realisasi_bymhd || 0;
             if (tipe === "pengurangan") newMurni -= nilai;
-            else if (tipe === "penambahan") newMurni += nilai;
-            else if (tipe === "bymhd" || tipe === "transfer") newBymhd += nilai;
+            else if (tipe === "penambahan" || tipe === "transfer") newMurni += nilai;
+            else if (tipe === "bymhd") newBymhd += nilai;
             return {
               ...r,
               realisasi_murni: newMurni,
@@ -1418,9 +1430,9 @@ function RealisasiSection({ master, setMasters, toast_ }) {
             newHistory.forEach((h) => {
               const isInitial = h.is_initial || h.tipe === "initial";
               if (isInitial) newMurni += h.nilai;
-              else if (h.tipe === "penambahan") newMurni += h.nilai;
+              else if (h.tipe === "penambahan" || h.tipe === "transfer") newMurni += h.nilai;
               else if (h.tipe === "pengurangan") newMurni -= h.nilai;
-              else if (h.tipe === "bymhd" || h.tipe === "transfer") newBymhd += h.nilai;
+              else if (h.tipe === "bymhd") newBymhd += h.nilai;
             });
             return {
               ...r,
@@ -1447,9 +1459,9 @@ function RealisasiSection({ master, setMasters, toast_ }) {
             newHistory.forEach((h) => {
               const isInitial = h.is_initial || h.tipe === "initial";
               if (isInitial) newMurni += h.nilai;
-              else if (h.tipe === "penambahan") newMurni += h.nilai;
+              else if (h.tipe === "penambahan" || h.tipe === "transfer") newMurni += h.nilai;
               else if (h.tipe === "pengurangan") newMurni -= h.nilai;
-              else if (h.tipe === "bymhd" || h.tipe === "transfer") newBymhd += h.nilai;
+              else if (h.tipe === "bymhd") newBymhd += h.nilai;
             });
             return {
               ...r,
@@ -1876,9 +1888,9 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
   const list = capex.anggaran_tahunan || [];
 
   // Total child anggaran tahunan yang sudah diinput
-  const totalChildAnggaran = list.reduce((sum, r) => sum + (r.nilai_anggaran || 0), 0);
+  const totalChildAnggaran = list.reduce((sum, r) => sum + parseIDRNum(r.nilai_anggaran || 0), 0);
   // Nilai RKAP sebagai batas atas pengisian child anggaran
-  const nilaiRkapBatas = capex.nilai_rkap || 0;
+  const nilaiRkapBatas = parseIDRNum(capex.nilai_rkap || 0);
   // Sisa yang masih bisa diinput
   const sisaRkapTersedia = Math.max(0, nilaiRkapBatas - totalChildAnggaran);
 
@@ -1886,9 +1898,9 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
     let real = 0, bymhd = 0;
     (history || []).forEach((h) => {
       if (h.is_initial || h.tipe === "initial") real += h.nilai;
-      else if (h.tipe === "penambahan") real += h.nilai;
+      else if (h.tipe === "penambahan" || h.tipe === "transfer") real += h.nilai;
       else if (h.tipe === "pengurangan") real -= h.nilai;
-      else if (h.tipe === "bymhd" || h.tipe === "transfer") bymhd += h.nilai;
+      else if (h.tipe === "bymhd") bymhd += h.nilai;
     });
     return { real, bymhd, total: real + bymhd };
   };
@@ -1900,7 +1912,7 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
       setFormError(`Tahun anggaran ${thnInput} sudah ada pada anggaran ini.`);
       return;
     }
-    const nilaiInput = parseFloat(form.nilai_anggaran) || 0;
+    const nilaiInput = parseIDRNum(form.nilai_anggaran);
     if (nilaiInput <= 0) {
       setFormError("Nilai anggaran harus lebih dari 0!");
       return;
@@ -2193,22 +2205,23 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
               <Fld label="Nilai Anggaran (Rp)" required
                 helper={nilaiRkapBatas > 0 ? `Maks. sisa: ${fmt(sisaRkapTersedia)}` : undefined}>
                 <input
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
                   className="no-spinners"
                   style={{
                     ...S.inp,
                     borderColor: formError ? "#fca5a5" : undefined,
                   }}
                   placeholder="0"
-                  value={form.nilai_anggaran}
+                  value={formatIDRInput(form.nilai_anggaran)}
                   onChange={(e) => {
                     setFormError(null);
-                    setForm((f) => ({ ...f, nilai_anggaran: e.target.value }));
+                    setForm((f) => ({ ...f, nilai_anggaran: formatIDRInput(e.target.value) }));
                   }}
                 />
-                {parseFloat(form.nilai_anggaran) > 0 && (
+                {parseIDRNum(form.nilai_anggaran) > 0 && (
                   <span style={{ fontSize: "0.78rem", color: "#64748b", marginTop: 4, display: "block" }}>
-                    ≈ {fmt(form.nilai_anggaran)}
+                    ≈ {fmt(parseIDRNum(form.nilai_anggaran))}
                   </span>
                 )}
               </Fld>
@@ -2719,7 +2732,7 @@ function CapexDetailPage({ capex, onBack, setCapexList, toast_ }) {
                     fontWeight: 700,
                   }}
                 >
-                  RKAP: {fmt(capex.nilai_rkap)}
+                  RKAP: {fmt(parseIDRNum(capex.nilai_rkap))}
                 </span>
               </div>
             </div>
@@ -2777,12 +2790,11 @@ function CapexInputAnggaranPage({ capex, onBack, onSave }) {
       return setError("Tahun RKAP Awal harus ≤ Tahun RKAP Akhir!");
     if (!thnAnggaran) return setError("Tahun Anggaran tidak valid!");
     if (!nilaiRkap) return setError("Nilai RKAP harus diisi!");
-    const kad = parseFloat(nilaiKad) || 0,
-      rkap = parseFloat(nilaiRkap) || 0;
+    const kad = parseIDRNum(nilaiKad),
+      rkap = parseIDRNum(nilaiRkap);
     if (kad < 0 || rkap < 0) return setError("Nilai tidak boleh negatif!");
     if (kad === 0) return setError("Nilai KAD harus lebih dari 0 untuk membuat entri anggaran baru!");
     // RKAP tidak boleh melebihi sisa KAD
-    const sisaKad = Math.max(0, kad - currentHistoryTotal);
     if (rkap > sisaKad) return setError(`Nilai RKAP tidak boleh melebihi sisa KAD (Sisa: ${fmt(sisaKad)})!`);
     onSave(
       capex.id,
@@ -2801,7 +2813,8 @@ function CapexInputAnggaranPage({ capex, onBack, onSave }) {
     setNilaiRkap("");
   };
 
-  const currentHistoryTotal = history.reduce((sum, h) => sum + (h.nilai_rkap || 0), 0);
+  const currentHistoryTotal = history.reduce((sum, h) => sum + parseIDRNum(h.nilai_rkap), 0);
+  const sisaKad = Math.max(0, parseIDRNum(nilaiKad) - currentHistoryTotal);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
@@ -2905,21 +2918,21 @@ function CapexInputAnggaranPage({ capex, onBack, onSave }) {
             >
               {fmt(nilaiKad)}
             </span>
-            {parseFloat(nilaiKad) > 0 && currentHistoryTotal > 0 && (
+            {parseIDRNum(nilaiKad) > 0 && currentHistoryTotal > 0 && (
               <span
                 style={{
                   fontSize: "0.75rem",
                   fontWeight: 700,
-                  color: Math.max(0, (parseFloat(nilaiKad) || 0) - currentHistoryTotal) <= 0 ? "#dc2626" : "#16a34a",
-                  background: Math.max(0, (parseFloat(nilaiKad) || 0) - currentHistoryTotal) <= 0 ? "#fef2f2" : "#f0fdf4",
-                  border: `1px solid ${Math.max(0, (parseFloat(nilaiKad) || 0) - currentHistoryTotal) <= 0 ? "#fecaca" : "#bbf7d0"}`,
+                  color: Math.max(0, parseIDRNum(nilaiKad) - currentHistoryTotal) <= 0 ? "#dc2626" : "#16a34a",
+                  background: Math.max(0, parseIDRNum(nilaiKad) - currentHistoryTotal) <= 0 ? "#fef2f2" : "#f0fdf4",
+                  border: `1px solid ${Math.max(0, parseIDRNum(nilaiKad) - currentHistoryTotal) <= 0 ? "#fecaca" : "#bbf7d0"}`,
                   padding: "2px 8px",
                   borderRadius: 6,
                   whiteSpace: "nowrap",
                 }}
               >
-                Sisa: {fmt(Math.max(0, (parseFloat(nilaiKad) || 0) - currentHistoryTotal))}
-                {Math.max(0, (parseFloat(nilaiKad) || 0) - currentHistoryTotal) <= 0 ? " ✓" : ""}
+                Sisa: {fmt(Math.max(0, parseIDRNum(nilaiKad) - currentHistoryTotal))}
+                {Math.max(0, parseIDRNum(nilaiKad) - currentHistoryTotal) <= 0 ? " ✓" : ""}
               </span>
             )}
           </div>
@@ -2943,17 +2956,17 @@ function CapexInputAnggaranPage({ capex, onBack, onSave }) {
         <ModalFormRow label="Nilai RKAP (Rp)" required noBorder>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
               className="no-spinners"
-              style={{ ...S.inp, maxWidth: 280, flex: 1 }}
+              style={{ ...S.inp, maxWidth: 280, flex: 1, borderColor: parseIDRNum(nilaiRkap) > 0 && parseIDRNum(nilaiRkap) > sisaKad ? "#ef4444" : undefined }}
               placeholder="0"
-              value={nilaiRkap}
+              value={formatIDRInput(nilaiRkap)}
               onChange={(e) => {
-                const v = e.target.value;
-                if (v === "" || parseFloat(v) >= 0) setNilaiRkap(v);
+                setNilaiRkap(formatIDRInput(e.target.value));
               }}
             />
-            {parseFloat(nilaiRkap) > 0 && (
+            {parseIDRNum(nilaiRkap) > 0 && (
               <span
                 style={{
                   fontSize: "0.78rem",
@@ -2961,10 +2974,29 @@ function CapexInputAnggaranPage({ capex, onBack, onSave }) {
                   whiteSpace: "nowrap",
                 }}
               >
-                ≈ {fmt(nilaiRkap)}
+                ≈ {fmt(parseIDRNum(nilaiRkap))}
               </span>
             )}
           </div>
+          {parseIDRNum(nilaiRkap) > 0 && parseIDRNum(nilaiRkap) > sisaKad && (
+            <div
+              style={{
+                marginTop: 6,
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                background: "#fef2f2",
+                border: "1px solid #fecaca",
+                borderRadius: 6,
+                padding: "6px 10px",
+              }}
+            >
+              <span style={{ color: "#dc2626", fontSize: "1rem" }}>⚠</span>
+              <span style={{ color: "#991b1b", fontSize: "0.82rem", fontWeight: 600 }}>
+                Nilai RKAP melebihi sisa anggaran! Maksimal yang bisa dimasukkan: <strong>{fmt(sisaKad)}</strong>
+              </span>
+            </div>
+          )}
         </ModalFormRow>
         <div
           style={{
@@ -3092,7 +3124,7 @@ function CapexInputAnggaranPage({ capex, onBack, onSave }) {
                         color: "#16a34a",
                       }}
                     >
-                      {fmt(h.nilai_rkap)}
+                      {fmt(parseIDRNum(h.nilai_rkap))}
                     </td>
                   </tr>
                 ))}
@@ -3684,7 +3716,14 @@ function OpexModule({ masterList, setMasterList }) {
     current.forEach(item => {
       const p = prevMap.get(item.id);
       if (!p) {
-        budgetAPI.createOpex(item).catch(console.error);
+        budgetAPI.createOpex(item).then(res => {
+          if (res.data && res.data.success) {
+            const realId = res.data.data.db_id || res.data.data.id;
+            const updatedItem = { ...item, db_id: realId };
+            prevMastersRef.current = prevMastersRef.current.map(x => x.id === item.id ? updatedItem : x);
+            setMasters(c => c.map(x => x.id === item.id ? updatedItem : x));
+          }
+        }).catch(console.error);
       } else if (JSON.stringify(p) !== JSON.stringify(item)) {
         budgetAPI.updateOpex(p.db_id || item.id, item).catch(console.error);
       }
@@ -5123,16 +5162,17 @@ const CapexFormModal = React.memo(function CapexFormModal({
         <ModalFormRow label="Nilai KAD (Rp)">
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
               className="no-spinners"
               style={{ ...S.inp, maxWidth: 280, flex: 1 }}
               placeholder="0"
-              value={data.nilai_kad}
+              value={formatIDRInput(data.nilai_kad)}
               onChange={(e) =>
-                setData((d) => ({ ...d, nilai_kad: e.target.value }))
+                setData((d) => ({ ...d, nilai_kad: formatIDRInput(e.target.value) }))
               }
             />
-            {parseFloat(data.nilai_kad) > 0 && (
+            {parseIDRNum(data.nilai_kad) > 0 && (
               <span
                 style={{
                   fontSize: "0.78rem",
@@ -5140,7 +5180,7 @@ const CapexFormModal = React.memo(function CapexFormModal({
                   whiteSpace: "nowrap",
                 }}
               >
-                ≈ {fmt(data.nilai_kad)}
+                ≈ {fmt(parseIDRNum(data.nilai_kad))}
               </span>
             )}
           </div>
@@ -5163,16 +5203,17 @@ const CapexFormModal = React.memo(function CapexFormModal({
         <ModalFormRow label="Nilai RKAP (Rp)" noBorder>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
               className="no-spinners"
               style={{ ...S.inp, maxWidth: 280, flex: 1 }}
               placeholder="0"
-              value={data.nilai_rkap}
+              value={formatIDRInput(data.nilai_rkap)}
               onChange={(e) =>
-                setData((d) => ({ ...d, nilai_rkap: e.target.value }))
+                setData((d) => ({ ...d, nilai_rkap: formatIDRInput(e.target.value) }))
               }
             />
-            {parseFloat(data.nilai_rkap) > 0 && (
+            {parseIDRNum(data.nilai_rkap) > 0 && (
               <span
                 style={{
                   fontSize: "0.78rem",
@@ -5180,7 +5221,7 @@ const CapexFormModal = React.memo(function CapexFormModal({
                   whiteSpace: "nowrap",
                 }}
               >
-                ≈ {fmt(data.nilai_rkap)}
+                ≈ {fmt(parseIDRNum(data.nilai_rkap))}
               </span>
             )}
           </div>
@@ -5196,7 +5237,7 @@ const CapexFormModal = React.memo(function CapexFormModal({
           }}
         >
           <div>
-            {(parseFloat(data.nilai_rkap) || 0) > (parseFloat(data.nilai_kad) || 0) && (
+            {(parseIDRNum(data.nilai_rkap)) > (parseIDRNum(data.nilai_kad)) && (
               <span style={{ color: "#dc2626", fontSize: "0.8rem", fontWeight: 600 }}>
                 ⚠ RKAP tidak melebihi KAD
               </span>
@@ -5210,9 +5251,9 @@ const CapexFormModal = React.memo(function CapexFormModal({
               style={{
                 ...S.btn,
                 background: title.includes("Edit") ? "#d97706" : "#2563eb",
-                opacity: data.nm_anggaran && !((parseFloat(data.nilai_rkap) || 0) > (parseFloat(data.nilai_kad) || 0)) ? 1 : 0.5,
+                opacity: data.nm_anggaran && !((parseIDRNum(data.nilai_rkap)) > (parseIDRNum(data.nilai_kad))) ? 1 : 0.5,
               }}
-              disabled={!data.nm_anggaran || ((parseFloat(data.nilai_rkap) || 0) > (parseFloat(data.nilai_kad) || 0))}
+              disabled={!data.nm_anggaran || ((parseIDRNum(data.nilai_rkap)) > (parseIDRNum(data.nilai_kad)))}
               onClick={onSave}
             >
               {title.includes("Edit") ? (
@@ -5244,7 +5285,7 @@ function CapexEditAnggaranModal({ capexId, anggaran, capex, onSave, onClose }) {
     if (!thnAnggaran.trim() || !nilaiRkap.trim()) {
       return setError("Semua field harus diisi!");
     }
-    const newNilai = parseFloat(nilaiRkap) || 0;
+    const newNilai = parseIDRNum(nilaiRkap);
     if (newNilai <= 0) {
       return setError("Nilai RKAP harus lebih dari 0!");
     }
@@ -5252,15 +5293,15 @@ function CapexEditAnggaranModal({ capexId, anggaran, capex, onSave, onClose }) {
     // Total child rows lain (tidak termasuk yang sedang diedit)
     const totalOtherChilds = anggaranList
       .filter((a) => a.id !== anggaran.id)
-      .reduce((sum, a) => sum + (a.nilai_anggaran || 0), 0);
+      .reduce((sum, a) => sum + parseIDRNum(a.nilai_anggaran), 0);
     // Nilai RKAP awal dari parent row juga dihitung karena ikut memakai KAD
-    const parentRkap = capex.nilai_rkap || 0;
+    const parentRkap = parseIDRNum(capex.nilai_rkap);
     const totalWithThis = parentRkap + totalOtherChilds + newNilai;
-    const kad = capex.nilai_kad || 0;
+    const kad = parseIDRNum(capex.nilai_kad);
     if (totalWithThis > kad) {
       const sisaKad = Math.max(0, kad - parentRkap - totalOtherChilds);
       return setError(
-        `Tidak dapat menyimpan! Total anggaran melebihi Nilai KAD.`,
+        `Tidak dapat menyimpan! Total anggaran melebihi Nilai KAD (Sisa yang bisa ditambahkan: ${fmt(sisaKad)}).`,
       );
     }
     onSave(capexId, anggaran.id, {
@@ -5402,14 +5443,15 @@ function CapexEditAnggaranModal({ capexId, anggaran, capex, onSave, onClose }) {
         <ModalFormRow label="Nilai RKAP (Rp)" noBorder>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
               className="no-spinners"
               style={{ ...S.inp, maxWidth: 280, flex: 1 }}
               placeholder="0"
-              value={nilaiRkap}
-              onChange={(e) => setNilaiRkap(e.target.value)}
+              value={formatIDRInput(nilaiRkap)}
+              onChange={(e) => setNilaiRkap(formatIDRInput(e.target.value))}
             />
-            {parseFloat(nilaiRkap) > 0 && (
+            {parseIDRNum(nilaiRkap) > 0 && (
               <span
                 style={{
                   fontSize: "0.78rem",
@@ -5418,7 +5460,7 @@ function CapexEditAnggaranModal({ capexId, anggaran, capex, onSave, onClose }) {
                   fontWeight: 600,
                 }}
               >
-                ≈ {fmt(nilaiRkap)}
+                ≈ {fmt(parseIDRNum(nilaiRkap))}
               </span>
             )}
           </div>
@@ -5483,7 +5525,14 @@ function CapexModule({ capexList, setCapexList }) {
     current.forEach(item => {
       const p = prevMap.get(item.id);
       if (!p) {
-        budgetAPI.createCapex(item).catch(console.error);
+        budgetAPI.createCapex(item).then(res => {
+          if (res.data && res.data.success) {
+            const realId = res.data.data.db_kd || res.data.data.kd_anggaran_capex || res.data.data.kd_capex;
+            const updatedItem = { ...item, db_kd: realId, kd_capex: realId };
+            prevCapexRef.current = prevCapexRef.current.map(x => x.id === item.id ? updatedItem : x);
+            setCapexList(c => c.map(x => x.id === item.id ? updatedItem : x));
+          }
+        }).catch(console.error);
       } else if (JSON.stringify(p) !== JSON.stringify(item)) {
         budgetAPI.updateCapex(p.db_kd || item.kd_capex || item.id, item).catch(console.error);
       }
@@ -5523,8 +5572,8 @@ function CapexModule({ capexList, setCapexList }) {
 
   const handleAddCapex = useCallback(() => {
     if (!newCapex.nm_anggaran) return;
-    const rkap = parseFloat(newCapex.nilai_rkap) || 0;
-    const kad = parseFloat(newCapex.nilai_kad) || 0;
+    const rkap = parseIDRNum(newCapex.nilai_rkap);
+    const kad = parseIDRNum(newCapex.nilai_kad);
     const today = new Date().toISOString().split("T")[0];
     // Buat entri history_anggaran awal jika ada nilai RKAP
     const initialHistory = rkap > 0
@@ -5563,8 +5612,8 @@ function CapexModule({ capexList, setCapexList }) {
 
   const saveEditCapex = useCallback(() => {
     if (!editTarget) return;
-    const newRkap = parseFloat(editTarget.nilai_rkap) || 0;
-    const newKad = parseFloat(editTarget.nilai_kad) || 0;
+    const newRkap = parseIDRNum(editTarget.nilai_rkap);
+    const newKad = parseIDRNum(editTarget.nilai_kad);
     const today = new Date().toISOString().split("T")[0];
     setCapexList((p) =>
       p.map((c) => {
@@ -5862,7 +5911,7 @@ function CapexModule({ capexList, setCapexList }) {
           {[
             {
               label: "Total KAD",
-              val: fmt(capexList.reduce((sum, c) => sum + (c.nilai_kad || 0), 0)),
+              val: fmt(capexList.reduce((sum, c) => sum + parseIDRNum(c.nilai_kad), 0)),
               color: "#2563eb",
               bg: "#eff6ff",
               border: "#bfdbfe",
@@ -5870,16 +5919,26 @@ function CapexModule({ capexList, setCapexList }) {
             {
               label: "Total RKAP",
               val: fmt(
-                capexList.reduce(
-                  (sum, c) =>
-                    sum +
-                    (c.nilai_rkap || 0) +
-                    (c.anggaran_tahunan || []).reduce(
-                      (s, a) => s + (a.nilai_anggaran || 0),
-                      0,
-                    ),
-                  0,
-                ),
+                capexList.reduce((sum, c) => {
+                  const validAnggaran = (c.anggaran_tahunan || []).filter(
+                    (a) => {
+                      const hasValue = (a.nilai_anggaran !== undefined && parseIDRNum(a.nilai_anggaran) > 0) || 
+                                       (a.nilai_rkap !== undefined && parseIDRNum(a.nilai_rkap) > 0) ||
+                                       (a.nilai !== undefined && parseIDRNum(a.nilai) > 0);
+                      return hasValue;
+                    }
+                  );
+                  const initialYearChild = validAnggaran.find(
+                    (a) => (a.thn || a.tahun || a.thn_anggaran) === c.thn_anggaran
+                  );
+                  const parentRkapValue = initialYearChild
+                    ? parseIDRNum(initialYearChild.nilai_anggaran || initialYearChild.nilai_rkap || initialYearChild.nilai)
+                    : parseIDRNum(c.nilai_rkap);
+                  const totalForCapex = initialYearChild
+                    ? validAnggaran.reduce((s, a) => s + parseIDRNum(a.nilai_anggaran || a.nilai_rkap || a.nilai), 0)
+                    : parentRkapValue + validAnggaran.reduce((s, a) => s + parseIDRNum(a.nilai_anggaran || a.nilai_rkap || a.nilai), 0);
+                  return sum + totalForCapex;
+                }, 0)
               ),
               color: "#16a34a",
               bg: "#f0fdf4",
@@ -6108,6 +6167,27 @@ function CapexModule({ capexList, setCapexList }) {
                   )
                   .flatMap((c, idx) => {
                     const isLebih = c.thn_rkap_awal != c.thn_rkap_akhir;
+                    const validAnggaran = (c.anggaran_tahunan || []).filter(
+                      (a) => {
+                        const hasValue = (a.nilai_anggaran !== undefined && parseIDRNum(a.nilai_anggaran) > 0) || 
+                                         (a.nilai_rkap !== undefined && parseIDRNum(a.nilai_rkap) > 0) ||
+                                         (a.nilai !== undefined && parseIDRNum(a.nilai) > 0);
+                        return hasValue;
+                      }
+                    );
+                    const initialYearChild = validAnggaran.find(
+                      (a) => (a.thn || a.tahun || a.thn_anggaran) === c.thn_anggaran
+                    );
+                    const parentRkapValue = initialYearChild
+                      ? parseIDRNum(initialYearChild.nilai_anggaran || initialYearChild.nilai_rkap || initialYearChild.nilai)
+                      : parseIDRNum(c.nilai_rkap);
+                    const subTotalRkap = initialYearChild
+                      ? validAnggaran.reduce((s, a) => s + parseIDRNum(a.nilai_anggaran || a.nilai_rkap || a.nilai), 0)
+                      : parentRkapValue + validAnggaran.reduce((s, a) => s + parseIDRNum(a.nilai_anggaran || a.nilai_rkap || a.nilai), 0);
+                    const childRowsToRender = initialYearChild
+                      ? validAnggaran.filter((a) => (a.thn || a.tahun || a.thn_anggaran) !== c.thn_anggaran)
+                      : validAnggaran;
+                    const subTotalKad = parseIDRNum(c.nilai_kad);
                     const rows = [
                       <tr
                         key={c.id}
@@ -6193,7 +6273,7 @@ function CapexModule({ capexList, setCapexList }) {
                                 fontSize: "0.82rem",
                               }}
                             >
-                              {fmt(c.nilai_kad)}
+                              {fmt(parseIDRNum(c.nilai_kad))}
                             </span>
                           ) : (
                             <span style={{ color: "#cbd5e1" }}>—</span>
@@ -6215,7 +6295,7 @@ function CapexModule({ capexList, setCapexList }) {
                           </span>
                         </td>
                         <td className="hide-on-mobile" style={{ ...S.td, textAlign: "right" }}>
-                          {c.nilai_rkap > 0 ? (
+                          {parentRkapValue > 0 ? (
                             <span
                               style={{
                                 fontWeight: 700,
@@ -6223,7 +6303,7 @@ function CapexModule({ capexList, setCapexList }) {
                                 fontSize: "0.82rem",
                               }}
                             >
-                              {fmt(c.nilai_rkap)}
+                              {fmt(parentRkapValue)}
                             </span>
                           ) : (
                             <span style={{ color: "#cbd5e1" }}>—</span>
@@ -6308,15 +6388,18 @@ function CapexModule({ capexList, setCapexList }) {
                         </td>
                       </tr>,
                     ];
-                    if (
-                      isLebih &&
-                      c.anggaran_tahunan &&
-                      c.anggaran_tahunan.length > 0
-                    ) {
+
+
+                    if (isLebih && childRowsToRender.length > 0) {
                       rows.push(
-                        ...c.anggaran_tahunan.map((a) => (
+                        ...childRowsToRender.map((a, idx) => {
+                          // Support both DB raw keys (tahun, nilai) and frontend state keys (thn, nilai_anggaran)
+                          const year = a.thn || a.tahun || a.thn_anggaran;
+                          const rkapValue = parseIDRNum(a.nilai_anggaran || a.nilai_rkap || a.nilai);
+                          
+                          return (
                           <tr
-                            key={`${c.id}-${a.id}`}
+                            key={`${c.id}-${a.id || idx}`}
                             style={{
                               background: "#fafafa",
                               borderTop: "1px solid #f1f5f9",
@@ -6331,7 +6414,7 @@ function CapexModule({ capexList, setCapexList }) {
                                 color: "#94a3b8",
                               }}
                             >
-                              └─ Entri {a.thn}
+                              └─ Entri {year}
                             </td>
                             <td style={{ ...S.td }}></td>
                             <td
@@ -6343,7 +6426,7 @@ function CapexModule({ capexList, setCapexList }) {
                                 fontSize: "0.78rem",
                               }}
                             >
-                              {a.thn_rkap_awal}
+                              {a.thn_rkap_awal || c.thn_rkap_awal}
                             </td>
                             <td
                               style={{
@@ -6362,7 +6445,7 @@ function CapexModule({ capexList, setCapexList }) {
                                   fontWeight: 700,
                                 }}
                               >
-                                {a.thn_rkap_akhir}
+                                {a.thn_rkap_akhir || c.thn_rkap_akhir}
                               </span>
                             </td>
                             <td
@@ -6372,15 +6455,7 @@ function CapexModule({ capexList, setCapexList }) {
                                 fontSize: "0.78rem",
                               }}
                             >
-                              {a.nilai_kad > 0 ? (
-                                <span
-                                  style={{ fontWeight: 700, color: "#2563eb" }}
-                                >
-                                  {fmt(a.nilai_kad)}
-                                </span>
-                              ) : (
-                                <span style={{ color: "#cbd5e1" }}>—</span>
-                              )}
+                              <span style={{ color: "#cbd5e1" }}>—</span>
                             </td>
                             <td style={{ ...S.td, textAlign: "center" }}>
                               <span
@@ -6394,7 +6469,7 @@ function CapexModule({ capexList, setCapexList }) {
                                   fontSize: "0.75rem",
                                 }}
                               >
-                                {a.thn}
+                                {year}
                               </span>
                             </td>
                             <td
@@ -6404,11 +6479,11 @@ function CapexModule({ capexList, setCapexList }) {
                                 fontSize: "0.78rem",
                               }}
                             >
-                              {a.nilai_anggaran > 0 ? (
+                              {rkapValue > 0 ? (
                                 <span
                                   style={{ fontWeight: 700, color: "#16a34a" }}
                                 >
-                                  {fmt(a.nilai_anggaran)}
+                                  {fmt(rkapValue)}
                                 </span>
                               ) : (
                                 <span style={{ color: "#cbd5e1" }}>—</span>
@@ -6476,11 +6551,11 @@ function CapexModule({ capexList, setCapexList }) {
                               </div>
                             </td>
                           </tr>
-                        )),
+                          );
+                        }),
                       );
 
-                      const subTotalKad = (c.nilai_kad || 0) + c.anggaran_tahunan.reduce((s, a) => s + (a.nilai_kad || 0), 0);
-                      const subTotalRkap = (c.nilai_rkap || 0) + c.anggaran_tahunan.reduce((s, a) => s + (a.nilai_anggaran || 0), 0);
+
 
                       rows.push(
                         <tr key={`subtotal-${c.id}`} style={{ background: "#eff6ff" }}>

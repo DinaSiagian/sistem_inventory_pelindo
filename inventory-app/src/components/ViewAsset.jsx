@@ -2180,12 +2180,12 @@ const SmartLocationInput = ({ value, onChange, placeholder = "Pilih Branch / Zon
     function handleClickOutside(e) {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
         setIsOpen(false);
-        
+
         // Validate and sanitize location string
         const valStr = value || "";
         const parts = valStr.split(" / ").map(p => p.trim()).filter(Boolean);
         let validParts = [];
-        
+
         if (branches.length > 0) {
           // Validate using database
           const brObj = branches.find(b => b.name.toLowerCase() === parts[0]?.toLowerCase());
@@ -2227,7 +2227,7 @@ const SmartLocationInput = ({ value, onChange, placeholder = "Pilih Branch / Zon
             }
           }
         }
-        
+
         const validatedVal = validParts.join(" / ") + (validParts.length > 0 && validParts.length < 3 ? " / " : "");
         if (validatedVal !== valStr) {
           onChange(validatedVal);
@@ -3108,11 +3108,19 @@ const ViewAsset = () => {
       category: editData.category,
       tipeAset: editData.tipeAset || editData.name,
       value: parseFloat(editData.value) || 0,
-      units: (editData.units || []).map((unit, index) => ({
-        serialNumber: unit.serialNumber?.trim() || `${selectedAsset.id}-SN-${String(index + 1).padStart(3, "0")}`,
-        location: unit.location,
-        id_pekerjaan: unit.id_pekerjaan || null,
-      })),
+      units: (editData.units || []).map((unit, index) => {
+        let newCond = unit.condition;
+        if (unit.status && unit.status.includes("Tersedia")) {
+          newCond = "BAIK";
+        }
+        return {
+          serialNumber: unit.serialNumber?.trim() || `${selectedAsset.id}-SN-${String(index + 1).padStart(3, "0")}`,
+          location: unit.location,
+          id_pekerjaan: unit.id_pekerjaan || null,
+          status: unit.status,
+          condition: newCond,
+        };
+      }),
       photo: editPhoto,
       specs: cleanSpecs,
       customSpecs: cleanCustom
@@ -4723,19 +4731,7 @@ const ViewAsset = () => {
                 ))}
               </select>
             </TableRow>
-            <TableRow label="Status">
-              <select
-                value={editData.status || "Tersedia"}
-                onChange={(e) =>
-                  setEditData((p) => ({ ...p, status: e.target.value }))
-                }
-                style={modernSelectStyle}
-              >
-                <option>Tersedia</option>
-                <option>Dipinjam</option>
-                <option>Maintenance</option>
-              </select>
-            </TableRow>
+
             <TableRow label="Tahun Anggaran" required>
               <select
                 value={editData.thn_anggaran || ""}
@@ -4890,7 +4886,7 @@ const ViewAsset = () => {
                       borderBottom: "1px solid #e2e8f0",
                     }}
                   >
-                    LOKASI
+                    STATUS
                   </th>
                   <th
                     style={{
@@ -4957,19 +4953,33 @@ const ViewAsset = () => {
                           borderBottom: "1px solid #f1f5f9",
                         }}
                       >
-                        <div
-                          onClick={(e) => { e.stopPropagation(); if (!isLocEditing) setIsEditingUnit({ [`${i}-loc`]: true }); }}
-                          className="unit-edit-input"
-                        >
-                          <SmartLocationInput
-                            value={unit.location}
-                            readOnly={!isLocEditing}
-                            dbLocations={dbLocations}
-                            onChange={(val) =>
-                              updateEditUnitField(i, "location", val)
-                            }
-                          />
-                        </div>
+                        {(() => {
+                          const uCond = (unit.condition || "BAIK").toUpperCase();
+                          const needsMaintenance = uCond === "RUSAK" || uCond === "HILANG" || uCond === "DIPERBAIKI";
+
+                          if (!needsMaintenance) {
+                            return (
+                              <div style={{ fontSize: "13px", fontWeight: "600", color: "#10b981", padding: "6px 12px", background: "#ecfdf5", borderRadius: "6px", display: "inline-block", border: "1px solid #a7f3d0" }}>
+                                Tersedia (Baik)
+                              </div>
+                            );
+                          }
+
+                          return (
+                            <select
+                              value={unit.status || "Pilih Status Baru"}
+                              onChange={(e) => updateEditUnitField(i, "status", e.target.value)}
+                              style={{ ...modernSelectStyle, padding: "8px", background: "#fff", borderColor: "#f59e0b", color: "#b45309" }}
+                            >
+                              <option value="Pilih Status Baru" disabled>-- Perbarui Status --</option>
+                              {uCond === "HILANG" ? (
+                                <option>Tersedia (Telah Ditemukan)</option>
+                              ) : (
+                                <option>Tersedia (Telah Diperbaiki)</option>
+                              )}
+                            </select>
+                          );
+                        })()}
                       </td>
                       <td
                         style={{

@@ -1,5 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { barangAPI, transactionAPI, budgetAPI } from "../services/api";
+import { useEffect } from "react";
 import {
   FaBox,
   FaCheckCircle,
@@ -442,8 +444,8 @@ const mockBorrows = [
 ───────────────────────────────────────────────────────────────── */
 const formatRupiah = (v) => new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(v);
 const formatRupiahShort = (v) => {
-  if (v >= 1_000_000_000) return `Rp ${(v / 1_000_000_000).toFixed(1)} M`;
-  if (v >= 1_000_000) return `Rp ${(v / 1_000_000).toFixed(0)} Jt`;
+  if (v >= 1_000_000_000) return `Rp ${Number((v / 1_000_000_000).toFixed(2))} M`;
+  if (v >= 1_000_000) return `Rp ${Number((v / 1_000_000).toFixed(2))} Jt`;
   return formatRupiah(v);
 };
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" }) : "—";
@@ -454,12 +456,12 @@ const statusCfg = {
   belum: { color: "#94a3b8", bg: "#f1f5f9", label: "Belum Mulai" },
 };
 
-const calculateAlerts = (opexData) => {
+const calculateAlerts = (opexData, currentBorrows) => {
   const alerts = [];
   const today = new Date();
 
   // 1. Cek Peminjaman Lewat Jatuh Tempo (Ditandai untuk tab 'aset')
-  const overdue = mockBorrows.filter((b) => !b.is_returned && new Date(b.due_date) < today);
+  const overdue = currentBorrows.filter((b) => !b.is_returned && new Date(b.due_date) < today);
   if (overdue.length > 0) {
     alerts.push({
       id: "overdue", type: "OVERDUE_BORROW", priority: "high", tab: "aset",
@@ -476,7 +478,7 @@ const calculateAlerts = (opexData) => {
       alerts.push({
         id: `opex-${opex.id}`, type: "OPEX_CRITICAL", priority: pct >= 100 ? "high" : "medium", tab: "anggaran",
         title: "Anggaran OPEX Kritis",
-        message: `Anggaran ${opex.nama} telah terserap ${pct.toFixed(1)}%. Sisa: ${formatRupiah(opex.rkap - opex.realisasi)}.`,
+        message: `Anggaran ${opex.nama} telah terserap ${Number(pct.toFixed(2))}%. Sisa: ${formatRupiah(opex.rkap - opex.realisasi)}.`,
         action_label: "Lihat Anggaran", action_path: "/budget",
       });
     }
@@ -529,12 +531,21 @@ function SlidePager({ items, renderItem, itemKey }) {
    CAPEX DETAIL MODAL (FULL)
 ───────────────────────────────────────────────────────────────── */
 function CapexDetailModal({ programs, selectedYear, onClose, onGoToBudget }) {
-  const displayed = useMemo(() => {
+  const { displayed, totalCount } = useMemo(() => {
     const yr = parseInt(selectedYear);
-    if (isNaN(yr)) return programs;
-    return programs.filter(
-      (p) => p.thn_rkap_awal <= yr && p.thn_rkap_akhir >= yr,
-    );
+    let filtered = programs;
+    if (!isNaN(yr)) {
+      filtered = programs.filter(
+        (p) => p.thn_rkap_awal <= yr && p.thn_rkap_akhir >= yr
+      );
+    }
+    const totalCount = filtered.length;
+    const sorted = [...filtered].sort((a, b) => {
+        const ar = a.realisasi_per_tahun.reduce((s, r) => s + r.realisasi, 0);
+        const br = b.realisasi_per_tahun.reduce((s, r) => s + r.realisasi, 0);
+        return br - ar;
+    });
+    return { displayed: sorted.slice(0, 3), totalCount };
   }, [programs, selectedYear]);
 
   const grandAnggaran = programs.reduce((s, p) => s + p.nilai_anggaran, 0);
@@ -565,23 +576,23 @@ function CapexDetailModal({ programs, selectedYear, onClose, onGoToBudget }) {
         <div className="modal-body thin-scroll">
           <div className="modal-summary-strip">
             <div className="mss-item">
-              <div className="mss-lbl">Total RKAP</div>
+              <div className="mss-lbl">Total Nilai KAD</div>
               <div className="mss-val" style={{ color: "#1a56db" }}>{formatRupiahShort(grandAnggaran)}</div>
             </div>
             <div className="mss-item">
-              <div className="mss-lbl">Total Realisasi</div>
+              <div className="mss-lbl">Total Kontrak</div>
               <div className="mss-val" style={{ color: "#16a34a" }}>{formatRupiahShort(grandRealisasi)}</div>
             </div>
             <div className="mss-item">
               <div className="mss-lbl">Serapan Komposit</div>
-              <div className="mss-val" style={{ color: grandPct >= 80 ? "#d97706" : "#1a56db" }}>{grandPct.toFixed(1)}%</div>
+              <div className="mss-val" style={{ color: grandPct >= 80 ? "#d97706" : "#1a56db" }}>{Number(grandPct.toFixed(2))}%</div>
             </div>
           </div>
 
           <div>
             <div className="pct-row">
               <span className="pct-label">Total Serapan</span>
-              <span className="pct-value" style={{ color: "#1a56db" }}>{grandPct.toFixed(1)}%</span>
+              <span className="pct-value" style={{ color: "#1a56db" }}>{Number(grandPct.toFixed(2))}%</span>
             </div>
             <div className="prog-track">
               <div className="prog-fill" style={{ width: `${Math.min(grandPct, 100)}%`, background: "linear-gradient(90deg, #1a56db, #3b82f6)" }} />
@@ -616,7 +627,7 @@ function CapexDetailModal({ programs, selectedYear, onClose, onGoToBudget }) {
                     <div className="mpr-right">
                       <div className="mpr-val">{formatRupiahShort(totalReal)}</div>
                       <div className="mpr-sub">/ {formatRupiahShort(p.nilai_anggaran)}</div>
-                      <div className="mpr-pct" style={{ color: cfg.color }}>{pct.toFixed(1)}%</div>
+                      <div className="mpr-pct" style={{ color: cfg.color }}>{Number(pct.toFixed(2))}%</div>
                     </div>
                   </div>
                   {p.realisasi_per_tahun.length > 0 && (
@@ -631,7 +642,7 @@ function CapexDetailModal({ programs, selectedYear, onClose, onGoToBudget }) {
                             </div>
                             <span className="mpr-year-val">{formatRupiahShort(r.realisasi)}</span>
                             <span style={{ fontSize: "0.8rem", color: "#94a3b8", minWidth: 40, textAlign: "right", fontWeight: 600 }}>
-                              ({rowPct.toFixed(0)}%)
+                              ({Number(rowPct.toFixed(2))}%)
                             </span>
                           </div>
                         );
@@ -644,7 +655,7 @@ function CapexDetailModal({ programs, selectedYear, onClose, onGoToBudget }) {
           </div>
         </div>
         <div className="modal-footer">
-          <span style={{ fontSize: "0.85rem", color: "#64748b", fontWeight: 500 }}>{displayed.length} program ditampilkan</span>
+          <span style={{ fontSize: "0.85rem", color: "#64748b", fontWeight: 500 }}>Menampilkan 3 program teratas dari total {totalCount || 0} aktif</span>
           <button className="go-budget-btn" onClick={() => { onClose(); onGoToBudget(); }}>
             <FaExternalLinkAlt style={{ fontSize: "0.75rem" }} /> Kelola di Anggaran
           </button>
@@ -661,6 +672,12 @@ function OpexDetailModal({ opexData, tahun, onClose, onGoToBudget }) {
   const totalRkap = opexData.reduce((s, o) => s + o.rkap, 0);
   const totalReal = opexData.reduce((s, o) => s + o.realisasi, 0);
   const pct = totalRkap > 0 ? (totalReal / totalRkap) * 100 : 0;
+
+  const { displayedOpex, totalCount } = useMemo(() => {
+    const totalCount = opexData.length;
+    const sorted = [...opexData].sort((a, b) => b.realisasi - a.realisasi);
+    return { displayedOpex: sorted.slice(0, 3), totalCount };
+  }, [opexData]);
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -681,11 +698,11 @@ function OpexDetailModal({ opexData, tahun, onClose, onGoToBudget }) {
         <div className="modal-body thin-scroll">
           <div className="modal-summary-strip">
             <div className="mss-item">
-              <div className="mss-lbl">Total RKAP</div>
+              <div className="mss-lbl">Total Nilai KAD</div>
               <div className="mss-val" style={{ color: "#16a34a" }}>{formatRupiahShort(totalRkap)}</div>
             </div>
             <div className="mss-item">
-              <div className="mss-lbl">Total Realisasi</div>
+              <div className="mss-lbl">Total Kontrak</div>
               <div className="mss-val" style={{ color: "#d97706" }}>{formatRupiahShort(totalReal)}</div>
             </div>
             <div className="mss-item">
@@ -698,7 +715,7 @@ function OpexDetailModal({ opexData, tahun, onClose, onGoToBudget }) {
           <div>
             <div className="pct-row">
               <span className="pct-label">Serapan Total</span>
-              <span className="pct-value" style={{ color: pct >= 80 ? "#d97706" : "#16a34a" }}>{pct.toFixed(1)}%</span>
+              <span className="pct-value" style={{ color: pct >= 80 ? "#d97706" : "#16a34a" }}>{Number(pct.toFixed(2))}%</span>
             </div>
             <div className="prog-track">
               <div className="prog-fill" style={{ width: `${Math.min(pct, 100)}%`, background: pct >= 100 ? "#ef4444" : pct >= 80 ? "#f59e0b" : "#16a34a" }} />
@@ -706,7 +723,7 @@ function OpexDetailModal({ opexData, tahun, onClose, onGoToBudget }) {
           </div>
           <div className="divider" style={{ margin: "12px 0" }} />
           <div>
-            {opexData.map((opex) => {
+            {displayedOpex.map((opex) => {
               const p = opex.rkap > 0 ? (opex.realisasi / opex.rkap) * 100 : 0;
               const c = p >= 100 ? "#ef4444" : p >= 80 ? "#f59e0b" : "#16a34a";
               return (
@@ -716,16 +733,16 @@ function OpexDetailModal({ opexData, tahun, onClose, onGoToBudget }) {
                     <div className="mopex-name">{opex.nama}</div>
                     <div className="mopex-amounts">
                       <div className="mopex-amount">
-                        <div className="lbl">RKAP</div>
+                        <div className="lbl">Nilai KAD</div>
                         <div className="val" style={{ color: "#1a56db" }}>{formatRupiahShort(opex.rkap)}</div>
                       </div>
                       <div className="mopex-amount">
-                        <div className="lbl">Realisasi</div>
+                        <div className="lbl">Nilai Kontrak</div>
                         <div className="val" style={{ color: c }}>{formatRupiahShort(opex.realisasi)}</div>
                       </div>
                       <div className="mopex-amount">
                         <div className="lbl">Serapan</div>
-                        <div className="val" style={{ color: c }}>{p.toFixed(0)}%</div>
+                        <div className="val" style={{ color: c }}>{Number(p.toFixed(2))}%</div>
                       </div>
                     </div>
                   </div>
@@ -758,9 +775,7 @@ function OpexDetailModal({ opexData, tahun, onClose, onGoToBudget }) {
           </div>
         </div>
         <div className="modal-footer">
-          <span style={{ fontSize: "0.85rem", color: "#64748b", fontWeight: 500 }}>
-            {opexData.length} pos anggaran · Tahun {tahun}
-          </span>
+          <span style={{ fontSize: "0.85rem", color: "#64748b", fontWeight: 500 }}>Menampilkan 3 pos anggaran teratas dari total {totalCount || 0} aktif</span>
           <button className="go-budget-btn" style={{ background: "#16a34a", borderColor: "#16a34a" }} onClick={() => { onClose(); onGoToBudget(); }}>
             <FaExternalLinkAlt style={{ fontSize: "0.75rem" }} /> Kelola di Anggaran
           </button>
@@ -773,9 +788,9 @@ function OpexDetailModal({ opexData, tahun, onClose, onGoToBudget }) {
 /* ─────────────────────────────────────────────────────────────────
    CAPEX BUDGET CARD
 ───────────────────────────────────────────────────────────────── */
-const CapexBudgetCard = ({ selectedYear, onOpenDetail }) => {
+const CapexBudgetCard = ({ selectedYear, onOpenDetail, programsRaw }) => {
   const yr = parseInt(selectedYear);
-  const programs = useMemo(() => mockCapexPrograms.map((p) => {
+  const programs = useMemo(() => programsRaw.map((p) => {
     const totalRealisasi = p.realisasi_per_tahun.reduce((s, r) => s + r.realisasi, 0);
     const pct = p.nilai_anggaran > 0 ? (totalRealisasi / p.nilai_anggaran) * 100 : 0;
     const isActiveThisYear = !isNaN(yr) && p.thn_rkap_awal <= yr && p.thn_rkap_akhir >= yr;
@@ -786,6 +801,7 @@ const CapexBudgetCard = ({ selectedYear, onOpenDetail }) => {
   const grandRealisasi = programs.reduce((s, p) => s + p.totalRealisasi, 0);
   const grandPct = grandAnggaran > 0 ? (grandRealisasi / grandAnggaran) * 100 : 0;
   const activeCount = programs.filter((p) => isNaN(yr) ? true : p.isActiveThisYear).length;
+  if (programsRaw.length === 0) return <div className="card">Memuat CAPEX...</div>;
 
   return (
     <div className="card">
@@ -793,21 +809,24 @@ const CapexBudgetCard = ({ selectedYear, onOpenDetail }) => {
         <div>
           <div className="bsc-type-tag capex">CAPEX · Multi-Year</div>
           <div className="bsc-title">Komposit Program CAPEX</div>
-          <div className="bsc-meta">{isNaN(yr) ? `${mockCapexPrograms.length} program` : `${activeCount} program aktif`}</div>
+          <div className="bsc-meta">{isNaN(yr) ? `${programsRaw.length} program` : `${activeCount} program aktif`}</div>
         </div>
         <div className="bsc-amount">
-          <div className="bsc-amount-lbl">Total RKAP</div>
+          <div className="bsc-amount-lbl">Total Nilai KAD</div>
           <div className="bsc-amount-val">{formatRupiahShort(grandAnggaran)}</div>
         </div>
       </div>
-      <div className="pct-row"><span className="pct-label">Serapan Komposit</span><span className="pct-value" style={{ color: "#1a56db" }}>{grandPct.toFixed(1)}%</span></div>
+      <div className="pct-row"><span className="pct-label">Serapan Komposit</span><span className="pct-value" style={{ color: "#1a56db" }}>{Number(grandPct.toFixed(2))}%</span></div>
       <div className="prog-track" style={{ marginBottom: 16 }}><div className="prog-fill" style={{ width: `${Math.min(grandPct, 100)}%`, background: "linear-gradient(90deg,#1a56db,#3b82f6)" }} /></div>
       <div style={{ fontSize: "0.85rem", color: "#64748b", marginBottom: 24 }}>
-        Realisasi: <strong style={{ color: "#0f172a" }}>{formatRupiahShort(grandRealisasi)}</strong> &nbsp;·&nbsp; Sisa: <strong style={{ color: "#ef4444" }}>{formatRupiahShort(grandAnggaran - grandRealisasi)}</strong>
+        Total Kontrak: <strong style={{ color: "#0f172a" }}>{formatRupiahShort(grandRealisasi)}</strong> &nbsp;·&nbsp; Sisa: <strong style={{ color: "#ef4444" }}>{formatRupiahShort(grandAnggaran - grandRealisasi)}</strong>
       </div>
       <div className="divider" style={{ margin: "0 0 20px" }} />
+      <div style={{ fontSize: "0.8rem", color: "#64748b", fontWeight: 600, marginBottom: "12px", background: "#f8fafc", padding: "8px 12px", borderRadius: "8px", borderLeft: "3px solid #1a56db" }}>
+        3 program teratas tahun ini
+      </div>
       <SlidePager
-        items={programs.filter((p) => (isNaN(yr) ? true : p.isActiveThisYear))}
+        items={[...programs.filter((p) => (isNaN(yr) ? true : p.isActiveThisYear))].sort((a,b) => b.totalRealisasi - a.totalRealisasi).slice(0, 3)}
         itemKey="id"
         renderItem={(p) => {
           const cfg = statusCfg[p.status] || statusCfg.belum;
@@ -818,22 +837,22 @@ const CapexBudgetCard = ({ selectedYear, onOpenDetail }) => {
                 <div className="capex-item-badges"><span className={`ci-badge ${p.status}`}>{cfg.label}</span></div>
               </div>
               <div className="capex-item-amounts">
-                <span>RKAP: <strong>{formatRupiahShort(p.nilai_anggaran)}</strong></span>
-                <span>Real: <strong>{formatRupiahShort(p.totalRealisasi)}</strong></span>
-                <strong style={{ color: cfg.color }}>{p.pct.toFixed(1)}%</strong>
+                <span>Nilai KAD: <strong>{formatRupiahShort(p.nilai_anggaran)}</strong></span>
+                <span>Nilai Kontrak: <strong>{formatRupiahShort(p.totalRealisasi)}</strong></span>
+                <strong style={{ color: cfg.color }}>{Number(p.pct.toFixed(2))}%</strong>
               </div>
               <div className="prog-track" style={{ height: "6px" }}><div className="prog-fill" style={{ width: `${Math.min(p.pct, 100)}%`, background: cfg.color }} /></div>
             </div>
           );
         }}
       />
-      <button className="detail-btn" onClick={onOpenDetail}><FaChevronDown style={{ fontSize: "0.8rem" }} /> Lihat Detail {activeCount} Program</button>
+      <button className="detail-btn" onClick={onOpenDetail}><FaChevronDown style={{ fontSize: "0.8rem" }} /> Lihat Detail {Math.min(activeCount, 3)} Program</button>
     </div>
   );
 };
 
-const OpexBudgetCard = ({ tahun, onOpenDetail }) => {
-  const dataOpex = mockOpexPerTahun[tahun] ?? [];
+const OpexBudgetCard = ({ tahun, onOpenDetail, dataOpex }) => {
+
   const totalRkap = dataOpex.reduce((s, o) => s + o.rkap, 0);
   const totalReal = dataOpex.reduce((s, o) => s + o.realisasi, 0);
   const pct = totalRkap > 0 ? (totalReal / totalRkap) * 100 : 0;
@@ -844,11 +863,11 @@ const OpexBudgetCard = ({ tahun, onOpenDetail }) => {
       <div className="bsc-header">
         <div>
           <div className="bsc-type-tag opex">OPEX · Per Tahun</div>
-          <div className="bsc-title">Realisasi vs RKAP</div>
+          <div className="bsc-title">Total Kontrak vs Nilai KAD</div>
           <div className="bsc-meta">Tahun {tahun} · {dataOpex.length} pos anggaran</div>
         </div>
         <div className="bsc-amount">
-          <div className="bsc-amount-lbl">Total Anggaran</div>
+          <div className="bsc-amount-lbl">Total Nilai KAD</div>
           <div className="bsc-amount-val" style={{ color: "#16a34a" }}>{formatRupiahShort(totalRkap)}</div>
         </div>
       </div>
@@ -858,11 +877,14 @@ const OpexBudgetCard = ({ tahun, onOpenDetail }) => {
       </div>
       <div className="prog-track" style={{ marginBottom: 10 }}><div className="prog-fill" style={{ width: `${Math.min(pct, 100)}%`, background: color }} /></div>
       <div style={{ fontSize: "0.85rem", color: "#64748b", marginBottom: 24 }}>
-        <strong style={{ color }}>{pct.toFixed(1)}%</strong> terserap &nbsp;·&nbsp; Sisa: <strong style={{ color: "#0f172a" }}>{formatRupiahShort(totalRkap - totalReal)}</strong>
+        <strong style={{ color }}>{Number(pct.toFixed(2))}%</strong> terserap &nbsp;·&nbsp; Sisa: <strong style={{ color: "#0f172a" }}>{formatRupiahShort(totalRkap - totalReal)}</strong>
       </div>
       <div className="divider" style={{ margin: "0 0 20px" }} />
+      <div style={{ fontSize: "0.8rem", color: "#64748b", fontWeight: 600, marginBottom: "12px", background: "#f8fafc", padding: "8px 12px", borderRadius: "8px", borderLeft: "3px solid #16a34a" }}>
+        3 pos anggaran teratas tahun ini
+      </div>
       <SlidePager
-        items={dataOpex}
+        items={[...dataOpex].sort((a,b) => b.realisasi - a.realisasi).slice(0, 3)}
         itemKey="id"
         renderItem={(opex) => {
           const p = opex.rkap > 0 ? (opex.realisasi / opex.rkap) * 100 : 0;
@@ -872,12 +894,12 @@ const OpexBudgetCard = ({ tahun, onOpenDetail }) => {
               <div className="bitem-dot" style={{ background: c }} />
               <div className="bitem-name">{opex.nama.replace("Beban ", "")}</div>
               <div className="bitem-bar"><div className="prog-track" style={{ height: "6px" }}><div className="prog-fill" style={{ width: `${Math.min(p, 100)}%`, background: c }} /></div></div>
-              <div className="bitem-pct" style={{ color: c }}>{p.toFixed(0)}%</div>
+              <div className="bitem-pct" style={{ color: c }}>{Number(p.toFixed(2))}%</div>
             </div>
           );
         }}
       />
-      <button className="detail-btn green" onClick={onOpenDetail}><FaChevronDown style={{ fontSize: "0.8rem" }} /> Lihat Detail {dataOpex.length} Pos</button>
+      <button className="detail-btn green" onClick={onOpenDetail}><FaChevronDown style={{ fontSize: "0.8rem" }} /> Lihat Detail {Math.min(dataOpex.length, 3)} Pos</button>
     </div>
   );
 };
@@ -885,11 +907,11 @@ const OpexBudgetCard = ({ tahun, onOpenDetail }) => {
 /* ─────────────────────────────────────────────────────────────────
    DONUT LABEL
 ───────────────────────────────────────────────────────────────── */
-const CustomDonutLabel = ({ viewBox }) => {
+const CustomDonutLabel = ({ viewBox, val }) => {
   const { cx, cy } = viewBox;
   return (
     <g>
-      <text x={cx} y={cy - 10} textAnchor="middle" fill="#0f172a" fontSize="1.6rem" fontWeight="800">{totalKondisi.toLocaleString()}</text>
+      <text x={cx} y={cy - 10} textAnchor="middle" fill="#0f172a" fontSize="1.6rem" fontWeight="800">{val.toLocaleString()}</text>
       <text x={cx} y={cy + 16} textAnchor="middle" fill="#94a3b8" fontSize="0.75rem" fontWeight="700" letterSpacing="1px">TOTAL ASET</text>
     </g>
   );
@@ -901,15 +923,155 @@ const CustomDonutLabel = ({ viewBox }) => {
 const tahunOptions = ["2023", "2024", "2025", "2026"];
 
 const Dashboard = () => {
+  const [dbBorrows, setDbBorrows] = useState([]);
+  const [dbReturns, setDbReturns] = useState([]);
+  const [dbAssets, setDbAssets] = useState([]);
+  const [dbCapex, setDbCapex] = useState([]);
+  const [dbOpex, setDbOpex] = useState({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        const [astRes, txRes, cpxRes, opxRes] = await Promise.all([
+          barangAPI.getAll().catch(e => ({ data: [] })),
+          transactionAPI.getAll().catch(e => ({ data: { borrows: [] } })),
+          budgetAPI.getCapex().catch(e => ({ data: { data: [] } })),
+          budgetAPI.getOpex().catch(e => ({ data: { data: [] } }))
+        ]);
+
+        const assets = Array.isArray(astRes.data) ? astRes.data : [];
+        const borrows = txRes.data?.borrows || [];
+        const capex = Array.isArray(cpxRes.data?.data) ? cpxRes.data.data : [];
+        const opexRaw = Array.isArray(opxRes.data?.data) ? opxRes.data.data : [];
+
+        setDbAssets(assets);
+        setDbBorrows(borrows);
+        setDbReturns(txRes.data?.returns || []);
+
+        // Format Capex
+        const fmtCapex = capex.map(c => {
+          const projs = c.projects || [];
+          const totalReal = projs.reduce((s, p) => s + (p.nilai_kontrak || 0), 0);
+          const rkapVal = parseFloat(c.nilai_kad || 0);
+
+          return {
+            id: c.kd_anggaran_capex || c.id,
+            nm_anggaran_capex: c.nama || c.nm_anggaran_capex || '-',
+            thn_rkap_awal: parseInt(c.thn_rkap_awal || 2026),
+            thn_rkap_akhir: parseInt(c.thn_rkap_akhir || 2026),
+            nilai_anggaran: rkapVal,
+            status: (rkapVal > 0 && totalReal >= rkapVal) ? 'selesai' : 'berjalan',
+            realisasi_per_tahun: [{ tahun: parseInt(c.thn_rkap_awal || 2026), realisasi: totalReal }]
+          };
+        });
+        setDbCapex(fmtCapex);
+
+        // Format Opex grouping by year
+        const opexByYear = {};
+        opexRaw.forEach(o => {
+          const yr = String(o.thn_anggaran || 2026);
+          if (!opexByYear[yr]) opexByYear[yr] = [];
+
+          const projs = o.projects || [];
+          const totalReal = projs.reduce((s, p) => s + (p.nilai_kontrak || 0), 0);
+          const rkapVal = parseFloat(o.nilai_kad || 0);
+
+          opexByYear[yr].push({
+            id: o.id || o.id_anggaran_tahunan,
+            nama: o.nama || o.nm_anggaran || '-',
+            rkap: rkapVal,
+            realisasi: totalReal,
+            transaksi: projs.map((p, idx) => ({
+              id: p.id || String(idx),
+              tanggal: p.tgl_kontrak || null,
+              keterangan: p.nm_pekerjaan || '-',
+              no_invoice: p.no_kontrak || '-',
+              jumlah: p.nilai_kontrak || 0
+            }))
+          });
+        });
+        setDbOpex(opexByYear);
+
+      } catch (err) {
+        console.error("Error loading dashboard data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDashboardData();
+  }, []);
+
+  // Compute dynamic stats
+  const dynamicStats = useMemo(() => {
+    let tAset = 0;
+    let tAvail = 0;
+    let tMaint = 0;
+    const cond = { "Baik": 0, "Rusak": 0, "Hilang": 0, "Diperbaiki": 0 };
+
+    dbAssets.forEach(item => {
+      if (item.units && Array.isArray(item.units)) {
+        item.units.forEach(u => {
+          tAset++;
+          const isActive = dbBorrows.some(b => b.code === u.serialNumber && !b.is_returned);
+          const st = (u.condition || "BAIK").toUpperCase();
+          if (!isActive && (st === "BAIK" || st === "GOOD")) tAvail++;
+
+          if (st === "BAIK" || st === "GOOD") cond["Baik"]++;
+          else if (st === "DIPERBAIKI" || st === "MAINTENANCE") { cond["Diperbaiki"]++; tMaint++; }
+          else if (st === "RUSAK" || st === "MINOR_DAMAGE" || st === "RUSAK RINGAN" || st === "RUSAK BERAT" || st === "DAMAGED") cond["Rusak"]++;
+          else if (st === "HILANG" || st === "MISSING") cond["Hilang"]++;
+          else cond["Baik"]++;
+        });
+      }
+    });
+
+    const dKondisi = [
+      { name: "Baik", value: cond["Baik"], color: "#16a34a" },
+      { name: "Rusak", value: cond["Rusak"], color: "#dc2626" },
+      { name: "Hilang", value: cond["Hilang"], color: "#9ca3af" },
+      { name: "Diperbaiki", value: cond["Diperbaiki"], color: "#3b82f6" }
+    ];
+
+    return { totalAset: tAset, totalAvailable: tAvail, totalMaint: tMaint, dataKondisi: dKondisi, totalKondisiVal: tAset };
+  }, [dbAssets, dbBorrows]);
+
+  const dynamicTrend = useMemo(() => {
+    // Basic mock generation for trend based on real borrows length
+    // We group borrows by month for 'bulanan'
+    const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+    const bulanan = months.map(m => ({ name: m, Laptop: 0, Proyektor: 0, Kamera: 0, Kendaraan: 0 }));
+
+    dbBorrows.forEach(b => {
+      if (b.borrow_date) {
+        const d = new Date(b.borrow_date);
+        const mIdx = d.getMonth();
+        if (bulanan[mIdx]) {
+          const n = (b.name || "").toLowerCase();
+          if (n.includes("laptop") || n.includes("pc")) bulanan[mIdx].Laptop++;
+          else if (n.includes("proyektor") || n.includes("projector")) bulanan[mIdx].Proyektor++;
+          else if (n.includes("kamera") || n.includes("cctv")) bulanan[mIdx].Kamera++;
+          else bulanan[mIdx].Kendaraan++;
+        }
+      }
+    });
+
+    // For harian, just mock latest week
+    const days = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
+    const harian = days.map(d => ({ name: d, Laptop: 0, Proyektor: 0, Kamera: 0, Kendaraan: 0 }));
+    return { bulanan, harian };
+  }, [dbBorrows]);
+
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("aset"); // "aset" | "anggaran"
   const [filterTren, setFilterTren] = useState("bulanan");
   const [tahunAnggaran, setTahunAnggaran] = useState("2026");
   const [modal, setModal] = useState(null);
 
-  const dataTren = filterTren === "harian" ? dataPeminjamanHarian : dataPeminjamanBulanan;
-  const opexTahunIni = mockOpexPerTahun[tahunAnggaran] ?? [];
-  const allAlerts = useMemo(() => calculateAlerts(opexTahunIni), [tahunAnggaran]);
+  const dataTren = filterTren === "harian" ? dynamicTrend.harian : dynamicTrend.bulanan;
+  const opexTahunIni = dbOpex[tahunAnggaran] ?? [];
+  const allAlerts = useMemo(() => calculateAlerts(opexTahunIni, dbBorrows), [tahunAnggaran, dbBorrows, opexTahunIni]);
 
   // Filter alerts based on active tab
   const tabAlerts = allAlerts.filter(a => a.tab === activeTab);
@@ -964,9 +1126,9 @@ const Dashboard = () => {
             <>
               <div className="stats-row">
                 {[
-                  { title: "Total Aset", value: "1,245", icon: <FaBox />, color: "#1a56db", bg: "#eff6ff", sub: "Unit terdaftar" },
-                  { title: "Available", value: "980", icon: <FaCheckCircle />, color: "#16a34a", bg: "#f0fdf4", sub: "Siap digunakan" },
-                  { title: "Pemeliharaan", value: "15", icon: <FaTools />, color: "#d97706", bg: "#fffbeb", sub: "Sedang diperbaiki" },
+                  { title: "Total Aset", value: dynamicStats.totalAset.toLocaleString(), icon: <FaBox />, color: "#1a56db", bg: "#eff6ff", sub: "Unit terdaftar" },
+                  { title: "Available", value: dynamicStats.totalAvailable.toLocaleString(), icon: <FaCheckCircle />, color: "#16a34a", bg: "#f0fdf4", sub: "Siap digunakan" },
+                  { title: "Pemeliharaan", value: dynamicStats.totalMaint.toLocaleString(), icon: <FaTools />, color: "#d97706", bg: "#fffbeb", sub: "Sedang diperbaiki" },
                 ].map((s) => (
                   <div key={s.title} className="stat-card">
                     <div className="stat-icon" style={{ background: s.bg, color: s.color }}>{s.icon}</div>
@@ -1021,9 +1183,9 @@ const Dashboard = () => {
                   <div style={{ height: 220 }}>
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
-                        <Pie data={dataKondisi} cx="50%" cy="50%" innerRadius={70} outerRadius={100} paddingAngle={4} dataKey="value" labelLine={false}>
-                          {dataKondisi.map((entry, i) => <Cell key={i} fill={entry.color} />)}
-                          <Label content={<CustomDonutLabel />} position="center" />
+                        <Pie data={dynamicStats.dataKondisi} cx="50%" cy="50%" innerRadius={70} outerRadius={100} paddingAngle={4} dataKey="value" labelLine={false}>
+                          {dynamicStats.dataKondisi.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+                          <Label content={(props) => <CustomDonutLabel {...props} val={dynamicStats.totalKondisiVal} />} position="center" />
                         </Pie>
                         <Tooltip formatter={(v, n) => [`${v.toLocaleString()} unit`, n]} contentStyle={{ borderRadius: 16, border: "none", boxShadow: "0 8px 32px rgba(0,0,0,0.08)" }} />
                       </PieChart>
@@ -1031,7 +1193,7 @@ const Dashboard = () => {
                   </div>
                   <div className="divider" style={{ margin: "16px 0" }} />
                   <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                    {dataKondisi.map((item) => (
+                    {dynamicStats.dataKondisi.map((item) => (
                       <div key={item.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                           <div style={{ width: 12, height: 12, borderRadius: "50%", background: item.color }} />
@@ -1051,8 +1213,8 @@ const Dashboard = () => {
           {/* CONTENT: ANGGARAN */}
           {activeTab === 'anggaran' && (
             <div className="bento-grid-equal">
-              <CapexBudgetCard selectedYear={tahunAnggaran} onOpenDetail={() => setModal("capex")} />
-              <OpexBudgetCard tahun={tahunAnggaran} onOpenDetail={() => setModal("opex")} />
+              <CapexBudgetCard selectedYear={tahunAnggaran} onOpenDetail={() => setModal("capex")} programsRaw={dbCapex} />
+              <OpexBudgetCard tahun={tahunAnggaran} onOpenDetail={() => setModal("opex")} dataOpex={dbOpex[String(tahunAnggaran)] ?? []} />
             </div>
           )}
 
@@ -1095,8 +1257,8 @@ const Dashboard = () => {
       </div>
 
       {/* ── MODALS ── */}
-      {modal === "capex" && <CapexDetailModal programs={mockCapexPrograms} selectedYear={tahunAnggaran} onClose={() => setModal(null)} onGoToBudget={() => navigate("/budget")} />}
-      {modal === "opex" && <OpexDetailModal opexData={mockOpexPerTahun[tahunAnggaran] ?? []} tahun={tahunAnggaran} onClose={() => setModal(null)} onGoToBudget={() => navigate("/budget")} />}
+      {modal === "capex" && <CapexDetailModal programs={dbCapex} selectedYear={tahunAnggaran} onClose={() => setModal(null)} onGoToBudget={() => navigate("/budget")} />}
+      {modal === "opex" && <OpexDetailModal opexData={dbOpex[tahunAnggaran] ?? []} tahun={tahunAnggaran} onClose={() => setModal(null)} onGoToBudget={() => navigate("/budget")} />}
     </>
   );
 };

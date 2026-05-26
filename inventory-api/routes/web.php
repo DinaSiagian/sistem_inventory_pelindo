@@ -101,6 +101,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
         // ══════════════════════════════════════════════
         // BUDGET: PROJECTS (universal CRUD)
         // ══════════════════════════════════════════════
+        $router->get('/budget/projects',         'BudgetController@indexProjects');
         $router->put('/budget/projects/{id}',    'BudgetController@updateProject');
         $router->delete('/budget/projects/{id}', 'BudgetController@destroyProject');
 
@@ -119,5 +120,6 @@ $router->group(['prefix' => 'api'], function () use ($router) {
         $router->get('/transactions',         'TransactionController@index');
         $router->post('/transactions',        'TransactionController@store');
         $router->post('/transactions/return', 'TransactionController@returnAsset');
+        $router->delete('/transactions/{id}', 'TransactionController@destroy');
     });
 });

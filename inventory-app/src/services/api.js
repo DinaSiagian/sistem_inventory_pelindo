@@ -51,7 +51,7 @@ export const masterDataAPI = {
   addEntity: (data) => api.post("/master-data/entities", data),
   updateEntity: (code, data) => api.put(`/master-data/entities/${code}`, data),
   deleteEntity: (code) => api.delete(`/master-data/entities/${code}`),
-  
+
   // Branches
   getBranches: () => api.get("/master-data/branches"),
   addBranch: (data) => api.post("/master-data/branches", data),
@@ -76,12 +76,12 @@ export const masterDataAPI = {
 };
 
 export const userAPI = {
-  getAll:       ()         => api.get('/users'),
-  getById:      (id)       => api.get(`/users/${id}`),
-  create:       (data)     => api.post('/users', data),
-  update:       (id, data) => api.put(`/users/${id}`, data),
-  delete:       (id)       => api.delete(`/users/${id}`),
-  toggleStatus: (id)       => api.patch(`/users/${id}/toggle-status`),
+  getAll: () => api.get('/users'),
+  getById: (id) => api.get(`/users/${id}`),
+  create: (data) => api.post('/users', data),
+  update: (id, data) => api.put(`/users/${id}`, data),
+  delete: (id) => api.delete(`/users/${id}`),
+  toggleStatus: (id) => api.patch(`/users/${id}/toggle-status`),
 };
 
 export const logAPI = {
@@ -90,24 +90,25 @@ export const logAPI = {
 
 export const budgetAPI = {
   // ── OPEX ────────────────────────────────────────────────
-  getOpex:    ()          => api.get('/budget/opex'),
-  addOpex:    (data)      => api.post('/budget/opex', data),
-  updateOpex: (id, data)  => api.put(`/budget/opex/${id}`, data),
-  deleteOpex: (id)        => api.delete(`/budget/opex/${id}`),
-  addOpexProject:   (id, data) => api.post(`/budget/opex/${id}/projects`, data),
-  syncOpexAssets:   (id, data) => api.put(`/budget/opex/${id}/sync-assets`, data),
+  getOpex: () => api.get('/budget/opex'),
+  addOpex: (data) => api.post('/budget/opex', data),
+  updateOpex: (id, data) => api.put(`/budget/opex/${id}`, data),
+  deleteOpex: (id) => api.delete(`/budget/opex/${id}`),
+  addOpexProject: (id, data) => api.post(`/budget/opex/${id}/projects`, data),
+  syncOpexAssets: (id, data) => api.put(`/budget/opex/${id}/sync-assets`, data),
 
   // ── CAPEX ───────────────────────────────────────────────
-  getCapex:    ()         => api.get('/budget/capex'),
-  addCapex:    (data)     => api.post('/budget/capex', data),
+  getCapex: () => api.get('/budget/capex'),
+  addCapex: (data) => api.post('/budget/capex', data),
   updateCapex: (kd, data) => api.put(`/budget/capex/${kd}`, data),
-  deleteCapex: (kd)       => api.delete(`/budget/capex/${kd}`),
-  addCapexProject:  (kd, data) => api.post(`/budget/capex/${kd}/projects`, data),
-  syncCapexAssets:  (kd, data) => api.put(`/budget/capex/${kd}/sync-assets`, data),
+  deleteCapex: (kd) => api.delete(`/budget/capex/${kd}`),
+  addCapexProject: (kd, data) => api.post(`/budget/capex/${kd}/projects`, data),
+  syncCapexAssets: (kd, data) => api.put(`/budget/capex/${kd}/sync-assets`, data),
 
   // ── PROJECTS (universal) ─────────────────────────────────
+  getProjects: () => api.get('/budget/projects'),
   updateProject: (id, data) => api.put(`/budget/projects/${id}`, data),
-  deleteProject: (id)       => api.delete(`/budget/projects/${id}`),
+  deleteProject: (id) => api.delete(`/budget/projects/${id}`),
 };
 
 export const barangAPI = {
@@ -122,6 +123,7 @@ export const transactionAPI = {
   getAll: () => api.get('/transactions'),
   create: (data) => api.post('/transactions', data),
   returnAsset: (data) => api.post('/transactions/return', data),
+  delete: (id) => api.delete(`/transactions/${id}`),
 };
 
 export default api;

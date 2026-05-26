@@ -57,27 +57,27 @@ function daysUntilDue(dateStr) {
 // ── Icon Component ──
 const Ico = ({ n, s = 18, c }) => {
   const paths = {
-    laptop: (<><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></>),
-    server: (<><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/></>),
-    monitor: (<><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/><path d="M7 8h10M7 12h6"/></>),
-    network: (<><circle cx="12" cy="5" r="3"/><circle cx="19" cy="19" r="3"/><circle cx="5" cy="19" r="3"/><line x1="12" y1="8" x2="5.5" y2="16"/><line x1="12" y1="8" x2="18.5" y2="16"/></>),
-    battery: (<><rect x="1" y="6" width="18" height="12" rx="2"/><line x1="23" y1="11" x2="23" y2="13"/></>),
-    cube: (<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>),
-    package: (<><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></>),
-    plus: (<><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></>),
-    undo: (<><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.99"/></>),
-    history: (<><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>),
-    warn: (<><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></>),
-    check_circle: (<><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></>),
-    calendar: (<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>),
-    tag: (<><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></>),
-    clock: (<><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>),
-    arrow_right: (<><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></>),
-    x: (<><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></>),
-    search: (<><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></>),
-    location: (<><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></>),
-    grid: (<><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></>),
-    list_icon: (<><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></>),
+    laptop: (<><rect x="2" y="3" width="20" height="14" rx="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" /></>),
+    server: (<><rect x="2" y="2" width="20" height="8" rx="2" /><rect x="2" y="14" width="20" height="8" rx="2" /></>),
+    monitor: (<><rect x="2" y="3" width="20" height="14" rx="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" /><path d="M7 8h10M7 12h6" /></>),
+    network: (<><circle cx="12" cy="5" r="3" /><circle cx="19" cy="19" r="3" /><circle cx="5" cy="19" r="3" /><line x1="12" y1="8" x2="5.5" y2="16" /><line x1="12" y1="8" x2="18.5" y2="16" /></>),
+    battery: (<><rect x="1" y="6" width="18" height="12" rx="2" /><line x1="23" y1="11" x2="23" y2="13" /></>),
+    cube: (<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />),
+    package: (<><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" /><polyline points="3.27 6.96 12 12.01 20.73 6.96" /><line x1="12" y1="22.08" x2="12" y2="12" /></>),
+    plus: (<><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></>),
+    undo: (<><polyline points="1 4 1 10 7 10" /><path d="M3.51 15a9 9 0 1 0 .49-3.99" /></>),
+    history: (<><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></>),
+    warn: (<><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></>),
+    check_circle: (<><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></>),
+    calendar: (<><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></>),
+    tag: (<><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" /><line x1="7" y1="7" x2="7.01" y2="7" /></>),
+    clock: (<><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></>),
+    arrow_right: (<><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></>),
+    x: (<><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></>),
+    search: (<><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></>),
+    location: (<><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></>),
+    grid: (<><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></>),
+    list_icon: (<><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></>),
   };
   const catIcons = {
     LAPTOP: "laptop", SERVER: "server", DESKTOP: "monitor",
@@ -120,8 +120,8 @@ function AssetPhoto({ asset, cat, size = 48 }) {
     }}>
       {!err
         ? <img src={getPhoto(asset)} alt={asset?.name}
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-            onError={() => setErr(true)} />
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          onError={() => setErr(true)} />
         : <Ico n={asset?.category} s={size * 0.45} c={cat.color} />
       }
     </div>
@@ -130,27 +130,27 @@ function AssetPhoto({ asset, cat, size = 48 }) {
 
 // ── Constants untuk Picker ──
 const CATEGORIES = [
-  { key: "ALL",     label: "Semua" },
-  { key: "LAPTOP",  label: "Laptop" },
-  { key: "SERVER",  label: "Server" },
+  { key: "ALL", label: "Semua" },
+  { key: "LAPTOP", label: "Laptop" },
+  { key: "SERVER", label: "Server" },
   { key: "DESKTOP", label: "Desktop" },
   { key: "NETWORK", label: "Network" },
-  { key: "UPS",     label: "UPS" },
-  { key: "OTHER",   label: "Lainnya" },
+  { key: "UPS", label: "UPS" },
+  { key: "OTHER", label: "Lainnya" },
 ];
 
 const SORT_OPTIONS = [
-  { key: "name_asc",   label: "Nama A–Z" },
-  { key: "name_desc",  label: "Nama Z–A" },
-  { key: "price_asc",  label: "Harga Terendah" },
+  { key: "name_asc", label: "Nama A–Z" },
+  { key: "name_desc", label: "Nama Z–A" },
+  { key: "price_asc", label: "Harga Terendah" },
   { key: "price_desc", label: "Harga Tertinggi" },
 ];
 
 // ── Enhanced Asset Picker Modal ──
 function AssetPickerModal({ onSelect, onClose }) {
-  const [query,    setQuery]    = useState("");
+  const [query, setQuery] = useState("");
   const [category, setCategory] = useState("ALL");
-  const [sort,     setSort]     = useState("name_asc");
+  const [sort, setSort] = useState("name_asc");
   const [viewMode, setViewMode] = useState("list");
   const searchRef = useRef(null);
 
@@ -181,9 +181,9 @@ function AssetPickerModal({ onSelect, onClose }) {
     }
     if (category !== "ALL") list = list.filter(a => a.category === category);
     list.sort((a, b) => {
-      if (sort === "name_asc")   return a.name.localeCompare(b.name);
-      if (sort === "name_desc")  return b.name.localeCompare(a.name);
-      if (sort === "price_asc")  return (a.price || 0) - (b.price || 0);
+      if (sort === "name_asc") return a.name.localeCompare(b.name);
+      if (sort === "name_desc") return b.name.localeCompare(a.name);
+      if (sort === "price_asc") return (a.price || 0) - (b.price || 0);
       if (sort === "price_desc") return (b.price || 0) - (a.price || 0);
       return 0;
     });
@@ -536,23 +536,23 @@ function GridCard({ a, cat, onSelect }) {
 
 // ── Main Peminjaman Component ──
 export default function Peminjaman() {
-  const [loans, setLoans]       = useState(transactionsMock);
-  const [tab, setTab]           = useState("aktif");
+  const [loans, setLoans] = useState(transactionsMock);
+  const [tab, setTab] = useState("aktif");
   const [showPicker, setShowPicker] = useState(false);
-  const [borrowAsset, setBorrow]    = useState(null);
-  const [returnTrx, setReturn]      = useState(null);
+  const [borrowAsset, setBorrow] = useState(null);
+  const [returnTrx, setReturn] = useState(null);
 
   const sessionUser = JSON.parse(sessionStorage.getItem("currentUser") || "{}");
   const userId = sessionUser.id || "u001";
 
-  const myLoans   = loans.filter(t => t.status === "ACTIVE"    && String(t.user_id).includes(userId));
-  const myHistory = loans.filter(t => t.status === "RETURNED"  && String(t.user_id).includes(userId));
+  const myLoans = loans.filter(t => t.status === "ACTIVE" && String(t.user_id).includes(userId));
+  const myHistory = loans.filter(t => t.status === "RETURNED" && String(t.user_id).includes(userId));
 
   const overdueLoans = myLoans.filter(t => isOverdue(t.return_date));
 
   const enrich = (list) =>
     list.map(t => ({ ...t, asset: assetsMock.find(a => a.id === t.asset_id) }));
-  const activeRows  = enrich(myLoans);
+  const activeRows = enrich(myLoans);
   const historyRows = enrich(myHistory);
 
   return (

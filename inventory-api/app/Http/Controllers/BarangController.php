@@ -47,6 +47,8 @@ class BarangController extends Controller
                     'zona' => $loc ? $loc->zona_code : null,
                     'subzona' => $loc ? $loc->subzona_code : null,
                     'value' => (float)$item->acquisition_value,
+                    'procurement_date' => $item->procurement_date,
+                    'tahun_pengadaan' => $item->procurement_date ? date('Y', strtotime($item->procurement_date)) : null,
                     'id_pekerjaan' => $item->id_pekerjaan,
                     'quantity' => $itemUnits->count(),
                     'units' => $itemUnits->map(function ($u) use ($locations) {
@@ -65,7 +67,7 @@ class BarangController extends Controller
                             'serialNumber' => $u->serial_number,
                             'location' => $fullLocationStr,
                             'id_pekerjaan' => $u->id_pekerjaan,
-                            'status' => $tx ? 'Dipinjam' : 'Tersedia',
+                            'status' => ($tx && strtoupper($tx->transaction_type) === 'BORROW') ? 'Dipinjam' : 'Tersedia',
                             'condition' => $tx ? $tx->condition : 'Baik'
                         ];
                     })->toArray(),
@@ -408,6 +410,53 @@ class BarangController extends Controller
             } else {
                 // If id_pekerjaan is removed, delete from budget_items
                 DB::table('budget_items')->where('asset_code', $id)->delete();
+            }
+
+            // --- Status Update Logic (Maintenance/Ditemukan) ---
+            // Jika user memilih "Tersedia (Telah Diperbaiki)" atau "Tersedia (Telah Ditemukan)" per unit
+            // Kita akan mencatat transaksi "MAINTENANCE" baru dengan kondisi BAIK
+            $units = $data['units'] ?? [];
+            \Illuminate\Support\Facades\Log::info('Update Barang ID: ' . $id . ' | Units: ' . json_encode($units));
+            foreach ($units as $u) {
+                $unitStatus = $u['status'] ?? '';
+                \Illuminate\Support\Facades\Log::info('Checking SN: ' . ($u['serialNumber'] ?? 'null') . ' | Status: ' . $unitStatus);
+                if (str_contains($unitStatus, 'Tersedia')) {
+                    $sn = $u['serialNumber'] ?? null;
+                    if ($sn) {
+                        // Check if current active condition is not BAIK
+                        $latestTx = DB::table('asset_transactions')
+                            ->where('serial_number', $sn)
+                            ->where('is_current', true)
+                            ->first();
+                            
+                        \Illuminate\Support\Facades\Log::info('Latest TX for ' . $sn . ': ' . json_encode($latestTx));
+                            
+                        if ($latestTx && strtoupper($latestTx->condition) !== 'BAIK') {
+                            // Non-aktifkan transaksi sebelumnya
+                            DB::table('asset_transactions')
+                                ->where('serial_number', $sn)
+                                ->update(['is_current' => false]);
+                                
+                            $txType = str_contains(strtolower($unitStatus), 'ditemukan') ? 'FOUND' : 'MAINTENANCE';
+                            
+                            // Buat transaksi baru
+                            $txId = DB::table('asset_transactions')->insertGetId([
+                                'transaction_type' => $txType,
+                                'serial_number' => $sn,
+                                'performed_by_id' => 1, // Admin IT
+                                'condition' => 'BAIK',
+                                'notes' => 'Status diupdate via Edit Data Barang: ' . $unitStatus,
+                                'is_current' => true,
+                                'created_at' => \Carbon\Carbon::now(),
+                                'updated_at' => \Carbon\Carbon::now()
+                            ], 'transaction_id');
+                            
+                            $prefix = $txType === 'FOUND' ? 'FN-' : 'MT-';
+                            $bastNumber = $prefix . date('Y/m/') . str_pad($txId, 4, '0', STR_PAD_LEFT);
+                            DB::table('asset_transactions')->where('transaction_id', $txId)->update(['bast_number' => $bastNumber]);
+                        }
+                    }
+                }
             }
 
             DB::commit();

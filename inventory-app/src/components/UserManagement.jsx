@@ -1094,7 +1094,7 @@ function ActivityLogSection({ logs, users }) {
             <table className="al-table">
               <thead>
                 <tr>
-                  <th data-label="Waktu">
+                  <th data-label="Waktu" style={{ textAlign: "center" }}>
                     <Ico
                       n="clock"
                       size={10}
@@ -1110,7 +1110,7 @@ function ActivityLogSection({ logs, users }) {
                     />{" "}
                     Pegawai
                   </th>
-                  <th data-label="Aksi">
+                  <th data-label="Aksi" style={{ textAlign: "center" }}>
                     <Ico
                       n="activity"
                       size={10}
@@ -1118,7 +1118,7 @@ function ActivityLogSection({ logs, users }) {
                     />{" "}
                     Aksi
                   </th>
-                  <th data-label="Tabel">
+                  <th data-label="Tabel" style={{ textAlign: "center" }}>
                     <Ico
                       n="database"
                       size={10}
@@ -1126,9 +1126,9 @@ function ActivityLogSection({ logs, users }) {
                     />{" "}
                     Tabel
                   </th>
-                  <th data-label="Record ID">Record ID</th>
-                  <th data-label="Perubahan">Perubahan</th>
-                  <th data-label="IP Address">
+                  <th data-label="Record ID" style={{ textAlign: "center" }}>Record ID</th>
+                  <th data-label="Perubahan" style={{ textAlign: "center" }}>Perubahan</th>
+                  <th data-label="IP Address" style={{ textAlign: "center" }}>
                     <Ico
                       n="globe"
                       size={10}
@@ -1168,7 +1168,7 @@ function ActivityLogSection({ logs, users }) {
                       log.old_value !== null || log.new_value !== null;
                     return (
                       <tr key={log.log_id}>
-                        <td data-label="Waktu">
+                        <td data-label="Waktu" style={{ textAlign: "center" }}>
                           <div className="al-timestamp-date">{dateStr}</div>
                           <div className="al-timestamp-time">{timeStr}</div>
                         </td>
@@ -1213,7 +1213,7 @@ function ActivityLogSection({ logs, users }) {
                             </span>
                           )}
                         </td>
-                        <td data-label="Aksi">
+                        <td data-label="Aksi" style={{ textAlign: "center" }}>
                           <span
                             className="al-action-badge"
                             style={{ color: ac.color, background: ac.bg }}
@@ -1221,15 +1221,15 @@ function ActivityLogSection({ logs, users }) {
                             {ac.label}
                           </span>
                         </td>
-                        <td data-label="Tabel">
+                        <td data-label="Tabel" style={{ textAlign: "center" }}>
                           <span className="al-table-name">
                             {log.table_name}
                           </span>
                         </td>
-                        <td data-label="Record ID">
+                        <td data-label="Record ID" style={{ textAlign: "center" }}>
                           <span className="al-record-id">#{log.record_id}</span>
                         </td>
-                        <td data-label="Perubahan">
+                        <td data-label="Perubahan" style={{ textAlign: "center" }}>
                           {hasDiff ? (
                             <button
                               className="al-diff-btn"
@@ -1250,7 +1250,7 @@ function ActivityLogSection({ logs, users }) {
                             </span>
                           )}
                         </td>
-                        <td data-label="IP Address">
+                        <td data-label="IP Address" style={{ textAlign: "center" }}>
                           <span className="al-ip">{log.ip_address || "—"}</span>
                         </td>
                       </tr>

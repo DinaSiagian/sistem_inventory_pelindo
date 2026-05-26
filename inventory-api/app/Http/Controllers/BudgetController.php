@@ -41,27 +41,28 @@ class BudgetController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'nama'         => 'required|string|max:255',
-                'thn_anggaran' => 'required|integer|min:2000|max:2099',
-                'nilai_kad'    => 'required|numeric|min:0',
+                'nama'           => 'required|string|max:255',
+                'thn_anggaran'   => 'required|integer|min:2000|max:2099',
+                'nilai_kad'      => 'nullable|numeric|min:0',
+                'nilai_anggaran' => 'nullable|numeric|min:0',
             ]);
 
             if ($validator->fails()) {
                 return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
             }
 
-            $kd = $request->kode ?? 'OPEX-MISC';
+            $kd = $request->kode ?? $request->kd ?? 'OPEX-MISC';
             $this->ensureBudgetMasterExists($kd, $request->nama, 'OPEX');
+
+            $nilai = $request->nilai_kad ?? $request->nilai_anggaran ?? 0;
 
             $item = BudgetAnnualOpex::create([
                 'kd_anggaran_master'     => $kd,
                 'thn_anggaran'           => $request->thn_anggaran,
                 'nm_anggaran'            => $request->nama,
-                'nilai_anggaran'         => $request->nilai_kad,
-                'nilai_anggaran_tahunan' => $request->nilai_kad,
-                'projects_json'          => $request->projects ?? [],
-                'items_json'             => $request->assets   ?? [],
-                // realisasi_tahunan TIDAK disentuh — milik BudgetInput.jsx
+                'nilai_anggaran'         => $nilai,
+                'nilai_anggaran_tahunan' => $nilai,
+                'realisasi_tahunan'      => $request->realisasi_tahunan ?? [],
             ]);
 
             return response()->json(['success' => true, 'data' => $this->formatOpex($item)], 201);
@@ -73,7 +74,7 @@ class BudgetController extends Controller
 
     /**
      * PUT /api/budget/opex/{id}
-     * Update anggaran + projects + assets sekaligus
+     * Update anggaran sekaligus
      */
     public function updateOpex(Request $request, $id)
     {
@@ -81,16 +82,19 @@ class BudgetController extends Controller
             $item = BudgetAnnualOpex::findOrFail($id);
 
             $updates = [];
-            if ($request->has('nama'))         $updates['nm_anggaran']            = $request->nama;
-            if ($request->has('kode'))         $updates['kd_anggaran_master']     = $request->kode;
-            if ($request->has('thn_anggaran')) $updates['thn_anggaran']           = $request->thn_anggaran;
+            if ($request->has('nama'))              $updates['nm_anggaran']            = $request->nama;
+            if ($request->has('kode'))              $updates['kd_anggaran_master']     = $request->kode;
+            if ($request->has('kd'))                $updates['kd_anggaran_master']     = $request->kd;
+            if ($request->has('thn_anggaran'))      $updates['thn_anggaran']           = $request->thn_anggaran;
             if ($request->has('nilai_kad')) {
                 $updates['nilai_anggaran']         = $request->nilai_kad;
                 $updates['nilai_anggaran_tahunan'] = $request->nilai_kad;
             }
-            if ($request->has('projects')) $updates['projects_json'] = $request->projects;
-            if ($request->has('assets'))   $updates['items_json']    = $request->assets;
-            // realisasi_tahunan TIDAK disentuh — dikelola oleh BudgetInput.jsx
+            if ($request->has('nilai_anggaran')) {
+                $updates['nilai_anggaran']         = $request->nilai_anggaran;
+                $updates['nilai_anggaran_tahunan'] = $request->nilai_anggaran;
+            }
+            if ($request->has('realisasi_tahunan'))  $updates['realisasi_tahunan']      = $request->realisasi_tahunan;
 
             $item->update($updates);
 
@@ -176,7 +180,6 @@ class BudgetController extends Controller
                 'anggaran_tahunan'    => $request->anggaran_tahunan  ?? [],
                 'history_anggaran'    => $request->history_anggaran  ?? [],
                 'pekerjaan'           => $request->projects          ?? [],
-                'assets_json'         => $request->assets            ?? [],
             ]);
 
             return response()->json(['success' => true, 'data' => $this->formatCapex($item)], 201);
@@ -206,7 +209,6 @@ class BudgetController extends Controller
             if ($request->has('anggaran_tahunan'))  $updates['anggaran_tahunan']    = $request->anggaran_tahunan;
             if ($request->has('history_anggaran'))  $updates['history_anggaran']    = $request->history_anggaran;
             if ($request->has('projects'))          $updates['pekerjaan']           = $request->projects;
-            if ($request->has('assets'))            $updates['assets_json']         = $request->assets;
 
             $item->update($updates);
 
@@ -234,6 +236,21 @@ class BudgetController extends Controller
     // ══════════════════════════════════════════════════════
     //  PROJECT ENDPOINTS (budget_projects table)
     // ══════════════════════════════════════════════════════
+
+    /**
+     * GET /api/budget/projects
+     */
+    public function indexProjects()
+    {
+        try {
+            $projects = BudgetProject::orderBy('id_pekerjaan')->get();
+            $data = $projects->map(fn($p) => $this->formatProject($p));
+            return response()->json(['success' => true, 'data' => $data]);
+        } catch (\Exception $e) {
+            \Log::error('Get Projects Error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
 
     /**
      * POST /api/budget/capex/{kd}/projects  — tambah project ke CAPEX
@@ -706,6 +723,7 @@ class BudgetController extends Controller
             'nilai_kad'    => (float) ($item->nilai_anggaran ?? 0),
             'nilai_anggaran' => (float) ($item->nilai_anggaran ?? 0), // Legacy key for Budgetinput.jsx
             'type'         => 'opex',
+            'realisasi_tahunan' => $item->realisasi_tahunan ?? [],
             'projects'     => $projects->map(fn($p) => $this->formatProject($p))->values()->toArray(),
             'assets'       => $assets,
         ];
@@ -750,9 +768,32 @@ class BudgetController extends Controller
 
     private function formatProject(BudgetProject $p): array
     {
+        $year = 2024;
+        $noAnggaran = '';
+        if ($p->jenis_anggaran === 'capex') {
+            $parent = DB::table('budget_annual_capex')->where('kd_anggaran_capex', $p->id_anggaran_tahunan)->first();
+            if ($parent) {
+                $year = $parent->thn_anggaran;
+                $noAnggaran = $parent->kd_anggaran_capex;
+            }
+        } else {
+            $parent = DB::table('budget_annual_opex')->where('id_anggaran_tahunan', $p->id_opex)->first();
+            if ($parent) {
+                $year = $parent->thn_anggaran;
+                $noAnggaran = $parent->kd_anggaran_master;
+            }
+        }
+
         return [
             'id'             => $p->id_pekerjaan,   // integer DB ID
+            'kode'           => (string)$p->id_pekerjaan,
             'nm_pekerjaan'   => $p->nm_pekerjaan   ?? '',
+            'nama'           => $p->nm_pekerjaan   ?? '',
+            'no_anggaran'    => $noAnggaran || $p->no_pr || $p->no_po || $p->no_kontrak || '',
+            'jenis'          => $p->jenis_anggaran === 'capex' ? 'Capex' : 'Opex',
+            'jenis_anggaran' => $p->jenis_anggaran,
+            'tahun'          => (int)$year,
+            'tahun_pengadaan'=> (int)$year,
             'nilai_rab'      => (float) ($p->nilai_rab     ?? 0),
             'nilai_kontrak'  => (float) ($p->nilai_kontrak ?? 0),
             'no_pr'          => $p->no_pr          ?? '',

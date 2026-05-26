@@ -92,6 +92,7 @@ const fmt = (n) =>
     currency: "IDR",
     maximumFractionDigits: 0,
   }).format(n || 0);
+const parseIDRNum = (val) => Number(String(val || 0).replace(/[.,]/g, "").trim()) || 0;
 const fmtDate = (d) =>
   d
     ? new Date(d).toLocaleDateString("id-ID", {
@@ -4215,7 +4216,7 @@ function AnggaranCard({ ang, onSelect, onShowRkap, onDelete }) {
 }
 // ══════ LEVEL 1.5: DETAIL RKAP TAHUNAN ══════
 function RkapDetailPage({ anggaran, onBack }) {
-  const totalRkap = (anggaran.history_anggaran || []).reduce((s, h) => s + (h.nilai_rkap || 0), 0);
+  const totalRkap = (anggaran.history_anggaran || []).reduce((s, h) => s + parseIDRNum(h.nilai_rkap), 0);
   const diff = anggaran.nilai_kad - totalRkap;
 
   return (
@@ -4253,7 +4254,7 @@ function RkapDetailPage({ anggaran, onBack }) {
             </thead>
             <tbody>
               {(anggaran.history_anggaran || []).map((h, i) => {
-                const percent = (h.nilai_rkap / anggaran.nilai_kad) * 100;
+                const percent = (parseIDRNum(h.nilai_rkap) / anggaran.nilai_kad) * 100;
                 return (
                   <tr key={h.id}>
                     <td className="td-no">{i + 1}</td>
@@ -4264,7 +4265,7 @@ function RkapDetailPage({ anggaran, onBack }) {
                       </div>
                     </td>
                     <td style={{ textAlign: 'right', fontWeight: 800, color: 'var(--blue)', fontFamily: 'var(--mono)' }}>
-                      {fmt(h.nilai_rkap)}
+                      {fmt(parseIDRNum(h.nilai_rkap))}
                     </td>
                     <td style={{ textAlign: 'center', fontWeight: 800, color: 'var(--ink2)' }}>
                       {percent.toFixed(1)}%
@@ -4403,7 +4404,7 @@ function PekerjaanListPage({
                   <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                     {(anggaran?.history_anggaran || []).map((h) => (
                       <div key={h.id || h.tahun} style={{ fontSize: "0.72rem", whiteSpace: "nowrap", color: "var(--ink2)" }}>
-                        RKAP {h.tahun}: <span style={{ fontWeight: 800, color: "var(--blue)" }}>{fmt(h.nilai_rkap)}</span>
+                        RKAP {h.tahun}: <span style={{ fontWeight: 800, color: "var(--blue)" }}>{fmt(parseIDRNum(h.nilai_rkap))}</span>
                       </div>
                     ))}
                   </div>

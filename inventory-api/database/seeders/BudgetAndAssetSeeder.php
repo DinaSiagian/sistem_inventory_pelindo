@@ -148,9 +148,9 @@ class BudgetAndAssetSeeder extends Seeder
                 'nilai_anggaran_rkap' => 5500000000.00,
                 'nm_master' => 'Penyiapan Infrastruktur IT PT Pelindo Multi Terminal',
                 'anggaran_tahunan' => json_encode([
-                    ['tahun' => 2024, 'nilai' => 2000000000],
-                    ['tahun' => 2025, 'nilai' => 2000000000],
-                    ['tahun' => 2026, 'nilai' => 1500000000]
+                    ['id' => 'H1', 'thn_rkap_awal' => 2024, 'thn_rkap_akhir' => 2026, 'nilai_kad' => 5500000000, 'thn' => 2024, 'nilai_anggaran' => 2000000000],
+                    ['id' => 'H2', 'thn_rkap_awal' => 2024, 'thn_rkap_akhir' => 2026, 'nilai_kad' => 5500000000, 'thn' => 2025, 'nilai_anggaran' => 2000000000],
+                    ['id' => 'H3', 'thn_rkap_awal' => 2024, 'thn_rkap_akhir' => 2026, 'nilai_kad' => 5500000000, 'thn' => 2026, 'nilai_anggaran' => 1500000000]
                 ]),
                 'history_anggaran' => json_encode([
                     ['id' => 'H1', 'tahun' => 2024, 'nilai_rkap' => 2000000000],
@@ -169,7 +169,7 @@ class BudgetAndAssetSeeder extends Seeder
                 'nilai_anggaran_rkap' => 2500000000.00,
                 'nm_master' => 'Implementasi dan Standarisasi IT Infrastruktur',
                 'anggaran_tahunan' => json_encode([
-                    ['tahun' => 2024, 'nilai' => 2500000000]
+                    ['id' => 'H4', 'thn_rkap_awal' => 2024, 'thn_rkap_akhir' => 2024, 'nilai_kad' => 2500000000, 'thn' => 2024, 'nilai_anggaran' => 2500000000]
                 ]),
                 'history_anggaran' => json_encode([
                     ['id' => 'H4', 'tahun' => 2024, 'nilai_rkap' => 2500000000]
@@ -186,8 +186,8 @@ class BudgetAndAssetSeeder extends Seeder
                 'nilai_anggaran_rkap' => 5000000000.00,
                 'nm_master' => 'Transformasi dan Digitalisasi Alat Berat',
                 'anggaran_tahunan' => json_encode([
-                    ['tahun' => 2025, 'nilai' => 2500000000],
-                    ['tahun' => 2026, 'nilai' => 2500000000]
+                    ['id' => 'H6', 'thn_rkap_awal' => 2025, 'thn_rkap_akhir' => 2026, 'nilai_kad' => 5000000000, 'thn' => 2025, 'nilai_anggaran' => 2500000000],
+                    ['id' => 'H7', 'thn_rkap_awal' => 2025, 'thn_rkap_akhir' => 2026, 'nilai_kad' => 5000000000, 'thn' => 2026, 'nilai_anggaran' => 2500000000]
                 ]),
                 'history_anggaran' => json_encode([
                     ['id' => 'H6', 'tahun' => 2025, 'nilai_rkap' => 2500000000],
@@ -205,9 +205,11 @@ class BudgetAndAssetSeeder extends Seeder
                 'nilai_anggaran_rkap' => 3200000000.00,
                 'nm_master' => 'Penyediaan Network di Branch SPMT',
                 'anggaran_tahunan' => json_encode([
-                    ['tahun' => 2024, 'nilai' => 3200000000]
+                    ['id' => 'H8', 'thn_rkap_awal' => 2024, 'thn_rkap_akhir' => 2024, 'nilai_kad' => 3200000000, 'thn' => 2024, 'nilai_anggaran' => 3200000000]
                 ]),
-                'history_anggaran' => json_encode([])
+                'history_anggaran' => json_encode([
+                    ['id' => 'H8', 'tahun' => 2024, 'nilai_rkap' => 3200000000]
+                ])
             ],
             [
                 'kd_anggaran_capex' => 'CAP-2440020',
@@ -220,10 +222,13 @@ class BudgetAndAssetSeeder extends Seeder
                 'nilai_anggaran_rkap' => 1500000000.00,
                 'nm_master' => 'Revisi Capex (Pemenuhan Kebutuhan Gate dan PNC)',
                 'anggaran_tahunan' => json_encode([
-                    ['tahun' => 2024, 'nilai' => 750000000],
-                    ['tahun' => 2025, 'nilai' => 750000000]
+                    ['id' => 'H9', 'thn_rkap_awal' => 2024, 'thn_rkap_akhir' => 2025, 'nilai_kad' => 1500000000, 'thn' => 2024, 'nilai_anggaran' => 750000000],
+                    ['id' => 'H10', 'thn_rkap_awal' => 2024, 'thn_rkap_akhir' => 2025, 'nilai_kad' => 1500000000, 'thn' => 2025, 'nilai_anggaran' => 750000000]
                 ]),
-                'history_anggaran' => json_encode([])
+                'history_anggaran' => json_encode([
+                    ['id' => 'H9', 'tahun' => 2024, 'nilai_rkap' => 750000000],
+                    ['id' => 'H10', 'tahun' => 2025, 'nilai_rkap' => 750000000]
+                ])
             ],
             [
                 'kd_anggaran_capex' => 'CAP-2540012',
