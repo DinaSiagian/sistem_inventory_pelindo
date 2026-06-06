@@ -22,6 +22,7 @@ import batikImg from "../../pictures/batik.png";
 import { transactionsMock, assetsMock, fmt } from "./Data";
 import { useLoanNotifications } from "./useLoanNotifications";
 import LoanAlertPopup from "./LoanAlertPopup";
+import { authAPI } from "../../services/api";
 
 // ─────────────────────────────────────────
 // Main Layout
@@ -110,11 +111,12 @@ const UserLayout = () => {
   }, [location]);
 
   const handleLogout = () => {
-    if (window.confirm("Apakah Anda yakin ingin keluar?")) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      navigate("/");
-    }
+    // Menghapus window.confirm karena sering diblokir oleh browser
+    authAPI.logout().catch(console.error);
+
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.href = "/login";
   };
 
   const showBadge = badgeLevel === "overdue" || badgeLevel === "warning";

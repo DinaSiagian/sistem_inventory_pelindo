@@ -26,6 +26,7 @@ class BudgetAnnualCapex extends Model
         'history_anggaran',
         'pekerjaan',       // menyimpan daftar pekerjaan CAPEX
         'assets_json',     // [BARU] menyimpan daftar barang/aset CAPEX
+        'branch_code',
     ];
 
     protected $casts = [

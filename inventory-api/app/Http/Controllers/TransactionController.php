@@ -17,8 +17,23 @@ class TransactionController extends Controller
     public function index(Request $request)
     {
         try {
-            // 1. Fetch Borrows
-            $borrowRows = DB::table('asset_transactions AS t')
+            // Get user's branch for filtering
+            $user = null;
+            try { $user = JWTAuth::user(); } catch (\Exception $e) {}
+            $userBranchCode = $user ? $user->branches_code : null;
+
+            // Get all subzona_codes belonging to user's branch
+            $branchSubzonaCodes = [];
+            if ($userBranchCode) {
+                $branchSubzonaCodes = DB::table('subzona')
+                    ->join('zonas', 'subzona.zona_code', '=', 'zonas.zona_code')
+                    ->where('zonas.branch_code', $userBranchCode)
+                    ->pluck('subzona.subzona_code')
+                    ->toArray();
+            }
+
+            // 1. Fetch Borrows — filtered to user's branch
+            $borrowQuery = DB::table('asset_transactions AS t')
                 ->join('barang AS b', 't.serial_number', '=', 'b.serial_number')
                 ->join('assets AS a', 'b.asset_code', '=', 'a.asset_code')
                 ->leftJoin('users AS op', 't.performed_by_id', '=', 'op.id')
@@ -29,8 +44,14 @@ class TransactionController extends Controller
                     $join->on('t.id_pekerjaan', '=', 'bp.id_pekerjaan')
                          ->orOn('b.id_pekerjaan', '=', 'bp.id_pekerjaan')
                          ->orOn('a.id_pekerjaan', '=', 'bp.id_pekerjaan');
-                })
-                ->select([
+                });
+
+            // Apply branch filter if user has a branch
+            if ($userBranchCode && !empty($branchSubzonaCodes)) {
+                $borrowQuery->whereIn('b.subzona_code', $branchSubzonaCodes);
+            }
+
+            $borrowRows = $borrowQuery->select([
                     't.transaction_id',
                     't.bast_number',
                     't.serial_number',
@@ -41,6 +62,7 @@ class TransactionController extends Controller
                     't.condition',
                     't.notes',
                     'b.subzona_code',
+                    'a.asset_code',
                     'a.name AS asset_name',
                     'a.acquisition_value AS price',
                     DB::raw('COALESCE(t.id_pekerjaan, b.id_pekerjaan, a.id_pekerjaan) AS id_pekerjaan'),
@@ -73,6 +95,7 @@ class TransactionController extends Controller
                         'jenis' => $row->pekerjaan_jenis ?? null,
                         'tahun_pengadaan' => $row->procurement_date ? date('Y', strtotime($row->procurement_date)) : null,
                     ],
+                    'asset_code' => $row->asset_code,
                     'code' => $row->serial_number,
                     'name' => $row->asset_name,
                     'price' => (float) $row->price,
@@ -92,8 +115,8 @@ class TransactionController extends Controller
                 ];
             }
 
-            // 2. Fetch Returns
-            $returnRows = DB::table('asset_transactions AS t')
+            // 2. Fetch Returns — filtered to user's branch
+            $returnQuery = DB::table('asset_transactions AS t')
                 ->join('barang AS b', 't.serial_number', '=', 'b.serial_number')
                 ->join('assets AS a', 'b.asset_code', '=', 'a.asset_code')
                 ->leftJoin('users AS op', 't.performed_by_id', '=', 'op.id')
@@ -104,8 +127,13 @@ class TransactionController extends Controller
                     $join->on('t.id_pekerjaan', '=', 'bp.id_pekerjaan')
                          ->orOn('b.id_pekerjaan', '=', 'bp.id_pekerjaan')
                          ->orOn('a.id_pekerjaan', '=', 'bp.id_pekerjaan');
-                })
-                ->select([
+                });
+
+            if ($userBranchCode && !empty($branchSubzonaCodes)) {
+                $returnQuery->whereIn('b.subzona_code', $branchSubzonaCodes);
+            }
+
+            $returnRows = $returnQuery->select([
                     't.transaction_id',
                     't.bast_number',
                     't.serial_number',
@@ -116,6 +144,7 @@ class TransactionController extends Controller
                     't.condition',
                     't.notes',
                     'b.subzona_code',
+                    'a.asset_code',
                     'a.name AS asset_name',
                     'a.acquisition_value AS price',
                     DB::raw('COALESCE(t.id_pekerjaan, b.id_pekerjaan, a.id_pekerjaan) AS id_pekerjaan'),
@@ -149,6 +178,7 @@ class TransactionController extends Controller
                         'jenis' => $row->pekerjaan_jenis ?? null,
                         'tahun_pengadaan' => $row->procurement_date ? date('Y', strtotime($row->procurement_date)) : null,
                     ],
+                    'asset_code' => $row->asset_code,
                     'code' => $row->serial_number,
                     'name' => $row->asset_name,
                     'price' => (float) $row->price,
@@ -252,6 +282,21 @@ class TransactionController extends Controller
                 $bastNumber = "BAST-IT/" . $transactionDate->format('Y/m/') . str_pad($txId, 4, '0', STR_PAD_LEFT);
                 DB::table('asset_transactions')->where('transaction_id', $txId)->update(['bast_number' => $bastNumber]);
 
+                // Update barang's physical location (subzona) to receiver's branch
+                $receiverUser = DB::table('users')->where('id', $receiverId)->first();
+                if ($receiverUser && $receiverUser->branches_code) {
+                    $receiverSubzona = DB::table('subzona')
+                        ->join('zonas', 'subzona.zona_code', '=', 'zonas.zona_code')
+                        ->where('zonas.branch_code', $receiverUser->branches_code)
+                        ->select('subzona.subzona_code')
+                        ->first();
+                    if ($receiverSubzona) {
+                        DB::table('barang')
+                            ->where('serial_number', $sn)
+                            ->update(['subzona_code' => $receiverSubzona->subzona_code]);
+                    }
+                }
+
                 $insertedIds[] = $txId;
             }
 
@@ -337,6 +382,21 @@ class TransactionController extends Controller
 
             $bastNumber = "BAST-IT/" . $returnDate->format('Y/m/') . str_pad($txId, 4, '0', STR_PAD_LEFT);
             DB::table('asset_transactions')->where('transaction_id', $txId)->update(['bast_number' => $bastNumber]);
+
+            // Update barang's physical location (subzona) to receiver's branch (the one getting the asset back)
+            $receiverUser = DB::table('users')->where('id', $receiverId)->first();
+            if ($receiverUser && $receiverUser->branches_code) {
+                $receiverSubzona = DB::table('subzona')
+                    ->join('zonas', 'subzona.zona_code', '=', 'zonas.zona_code')
+                    ->where('zonas.branch_code', $receiverUser->branches_code)
+                    ->select('subzona.subzona_code')
+                    ->first();
+                if ($receiverSubzona) {
+                    DB::table('barang')
+                        ->where('serial_number', $sn)
+                        ->update(['subzona_code' => $receiverSubzona->subzona_code]);
+                }
+            }
 
             DB::commit();
 

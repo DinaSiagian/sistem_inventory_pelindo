@@ -1134,7 +1134,7 @@ const generateBAST = (item, type = "borrow") => {
   if (rawCond === "MISSING") rawCond = "HILANG";
   const kondisi = conditionConfig[rawCond];
   const pekerjaan = item.pekerjaan || getPekerjaan(item.pekerjaan_kode);
-  const html = `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"/><style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Times New Roman',Times,serif;font-size:12pt;color:#000;background:#fff;padding:40px 50px;}.kop{display:flex;align-items:center;gap:20px;border-bottom:3px double #000;padding-bottom:14px;margin-bottom:20px;}.kop-logo{width:70px;height:70px;background:#003675;border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:11pt;text-align:center;padding:8px;flex-shrink:0;}.kop-text h1{font-size:14pt;font-weight:bold;letter-spacing:1px;text-transform:uppercase;}.kop-text p{font-size:10pt;color:#333;}.judul-doc{text-align:center;margin:24px 0 6px;}.judul-doc h2{font-size:14pt;font-weight:bold;text-transform:uppercase;letter-spacing:2px;text-decoration:underline;}.nomor-doc{text-align:center;font-size:11pt;margin-bottom:20px;color:#333;}.intro{margin-bottom:18px;line-height:1.8;text-align:justify;}.section-title{font-weight:bold;font-size:11pt;margin:18px 0 8px;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #999;padding-bottom:4px;}table.detail{width:100%;border-collapse:collapse;margin-bottom:16px;}table.detail td{padding:6px 8px;font-size:11pt;vertical-align:top;}table.detail td:first-child{width:38%;font-weight:500;}table.detail td:nth-child(2){width:4%;text-align:center;}table.asset-table{width:100%;border-collapse:collapse;margin-bottom:20px;}table.asset-table th{background:#003675;color:white;padding:8px 10px;font-size:10.5pt;font-weight:bold;border:1px solid #003675;}table.asset-table td{border:1px solid #ccc;padding:7px 10px;font-size:11pt;}table.asset-table tr:nth-child(even) td{background:#f4f7fb;}.kondisi-badge{display:inline-block;padding:2px 10px;border-radius:4px;font-weight:bold;font-size:10.5pt;background:${kondisi?.bg};color:${kondisi?.color};border:1px solid ${kondisi?.color};}.pernyataan{margin:18px 0;line-height:1.9;text-align:justify;font-size:11pt;}.ttd-section{display:flex;justify-content:space-between;margin-top:40px;gap:20px;}.ttd-box{flex:1;text-align:center;}.ttd-box .ttd-label{font-weight:bold;font-size:11pt;margin-bottom:4px;}.ttd-box .ttd-role{font-size:10pt;color:#555;margin-bottom:70px;}.ttd-box .ttd-nama{font-weight:bold;font-size:11pt;border-top:1.5px solid #000;padding-top:6px;}.ttd-box .ttd-jabatan{font-size:10pt;color:#444;}.footer-note{margin-top:28px;padding:10px 14px;background:#f8fafc;border-left:4px solid #003675;font-size:10pt;color:#555;line-height:1.6;}@media print{body{padding:20px 30px;}.no-print{display:none!important;}}</style></head><body><div class="kop"><div class="kop-logo">PELINDO</div><div class="kop-text"><h1>PT Pelabuhan Indonesia (Persero)</h1><p>Divisi Teknologi Informasi — Asset Management System</p><p>Jl. Medan Merdeka Timur No.16, Jakarta Pusat 10110</p></div></div><div class="judul-doc"><h2>Berita Acara Serah Terima Aset</h2><p style="font-size:11pt;margin-top:4px;font-style:italic;color:#555;">${isBorrow ? "Peminjaman / Pengeluaran Aset IT" : "Pengembalian Aset IT"}</p></div><div class="nomor-doc">Nomor: ${nomorBAST}</div><div class="intro">Pada hari ini, <strong>${tglDokumen}</strong>, yang bertanda tangan di bawah ini telah melaksanakan serah terima aset teknologi informasi milik PT Pelabuhan Indonesia (Persero), dengan rincian sebagai berikut:</div>${pekerjaan ? `<div class="section-title">Referensi Pekerjaan</div><table class="detail"><tr><td>No. Anggaran</td><td>:</td><td><strong>${pekerjaan.no_anggaran}</strong></td></tr><tr><td>Jenis Anggaran</td><td>:</td><td>${pekerjaan.jenis}</td></tr><tr><td>Nama Pekerjaan</td><td>:</td><td>${pekerjaan.nama}</td></tr><tr><td>Tahun Pengadaan</td><td>:</td><td>${pekerjaan.tahun_pengadaan || pekerjaan.tahun || item.tahun_pengadaan || "-"}</td></tr></table>` : ""}<div class="section-title">Pihak yang Terlibat</div><table class="detail"><tr><td>Pihak Pemberi / Penyerah</td><td>:</td><td><strong>${giver.name}</strong> &nbsp;|&nbsp; NIP/ID: ${giver.nip || "-"} / ${giver.id} &nbsp;|&nbsp; ${giver.jabatan} &nbsp;|&nbsp; ${giver.branch}</td></tr><tr><td>Pihak Penerima</td><td>:</td><td><strong>${receiver.name}</strong> &nbsp;|&nbsp; NIP/ID: ${receiver.nip || "-"} / ${receiver.id} &nbsp;|&nbsp; ${receiver.jabatan} &nbsp;|&nbsp; ${receiver.branch}</td></tr><tr><td>Dicatat oleh (Admin IT)</td><td>:</td><td>${getUser(item.performed_by_id).name} &nbsp;|&nbsp; ${getUser(item.performed_by_id).jabatan}</td></tr></table><div class="section-title">Detail Transaksi</div><table class="detail"><tr><td>Tanggal Serah Terima</td><td>:</td><td>${tglDokumen}</td></tr>${isBorrow ? `<tr><td>Jatuh Tempo Pengembalian</td><td>:</td><td>${fmtDate(item.due_date)}</td></tr>` : `<tr><td>Tanggal Pengembalian</td><td>:</td><td>${fmtDate(item.return_date)}</td></tr>`}<tr><td>Lokasi Asal</td><td>:</td><td>${item.from_zone}</td></tr><tr><td>Lokasi Tujuan</td><td>:</td><td>${item.to_zone}</td></tr><tr><td>Tujuan / Keperluan</td><td>:</td><td>${item.reason || "-"}</td></tr>${!isBorrow && item.return_notes ? `<tr><td>Catatan Pengembalian</td><td>:</td><td>${item.return_notes}</td></tr>` : ""}</table><div class="section-title">Data Aset yang Diserahterimakan</div><table class="asset-table"><thead><tr><th>No.</th><th>Kode Aset</th><th>Nama / Deskripsi Aset</th><th>Kondisi</th></tr></thead><tbody><tr><td style="text-align:center">1</td><td style="font-family:monospace;font-weight:bold">${item.code}</td><td>${item.name}</td><td><span class="kondisi-badge">${kondisi?.label || "-"}</span></td></tr></tbody></table><div class="pernyataan">Dengan ditandatanganinya dokumen ini, kedua belah pihak menyatakan telah menerima dan menyerahkan aset tersebut di atas dalam kondisi yang tercantum, dan bertanggung jawab atas pemeliharaan dan keamanan aset selama berada dalam penguasaannya. ${isBorrow ? `Pihak penerima wajib mengembalikan aset paling lambat pada tanggal <strong>${fmtDate(item.due_date)}</strong>.` : `Aset dinyatakan telah dikembalikan kepada pihak pemberi dalam kondisi <strong>${kondisi?.label}</strong>.`}</div><div class="ttd-section"><div class="ttd-box"><div class="ttd-label">Pihak Pemberi / Penyerah</div><div class="ttd-role">(Menyerahkan Aset)</div><div class="ttd-nama">${giver.name}</div><div class="ttd-jabatan">${giver.jabatan} — ${giver.branch}</div></div><div class="ttd-box"><div class="ttd-label">Pihak Penerima</div><div class="ttd-role">(Menerima Aset)</div><div class="ttd-nama">${receiver.name}</div><div class="ttd-jabatan">${receiver.jabatan} — ${receiver.branch}</div></div><div class="ttd-box"><div class="ttd-label">Mengetahui</div><div class="ttd-role">(Admin IT / Sistem)</div><div class="ttd-nama">${getUser(item.performed_by_id).name}</div><div class="ttd-jabatan">${getUser(item.performed_by_id).jabatan}</div></div></div><div class="footer-note"><strong>Catatan:</strong> Dokumen ini digenerate secara otomatis oleh sistem Asset Management PT Pelabuhan Indonesia (Persero). Nomor referensi: <strong>${nomorBAST}</strong>. Harap simpan dokumen ini sebagai bukti serah terima resmi.</div><div class="no-print" style="margin-top:24px;text-align:center;"><button onclick="window.print()" style="padding:10px 28px;background:#003675;color:white;border:none;border-radius:8px;font-size:13pt;cursor:pointer;font-family:inherit;">Cetak / Simpan PDF</button></div></body></html>`;
+  const html = `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"/><style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Times New Roman',Times,serif;font-size:12pt;color:#000;background:#fff;padding:40px 50px;}.kop{display:flex;align-items:center;gap:20px;border-bottom:3px double #000;padding-bottom:14px;margin-bottom:20px;}.kop-logo{width:70px;height:70px;background:#003675;border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:11pt;text-align:center;padding:8px;flex-shrink:0;}.kop-text h1{font-size:14pt;font-weight:bold;letter-spacing:1px;text-transform:uppercase;}.kop-text p{font-size:10pt;color:#333;}.judul-doc{text-align:center;margin:24px 0 6px;}.judul-doc h2{font-size:14pt;font-weight:bold;text-transform:uppercase;letter-spacing:2px;text-decoration:underline;}.nomor-doc{text-align:center;font-size:11pt;margin-bottom:20px;color:#333;}.intro{margin-bottom:18px;line-height:1.8;text-align:justify;}.section-title{font-weight:bold;font-size:11pt;margin:18px 0 8px;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #999;padding-bottom:4px;}table.detail{width:100%;border-collapse:collapse;margin-bottom:16px;}table.detail td{padding:6px 8px;font-size:11pt;vertical-align:top;}table.detail td:first-child{width:38%;font-weight:500;}table.detail td:nth-child(2){width:4%;text-align:center;}table.asset-table{width:100%;border-collapse:collapse;margin-bottom:20px;}table.asset-table th{background:#003675;color:white;padding:8px 10px;font-size:10.5pt;font-weight:bold;border:1px solid #003675;}table.asset-table td{border:1px solid #ccc;padding:7px 10px;font-size:11pt;}table.asset-table tr:nth-child(even) td{background:#f4f7fb;}.kondisi-badge{display:inline-block;padding:2px 10px;border-radius:4px;font-weight:bold;font-size:10.5pt;background:${kondisi?.bg};color:${kondisi?.color};border:1px solid ${kondisi?.color};}.pernyataan{margin:18px 0;line-height:1.9;text-align:justify;font-size:11pt;}.ttd-section{display:flex;justify-content:space-between;margin-top:40px;gap:20px;}.ttd-box{flex:1;text-align:center;}.ttd-box .ttd-label{font-weight:bold;font-size:11pt;margin-bottom:4px;}.ttd-box .ttd-role{font-size:10pt;color:#555;margin-bottom:70px;}.ttd-box .ttd-nama{font-weight:bold;font-size:11pt;border-top:1.5px solid #000;padding-top:6px;}.ttd-box .ttd-jabatan{font-size:10pt;color:#444;}.footer-note{margin-top:28px;padding:10px 14px;background:#f8fafc;border-left:4px solid #003675;font-size:10pt;color:#555;line-height:1.6;}@media print{body{padding:20px 30px;}.no-print{display:none!important;}}</style></head><body><div class="kop"><div class="kop-logo">PELINDO</div><div class="kop-text"><h1>PT Pelabuhan Indonesia (Persero)</h1><p>Divisi Teknologi Informasi — Asset Management System</p><p>Jl. Medan Merdeka Timur No.16, Jakarta Pusat 10110</p></div></div><div class="judul-doc"><h2>Berita Acara Serah Terima Aset</h2><p style="font-size:11pt;margin-top:4px;font-style:italic;color:#555;">${isBorrow ? "Peminjaman / Pengeluaran Aset IT" : "Pengembalian Aset IT"}</p></div><div class="nomor-doc">Nomor: ${nomorBAST}</div><div class="intro">Pada hari ini, <strong>${tglDokumen}</strong>, yang bertanda tangan di bawah ini telah melaksanakan serah terima aset teknologi informasi milik PT Pelabuhan Indonesia (Persero), dengan rincian sebagai berikut:</div>${pekerjaan ? `<div class="section-title">Referensi Pekerjaan</div><table class="detail"><tr><td>No. Anggaran</td><td>:</td><td><strong>${pekerjaan.no_anggaran}</strong></td></tr><tr><td>Jenis Anggaran</td><td>:</td><td>${pekerjaan.jenis}</td></tr><tr><td>Nama Pekerjaan</td><td>:</td><td>${pekerjaan.nama}</td></tr><tr><td>Tahun Pengadaan</td><td>:</td><td>${pekerjaan.tahun_pengadaan || pekerjaan.tahun || item.tahun_pengadaan || "-"}</td></tr></table>` : ""}<div class="section-title">Pihak yang Terlibat</div><table class="detail"><tr><td>Pihak Pemberi / Penyerah</td><td>:</td><td><strong>${giver.name}</strong> &nbsp;|&nbsp; NIP/ID: ${giver.nip || "-"} / ${giver.id} &nbsp;|&nbsp; ${giver.jabatan} &nbsp;|&nbsp; ${giver.branch}</td></tr><tr><td>Pihak Penerima</td><td>:</td><td><strong>${receiver.name}</strong> &nbsp;|&nbsp; NIP/ID: ${receiver.nip || "-"} / ${receiver.id} &nbsp;|&nbsp; ${receiver.jabatan} &nbsp;|&nbsp; ${receiver.branch}</td></tr><tr><td>Dicatat oleh (Admin IT)</td><td>:</td><td>${getUser(item.performed_by_id).name} &nbsp;|&nbsp; ${getUser(item.performed_by_id).jabatan}</td></tr></table><div class="section-title">Detail Transaksi</div><table class="detail"><tr><td>Tanggal Serah Terima</td><td>:</td><td>${tglDokumen}</td></tr>${isBorrow ? `<tr><td>Jatuh Tempo Pengembalian</td><td>:</td><td>${fmtDate(item.due_date)}</td></tr>` : `<tr><td>Tanggal Pengembalian</td><td>:</td><td>${fmtDate(item.return_date)}</td></tr>`}<tr><td>Lokasi Asal</td><td>:</td><td>${item.from_zone}</td></tr><tr><td>Lokasi Tujuan</td><td>:</td><td>${item.to_zone}</td></tr><tr><td>Tujuan / Keperluan</td><td>:</td><td>${item.reason || "-"}</td></tr>${!isBorrow && item.return_notes ? `<tr><td>Catatan Pengembalian</td><td>:</td><td>${item.return_notes}</td></tr>` : ""}</table><div class="section-title">Data Aset yang Diserahterimakan</div><table class="asset-table"><thead><tr><th>No.</th><th>ID Barang</th><th>Nama / Deskripsi Aset</th><th>Kondisi</th></tr></thead><tbody><tr><td style="text-align:center">1</td><td style="font-family:monospace;font-weight:bold">${item.asset_code || item.code}</td><td>${item.name}</td><td><span class="kondisi-badge">${kondisi?.label || "-"}</span></td></tr></tbody></table><div class="pernyataan">Dengan ditandatanganinya dokumen ini, kedua belah pihak menyatakan telah menerima dan menyerahkan aset tersebut di atas dalam kondisi yang tercantum, dan bertanggung jawab atas pemeliharaan dan keamanan aset selama berada dalam penguasaannya. ${isBorrow ? `Pihak penerima wajib mengembalikan aset paling lambat pada tanggal <strong>${fmtDate(item.due_date)}</strong>.` : `Aset dinyatakan telah dikembalikan kepada pihak pemberi dalam kondisi <strong>${kondisi?.label}</strong>.`}</div><div class="ttd-section"><div class="ttd-box"><div class="ttd-label">Pihak Pemberi / Penyerah</div><div class="ttd-role">(Menyerahkan Aset)</div><div class="ttd-nama">${giver.name}</div><div class="ttd-jabatan">${giver.jabatan} — ${giver.branch}</div></div><div class="ttd-box"><div class="ttd-label">Pihak Penerima</div><div class="ttd-role">(Menerima Aset)</div><div class="ttd-nama">${receiver.name}</div><div class="ttd-jabatan">${receiver.jabatan} — ${receiver.branch}</div></div><div class="ttd-box"><div class="ttd-label">Mengetahui</div><div class="ttd-role">(Admin IT / Sistem)</div><div class="ttd-nama">${getUser(item.performed_by_id).name}</div><div class="ttd-jabatan">${getUser(item.performed_by_id).jabatan}</div></div></div><div class="footer-note"><strong>Catatan:</strong> Dokumen ini digenerate secara otomatis oleh sistem Asset Management PT Pelabuhan Indonesia (Persero). Nomor referensi: <strong>${nomorBAST}</strong>. Harap simpan dokumen ini sebagai bukti serah terima resmi.</div><div class="no-print" style="margin-top:24px;text-align:center;"><button onclick="window.print()" style="padding:10px 28px;background:#003675;color:white;border:none;border-radius:8px;font-size:13pt;cursor:pointer;font-family:inherit;">Cetak / Simpan PDF</button></div></body></html>`;
   const blob = new Blob([html], { type: "text/html" });
   const url = URL.createObjectURL(blob);
   const win = window.open(url, "_blank");
@@ -2958,7 +2958,7 @@ function BorrowDetailPage({ data, onBack, onEdit, onReturn }) {
             <thead style={S.thead}>
               <tr>
                 <th style={{ ...S.th, width: 40, textAlign: "center" }}>No</th>
-                <th style={{ ...S.th, width: 150 }}>SN / Kode</th>
+                <th style={{ ...S.th, width: 150 }}>ID Barang</th>
                 <th style={S.th}>Nama Barang</th>
                 <th style={{ ...S.th, width: 120, textAlign: "center" }}>
                   Kondisi
@@ -2986,7 +2986,7 @@ function BorrowDetailPage({ data, onBack, onEdit, onReturn }) {
                     </td>
                     <td style={S.td}>
                       <code style={{ ...S.code, fontSize: ".7rem" }}>
-                        {it.code}
+                        {it.asset_code || it.code}
                       </code>
                     </td>
                     <td style={S.td}>
@@ -3817,20 +3817,25 @@ function BorrowFormPage({ borrow, borrows, returns, assets, onBack, onSave, setN
   const assetResults = useMemo(() => {
     if (!pihak1.id) return [];
 
+    const p1User = mockUsers.find(u => u.id === Number(pihak1.id));
+    const p2User = mockUsers.find(u => u.id === Number(pihak2.id));
+    
+    const isP1Admin = p1User && (p1User.jabatan === 'admin' || p1User.jabatan === 'superadmin');
+    const isP2Admin = p2User && (p2User.jabatan === 'admin' || p2User.jabatan === 'superadmin');
+
     // [1] Barang yang sedang dipegang / dipinjam oleh pemberi (pihak1)
-    // Jika pemberi adalah admin (1), pastikan barangnya dalam kondisi baik.
     const giverAssets = assets.filter((a) => {
-      if (Number(pihak1.id) === 1) {
-        return a.owner_id === 1 && a.status_id === 1 && (a.kondisi || "").toUpperCase() === "BAIK";
+      if (isP1Admin) {
+        return (a.owner_id === `GUDANG_${p1User?.branch}` && a.status_id === 1 && (a.kondisi || "").toUpperCase() === "BAIK") || a.owner_id === Number(pihak1.id);
       }
       return a.owner_id === Number(pihak1.id);
     });
 
     // [2] Semua barang IT/admin yang belum dipinjam siapapun
-    //     Hanya tambahkan jika kondisinya BAIK.
+    //     Hanya tambahkan jika kondisinya BAIK dan Penerima BUKAN admin.
     const adminFreeAssets =
-      Number(pihak1.id) !== 1
-        ? assets.filter((a) => a.owner_id === 1 && a.status_id === 1 && (a.kondisi || "").toUpperCase() === "BAIK")
+      !isP1Admin && !isP2Admin
+        ? assets.filter((a) => a.owner_id === `GUDANG_${p1User?.branch}` && a.status_id === 1 && (a.kondisi || "").toUpperCase() === "BAIK")
         : [];
 
     // Gabungkan dan hilangkan duplikat berdasarkan serial number (code)
@@ -3920,7 +3925,9 @@ function BorrowFormPage({ borrow, borrows, returns, assets, onBack, onSave, setN
       const borrowItems = [];
 
       baDraft.forEach((d) => {
-        const isReturn = Number(pihak2.id) === 1 || Number(pihak2.id) === d.item.previous_giver_id;
+        const p2User = mockUsers.find(u => u.id === Number(pihak2.id));
+        const isP2Admin = p2User && (p2User.jabatan === 'admin' || p2User.jabatan === 'superadmin');
+        const isReturn = isP2Admin || Number(pihak2.id) === d.item.previous_giver_id;
 
         if (isReturn) {
           returnPromises.push(
@@ -4355,7 +4362,7 @@ function BorrowFormPage({ borrow, borrows, returns, assets, onBack, onSave, setN
                   <thead style={S.thead}>
                     <tr>
                       <th style={{ ...S.th, width: 40 }}>No</th>
-                      <th style={S.th}>SN</th>
+                      <th style={S.th}>ID Barang</th>
                       <th style={S.th}>Nama Barang</th>
                       <th style={{ ...S.th, width: 60 }}>CP/OP</th>
                       <th style={S.th}>Nama Pekerjaan</th>
@@ -4378,7 +4385,18 @@ function BorrowFormPage({ borrow, borrows, returns, assets, onBack, onSave, setN
                         >
                           {assetSearchQuery
                             ? "Tidak ada barang yang cocok dengan pencarian."
-                            : "User ini tidak memiliki barang untuk diserahterimakan."}
+                            : (() => {
+                                const p1 = mockUsers.find((u) => String(u.id) === String(pihak1.id));
+                                const p1IsAdmin = p1 && (p1.jabatan === 'admin' || p1.jabatan === 'superadmin');
+                                const loggedInUserStr = localStorage.getItem("user");
+                                const loggedInUser = loggedInUserStr ? JSON.parse(loggedInUserStr) : null;
+                                const loggedBranch = loggedInUser?.branch_code || loggedInUser?.branches_code || "Jakarta";
+                                
+                                if (p1IsAdmin && p1.branch !== loggedBranch && p1.branch) {
+                                  return `Sistem Isolasi Data Aktif: Anda tidak memiliki hak akses untuk melihat atau menarik barang dari Gudang ${p1.branch}.`;
+                                }
+                                return "User ini tidak memiliki barang untuk diserahterimakan.";
+                              })()}
                         </td>
                       </tr>
                     ) : (
@@ -4406,7 +4424,7 @@ function BorrowFormPage({ borrow, borrows, returns, assets, onBack, onSave, setN
                               {idx + 1}
                             </td>
                             <td style={S.td}>
-                              <code style={S.code}>{item.code}</code>
+                              <code style={S.code}>{item.asset_code || item.code}</code>
                             </td>
                             <td
                               style={{
@@ -4575,7 +4593,7 @@ function BorrowFormPage({ borrow, borrows, returns, assets, onBack, onSave, setN
                     <th style={{ ...S.th, width: 30 }}>No</th>
                     <th style={{ ...S.th, width: 110 }}>No.BAST</th>
                     <th style={{ ...S.th, width: 80 }}>Tgl BAST</th>
-                    <th style={S.th}>Barang / SN</th>
+                    <th style={S.th}>Barang / ID Barang</th>
                     <th style={S.th}>Pemberi / Penerima</th>
                     <th style={{ ...S.th, width: 110 }}>Kondisi</th>
                     <th style={S.th}>Keterangan (Notes)</th>
@@ -4635,7 +4653,7 @@ function BorrowFormPage({ borrow, borrows, returns, assets, onBack, onSave, setN
                             {d.item.name}
                           </div>
                           <code style={{ fontSize: ".6rem", color: "#64748b" }}>
-                            {d.item.code}
+                            {d.item.asset_code || d.item.code}
                           </code>
                         </td>
                         <td style={S.td}>
@@ -5816,13 +5834,15 @@ export default function Peminjaman() {
                 (b) => b.code === u.serialNumber && !b.is_returned,
               );
               flattened.push({
-                code: u.serialNumber, name: item.name || "-",
+                code: u.serialNumber, 
+                asset_code: item.id,
+                name: item.name || "-",
                 zone: u.location || "Gudang",
                 pekerjaan_kode: u.id_pekerjaan || item.id_pekerjaan || "-",
                 tahun_pengadaan: item.tahun_pengadaan || "-",
                 kondisi: u.condition || "BAIK",
                 status_id: activeBorrow ? 2 : 1,
-                owner_id: activeBorrow ? activeBorrow.receiver_id : 1,
+                owner_id: activeBorrow ? activeBorrow.receiver_id : `GUDANG_${item.branch}`,
                 previous_giver_id: activeBorrow ? activeBorrow.giver_id : null,
               });
             });

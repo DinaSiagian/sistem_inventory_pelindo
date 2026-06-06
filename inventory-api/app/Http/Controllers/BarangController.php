@@ -5,15 +5,42 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-
+use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Facades\Schema;
 class BarangController extends Controller
 {
     public function index()
     {
         try {
-            $assets = DB::table('assets')->get();
-            $barang = DB::table('barang')->get();
-            $specs = DB::table('asset_specifications')->get();
+            // Filter by user's branch (branch-scoped data isolation)
+            $user = null;
+            try { $user = JWTAuth::user(); } catch (\Exception $e) {}
+            $userBranchCode = $user ? $user->branches_code : null;
+
+            // Get all subzona codes that belong to user's branch
+            $branchSubzonaCodes = [];
+            if ($userBranchCode) {
+                $branchSubzonaCodes = DB::table('subzona')
+                    ->join('zonas', 'subzona.zona_code', '=', 'zonas.zona_code')
+                    ->where('zonas.branch_code', $userBranchCode)
+                    ->pluck('subzona.subzona_code')
+                    ->toArray();
+            }
+
+            // Only fetch barang units located in user's branch
+            $barang = ($userBranchCode && !empty($branchSubzonaCodes))
+                ? DB::table('barang')->whereIn('subzona_code', $branchSubzonaCodes)->get()
+                : DB::table('barang')->get();
+
+            // Only fetch assets that have at least one unit in user's branch
+            $branchAssetCodes = $barang->pluck('asset_code')->unique()->values()->toArray();
+            $assets = !empty($branchAssetCodes)
+                ? DB::table('assets')->whereIn('asset_code', $branchAssetCodes)->get()
+                : collect([]);
+
+            $specs = !empty($branchAssetCodes)
+                ? DB::table('asset_specifications')->whereIn('asset_code', $branchAssetCodes)->get()
+                : collect([]);
             
             // Fetch hierarchical location details
             $locations = DB::table('subzona')
@@ -37,11 +64,37 @@ class BarangController extends Controller
                 $firstUnit = $itemUnits->first();
                 $loc = $firstUnit ? $locations->where('subzona_code', $firstUnit->subzona_code)->first() : null;
 
+                $unitsArray = $itemUnits->map(function ($u) use ($locations) {
+                    // Fetch active BAST transaction condition/status
+                    $tx = DB::table('asset_transactions')
+                        ->where('serial_number', $u->serial_number)
+                        ->where('is_current', true)
+                        ->first();
+
+                    $locMatch = $locations->where('subzona_code', $u->subzona_code)->first();
+                    $fullLocationStr = $locMatch 
+                        ? $locMatch->branch_name . ' / ' . $locMatch->zona_name . ' / ' . $locMatch->subzona_name 
+                        : $u->subzona_code;
+
+                    return [
+                        'serialNumber' => $u->serial_number,
+                        'location' => $fullLocationStr,
+                        'id_pekerjaan' => $u->id_pekerjaan,
+                        'status' => ($tx && strtoupper($tx->transaction_type) === 'BORROW') ? 'Dipinjam' : 'Tersedia',
+                        'condition' => $tx ? $tx->condition : 'Baik'
+                    ];
+                })->toArray();
+
+                $status = (count($unitsArray) > 0 && count(array_filter($unitsArray, fn($u) => $u['status'] === 'Tersedia')) === 0) ? 'Dipinjam' : 'Tersedia';
+                $condition = count($unitsArray) > 0 ? $unitsArray[0]['condition'] : 'Baik';
+
                 return [
                     'id' => $item->asset_code,
                     'name' => $item->name,
+                    'merek' => $item->merek ?? '',
+                    'tipe' => $item->tipe ?? '',
                     'category' => $item->device_code,
-                    'tipeAset' => $item->name, // Map name to tipeAset for React frontend compatibility
+                    'tipeAset' => $item->tipe ?? $item->name, // Map tipe to tipeAset if available
                     'entitas' => $loc ? $loc->entity_code : null,
                     'branch' => $loc ? $loc->branch_code : null,
                     'zona' => $loc ? $loc->zona_code : null,
@@ -51,26 +104,9 @@ class BarangController extends Controller
                     'tahun_pengadaan' => $item->procurement_date ? date('Y', strtotime($item->procurement_date)) : null,
                     'id_pekerjaan' => $item->id_pekerjaan,
                     'quantity' => $itemUnits->count(),
-                    'units' => $itemUnits->map(function ($u) use ($locations) {
-                        // Fetch active BAST transaction condition/status
-                        $tx = DB::table('asset_transactions')
-                            ->where('serial_number', $u->serial_number)
-                            ->where('is_current', true)
-                            ->first();
-
-                        $locMatch = $locations->where('subzona_code', $u->subzona_code)->first();
-                        $fullLocationStr = $locMatch 
-                            ? $locMatch->branch_name . ' / ' . $locMatch->zona_name . ' / ' . $locMatch->subzona_name 
-                            : $u->subzona_code;
-
-                        return [
-                            'serialNumber' => $u->serial_number,
-                            'location' => $fullLocationStr,
-                            'id_pekerjaan' => $u->id_pekerjaan,
-                            'status' => ($tx && strtoupper($tx->transaction_type) === 'BORROW') ? 'Dipinjam' : 'Tersedia',
-                            'condition' => $tx ? $tx->condition : 'Baik'
-                        ];
-                    })->toArray(),
+                    'units' => $unitsArray,
+                    'status' => $status,
+                    'condition' => $condition,
                     'photo' => $item->photo,
                     'specs' => $itemSpecs->filter(fn($s) => $s->template_id !== null)->map(function($s) {
                         return [
@@ -147,10 +183,37 @@ class BarangController extends Controller
                 ]);
             }
 
+            // Resolve a globally unique asset_code (server-side)
+            // Frontend may generate a code based on filtered (branch-scoped) data,
+            // which could conflict with codes from other branches.
+            $proposedId = $data['id'] ?? null;
+            if (empty($proposedId)) {
+                $prefix = strtoupper($deviceCode) . '-';
+                $maxNum = DB::table('assets')
+                    ->where('asset_code', 'like', $prefix . '%')
+                    ->get()
+                    ->reduce(function ($carry, $a) use ($prefix) {
+                        $num = intval(substr($a->asset_code, strlen($prefix)));
+                        return max($carry, $num);
+                    }, 0);
+                $proposedId = $prefix . str_pad($maxNum + 1, 4, '0', STR_PAD_LEFT);
+            }
+
+            // If the proposed ID already exists, append suffix until unique
+            $finalId = $proposedId;
+            $suffix = 2;
+            while (DB::table('assets')->where('asset_code', $finalId)->exists()) {
+                $finalId = $proposedId . '-' . $suffix;
+                $suffix++;
+            }
+            $data['id'] = $finalId;
+
             // Insert to assets master
             DB::table('assets')->insert([
-                'asset_code' => $data['id'],
+                'asset_code' => $finalId,
                 'name' => $data['name'] ?? '-',
+                'merek' => $data['merek'] ?? null,
+                'tipe' => $data['tipe'] ?? null,
                 'device_code' => $deviceCode,
                 'id_pekerjaan' => $data['id_pekerjaan'] ?? null,
                 'acquisition_value' => $data['value'] ?? 0,
@@ -171,24 +234,79 @@ class BarangController extends Controller
                 ]);
             }
 
+            // Parse custom ID if it follows Entitas-Branch-Zona-Subzona-Kategori-Nomor
+            $entitas = null;
+            $branch = null;
+            $zona = null;
+            $subzona = null;
+            $idParts = explode('-', $data['id']);
+            if (count($idParts) >= 6) {
+                $entitas = $idParts[0];
+                $branch = $idParts[1];
+                $zona = $idParts[2];
+                $subzona = $idParts[3];
+            }
+
             // Insert physical unit instances
             if (isset($data['units']) && is_array($data['units'])) {
+                // Get user's default subzona as last-resort fallback
+                $userDefaultSubzona = null;
+                try {
+                    $jwtUser = JWTAuth::user();
+                    if ($jwtUser && $jwtUser->branches_code) {
+                        $userDefaultSubzona = DB::table('subzona')
+                            ->join('zonas', 'subzona.zona_code', '=', 'zonas.zona_code')
+                            ->where('zonas.branch_code', $jwtUser->branches_code)
+                            ->value('subzona.subzona_code');
+                    }
+                } catch (\Exception $e) {}
+
                 foreach ($data['units'] as $idx => $unit) {
-                    $unitLocation = $unit['location'] ?? $data['subzona'] ?? null;
+                    // Use !empty() instead of ?? to also handle empty strings from frontend
+                    $unitLocation = !empty($unit['location'])
+                        ? $unit['location']
+                        : (!empty($data['subzona']) ? $data['subzona'] : null);
+
                     $subzonaCode = $this->resolveSubzonaCode($unitLocation);
+
+                    // Final fallback: use user's branch first subzona so it's always visible
+                    if (empty($subzonaCode)) {
+                        $subzonaCode = $subzona ?? $userDefaultSubzona;
+                    }
 
                     $sn = !empty($unit['serialNumber']) ? trim($unit['serialNumber']) : null;
                     if (empty($sn)) {
                         $sn = $data['id'] . '-SN-' . str_pad($idx + 1, 3, '0', STR_PAD_LEFT);
                     }
 
-                    DB::table('barang')->insert([
+                    // Ensure serial_number is globally unique (handle duplicate from failed retries)
+                    $finalSn = $sn;
+                    $snSuffix = 2;
+                    while (DB::table('barang')->where('serial_number', $finalSn)->exists()) {
+                        $finalSn = $sn . '-' . $snSuffix;
+                        $snSuffix++;
+                    }
+
+                    $insertData = [
                         'asset_code' => $data['id'],
-                        'serial_number' => $sn,
+                        'serial_number' => $finalSn,
                         'subzona_code' => $subzonaCode,
                         'id_pekerjaan' => $unit['id_pekerjaan'] ?? $data['id_pekerjaan'] ?? null,
                         'created_at' => \Carbon\Carbon::now(),
-                    ]);
+                    ];
+
+                    // If DB schema was updated, safely insert these columns
+                    if (Schema::hasColumn('barang', 'entitas')) {
+                        $insertData['entitas'] = $entitas;
+                    }
+                    if (Schema::hasColumn('barang', 'branch')) {
+                        $insertData['branch'] = $branch;
+                    }
+                    if (Schema::hasColumn('barang', 'zona')) {
+                        $insertData['zona'] = $zona;
+                    }
+
+                    DB::table('barang')->insert($insertData);
                 }
             }
 
@@ -284,6 +402,8 @@ class BarangController extends Controller
             // 1. Update main assets master table
             $assetData = [
                 'name' => $data['name'] ?? '-',
+                'merek' => $data['merek'] ?? null,
+                'tipe' => $data['tipe'] ?? null,
                 'device_code' => $deviceCode,
                 'id_pekerjaan' => $data['id_pekerjaan'] ?? null,
                 'acquisition_value' => $data['value'] ?? 0,

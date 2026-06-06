@@ -25,7 +25,15 @@ class BudgetController extends Controller
     public function indexOpex()
     {
         try {
-            $items = BudgetAnnualOpex::orderBy('id_anggaran_tahunan')->get();
+            $user = null;
+            try { $user = \Tymon\JWTAuth\Facades\JWTAuth::user(); } catch (\Exception $e) {}
+            $userBranchCode = $user ? $user->branches_code : null;
+
+            $query = BudgetAnnualOpex::orderBy('id_anggaran_tahunan');
+            if ($userBranchCode) {
+                $query->where('branch_code', $userBranchCode);
+            }
+            $items = $query->get();
             $data  = $items->map(fn($item) => $this->formatOpex($item));
             return response()->json(['success' => true, 'data' => $data]);
         } catch (Exception $e) {
@@ -56,6 +64,10 @@ class BudgetController extends Controller
 
             $nilai = $request->nilai_kad ?? $request->nilai_anggaran ?? 0;
 
+            $user = null;
+            try { $user = \Tymon\JWTAuth\Facades\JWTAuth::user(); } catch (\Exception $e) {}
+            $userBranchCode = $user ? $user->branches_code : null;
+
             $item = BudgetAnnualOpex::create([
                 'kd_anggaran_master'     => $kd,
                 'thn_anggaran'           => $request->thn_anggaran,
@@ -63,6 +75,7 @@ class BudgetController extends Controller
                 'nilai_anggaran'         => $nilai,
                 'nilai_anggaran_tahunan' => $nilai,
                 'realisasi_tahunan'      => $request->realisasi_tahunan ?? [],
+                'branch_code'            => $userBranchCode,
             ]);
 
             return response()->json(['success' => true, 'data' => $this->formatOpex($item)], 201);
@@ -129,7 +142,15 @@ class BudgetController extends Controller
     public function indexCapex()
     {
         try {
-            $items = BudgetAnnualCapex::orderBy('kd_anggaran_capex')->get();
+            $user = null;
+            try { $user = \Tymon\JWTAuth\Facades\JWTAuth::user(); } catch (\Exception $e) {}
+            $userBranchCode = $user ? $user->branches_code : null;
+
+            $query = BudgetAnnualCapex::orderBy('kd_anggaran_capex');
+            if ($userBranchCode) {
+                $query->where('branch_code', $userBranchCode);
+            }
+            $items = $query->get();
             $data  = $items->map(fn($item) => $this->formatCapex($item));
             return response()->json(['success' => true, 'data' => $data]);
         } catch (Exception $e) {
@@ -167,6 +188,10 @@ class BudgetController extends Controller
             $kdMaster = '5900100000';
             $this->ensureBudgetMasterExists($kdMaster, 'Beban Investasi', 'CAPEX');
 
+            $user = null;
+            try { $user = \Tymon\JWTAuth\Facades\JWTAuth::user(); } catch (\Exception $e) {}
+            $userBranchCode = $user ? $user->branches_code : null;
+
             $item = BudgetAnnualCapex::create([
                 'kd_anggaran_capex'   => $kdCapex,
                 'kd_anggaran_master'  => $kdMaster,
@@ -180,6 +205,7 @@ class BudgetController extends Controller
                 'anggaran_tahunan'    => $request->anggaran_tahunan  ?? [],
                 'history_anggaran'    => $request->history_anggaran  ?? [],
                 'pekerjaan'           => $request->projects          ?? [],
+                'branch_code'         => $userBranchCode,
             ]);
 
             return response()->json(['success' => true, 'data' => $this->formatCapex($item)], 201);
@@ -243,7 +269,15 @@ class BudgetController extends Controller
     public function indexProjects()
     {
         try {
-            $projects = BudgetProject::orderBy('id_pekerjaan')->get();
+            $user = null;
+            try { $user = \Tymon\JWTAuth\Facades\JWTAuth::user(); } catch (\Exception $e) {}
+            $userBranchCode = $user ? $user->branches_code : null;
+
+            $query = BudgetProject::orderBy('id_pekerjaan');
+            if ($userBranchCode) {
+                $query->where('branch_code', $userBranchCode);
+            }
+            $projects = $query->get();
             $data = $projects->map(fn($p) => $this->formatProject($p));
             return response()->json(['success' => true, 'data' => $data]);
         } catch (\Exception $e) {
@@ -259,6 +293,10 @@ class BudgetController extends Controller
     public function storeProject(Request $request, $parentId, $type = 'capex')
     {
         try {
+            $user = null;
+            try { $user = \Tymon\JWTAuth\Facades\JWTAuth::user(); } catch (\Exception $e) {}
+            $userBranchCode = $user ? $user->branches_code : null;
+
             $data = [
                 'jenis_anggaran' => $type,
                 'nm_pekerjaan'   => $request->nm_pekerjaan ?? '',
@@ -273,6 +311,7 @@ class BudgetController extends Controller
                 'tgl_sp3'        => $request->tgl_sp3        ?: null,
                 'tgl_bamk'       => $request->tgl_bamk       ?: null,
                 'keterangan'     => $request->keterangan     ?? '',
+                'branch_code'    => $userBranchCode,
             ];
 
             if ($type === 'capex') {

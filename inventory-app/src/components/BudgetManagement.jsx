@@ -2277,7 +2277,7 @@ function RealisasiTablePage({
               <th>Nama / Keterangan</th>
               <th>Tipe Barang</th>
               <th>Kode Barang</th>
-              <th>Serial Number</th>
+              <th>ID Barang</th>
               <th>Lokasi</th>
               <th>Tanggal</th>
               <th style={{ textAlign: "right" }}>Nilai (IDR)</th>
@@ -2580,7 +2580,7 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
                       <div key={idx} style={{ background: "white", padding: "16px", borderRadius: 12, border: "1px solid #e2e8f0", boxShadow: "0 2px 4px rgba(0,0,0,0.04)" }}>
                         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: "16px", alignItems: "center" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                            <label style={{ fontSize: "0.65rem", color: "#64748b", fontWeight: 700, textTransform: "uppercase", width: "130px", flexShrink: 0 }}>Serial Number {idx + 1}</label>
+                            <label style={{ fontSize: "0.65rem", color: "#64748b", fontWeight: 700, textTransform: "uppercase", width: "130px", flexShrink: 0 }}>ID Barang {idx + 1}</label>
                             <div style={{ flex: 1 }}>
                               <SmartSNInput
                                 value={item.serial_number}
@@ -3198,7 +3198,7 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast, allAngga
     if (dbAsset && dbAsset.units && dbAsset.units.length > 0) {
       for (let i = 0; i < form.items.length; i++) {
         if (!form.items[i].serial_number) {
-          showToast(`Pilih Serial Number untuk Unit ${i + 1}`);
+          showToast(`Pilih ID Barang untuk Unit ${i + 1}`);
           return;
         }
       }
@@ -3206,7 +3206,7 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast, allAngga
 
     for (const it of form.items) {
       if (it.serial_number && isSNAllocated(it.serial_number)) {
-        showToast(`Serial number '${it.serial_number}' sudah dialokasikan ke pekerjaan lain!`);
+        showToast(`ID Barang '${it.serial_number}' sudah dialokasikan ke pekerjaan lain!`);
         return;
       }
     }
@@ -3370,7 +3370,7 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast, allAngga
                       <div key={idx} style={{ background: "white", padding: "16px", borderRadius: 12, border: "1px solid #e2e8f0", boxShadow: "0 2px 4px rgba(0,0,0,0.04)" }}>
                         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: "16px", alignItems: "center" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                            <label style={{ fontSize: "0.65rem", color: "#64748b", fontWeight: 700, textTransform: "uppercase", width: "130px", flexShrink: 0 }}>Serial Number {idx + 1}</label>
+                            <label style={{ fontSize: "0.65rem", color: "#64748b", fontWeight: 700, textTransform: "uppercase", width: "130px", flexShrink: 0 }}>ID Barang {idx + 1}</label>
                             <div style={{ flex: 1 }}>
                               <SmartSNInput
                                 value={item.serial_number}
@@ -3594,7 +3594,7 @@ function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) 
     if (dbAsset && dbAsset.units && dbAsset.units.length > 0) {
       for (let i = 0; i < form.items.length; i++) {
         if (!form.items[i].serial_number) {
-          showToast(`Pilih Serial Number untuk Unit ${i + 1}`);
+          showToast(`Pilih ID Barang untuk Unit ${i + 1}`);
           return;
         }
       }
@@ -3602,7 +3602,7 @@ function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) 
 
     for (const it of form.items) {
       if (it.serial_number && isSNAllocatedToOther(it.serial_number, project.id)) {
-        showToast(`Serial number '${it.serial_number}' sudah dialokasikan ke pekerjaan lain!`);
+        showToast(`ID Barang '${it.serial_number}' sudah dialokasikan ke pekerjaan lain!`);
         return;
       }
     }
@@ -3711,7 +3711,7 @@ function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) 
                       <div key={idx} style={{ background: "white", padding: "16px", borderRadius: 12, border: "1px solid #e2e8f0", boxShadow: "0 2px 4px rgba(0,0,0,0.04)" }}>
                         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: "16px", alignItems: "center" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                            <label style={{ fontSize: "0.65rem", color: "#64748b", fontWeight: 700, textTransform: "uppercase", width: "130px", flexShrink: 0 }}>Serial Number {idx + 1}</label>
+                            <label style={{ fontSize: "0.65rem", color: "#64748b", fontWeight: 700, textTransform: "uppercase", width: "130px", flexShrink: 0 }}>ID Barang {idx + 1}</label>
                             <div style={{ flex: 1 }}>
                               <SmartSNInput
                                 value={item.serial_number}
@@ -5637,7 +5637,7 @@ export default function BudgetManagement({ forcedType }) {
     </>
   );
 }
-function SmartSNInput({ value, onChange, options, placeholder = 'Pilih/Ketik SN' }) {
+function SmartSNInput({ value, onChange, options, placeholder = 'Pilih/Ketik ID Barang' }) {
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef(null);
 

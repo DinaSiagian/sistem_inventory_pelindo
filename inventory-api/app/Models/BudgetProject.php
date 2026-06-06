@@ -27,6 +27,7 @@ class BudgetProject extends Model
         'tgl_sp3',
         'tgl_bamk',
         'keterangan',
+        'branch_code',
     ];
 
     protected $casts = [

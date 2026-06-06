@@ -16,6 +16,7 @@ import "./Layout.css";
 
 import logoPelindo from "../pictures/pelindo2.png";
 import batikImg from "../pictures/batik.png";
+import { authAPI } from "../services/api";
 
 const Layout = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -102,11 +103,12 @@ const Layout = () => {
   }, [navigate]);
 
   const handleLogout = () => {
-    if (window.confirm("Apakah Anda yakin ingin keluar?")) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      navigate("/");
-    }
+    // Menghapus window.confirm karena sering diblokir oleh browser (Prevent dialogs)
+    authAPI.logout().catch(console.error);
+
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.href = "/login";
   };
 
   const handleMenuClick = (path) => {

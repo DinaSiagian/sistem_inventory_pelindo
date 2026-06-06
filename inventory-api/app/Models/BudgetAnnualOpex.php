@@ -20,6 +20,7 @@ class BudgetAnnualOpex extends Model
         'realisasi_tahunan',  // BudgetInput.jsx: tracking realisasi per tahun (JANGAN DIUBAH)
         'projects_json',      // BudgetManagement: daftar pekerjaan OPEX
         'items_json',         // BudgetManagement: daftar barang/items OPEX
+        'branch_code',
     ];
 
     protected $casts = [
