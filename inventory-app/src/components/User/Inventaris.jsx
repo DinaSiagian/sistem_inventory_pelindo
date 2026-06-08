@@ -1855,7 +1855,7 @@ function AssetHistoryTab({ assetCode, allBorrows }) {
           <thead style={{ background: "#f8fafc" }}>
             <tr>
               <th style={{ padding: "12px 16px", fontSize: "12px", color: "#f7faffff", borderBottom: "1px solid #e2e8f0", width: "50px" }}>NO</th>
-              
+
               <th style={{ padding: "12px 16px", fontSize: "12px", color: "#f7faffff", borderBottom: "1px solid #e2e8f0" }}>UNIT / SERIAL NUMBER</th>
               <th style={{ padding: "12px 16px", fontSize: "12px", color: "#f7faffff", borderBottom: "1px solid #e2e8f0" }}>PEMINJAM</th>
               <th style={{ padding: "12px 16px", fontSize: "12px", color: "#f7faffff", borderBottom: "1px solid #e2e8f0" }}>LOKASI</th>
@@ -2952,7 +2952,7 @@ const Inventaris = () => {
   const handleSave = async (goToBarcode = false) => {
     if (isSaving) return;
     setIsSaving(true);
-    
+
     try {
       // ID akan di-generate otomatis jika masih kosong
       let startId = formData.assetId;
@@ -3439,12 +3439,12 @@ const Inventaris = () => {
                 <Icon.Grid /> Grid
               </button>
             </div>
-            
+
             <div style={{ position: "relative" }}>
-              <button 
-                className="control-btn" 
+              <button
+                className="control-btn"
                 onClick={() => setShowFilterSidebar(true)}
-                style={{ 
+                style={{
                   background: (activeFiltersCount > 0) ? "#eff6ff" : "#fff",
                   color: (activeFiltersCount > 0) ? "#2563eb" : "#475569",
                   borderColor: (activeFiltersCount > 0) ? "#bfdbfe" : "#e2e8f0"
@@ -3459,11 +3459,11 @@ const Inventaris = () => {
             </button>
           </div>
         </div>
-        
+
         {/* SIDEBAR FILTER */}
         {showFilterSidebar && (
           <>
-            <div 
+            <div
               style={{
                 position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
                 background: "rgba(0,0,0,0.4)", zIndex: 9998,
@@ -3471,7 +3471,7 @@ const Inventaris = () => {
               }}
               onClick={() => setShowFilterSidebar(false)}
             />
-            <div 
+            <div
               style={{
                 position: "fixed", top: 0, right: 0, bottom: 0,
                 width: "320px", background: "#fff", zIndex: 9999,
@@ -3496,12 +3496,12 @@ const Inventaris = () => {
                   margin-bottom: 12px;
                 }
               `}</style>
-              
+
               <div style={{ padding: "20px", borderBottom: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#f8fafc" }}>
                 <h3 style={{ margin: 0, fontSize: "16px", fontWeight: "800", display: "flex", alignItems: "center", gap: "8px" }}>
                   <Icon.Filter /> FILTER
                 </h3>
-                <button 
+                <button
                   onClick={() => setShowFilterSidebar(false)}
                   style={{ background: "transparent", border: "none", cursor: "pointer", color: "#64748b", padding: "4px" }}
                 >
@@ -3520,7 +3520,7 @@ const Inventaris = () => {
                       setSelectedTipes([]); // reset tipes when category changes
                       setCurrentPage(1);
                     }}
-                    style={{...modernSelectStyle, width: "100%", background: "#f8fafc", padding: "10px 12px"}}
+                    style={{ ...modernSelectStyle, width: "100%", background: "#f8fafc", padding: "10px 12px" }}
                   >
                     <option value="">Semua Kategori</option>
                     {uniqueCategories.map(cat => (
@@ -3539,8 +3539,8 @@ const Inventaris = () => {
                     <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                       {availableBrands.map(brand => (
                         <label key={brand} style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontSize: "13.5px", color: "#334155" }}>
-                          <input 
-                            type="checkbox" 
+                          <input
+                            type="checkbox"
                             checked={selectedBrands.includes(brand)}
                             onChange={(e) => {
                               if (e.target.checked) {
@@ -3571,8 +3571,8 @@ const Inventaris = () => {
                     <div style={{ display: "flex", flexDirection: "column", gap: "10px", maxHeight: "240px", overflowY: "auto" }}>
                       {availableTipes.map(tipe => (
                         <label key={tipe} style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontSize: "13.5px", color: "#334155" }}>
-                          <input 
-                            type="checkbox" 
+                          <input
+                            type="checkbox"
                             checked={selectedTipes.includes(tipe)}
                             onChange={(e) => {
                               if (e.target.checked) {
@@ -3596,11 +3596,11 @@ const Inventaris = () => {
                   <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                     {["Tersedia", "Dipinjam", "Maintenance"].map(status => (
                       <label key={status} style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontSize: "13.5px", color: "#334155" }}>
-                        <input 
-                          type="radio" name="statusFilter" 
-                          checked={filterStatus === status} 
-                          onChange={() => { setFilterStatus(status); setCurrentPage(1); }} 
-                          style={{ width: "16px", height: "16px", accentColor: "#2563eb" }} 
+                        <input
+                          type="radio" name="statusFilter"
+                          checked={filterStatus === status}
+                          onChange={() => { setFilterStatus(status); setCurrentPage(1); }}
+                          style={{ width: "16px", height: "16px", accentColor: "#2563eb" }}
                         /> {status}
                       </label>
                     ))}
@@ -3609,13 +3609,13 @@ const Inventaris = () => {
               </div>
 
               <div style={{ padding: "20px", borderTop: "1px solid #e2e8f0", display: "flex", gap: "12px", background: "#f8fafc" }}>
-                <button 
+                <button
                   onClick={() => { resetFilters(); setShowFilterSidebar(false); }}
                   style={{ flex: 1, padding: "10px", background: "#fff", border: "1px solid #cbd5e1", borderRadius: "8px", fontWeight: "600", color: "#64748b", cursor: "pointer" }}
                 >
                   Reset
                 </button>
-                <button 
+                <button
                   onClick={() => setShowFilterSidebar(false)}
                   style={{ flex: 1, padding: "10px", background: "#2563eb", border: "none", borderRadius: "8px", fontWeight: "600", color: "#fff", cursor: "pointer" }}
                 >
@@ -3840,7 +3840,7 @@ const Inventaris = () => {
                   <th>STATUS</th>
                   <th>KUANTITAS</th>
                   <th>TOTAL NILAI</th>
-                  
+
                 </tr>
               </thead>
               <tbody>
@@ -3852,12 +3852,12 @@ const Inventaris = () => {
                           <Icon.BoxOpen />
                         </div>
                         <div className="empty-state-title">
-                          Tidak ada barang ditemukan
+                          Data Inventaris Kosong
                         </div>
                         <div className="empty-state-sub">
                           {activeFiltersCount > 0 || search
                             ? "Coba ubah kata kunci atau reset filter."
-                            : 'Belum ada barang. Klik "Tambah Barang Baru" untuk mulai.'}
+                            : "Tidak ada data aset yang terdaftar untuk saat ini."}
                         </div>
                         {(activeFiltersCount > 0 || search) && (
                           <button
@@ -4261,13 +4261,13 @@ const Inventaris = () => {
                     <Icon.Cogs />
                   </button>
                 </div>
-                
+
                 {showLocationBuilder && (
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", width: "100%", padding: "12px", background: "#f1f5f9", border: "1px dashed #cbd5e1", borderRadius: "8px" }}>
                     <select
                       value={formData.entitasCode}
                       onChange={handleEntitasChange}
-                      style={{...modernSelectStyle, background: "#fff", border: "1px solid #e2e8f0"}}
+                      style={{ ...modernSelectStyle, background: "#fff", border: "1px solid #e2e8f0" }}
                     >
                       <option value="">— Entitas —</option>
                       {ENTITAS_LIST.map((e) => <option key={e.code} value={e.code}>{e.name}</option>)}
@@ -4276,7 +4276,7 @@ const Inventaris = () => {
                       value={formData.branchCode}
                       onChange={handleBranchChange}
                       disabled={!formData.entitasCode}
-                      style={{...modernSelectStyle, background: "#fff", border: "1px solid #e2e8f0"}}
+                      style={{ ...modernSelectStyle, background: "#fff", border: "1px solid #e2e8f0" }}
                     >
                       <option value="">— Cabang —</option>
                       {availableBranches.map((b) => <option key={b.code} value={b.code}>{b.name}</option>)}
@@ -4284,7 +4284,7 @@ const Inventaris = () => {
                     <select
                       value={formData.zonaCode}
                       onChange={handleZonaChange}
-                      style={{...modernSelectStyle, background: "#fff", border: "1px solid #e2e8f0"}}
+                      style={{ ...modernSelectStyle, background: "#fff", border: "1px solid #e2e8f0" }}
                     >
                       <option value="">— Zona —</option>
                       {ZONA_LIST.map((z) => <option key={z.code} value={z.code}>{z.name}</option>)}
@@ -4292,7 +4292,7 @@ const Inventaris = () => {
                     <select
                       value={formData.subzonaCode}
                       onChange={handleSubzonaChange}
-                      style={{...modernSelectStyle, background: "#fff", border: "1px solid #e2e8f0"}}
+                      style={{ ...modernSelectStyle, background: "#fff", border: "1px solid #e2e8f0" }}
                     >
                       <option value="">— Subzona —</option>
                       {SUBZONA_LIST.map((s) => <option key={s.code} value={s.code}>{s.name}</option>)}
@@ -5719,7 +5719,7 @@ const Inventaris = () => {
       <PageWrapper
         title="Detail Barang"
         onBack={() => setCurrentView("list")}
-        actions={null && 
+        actions={null &&
           <div style={{ display: "flex", gap: "12px" }}>
             <button
               onClick={() => setCurrentView("barcode")}

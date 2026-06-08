@@ -235,7 +235,7 @@ const Auth = () => {
           if (user.role_code === "admin") {
             navigate("/dashboard");
           } else {
-            navigate("/user/dashboard");
+            navigate("/user/inventaris");
           }
         }
       } else {
@@ -270,7 +270,7 @@ const Auth = () => {
           if (user.role_code === "admin") {
             navigate("/dashboard");
           } else {
-            navigate("/user/dashboard");
+            navigate("/user/inventaris");
           }
         }
       }

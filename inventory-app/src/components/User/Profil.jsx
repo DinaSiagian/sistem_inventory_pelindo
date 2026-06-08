@@ -413,39 +413,7 @@ export default function Profil() {
             </div>
           </div>
 
-          {/* Quick stats */}
-          <div className="p-stats">
-            <div className="p-stat">
-              <span className="p-stat-val">8</span>
-              <span className="p-stat-label">
-                Total Aset
-                <br />
-                di Cabang
-              </span>
-            </div>
-            <div className="p-stat-divider" />
-            <div className="p-stat">
-              <span className="p-stat-val" style={{ color: "#f59e0b" }}>
-                1
-              </span>
-              <span className="p-stat-label">
-                Sedang
-                <br />
-                Dipinjam
-              </span>
-            </div>
-            <div className="p-stat-divider" />
-            <div className="p-stat">
-              <span className="p-stat-val" style={{ color: "#22c55e" }}>
-                2
-              </span>
-              <span className="p-stat-label">
-                Total
-                <br />
-                Dikembalikan
-              </span>
-            </div>
-          </div>
+
 
           {/* Info singkat — tambah divisi */}
           <div className="p-sidebar-info">

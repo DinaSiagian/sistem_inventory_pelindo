@@ -70,37 +70,18 @@ const UserLayout = () => {
 
   const userInitials = getInitials(user?.name);
 
-  // ✅ Pakai hook yang sama dengan LoanAlertPopup
-  const { urgentLoans, badgeCount, badgeLevel } = useLoanNotifications(
-    transactionsMock || [],
-    userId,
-  );
 
-  const badgeColor = badgeLevel === "overdue" ? "#ef4444" : "#f59e0b";
-  const badgeBg =
-    badgeLevel === "overdue"
-      ? "linear-gradient(135deg,#ef4444,#dc2626)"
-      : "linear-gradient(135deg,#f59e0b,#d97706)";
-
-  // pop alert muncul otomatis saat pertama buka
-  useEffect(() => {
-    if (urgentLoans.length > 0) {
-      const t = setTimeout(() => setShowAlert(true), 500);
-      return () => clearTimeout(t);
-    }
-  }, []); // eslint-disable-line
 
   const menuItems = [
-    { path: "/user/dashboard", label: "Dashboard", icon: <FaHome /> },
-    { category: "Manajemen Aset" },
+
+
     { path: "/user/inventaris", label: "Inventaris Aset", icon: <FaBox /> },
     {
       path: "/user/peminjaman",
       label: "BAST Aset",
       icon: <FaHandHolding />,
-      badge: true,
     },
-    { path: "/user/scan", label: "Scan Barcode", icon: <FaQrcode /> },
+
     { category: "Akun" },
     { path: "/user/profil", label: "Profil Saya", icon: <FaUserCircle /> },
   ];
@@ -119,16 +100,8 @@ const UserLayout = () => {
     window.location.href = "/login";
   };
 
-  const showBadge = badgeLevel === "overdue" || badgeLevel === "warning";
-
   return (
     <>
-      <style>{`
-        @keyframes badge-pulse {
-          0%,100% { transform:scale(1);   }
-          50%      { transform:scale(1.3); }
-        }
-      `}</style>
 
       <div className="layout-wrapper" style={{ flexDirection: "row" }}>
         <aside
@@ -156,60 +129,10 @@ const UserLayout = () => {
                 >
                   <div className="menu-icon" style={{ position: "relative" }}>
                     {item.icon}
-
-                    {/* ── Badge angka merah/kuning ── */}
-                    {item.badge && showBadge && (
-                      <span
-                        style={{
-                          position: "absolute",
-                          top: -8,
-                          right: -10,
-                          minWidth: 18,
-                          height: 18,
-                          borderRadius: 99,
-                          background: badgeBg,
-                          color: "#fff",
-                          fontSize: 10,
-                          fontWeight: 900,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          padding: "0 4px",
-                          border: "2px solid #1e3a5f",
-                          lineHeight: 1,
-                          boxShadow:
-                            badgeLevel === "overdue"
-                              ? "0 2px 6px rgba(239,68,68,.5)"
-                              : "0 2px 6px rgba(245,158,11,.5)",
-                          animation:
-                            badgeLevel === "overdue"
-                              ? "badge-pulse 1.4s infinite"
-                              : "none",
-                          zIndex: 10,
-                        }}
-                      >
-                        {badgeCount}
-                      </span>
-                    )}
                   </div>
 
                   {!collapsed && (
                     <span className="menu-text">{item.label}</span>
-                  )}
-
-                  {/* glowing dot kanan label */}
-                  {item.badge && showBadge && !collapsed && (
-                    <span
-                      style={{
-                        width: 8,
-                        height: 8,
-                        borderRadius: "50%",
-                        background: badgeColor,
-                        boxShadow: `0 0 7px ${badgeColor}`,
-                        marginLeft: "auto",
-                        flexShrink: 0,
-                      }}
-                    />
                   )}
                 </Link>
               ),
@@ -240,60 +163,7 @@ const UserLayout = () => {
             </div>
 
             <div className="topbar-right">
-              {/* Bell di topbar */}
-              {showBadge && (
-                <button
-                  onClick={() => setShowAlert(true)}
-                  style={{
-                    position: "relative",
-                    flexShrink: 0,
-                    width: 36,
-                    height: 36,
-                    borderRadius: 9,
-                    border: `1.5px solid ${badgeLevel === "overdue" ? "#fecaca" : "#fde68a"}`,
-                    background:
-                      badgeLevel === "overdue" ? "#fef2f2" : "#fffbeb",
-                    cursor: "pointer",
-                    fontSize: 16,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    transition: "transform .15s",
-                  }}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.transform = "scale(1.08)")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.transform = "scale(1)")
-                  }
-                >
-                  🔔
-                  <span
-                    style={{
-                      position: "absolute",
-                      top: -5,
-                      right: -5,
-                      minWidth: 17,
-                      height: 17,
-                      borderRadius: 99,
-                      background: badgeColor,
-                      color: "#fff",
-                      fontSize: 10,
-                      fontWeight: 900,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      border: "2px solid #f8fafc",
-                      animation:
-                        badgeLevel === "overdue"
-                          ? "badge-pulse 1.4s infinite"
-                          : "none",
-                    }}
-                  >
-                    {badgeCount}
-                  </span>
-                </button>
-              )}
+              
 
               <div
                 className="user-profile"
@@ -317,14 +187,7 @@ const UserLayout = () => {
         </div>
       </div>
 
-      {/* Pop Alert — pakai LoanAlertPopup yang sudah ada */}
-      {showAlert && urgentLoans.length > 0 && (
-        <LoanAlertPopup
-          urgentLoans={urgentLoans}
-          onDismiss={() => setShowAlert(false)}
-          onNavigate={(path) => navigate(path)}
-        />
-      )}
+
     </>
   );
 };

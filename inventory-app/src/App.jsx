@@ -18,10 +18,10 @@ const UserManagement = lazy(() => import("./components/UserManagement"));
 
 // === User pages (lazy) ===
 const UserLayout = lazy(() => import("./components/User/Userlayout"));
-const UserDashboard = lazy(() => import("./components/User/Dashboard"));
+
 const Inventaris = lazy(() => import("./components/User/Inventaris"));
 const UserPeminjaman = lazy(() => import("./components/User/Peminjaman"));
-const ScanBarcode = lazy(() => import("./components/User/ScanBarcode"));
+
 const Profil = lazy(() => import("./components/User/Profil"));
 
 const Loader = () => <div style={{ padding: "2rem" }}>Loading...</div>;
@@ -104,11 +104,7 @@ function App() {
         >
           <Route
             path="/user/dashboard"
-            element={
-              <Suspense fallback={<Loader />}>
-                <UserDashboard />
-              </Suspense>
-            }
+            element={<Navigate to="/user/inventaris" replace />}
           />
           <Route
             path="/user/inventaris"
@@ -126,14 +122,7 @@ function App() {
               </Suspense>
             }
           />
-          <Route
-            path="/user/scan"
-            element={
-              <Suspense fallback={<Loader />}>
-                <ScanBarcode />
-              </Suspense>
-            }
-          />
+
           <Route
             path="/user/profil"
             element={
