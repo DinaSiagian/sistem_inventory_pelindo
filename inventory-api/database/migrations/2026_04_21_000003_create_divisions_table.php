@@ -25,7 +25,7 @@ return new class extends Migration
                       ->references('branch_code')
                       ->on('branches')
                       ->cascadeOnUpdate()
-                      ->cascadeOnDelete(); // Jika Branch dihapus, Division ikut terhapus
+                      ->cascadeOnDelete(); 
 
                 // Index untuk performa
                 $table->index(['branch_code', 'is_active']);

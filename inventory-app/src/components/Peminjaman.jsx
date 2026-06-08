@@ -3819,7 +3819,7 @@ function BorrowFormPage({ borrow, borrows, returns, assets, onBack, onSave, setN
 
     const p1User = mockUsers.find(u => u.id === Number(pihak1.id));
     const p2User = mockUsers.find(u => u.id === Number(pihak2.id));
-    
+
     const isP1Admin = p1User && (p1User.jabatan === 'admin' || p1User.jabatan === 'superadmin');
     const isP2Admin = p2User && (p2User.jabatan === 'admin' || p2User.jabatan === 'superadmin');
 
@@ -3910,11 +3910,15 @@ function BorrowFormPage({ borrow, borrows, returns, assets, onBack, onSave, setN
     return rows;
   };
 
+  const [isSaving, setIsSaving] = useState(false);
+
   const handleSave = async () => {
+    if (isSaving) return;
     if (baDraft.length === 0) {
       alert("Tambahkan minimal satu barang ke daftar Berita Acara.");
       return;
     }
+    setIsSaving(true);
     const finalDate =
       backdateMode === "now"
         ? new Date().toISOString()
@@ -3971,10 +3975,12 @@ function BorrowFormPage({ borrow, borrows, returns, assets, onBack, onSave, setN
       if (onSave) {
         onSave();
       }
+      setIsSaving(false);
       onBack();
     } catch (err) {
       console.error("Error saving BAST:", err);
       alert("Terjadi kesalahan saat menyimpan BAST ke database: " + (err.message || ""));
+      setIsSaving(false);
     }
   };
 
@@ -4386,17 +4392,17 @@ function BorrowFormPage({ borrow, borrows, returns, assets, onBack, onSave, setN
                           {assetSearchQuery
                             ? "Tidak ada barang yang cocok dengan pencarian."
                             : (() => {
-                                const p1 = mockUsers.find((u) => String(u.id) === String(pihak1.id));
-                                const p1IsAdmin = p1 && (p1.jabatan === 'admin' || p1.jabatan === 'superadmin');
-                                const loggedInUserStr = localStorage.getItem("user");
-                                const loggedInUser = loggedInUserStr ? JSON.parse(loggedInUserStr) : null;
-                                const loggedBranch = loggedInUser?.branch_code || loggedInUser?.branches_code || "Jakarta";
-                                
-                                if (p1IsAdmin && p1.branch !== loggedBranch && p1.branch) {
-                                  return `Sistem Isolasi Data Aktif: Anda tidak memiliki hak akses untuk melihat atau menarik barang dari Gudang ${p1.branch}.`;
-                                }
-                                return "User ini tidak memiliki barang untuk diserahterimakan.";
-                              })()}
+                              const p1 = mockUsers.find((u) => String(u.id) === String(pihak1.id));
+                              const p1IsAdmin = p1 && (p1.jabatan === 'admin' || p1.jabatan === 'superadmin');
+                              const loggedInUserStr = localStorage.getItem("user");
+                              const loggedInUser = loggedInUserStr ? JSON.parse(loggedInUserStr) : null;
+                              const loggedBranch = loggedInUser?.branch_code || loggedInUser?.branches_code || "Jakarta";
+
+                              if (p1IsAdmin && p1.branch !== loggedBranch && p1.branch) {
+                                return `Sistem Isolasi Data Aktif: Anda tidak memiliki hak akses untuk melihat atau menarik barang dari Gudang ${p1.branch}.`;
+                              }
+                              return "User ini tidak memiliki barang untuk diserahterimakan.";
+                            })()}
                         </td>
                       </tr>
                     ) : (
@@ -5409,26 +5415,39 @@ function ReturnFormPage({ borrow, onBack, onSave }) {
 }
 
 // ─── PAGE: DELETE CONFIRM ─────────────────────────────────────
-function DeletePage({ item, onBack, onConfirm }) {
+function DeleteModal({ item, onBack, onConfirm }) {
   if (!item) return null;
   return (
-    <div>
+    <div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: "rgba(15, 23, 42, 0.4)",
+        backdropFilter: "blur(8px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 9999,
+        animation: "fadeIn 0.2s ease",
+      }}
+      onClick={onBack}
+    >
       <div
         style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-          marginBottom: "1rem",
+          background: "#fff",
+          width: "100%",
+          maxWidth: 400,
+          borderRadius: 24,
+          boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.3)",
+          overflow: "hidden",
+          padding: "2rem",
+          animation: "slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
         }}
+        onClick={(e) => e.stopPropagation()}
       >
-        <button style={S.backBtn} onClick={onBack}>
-          <Icon.ArrowLeft /> Batal
-        </button>
-        <span style={{ fontSize: ".75rem", color: "#94a3b8" }}>
-          / Hapus Serah Terima
-        </span>
-      </div>
-      <div style={{ ...S.page, maxWidth: 480 }}>
         <div style={S.deleteBox}>
           <div style={S.deleteIco}>
             <Icon.Trash />
@@ -5439,7 +5458,7 @@ function DeletePage({ item, onBack, onConfirm }) {
             dihapus secara permanen dan tidak dapat dikembalikan.
           </p>
         </div>
-        <div style={{ ...S.btnRow, justifyContent: "center" }}>
+        <div style={{ ...S.btnRow, justifyContent: "center", marginTop: "1.5rem" }}>
           <button style={S.btnGhost} onClick={onBack}>
             Batal
           </button>
@@ -5765,6 +5784,12 @@ export default function Peminjaman() {
   const [usersState, setUsersState] = useState(mockUsers);
   const [assetsState, setAssetsState] = useState([]);
   const [pekerjaanState, setPekerjaanState] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, filterUser, filterPekerjaan]);
 
   if (usersState && usersState.length > 0) {
     mockUsers = usersState;
@@ -5834,7 +5859,7 @@ export default function Peminjaman() {
                 (b) => b.code === u.serialNumber && !b.is_returned,
               );
               flattened.push({
-                code: u.serialNumber, 
+                code: u.serialNumber,
                 asset_code: item.id,
                 name: item.name || "-",
                 zone: u.location || "Gudang",
@@ -5874,27 +5899,18 @@ export default function Peminjaman() {
   });
 
   const groupedTransactions = useMemo(() => {
-    const groups = {};
-    filteredBorrows.forEach((b) => {
+    return filteredBorrows.map((b) => {
       const dStr = b.return_date || b.borrow_date || "";
-      const dateKey = dStr.includes("T")
-        ? dStr.split("T")[0]
-        : dStr.split(" ")[0] || "unknown";
-      const key = b.bast_number || `${b.id}_${dateKey}`;
-      if (!groups[key]) {
-        groups[key] = {
-          id: b.id,
-          date: dStr || new Date().toISOString(),
-          bast_number: b.bast_number || "",
-          giver_id: b.giver_id,
-          receiver_id: b.receiver_id,
-          items: [],
-          pekerjaan_kode: b.pekerjaan_kode,
-        };
-      }
-      groups[key].items.push(b);
-    });
-    return Object.values(groups).sort((a, b) => {
+      return {
+        id: b.id,
+        date: dStr || new Date().toISOString(),
+        bast_number: b.bast_number || "",
+        giver_id: b.giver_id,
+        receiver_id: b.receiver_id,
+        items: [b],
+        pekerjaan_kode: b.pekerjaan_kode,
+      };
+    }).sort((a, b) => {
       const da = new Date(a.date || 0).getTime();
       const db = new Date(b.date || 0).getTime();
       return db - da;
@@ -5980,13 +5996,6 @@ export default function Peminjaman() {
     return (
       <div style={S.root}>
         <AvailableAssetListPage borrows={borrows} returns={returns} assets={assetsState} onBack={goBack} />
-      </div>
-    );
-
-  if (nav?.page === "delete")
-    return (
-      <div style={S.root}>
-        <DeletePage item={nav.data} onBack={goBack} onConfirm={handleDelete} />
       </div>
     );
 
@@ -6167,9 +6176,15 @@ export default function Peminjaman() {
                   </td>
                 </tr>
               ) : (
-                groupedTransactions.map((tx, idx) => {
-                  const giver = getUser(tx.giver_id);
-                  const receiver = getUser(tx.receiver_id);
+                (() => {
+                  const totalPages = Math.ceil(groupedTransactions.length / itemsPerPage) || 1;
+                  const paginatedTransactions = groupedTransactions.slice(
+                    (currentPage - 1) * itemsPerPage,
+                    currentPage * itemsPerPage
+                  );
+                  return paginatedTransactions.map((tx, idx) => {
+                    const giver = getUser(tx.giver_id);
+                    const receiver = getUser(tx.receiver_id);
                   const bastNo = tx.bast_number || `BAST/${new Date(tx.date).getFullYear()}/${(tx.id || 0).toString().padStart(3, "0")}`;
                   return (
                     <tr
@@ -6180,7 +6195,7 @@ export default function Peminjaman() {
                       }
                     >
                       <td style={{ ...S.td, textAlign: "center" }}>
-                        {idx + 1}
+                        {(currentPage - 1) * itemsPerPage + idx + 1}
                       </td>
                       <td style={S.td}>
                         <code
@@ -6285,12 +6300,76 @@ export default function Peminjaman() {
                       </td>
                     </tr>
                   );
-                })
+                });
+              })()
               )}
             </tbody>
           </table>
         </div>
+        {/* ── PAGINATION ── */}
+        <div
+          style={{
+            padding: "1rem 1.5rem",
+            borderTop: "1px solid #f1f5f9",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <div style={{ fontSize: ".74rem", color: "#64748b" }}>
+            Menampilkan <strong>{Math.min(groupedTransactions.length, (currentPage - 1) * itemsPerPage + 1)}</strong> - <strong>{Math.min(groupedTransactions.length, currentPage * itemsPerPage)}</strong> dari{" "}
+            <strong>{groupedTransactions.length}</strong> BAST
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: ".5rem" }}>
+            <button
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((p) => p - 1)}
+              style={{
+                ...S.iconBtn,
+                color: "#475569",
+                border: "1px solid #e2e8f0",
+                background: currentPage === 1 ? "#f8fafc" : "#fff",
+                opacity: currentPage === 1 ? 0.4 : 1,
+                cursor: currentPage === 1 ? "not-allowed" : "pointer",
+                padding: "6px 14px",
+              }}
+            >
+              <Icon.ArrowLeft /> Prev
+            </button>
+            <div
+              style={{
+                fontSize: ".74rem",
+                fontWeight: 700,
+                color: "#1e293b",
+                background: "#f1f5f9",
+                padding: "6px 14px",
+                borderRadius: 6,
+                border: "1px solid #e2e8f0",
+              }}
+            >
+              Page {currentPage} of {Math.ceil(groupedTransactions.length / itemsPerPage) || 1}
+            </div>
+            <button
+              disabled={currentPage === (Math.ceil(groupedTransactions.length / itemsPerPage) || 1)}
+              onClick={() => setCurrentPage((p) => p + 1)}
+              style={{
+                ...S.iconBtn,
+                color: "#475569",
+                border: "1px solid #e2e8f0",
+                background: currentPage === (Math.ceil(groupedTransactions.length / itemsPerPage) || 1) ? "#f8fafc" : "#fff",
+                opacity: currentPage === (Math.ceil(groupedTransactions.length / itemsPerPage) || 1) ? 0.4 : 1,
+                cursor: currentPage === (Math.ceil(groupedTransactions.length / itemsPerPage) || 1) ? "not-allowed" : "pointer",
+                padding: "6px 14px",
+              }}
+            >
+              Next <Icon.ArrowRight />
+            </button>
+          </div>
+        </div>
       </div>
+      {nav?.page === "delete" && (
+        <DeleteModal item={nav.data} onBack={goBack} onConfirm={handleDelete} />
+      )}
     </div>
   );
 }

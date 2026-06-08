@@ -48,7 +48,12 @@ class TransactionController extends Controller
 
             // Apply branch filter if user has a branch
             if ($userBranchCode && !empty($branchSubzonaCodes)) {
-                $borrowQuery->whereIn('b.subzona_code', $branchSubzonaCodes);
+                $borrowQuery->where(function($q) use ($branchSubzonaCodes, $user) {
+                    $q->whereIn('b.subzona_code', $branchSubzonaCodes)
+                      ->orWhere('t.giver_id', $user->id)
+                      ->orWhere('t.receiver_id', $user->id)
+                      ->orWhere('t.performed_by_id', $user->id);
+                });
             }
 
             $borrowRows = $borrowQuery->select([
@@ -72,7 +77,8 @@ class TransactionController extends Controller
                     'bp.jenis_anggaran AS pekerjaan_jenis',
                 ])
                 ->orderBy('t.created_at', 'desc')
-                ->get();
+                ->get()
+                ->unique('transaction_id');
 
             $borrows = [];
             foreach ($borrowRows as $row) {
@@ -130,7 +136,12 @@ class TransactionController extends Controller
                 });
 
             if ($userBranchCode && !empty($branchSubzonaCodes)) {
-                $returnQuery->whereIn('b.subzona_code', $branchSubzonaCodes);
+                $returnQuery->where(function($q) use ($branchSubzonaCodes, $user) {
+                    $q->whereIn('b.subzona_code', $branchSubzonaCodes)
+                      ->orWhere('t.giver_id', $user->id)
+                      ->orWhere('t.receiver_id', $user->id)
+                      ->orWhere('t.performed_by_id', $user->id);
+                });
             }
 
             $returnRows = $returnQuery->select([
@@ -154,7 +165,8 @@ class TransactionController extends Controller
                     'bp.jenis_anggaran AS pekerjaan_jenis',
                 ])
                 ->orderBy('t.created_at', 'desc')
-                ->get();
+                ->get()
+                ->unique('transaction_id');
 
             $returns = [];
             foreach ($returnRows as $row) {

@@ -6,13 +6,15 @@ import {
   Navigate,
 } from "react-router-dom";
 import Layout from "./components/Layout";
-import Dashboard from "./components/Dashboard";
-import ViewAsset from "./components/ViewAsset";
 import Auth from "./components/Auth";
-import BudgetManagement from "./components/BudgetManagement";
-import Budgetinput from "./components/Budgetinput";
-import Peminjaman from "./components/Peminjaman";
-import UserManagement from "./components/UserManagement";
+
+// === Admin pages (lazy) ===
+const Dashboard = lazy(() => import("./components/Dashboard"));
+const ViewAsset = lazy(() => import("./components/ViewAsset"));
+const BudgetManagement = lazy(() => import("./components/BudgetManagement"));
+const Budgetinput = lazy(() => import("./components/Budgetinput"));
+const Peminjaman = lazy(() => import("./components/Peminjaman"));
+const UserManagement = lazy(() => import("./components/UserManagement"));
 
 // === User pages (lazy) ===
 const UserLayout = lazy(() => import("./components/User/Userlayout"));
@@ -33,8 +35,8 @@ function App() {
 
         {/* Admin */}
         <Route element={<Layout />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/assets" element={<ViewAsset />} />
+          <Route path="/dashboard" element={<Suspense fallback={<Loader />}><Dashboard /></Suspense>} />
+          <Route path="/assets" element={<Suspense fallback={<Loader />}><ViewAsset /></Suspense>} />
           {/* BAST Aset routes */}
           <Route
             path="/peminjaman"
@@ -42,11 +44,11 @@ function App() {
           />
           <Route
             path="/peminjaman/serah-terima"
-            element={<Peminjaman forcedTab="borrow" />}
+            element={<Suspense fallback={<Loader />}><Peminjaman forcedTab="borrow" /></Suspense>}
           />
           <Route
             path="/peminjaman/riwayat"
-            element={<Peminjaman forcedTab="return" />}
+            element={<Suspense fallback={<Loader />}><Peminjaman forcedTab="return" /></Suspense>}
           />
 
           {/* Input Anggaran routes */}
@@ -54,7 +56,7 @@ function App() {
             path="/budget/input"
             element={<Navigate to="/budget/input/opex" replace />}
           />
-          <Route path="/budget/input/:type" element={<Budgetinput />} />
+          <Route path="/budget/input/:type" element={<Suspense fallback={<Loader />}><Budgetinput /></Suspense>} />
 
           {/* Input Pekerjaan routes — BudgetManagement dengan prop forcedType */}
           <Route
@@ -63,15 +65,15 @@ function App() {
           />
           <Route
             path="/budget/pekerjaan/capex"
-            element={<BudgetManagement forcedType="capex" />}
+            element={<Suspense fallback={<Loader />}><BudgetManagement forcedType="capex" /></Suspense>}
           />
           <Route
             path="/budget/pekerjaan/opex"
-            element={<BudgetManagement forcedType="opex" />}
+            element={<Suspense fallback={<Loader />}><BudgetManagement forcedType="opex" /></Suspense>}
           />
 
           {/* Route lama /budget tetap berfungsi sebagai fallback (tampil semua) */}
-          <Route path="/budget" element={<BudgetManagement />} />
+          <Route path="/budget" element={<Suspense fallback={<Loader />}><BudgetManagement /></Suspense>} />
 
           <Route
             path="/projects"
@@ -81,7 +83,7 @@ function App() {
               </div>
             }
           />
-          <Route path="/users" element={<UserManagement />} />
+          <Route path="/users" element={<Suspense fallback={<Loader />}><UserManagement /></Suspense>} />
           <Route
             path="/reports"
             element={

@@ -27,10 +27,25 @@ class BarangController extends Controller
                     ->toArray();
             }
 
-            // Only fetch barang units located in user's branch
-            $barang = ($userBranchCode && !empty($branchSubzonaCodes))
-                ? DB::table('barang')->whereIn('subzona_code', $branchSubzonaCodes)->get()
-                : DB::table('barang')->get();
+            // Fetch all barang
+            $barangAll = DB::table('barang')->get();
+
+            if ($userBranchCode && !empty($branchSubzonaCodes)) {
+                $barang = $barangAll->filter(function($b) use ($branchSubzonaCodes, $userBranchCode) {
+                    // Include if physically located in this branch
+                    if (in_array($b->subzona_code, $branchSubzonaCodes)) return true;
+                    
+                    // Include if owned by this branch (e.g. SPMT-BLW-...)
+                    if (str_contains($b->asset_code, "-{$userBranchCode}-")) return true;
+                    
+                    // Include if branch column exists and matches
+                    if (isset($b->branch) && $b->branch === $userBranchCode) return true;
+                    
+                    return false;
+                })->values();
+            } else {
+                $barang = $barangAll;
+            }
 
             // Only fetch assets that have at least one unit in user's branch
             $branchAssetCodes = $barang->pluck('asset_code')->unique()->values()->toArray();

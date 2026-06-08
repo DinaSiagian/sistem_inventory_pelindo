@@ -117,24 +117,24 @@ function pctMeta(p) {
     return {
       label: "Over Budget",
       bg: "#fef2f2",
-      fg: "#dc2626",
+      fg: "#b91c1c",
       border: "#fecaca",
     };
   if (p >= 80)
     return {
       label: "Near Limit",
       bg: "#fffbeb",
-      fg: "#d97706",
+      fg: "#b45309",
       border: "#fde68a",
     };
   if (p >= 50)
     return {
       label: "On Track",
       bg: "#eff6ff",
-      fg: "#2563eb",
+      fg: "#1d4ed8",
       border: "#bfdbfe",
     };
-  return { label: "Healthy", bg: "#f0fdf4", fg: "#16a34a", border: "#bbf7d0" };
+  return { label: "Healthy", bg: "#f0fdf4", fg: "#15803d", border: "#bbf7d0" };
 }
 const ASSET_DB = {};
 
@@ -837,13 +837,12 @@ function exportAssetsToExcel(assets, projectName, contractNo) {
   URL.revokeObjectURL(url);
 }
 const CSS = `
-@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap");
 :root {
---blue:#2563eb;--blue-lt:#eff6ff;--blue-mid:#dbeafe;
---green:#16a34a;--green-lt:#f0fdf4;--green-mid:#dcfce7;
---amber:#d97706;--amber-lt:#fffbeb;
---red:#dc2626;--red-lt:#fef2f2;
---ink:#111827;--ink2:#374151;--ink3:#6b7280;--ink4:#9ca3af;
+--blue:#1d4ed8;--blue-lt:#eff6ff;--blue-mid:#dbeafe;
+--green:#15803d;--green-lt:#f0fdf4;--green-mid:#dcfce7;
+--amber:#b45309;--amber-lt:#fffbeb;
+--red:#b91c1c;--red-lt:#fef2f2;
+--ink:#111827;--ink2:#374151;--ink3:#4b5563;--ink4:#6b7280;
 --border:#e5e7eb;--border-lt:#f3f4f6;
 --surf:#ffffff;--bg:#f9fafb;
 --mono:"JetBrains Mono","Courier New",monospace;
@@ -857,7 +856,7 @@ body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:var(--bg);c
 .root{padding:1.5rem 2rem;min-height:100vh;max-width:1400px;margin:0 auto}
 .hdr{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1.3rem;flex-wrap:wrap}
 .hdr h1{font-size:1.3rem;font-weight:800;letter-spacing:-.5px}
-.hdr p{font-size:.75rem;color:var(--ink4);margin-top:2px;font-weight:500}
+.hdr p{font-size:.75rem;color:var(--ink3);margin-top:2px;font-weight:500}
 .hdr-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .type-tabs{display:flex;gap:2px;background:var(--surf);padding:3px;border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--sh)}
 .type-tab{display:flex;align-items:center;gap:6px;padding:5px 14px;border:none;background:transparent;border-radius:6px;font-family:inherit;font-size:.72rem;font-weight:600;color:var(--ink3);cursor:pointer;transition:all .15s}
@@ -1176,6 +1175,7 @@ function Pagination({ total, page, onPage, label }) {
       <div className="pagination-controls">
         <button
           className="pg-btn"
+          aria-label="Halaman Sebelumnya"
           disabled={page === 1}
           onClick={() => onPage(page - 1)}
         >
@@ -1205,6 +1205,7 @@ function Pagination({ total, page, onPage, label }) {
         )}
         <button
           className="pg-btn"
+          aria-label="Halaman Berikutnya"
           disabled={page === Math.ceil(total / PAGE_SIZE)}
           onClick={() => onPage(page + 1)}
         >
@@ -3991,6 +3992,7 @@ function AssetTablePage({
         <div className="flt-box" style={{ background: "var(--blue-lt)", borderColor: "var(--blue-mid)", height: 32 }}>
           <Icon d={I.calendar} size={13} style={{ color: "var(--blue)" }} />
           <select
+            aria-label="Filter Tahun"
             className="flt-select"
             value={filterYear}
             onChange={(e) => setFilterYear(e.target.value)}
@@ -4455,6 +4457,7 @@ function PekerjaanListPage({
           <div className="flt-box">
             <Icon d={I.calendar} size={14} />
             <select
+              aria-label="Filter Tanggal Kontrak"
               className="flt-select"
               value={filterDate}
               onChange={(e) => setFilterDate(e.target.value)}
@@ -5320,7 +5323,7 @@ export default function BudgetManagement({ forcedType }) {
                     <div
                       style={{
                         fontSize: "0.75rem",
-                        color: "var(--ink4)",
+                        color: "var(--ink3)",
                         marginTop: 4,
                       }}
                     >
@@ -5369,7 +5372,7 @@ export default function BudgetManagement({ forcedType }) {
                     <p
                       style={{
                         fontSize: "0.78rem",
-                        color: "var(--ink4)",
+                        color: "var(--ink3)",
                         marginTop: 4,
                       }}
                     >
@@ -5382,6 +5385,7 @@ export default function BudgetManagement({ forcedType }) {
                     <Icon d={I.calendar} size={14} />
                     <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--ink3)", marginRight: 4 }}>RKAP Dari</span>
                     <select
+                      aria-label="Filter Dari Tahun"
                       className="flt-select"
                       value={capexThnFrom}
                       onChange={(e) => {
@@ -5399,6 +5403,7 @@ export default function BudgetManagement({ forcedType }) {
                   <div className="flt-box">
                     <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--ink3)", marginRight: 4 }}>s/d</span>
                     <select
+                      aria-label="Filter Sampai Tahun"
                       className="flt-select"
                       value={capexThnTo}
                       onChange={(e) => { setCapexThnTo(e.target.value); setCapexAngPage(1); }}
@@ -5493,6 +5498,7 @@ export default function BudgetManagement({ forcedType }) {
               <div className="opex-flt-box">
                 <Icon d={I.calendar} size={14} />
                 <select
+                  aria-label="Filter Tahun"
                   className="opex-flt-select"
                   value={tahun}
                   onChange={(e) => setTahun(e.target.value)}
@@ -5511,6 +5517,7 @@ export default function BudgetManagement({ forcedType }) {
               <div className="opex-flt-box">
                 <Icon d={I.hash} size={14} />
                 <select
+                  aria-label="Filter Pos Anggaran"
                   className="opex-flt-select"
                   value={opexKdFilter}
                   onChange={(e) => {
