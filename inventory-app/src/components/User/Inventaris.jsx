@@ -1,1036 +1,4556 @@
-// ============================================================
-// Inventaris.jsx — with pagination, per-page selector & sorting
-// Detail aset ditampilkan sebagai halaman inline (tanpa modal/popup)
-// ============================================================
-import { useState, useMemo } from "react";
-import { currentUser, assetsMock, categoryConf, statusConf } from "./data";
+import React, { useState, useMemo, useRef, useEffect } from "react";
+import { barangAPI, budgetAPI, masterDataAPI, transactionAPI } from "../../services/api";
 import "./Inventaris.css";
-
-// ── Pool foto per-kategori ──
-const PHOTO_POOLS = {
-  LAPTOP: [
-    "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=600&q=80&fm=webp",
-    "https://images.unsplash.com/photo-1541807084-5c52b6b3adef?w=600&q=80&fm=webp",
-    "https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?w=600&q=80&fm=webp",
-    "https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=600&q=80&fm=webp",
-    "https://images.unsplash.com/photo-1484788984921-03950022c9ef?w=600&q=80&fm=webp",
-    "https://images.unsplash.com/photo-1611186871525-8778f68f8f1c?w=600&q=80&fm=webp",
-    "https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=600&q=80&fm=webp",
-    "https://images.unsplash.com/photo-1515378960530-7c0da6231fb1?w=600&q=80&fm=webp",
-    "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=600&q=80&fm=webp",
-    "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&q=80&fm=webp",
-  ],
-  SERVER: [
-    "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&q=80&fm=webp",
-    "https://images.unsplash.com/photo-1597852074816-d933c7d2b988?w=600&q=80&fm=webp",
-    "https://images.unsplash.com/photo-1629654297299-c8506221ca97?w=600&q=80&fm=webp",
-    "https://images.unsplash.com/photo-1639322537228-f710d846310a?w=600&q=80&fm=webp",
-  ],
-  DESKTOP: [
-    "https://images.unsplash.com/photo-1587831990711-23ca6441447b?w=600&q=80&fm=webp",
-    "https://images.unsplash.com/photo-1547082299-de196ea013d6?w=600&q=80&fm=webp",
-    "https://images.unsplash.com/photo-1593640495253-23196b27a87f?w=600&q=80&fm=webp",
-    "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=600&q=80&fm=webp",
-  ],
-  NETWORK: [
-    "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=600&q=80&fm=webp",
-    "https://images.unsplash.com/photo-1606904825846-647eb07f5be2?w=600&q=80&fm=webp",
-    "https://images.unsplash.com/photo-1614624532983-4ce03382d63d?w=600&q=80&fm=webp",
-    "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=600&q=80&fm=webp",
-    "https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?w=600&q=80&fm=webp",
-  ],
-  UPS: [
-    "https://images.unsplash.com/photo-1609921212029-bb5a28e60960?w=600&q=80&fm=webp",
-    "https://images.unsplash.com/photo-1588508065123-287b28e013da?w=600&q=80&fm=webp",
-    "https://images.unsplash.com/photo-1555664424-778a1e5e1b48?w=600&q=80&fm=webp",
-    "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=600&q=80&fm=webp",
-    "https://images.unsplash.com/photo-1548263594-a71ea65a8598?w=600&q=80&fm=webp",
-  ],
-  OTHER: [
-    "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=600&q=80&fm=webp",
-    "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=600&q=80&fm=webp",
-    "https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=600&q=80&fm=webp",
-    "https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=600&q=80&fm=webp",
-    "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=600&q=80&fm=webp",
-    "https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=600&q=80&fm=webp",
-    "https://images.unsplash.com/photo-1534536281715-e28d76689b4d?w=600&q=80&fm=webp",
-    "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=600&q=80&fm=webp",
-  ],
-};
-
-function getAssetPhoto(asset) {
-  const pool = PHOTO_POOLS[asset?.category] || PHOTO_POOLS.OTHER;
-  const num = parseInt((asset?.id || "").replace(/\D/g, "") || "0", 10);
-  return pool[num % pool.length];
-}
-
-function getAssetPhotoFallback(asset) {
-  const cat = (asset?.category || "OTHER").toLowerCase();
-  const num = parseInt((asset?.id || "").replace(/\D/g, "") || "0", 10);
-  return `https://picsum.photos/seed/${cat}${num % 8}/600/400`;
-}
-
-const isDisposedStatus = (s) =>
-  ["DISPOSE", "DIHAPUS", "DISPOSED", "HAPUS", "DELETE", "DELETED"].includes(
-    (s || "").toUpperCase(),
-  );
-
-// ── Sort config ──
-const SORT_OPTIONS = [
-  { key: "name_asc", label: "Nama A–Z", field: "name", dir: "asc" },
-  { key: "name_desc", label: "Nama Z–A", field: "name", dir: "desc" },
-  { key: "status_asc", label: "Status", field: "status", dir: "asc" },
-  { key: "category_asc", label: "Kategori", field: "category", dir: "asc" },
-  { key: "budget_asc", label: "Budget Type", field: "budget_type", dir: "asc" },
+// ── CAPEX ANGGARAN MASTER (thn_anggaran → nm_anggaran → pekerjaan) ─────
+let CAPEX_ANGGARAN = [
+  {
+    kd_anggaran: "2440015",
+    nm_anggaran: "Implementasi dan Standarisasi IT Infrastruktur",
+    thn_anggaran: 2024,
+    pekerjaan: [
+      {
+        id_pekerjaan: 6,
+        nm_pekerjaan: "Pekerjaan Implementasi CCTV",
+      },
+      {
+        id_pekerjaan: 2,
+        nm_pekerjaan:
+          "Pekerjaan Implementasi dan Standarisasi IT Infrastruktur (Gate System Branch Malahayati, Lhokseumawe, Lembar, ParePare dan Garongkong) PT Pelindo Multi Terminal",
+      },
+      {
+        id_pekerjaan: 3,
+        nm_pekerjaan:
+          "Pekerjaan Implementasi dan Standarisasi IT Infrastruktur (Gate System dan Planning & Control Branch Balikpapan dan Bagendang) PT Pelindo Multi Terminal",
+      },
+      {
+        id_pekerjaan: 4,
+        nm_pekerjaan:
+          "Pekerjaan Implementasi dan Standarisasi IT Infrastruktur (Gate System Branch Makassar) PT Pelindo Multi Terminal",
+      },
+    ],
+  },
+  {
+    kd_anggaran: "2440014",
+    nm_anggaran: "Penyediaan Network di Branch SPMT",
+    thn_anggaran: 2024,
+    pekerjaan: [
+      {
+        id_pekerjaan: 5,
+        nm_pekerjaan:
+          "Penyediaan Network di Branch SPMT (Malahayati, Lhokseumawe, Lembar, Parepare dan Garongkong)",
+      },
+    ],
+  },
+  {
+    kd_anggaran: "2440013",
+    nm_anggaran: "Penyiapan Infrastruktur IT",
+    thn_anggaran: 2024,
+    pekerjaan: [
+      {
+        id_pekerjaan: 1,
+        nm_pekerjaan: "Pengadaan Server dan Network",
+      },
+    ],
+  },
+  {
+    kd_anggaran: "2440020",
+    nm_anggaran:
+      "Revisi Capex (Pemenuhan Kebutuhan Gate dan PNC Transformasi pada Branch SPMT)",
+    thn_anggaran: 2025,
+    pekerjaan: [
+      {
+        id_pekerjaan: 7,
+        nm_pekerjaan:
+          "Pemenuhan Kebutuhan Gate System Transformasi pada Branch (Jamrud Nilam Mirah, Tanjung Wangi, Trisakti, Dumai, Belawan) PT Pelindo Multi Terminal",
+      },
+      {
+        id_pekerjaan: 8,
+        nm_pekerjaan:
+          "Pemenuhan Kebutuhan Planning and Control Transformasi pada Branch (Jamrud Nilam Mirah, Tanjung Wangi, Trisakti, Dumai, Belawan dan Kantor Pusat) PT Pelindo Multi Terminal",
+      },
+      {
+        id_pekerjaan: 9,
+        nm_pekerjaan:
+          "Pemenuhan Kebutuhan Gate System, Planning and Control dan Perangkat Pendukung Transformasi PT Pelindo Multi Terminal",
+      },
+      {
+        id_pekerjaan: 10,
+        nm_pekerjaan:
+          "Pemenuhan Kebutuhan Gate System dan Planning and Control (Public Announcer, Kelengkapan Gate dan Radio Point To Point) PT Pelindo Multi Terminal",
+      },
+    ],
+  },
+  {
+    kd_anggaran: "2540011",
+    nm_anggaran: "Transformasi dan Digitalisasi PT Pelindo Multi Terminal",
+    thn_anggaran: 2025,
+    pekerjaan: [
+      {
+        id_pekerjaan: 11,
+        nm_pekerjaan: "Penyediaan Alat Berat Excavator",
+      },
+      {
+        id_pekerjaan: 12,
+        nm_pekerjaan:
+          "Penyediaan Kebutuhan Public Announcer Pendukung Transformasi dan Digitalisasi Branch (Balikpapan, Belawan, Dumai, Trisakti, Makassar, Parepare, Garongkong, Sibolga, Tanjung Emas, Tanjung Intan dan Gresik) PT Pelindo Multi Terminal",
+      },
+      {
+        id_pekerjaan: 13,
+        nm_pekerjaan:
+          "Penyediaan Kebutuhan Perangkat Jaringan, Security Information and Management (SIEM) dan Perangkat Pendukung Gate System PT Pelindo Multi Terminal",
+      },
+      {
+        id_pekerjaan: 14,
+        nm_pekerjaan:
+          "Penyediaan Kebutuhan Transformasi dan Digitalisasi (CCTV dan Public Announcer Traffic Monitoring pada Gate) Branch Belawan, Dumai, Malahayati, Lhokseumawe, Lembar, Jamrud Nilam Mirah, Makassar, Balikpapan, Bumiharjo Bagendang, Tanjung Pinang, Sibolga, Tanjung Emas, Parepare, Trisakti dan Gresik PT Pelindo Multi Terminal",
+      },
+    ],
+  },
+  {
+    kd_anggaran: "2540012",
+    nm_anggaran:
+      "Standarisasi Perangkat Jaringan di Lingkungan PT Pelindo Multi Terminal",
+    thn_anggaran: 2025,
+    pekerjaan: [
+      {
+        id_pekerjaan: 15,
+        nm_pekerjaan:
+          "Pemenuhan Kebutuhan Perangkat Network Branch Tanjung Balai Karimun Terminal Selat Panjang PT Pelindo Multi Terminal",
+      },
+    ],
+  },
+  {
+    kd_anggaran: "2540010",
+    nm_anggaran: "Penyiapan Infrastruktur IT pada Kegiatan Roro",
+    thn_anggaran: 2025,
+    pekerjaan: [
+      {
+        id_pekerjaan: 16,
+        nm_pekerjaan:
+          "Penyiapan Infrastruktur Gate System Pendukung Kegiatan RoRo pada Branch Tanjung Emas PT Pelindo Multi Terminal",
+      },
+    ],
+  },
 ];
 
-// ── Per-page options ──
-const PER_PAGE_OPTIONS = [20, 50, 100];
+// ── OPEX ANGGARAN (thn_anggaran → nm_anggaran, tanpa pekerjaan) ───
+let OPEX_ANGGARAN = [
+  {
+    kd_anggaran: "OPEX-5030",
+    nm_anggaran: "Beban Pemeliharaan Software",
+    kd_akun: "5030905000",
+    thn_anggaran: 2024,
+    id_pekerjaan: 101,
+    nm_pekerjaan: "Pemeliharaan Lisensi Perangkat Lunak",
+  },
+  {
+    kd_anggaran: "OPEX-5021A",
+    nm_anggaran: "Beban Jaringan dan Koneksi Data",
+    kd_akun: "5021300000",
+    thn_anggaran: 2024,
+    id_pekerjaan: 102,
+    nm_pekerjaan: "Pemeliharaan Jaringan Dan Internet Branch",
+  },
+  {
+    kd_anggaran: "OPEX-5021B",
+    nm_anggaran: "Beban Perlengkapan Kantor",
+    kd_akun: "5021200000",
+    thn_anggaran: 2024,
+    id_pekerjaan: 103,
+    nm_pekerjaan: "Pengadaan Suku Cadang Dan Hardware Branch",
+  },
+  {
+    kd_anggaran: "OPEX-5081",
+    nm_anggaran: "Beban Jasa Konsultan",
+    kd_akun: "5081500000",
+    thn_anggaran: 2024,
+    id_pekerjaan: 104,
+    nm_pekerjaan: "Penyusunan IT Masterplan Dan Blueprint",
+  },
+  {
+    kd_anggaran: "OPEX-5060",
+    nm_anggaran: "Beban Sumber Daya Pihak Ketiga Peralatan",
+    kd_akun: "5060700000",
+    thn_anggaran: 2024,
+    id_pekerjaan: 105,
+    nm_pekerjaan: "Perbaikan Dan Kalibrasi UPS Power Branch",
+  },
+  {
+    kd_anggaran: "OPEX-5030B",
+    nm_anggaran: "Beban Pemeliharaan Software",
+    kd_akun: "5030905000",
+    thn_anggaran: 2025,
+    id_pekerjaan: 101,
+    nm_pekerjaan: "Pemeliharaan Lisensi Perangkat Lunak",
+  },
+  {
+    kd_anggaran: "OPEX-5021C",
+    nm_anggaran: "Beban Jaringan dan Koneksi Data",
+    kd_akun: "5021300000",
+    thn_anggaran: 2025,
+    id_pekerjaan: 102,
+    nm_pekerjaan: "Pemeliharaan Jaringan Dan Internet Branch",
+  },
+  {
+    kd_anggaran: "OPEX-5021D",
+    nm_anggaran: "Beban Perlengkapan Kantor",
+    kd_akun: "5021200000",
+    thn_anggaran: 2025,
+    id_pekerjaan: 103,
+    nm_pekerjaan: "Pengadaan Suku Cadang Dan Hardware Branch",
+  },
+  {
+    kd_anggaran: "OPEX-5081B",
+    nm_anggaran: "Beban Jasa Konsultan",
+    kd_akun: "5081500000",
+    thn_anggaran: 2025,
+    id_pekerjaan: 104,
+    nm_pekerjaan: "Penyusunan IT Masterplan Dan Blueprint",
+  },
+  {
+    kd_anggaran: "OPEX-5060B",
+    nm_anggaran: "Beban Sumber Daya Pihak Ketiga Peralatan",
+    kd_akun: "5060700000",
+    thn_anggaran: 2025,
+    id_pekerjaan: 105,
+    nm_pekerjaan: "Perbaikan Dan Kalibrasi UPS Power Branch",
+  },
+];
 
-const Ico = ({ n, s = 18, c }) => {
-  const paths = {
-    search: (
-      <>
-        <circle cx="11" cy="11" r="8" />
-        <line x1="21" y1="21" x2="16.65" y2="16.65" />
-      </>
-    ),
-    laptop: (
-      <>
-        <rect x="2" y="3" width="20" height="14" rx="2" />
-        <line x1="8" y1="21" x2="16" y2="21" />
-        <line x1="12" y1="17" x2="12" y2="21" />
-      </>
-    ),
-    server: (
-      <>
-        <rect x="2" y="2" width="20" height="8" rx="2" />
-        <rect x="2" y="14" width="20" height="8" rx="2" />
-      </>
-    ),
-    monitor: (
-      <>
-        <rect x="2" y="3" width="20" height="14" rx="2" />
-        <line x1="8" y1="21" x2="16" y2="21" />
-        <line x1="12" y1="17" x2="12" y2="21" />
-        <path d="M7 8h10M7 12h6" />
-      </>
-    ),
-    network: (
-      <>
-        <circle cx="12" cy="5" r="3" />
-        <circle cx="19" cy="19" r="3" />
-        <circle cx="5" cy="19" r="3" />
-        <line x1="12" y1="8" x2="5.5" y2="16" />
-        <line x1="12" y1="8" x2="18.5" y2="16" />
-      </>
-    ),
-    battery: (
-      <>
-        <rect x="1" y="6" width="18" height="12" rx="2" />
-        <line x1="23" y1="11" x2="23" y2="13" />
-      </>
-    ),
-    cube: (
-      <>
-        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-      </>
-    ),
-    x: (
-      <>
-        <line x1="18" y1="6" x2="6" y2="18" />
-        <line x1="6" y1="6" x2="18" y2="18" />
-      </>
-    ),
-    pin: (
-      <>
-        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-        <circle cx="12" cy="10" r="3" />
-      </>
-    ),
-    eye: (
-      <>
-        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-        <circle cx="12" cy="12" r="3" />
-      </>
-    ),
-    ban: (
-      <>
-        <circle cx="12" cy="12" r="10" />
-        <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
-      </>
-    ),
-    filter: (
-      <>
-        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-      </>
-    ),
-    tag: (
-      <>
-        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
-        <line x1="7" y1="7" x2="7.01" y2="7" />
-      </>
-    ),
-    sortAsc: (
-      <>
-        <line x1="12" y1="19" x2="12" y2="5" />
-        <polyline points="5 12 12 5 19 12" />
-      </>
-    ),
-    sortDesc: (
-      <>
-        <line x1="12" y1="5" x2="12" y2="19" />
-        <polyline points="19 12 12 19 5 12" />
-      </>
-    ),
-    sort: (
-      <>
-        <line x1="3" y1="6" x2="21" y2="6" />
-        <line x1="6" y1="12" x2="18" y2="12" />
-        <line x1="9" y1="18" x2="15" y2="18" />
-      </>
-    ),
-    chevLeft: (
-      <>
-        <polyline points="15 18 9 12 15 6" />
-      </>
-    ),
-    chevRight: (
-      <>
-        <polyline points="9 18 15 12 9 6" />
-      </>
-    ),
-    arrowLeft: (
-      <>
-        <line x1="19" y1="12" x2="5" y2="12" />
-        <polyline points="12 19 5 12 12 5" />
-      </>
-    ),
-    calendar: (
-      <>
-        <rect x="3" y="4" width="18" height="18" rx="2" />
-        <line x1="16" y1="2" x2="16" y2="6" />
-        <line x1="8" y1="2" x2="8" y2="6" />
-        <line x1="3" y1="10" x2="21" y2="10" />
-      </>
-    ),
-    hash: (
-      <>
-        <line x1="4" y1="9" x2="20" y2="9" />
-        <line x1="4" y1="15" x2="20" y2="15" />
-        <line x1="10" y1="3" x2="8" y2="21" />
-        <line x1="16" y1="3" x2="14" y2="21" />
-      </>
-    ),
-    info: (
-      <>
-        <circle cx="12" cy="12" r="10" />
-        <line x1="12" y1="16" x2="12" y2="12" />
-        <line x1="12" y1="8" x2="12.01" y2="8" />
-      </>
-    ),
-    edit: (
-      <>
-        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-      </>
-    ),
-    // ── icon peminjaman: tangan menerima/mengulurkan barang ──
-    borrow: (
-      <>
-        <path d="M14 8V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2v-2" />
-        <path d="M18 8l4 4-4 4" />
-        <line x1="22" y1="12" x2="10" y2="12" />
-      </>
-    ),
-    hand: (
-      <>
-        <path d="M20 10V7c0-1.65-1.35-3-3-3s-3 1.35-3 3v3M10 18.5a2 2 0 0 1-3-3M4 21v-3.5a4.5 4.5 0 0 1 9 0V21M3 16h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2z" />
-      </>
-    ),
-  };
-  const catIcons = {
-    LAPTOP: "laptop",
-    SERVER: "server",
-    DESKTOP: "monitor",
-    NETWORK: "network",
-    UPS: "battery",
-    OTHER: "cube",
-  };
-  return (
-    <svg
-      width={s}
-      height={s}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke={c || "currentColor"}
-      strokeWidth="2.2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      style={{
-        display: "block",
-        color: c || "inherit",
-        flex: "0 0 auto",
-      }}
-    >
-      {paths[catIcons[n] || n]}
-    </svg>
-  );
+// ── DERIVED FLAT LIST (for lookup/table/export) ───────────────────
+let ALL_PROJECTS = [
+  ...CAPEX_ANGGARAN.flatMap((a) =>
+    a.pekerjaan.map((p) => ({
+      ...p,
+      jenis: "CAPEX",
+      kd_anggaran: a.kd_anggaran,
+      nm_anggaran: a.nm_anggaran,
+      thn_anggaran: a.thn_anggaran,
+    })),
+  ),
+  ...OPEX_ANGGARAN.map((o) => ({
+    id_pekerjaan: o.id_pekerjaan,
+    nm_pekerjaan: o.nm_pekerjaan || o.nm_anggaran,
+    jenis: "OPEX",
+    kd_anggaran: o.kd_anggaran,
+    nm_anggaran: o.nm_anggaran,
+    thn_anggaran: o.thn_anggaran,
+    kd_akun: o.kd_akun,
+  })),
+];
+
+const ALL_TAHUN_LIST = [
+  ...new Set([
+    ...CAPEX_ANGGARAN.map((a) => a.thn_anggaran),
+    ...OPEX_ANGGARAN.map((o) => o.thn_anggaran),
+  ]),
+].sort();
+
+const getAnggaranByTahun = (thn) => {
+  const capex = CAPEX_ANGGARAN.filter(
+    (a) => String(a.thn_anggaran) === String(thn),
+  ).map((a) => ({ ...a, jenis: "CAPEX" }));
+  const opex = OPEX_ANGGARAN.filter(
+    (o) => String(o.thn_anggaran) === String(thn),
+  ).map((o) => ({
+    kd_anggaran: o.kd_anggaran,
+    nm_anggaran: o.nm_anggaran,
+    thn_anggaran: o.thn_anggaran,
+    jenis: "OPEX",
+    id_pekerjaan: o.id_pekerjaan,
+    kd_akun: o.kd_akun,
+  }));
+  return [...capex, ...opex];
 };
 
-// ── Pagination helper ──
-function buildPageList(current, total) {
-  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-  const pages = [];
-  if (current <= 4) {
-    pages.push(1, 2, 3, 4, 5, "…", total);
-  } else if (current >= total - 3) {
-    pages.push(1, "…", total - 4, total - 3, total - 2, total - 1, total);
-  } else {
-    pages.push(1, "…", current - 1, current, current + 1, "…", total);
+const getProjectById = (id) =>
+  ALL_PROJECTS.find((p) => String(p.id_pekerjaan) === String(id)) || null;
+
+const getProjectName = (id) => {
+  const p = getProjectById(id);
+  return p ? p.nm_pekerjaan : "—";
+};
+
+const MOCK_ALL_BORROWS = [
+  {
+    id: 1,
+    code: "CCTV-24BLW-001",
+    serial_number: "SN-CCTV-001",
+    name: "CCTV Hikvision PTZ",
+    borrow_date: "2026-01-10T09:00:00",
+    due_date: "2026-02-10",
+    performed_by_id: 3,
+    performed_by_name: "Andi Pratama",
+    performed_by_branch: "Belawan",
+    from_zone: "Gudang Utama",
+    to_zone: "Area Dermaga - Tiang 1",
+    reason: "Instalasi Baru",
+    condition: "GOOD",
+    is_returned: true,
+    return_date: "2026-02-08T14:00:00",
+    return_condition: "GOOD",
+    return_notes: "Kondisi baik, ditarik untuk maintenance rutin.",
+    returned_by_name: "Budi Santoso",
+  },
+  {
+    id: 2,
+    code: "CCTV-24BLW-001",
+    serial_number: "SN-CCTV-001",
+    name: "CCTV Hikvision PTZ",
+    borrow_date: "2026-02-20T10:00:00",
+    due_date: "2026-03-20",
+    performed_by_id: 1,
+    performed_by_name: "Joy Valeda Silalahi",
+    performed_by_branch: "Belawan",
+    from_zone: "Gudang Utama",
+    to_zone: "Area Parkir Timur",
+    reason: "Penggantian unit rusak sementara",
+    condition: "GOOD",
+    is_returned: false,
+    return_date: null,
+    return_condition: null,
+    return_notes: null,
+  },
+  {
+    id: 3,
+    code: "CCTV-24BLW-001",
+    serial_number: "SN-CCTV-002",
+    name: "CCTV Hikvision PTZ",
+    borrow_date: "2026-01-15T08:00:00",
+    due_date: "2026-02-15",
+    performed_by_id: 2,
+    performed_by_name: "Dina Marlina Siagian",
+    performed_by_branch: "Belawan",
+    from_zone: "Gudang Utama",
+    to_zone: "Pintu Masuk Utama",
+    reason: "Instalasi Baru",
+    condition: "GOOD",
+    is_returned: true,
+    return_date: "2026-02-10T16:00:00",
+    return_condition: "MINOR_DAMAGE",
+    return_notes: "Lensa sedikit berembun setelah hujan lebat.",
+    returned_by_name: "Andi Pratama",
+  },
+  {
+    id: 4,
+    code: "KND-24BLW-001",
+    serial_number: "BK 1234 ZZ",
+    name: "Toyota Hilux Pickup",
+    borrow_date: "2026-01-05T07:00:00",
+    due_date: "2026-01-20",
+    performed_by_id: 5,
+    performed_by_name: "Rini Handayani",
+    performed_by_branch: "Belawan",
+    from_zone: "Pool Kendaraan",
+    to_zone: "Luar Kota (Medan)",
+    reason: "Dinas operasional",
+    condition: "GOOD",
+    is_returned: true,
+    return_date: "2026-01-19T17:00:00",
+    return_condition: "GOOD",
+    return_notes: "Kondisi sangat baik, BBM full.",
+    returned_by_name: "Rini Handayani",
+  },
+  {
+    id: 5,
+    code: "KND-24BLW-001",
+    serial_number: "BK 1234 ZZ",
+    name: "Toyota Hilux Pickup",
+    borrow_date: "2026-02-15T08:00:00",
+    due_date: "2026-03-01",
+    performed_by_id: 4,
+    performed_by_name: "Sari Dewi",
+    performed_by_branch: "Belawan",
+    from_zone: "Pool Kendaraan",
+    to_zone: "Terminal Peti Kemas",
+    reason: "Patroli rutin",
+    condition: "GOOD",
+    is_returned: false,
+    return_date: null,
+    return_condition: null,
+    return_notes: null,
+  },
+  {
+    id: 6,
+    code: "KND-24BLW-001",
+    serial_number: "BK 5678 AA",
+    name: "Toyota Hilux Pickup",
+    borrow_date: "2026-02-10T09:00:00",
+    due_date: "2026-02-12",
+    performed_by_id: 3,
+    performed_by_name: "Andi Pratama",
+    performed_by_branch: "Belawan",
+    from_zone: "Pool Kendaraan",
+    to_zone: "Workshop",
+    reason: "Service rutin 10.000km",
+    condition: "GOOD",
+    is_returned: true,
+    return_date: "2026-02-12T15:00:00",
+    return_condition: "GOOD",
+    return_notes: "Ganti oli dan filter, kondisi prima.",
+    returned_by_name: "Andi Pratama",
   }
-  return pages;
+];
+
+const CATEGORY_IMAGES = {
+  Laptop:
+    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
+  CCTV:
+    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
+  Router:
+    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
+  "PC Desktop":
+    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
+  Server:
+    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
+  Switch:
+    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
+  Printer:
+    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
+  Lainnya:
+    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
+  "IT Equipment":
+    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
+  Kendaraan:
+    "https://images.unsplash.com/photo-1547036967-23d11aacaee0?w=400&h=300&fit=crop",
+  "Alat Berat":
+    "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=400&h=300&fit=crop",
+  Furniture:
+    "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&h=300&fit=crop",
+  // Short codes
+  LPT: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
+  CTV: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
+  RTR: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
+  PC: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
+  SRV: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
+  SWT: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
+  PRN: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
+  OTH: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
+  KND: "https://images.unsplash.com/photo-1547036967-23d11aacaee0?w=400&h=300&fit=crop",
+  AB: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=400&h=300&fit=crop",
+  FRN: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&h=300&fit=crop",
+};
+
+const conditionConfig = {
+  GOOD: { label: "Baik", color: "#16a34a", bg: "#dcfce7" },
+  MINOR_DAMAGE: { label: "Rusak Ringan", color: "#d97706", bg: "#fef3c7" },
+  DAMAGED: { label: "Rusak Berat", color: "#dc2626", bg: "#fee2e2" },
+};
+
+const ENTITAS_LIST = [
+  { name: "Pelindo Multi Terminal", code: "SPMT" },
+  { name: "PT Pelabuhan Indonesia", code: "PTP" },
+  { name: "Indonesia Kendaraan Terminal", code: "IKT" },
+];
+const BRANCH_BY_ENTITY = {
+  SPMT: [
+    { name: "Belawan", code: "BLW" },
+    { name: "Gresik", code: "GRK" },
+    { name: "Lembar Badas", code: "LBR" },
+    { name: "Tanjung Intan", code: "TJI" },
+    { name: "Dumai", code: "DMI" },
+    { name: "Sibolga", code: "SBG" },
+    { name: "Malahayati", code: "MLH" },
+    { name: "Lhokseumawe", code: "LHK" },
+    { name: "Tanjung Emas", code: "TJE" },
+    { name: "Balikpapan", code: "BLP" },
+    { name: "Makassar", code: "MKS" },
+    { name: "Trisakti", code: "BJM" },
+  ],
+  PTP: [
+    { name: "Banten", code: "BTN" },
+    { name: "Tanjung Priok", code: "TJP" },
+    { name: "Teluk Bayur", code: "TBR" },
+    { name: "Palembang", code: "PLB" },
+    { name: "Jambi", code: "JMB" },
+  ],
+  IKT: [{ name: "Jakarta", code: "JKT" }],
+};
+const ZONA_LIST = [
+  { name: "Gedung", code: "GDG" },
+  { name: "Lapangan", code: "LPG" },
+  { name: "Data Center", code: "DTC" },
+  { name: "Gudang", code: "GDN" },
+];
+const SUBZONA_LIST = [
+  { name: "Dermaga", code: "DMG" },
+  { name: "Parkir", code: "PKR" },
+  { name: "Jalan", code: "JLN" },
+  { name: "Taman", code: "TPK" },
+];
+const ITEMS_PER_PAGE = 8;
+
+const SPEC_UNIT_OPTIONS = [
+  { group: "Penyimpanan", units: ["B", "KB", "MB", "GB", "TB"] },
+  { group: "Memori", units: ["MB RAM", "GB RAM"] },
+  { group: "Frekuensi", units: ["MHz", "GHz"] },
+  { group: "Kecepatan", units: ["Mbps", "Gbps", "Kbps", "RPM"] },
+  { group: "Daya", units: ["W", "kW", "VA"] },
+  { group: "Dimensi", units: ["mm", "cm", "m", "inch"] },
+  { group: "Berat", units: ["g", "kg", "ton"] },
+  { group: "Tegangan", units: ["V", "mV", "kV"] },
+  { group: "Suhu", units: ["°C", "°F"] },
+  { group: "Waktu", units: ["detik", "menit", "jam", "hari", "tahun"] },
+  { group: "Lainnya", units: ["unit", "pcs", "%", "-"] },
+];
+
+const SPEC_TEMPLATES_BY_CATEGORY = {
+  LPT: [
+    { spec_label: "Processor", default_unit: "GHz", input_type: "text" },
+    { spec_label: "RAM", default_unit: "GB RAM", input_type: "number" },
+    { spec_label: "Storage", default_unit: "GB", input_type: "number" },
+    { spec_label: "Resolusi Layar", default_unit: "inch", input_type: "text" },
+  ],
+  CTV: [
+    { spec_label: "Resolusi", default_unit: "MP", input_type: "text" },
+    { spec_label: "Lensa", default_unit: "mm", input_type: "text" },
+    { spec_label: "Jangkauan IR", default_unit: "m", input_type: "number" },
+  ],
+  RTR: [
+    { spec_label: "Kecepatan", default_unit: "Mbps", input_type: "number" },
+    { spec_label: "Port", default_unit: "-", input_type: "text" },
+    { spec_label: "Frekuensi", default_unit: "GHz", input_type: "text" },
+  ],
+  PC: [
+    { spec_label: "Processor", default_unit: "GHz", input_type: "text" },
+    { spec_label: "RAM", default_unit: "GB RAM", input_type: "number" },
+    { spec_label: "Storage", default_unit: "GB", input_type: "number" },
+  ],
+  SRV: [
+    { spec_label: "Processor", default_unit: "GHz", input_type: "text" },
+    { spec_label: "RAM", default_unit: "GB", input_type: "number" },
+    { spec_label: "Storage", default_unit: "TB", input_type: "number" },
+    { spec_label: "Power Supply", default_unit: "W", input_type: "number" },
+  ],
+  SWT: [
+    { spec_label: "Jumlah Port", default_unit: "-", input_type: "number" },
+    { spec_label: "Kecepatan", default_unit: "Mbps", input_type: "number" },
+    { spec_label: "Manageable", default_unit: "-", input_type: "text" },
+  ],
+  PRN: [
+    { spec_label: "Tipe Printer", default_unit: "-", input_type: "text" },
+    { spec_label: "Fungsi", default_unit: "-", input_type: "text" },
+    { spec_label: "Konektivitas", default_unit: "-", input_type: "text" },
+  ],
+  OTH: [
+    { spec_label: "Spesifikasi Utama", default_unit: "-", input_type: "text" },
+    { spec_label: "Keterangan Tambahan", default_unit: "-", input_type: "text" }
+  ],
+  KND: [
+    { spec_label: "Plat Nomor", default_unit: "-", input_type: "text" },
+    { spec_label: "Nomor Mesin", default_unit: "-", input_type: "text" },
+    {
+      spec_label: "Tahun Pembuatan",
+      default_unit: "tahun",
+      input_type: "number",
+    },
+    { spec_label: "Merk / Brand", default_unit: "-", input_type: "text" },
+    { spec_label: "Kapasitas Mesin", default_unit: "cc", input_type: "number" },
+  ],
+  AB: [
+    { spec_label: "Plat / Lambung", default_unit: "-", input_type: "text" },
+    { spec_label: "Nomor Mesin", default_unit: "-", input_type: "text" },
+    {
+      spec_label: "Tahun Pembuatan",
+      default_unit: "tahun",
+      input_type: "number",
+    },
+  ],
+  Laptop: [
+    { spec_label: "Processor", default_unit: "GHz", input_type: "text" },
+    { spec_label: "RAM", default_unit: "GB RAM", input_type: "number" },
+    { spec_label: "Storage", default_unit: "GB", input_type: "number" },
+    { spec_label: "Resolusi Layar", default_unit: "inch", input_type: "text" },
+  ],
+  CCTV: [
+    { spec_label: "Resolusi", default_unit: "MP", input_type: "text" },
+    { spec_label: "Lensa", default_unit: "mm", input_type: "text" },
+    { spec_label: "Jangkauan IR", default_unit: "m", input_type: "number" },
+  ],
+  Router: [
+    { spec_label: "Kecepatan", default_unit: "Mbps", input_type: "number" },
+    { spec_label: "Port", default_unit: "-", input_type: "text" },
+    { spec_label: "Frekuensi", default_unit: "GHz", input_type: "text" },
+  ],
+  "PC Desktop": [
+    { spec_label: "Processor", default_unit: "GHz", input_type: "text" },
+    { spec_label: "RAM", default_unit: "GB RAM", input_type: "number" },
+    { spec_label: "Storage", default_unit: "GB", input_type: "number" },
+  ],
+  Server: [
+    { spec_label: "Processor", default_unit: "GHz", input_type: "text" },
+    { spec_label: "RAM", default_unit: "GB", input_type: "number" },
+    { spec_label: "Storage", default_unit: "TB", input_type: "number" },
+    { spec_label: "Power Supply", default_unit: "W", input_type: "number" },
+  ],
+  Switch: [
+    { spec_label: "Jumlah Port", default_unit: "-", input_type: "number" },
+    { spec_label: "Kecepatan", default_unit: "Mbps", input_type: "number" },
+    { spec_label: "Manageable", default_unit: "-", input_type: "text" },
+  ],
+  Printer: [
+    { spec_label: "Tipe Printer", default_unit: "-", input_type: "text" },
+    { spec_label: "Fungsi", default_unit: "-", input_type: "text" },
+    { spec_label: "Konektivitas", default_unit: "-", input_type: "text" },
+  ],
+  Lainnya: [
+    { spec_label: "Spesifikasi Utama", default_unit: "-", input_type: "text" },
+    { spec_label: "Keterangan Tambahan", default_unit: "-", input_type: "text" }
+  ],
+  "IT Equipment": [
+    {
+      spec_label: "Processor (CPU)",
+      default_unit: "GHz",
+      input_type: "number",
+    },
+    { spec_label: "RAM", default_unit: "GB RAM", input_type: "number" },
+    { spec_label: "Storage", default_unit: "GB", input_type: "number" },
+    { spec_label: "Operating System", default_unit: "-", input_type: "text" },
+    { spec_label: "Resolusi Layar", default_unit: "inch", input_type: "text" },
+  ],
+  Kendaraan: [
+    { spec_label: "Plat Nomor", default_unit: "-", input_type: "text" },
+    { spec_label: "Nomor Mesin", default_unit: "-", input_type: "text" },
+    {
+      spec_label: "Tahun Pembuatan",
+      default_unit: "tahun",
+      input_type: "number",
+    },
+    { spec_label: "Merk / Brand", default_unit: "-", input_type: "text" },
+    { spec_label: "Kapasitas Mesin", default_unit: "cc", input_type: "number" },
+  ],
+  "Alat Berat": [
+    { spec_label: "Plat / Lambung", default_unit: "-", input_type: "text" },
+    { spec_label: "Nomor Mesin", default_unit: "-", input_type: "text" },
+    {
+      spec_label: "Tahun Pembuatan",
+      default_unit: "tahun",
+      input_type: "number",
+    },
+    {
+      spec_label: "Kapasitas Angkat",
+      default_unit: "ton",
+      input_type: "number",
+    },
+    { spec_label: "Daya Mesin", default_unit: "kW", input_type: "number" },
+  ],
+  Furniture: [
+    { spec_label: "Bahan Material", default_unit: "-", input_type: "text" },
+    { spec_label: "Panjang", default_unit: "cm", input_type: "number" },
+    { spec_label: "Lebar", default_unit: "cm", input_type: "number" },
+    { spec_label: "Tinggi", default_unit: "cm", input_type: "number" },
+    { spec_label: "Warna Dominan", default_unit: "-", input_type: "text" },
+  ],
+};
+
+// ── CODE128 BARCODE ───────────────────────────────────────────────────────────
+const C128 = {
+  S_B: 104,
+  STOP: 106,
+  CH: " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~",
+  P: [
+    "11011001100",
+    "11001101100",
+    "11001100110",
+    "10010011000",
+    "10010001100",
+    "10001001100",
+    "10011001000",
+    "10011000100",
+    "10001100100",
+    "11001001000",
+    "11001000100",
+    "11000100100",
+    "10110011100",
+    "10011011100",
+    "10011001110",
+    "10111001100",
+    "10011101100",
+    "10011100110",
+    "11001110010",
+    "11001011100",
+    "11001001110",
+    "11011100100",
+    "11001110100",
+    "11101101110",
+    "11101001100",
+    "11100101100",
+    "11100100110",
+    "11101100100",
+    "11100110100",
+    "11100110010",
+    "11011011000",
+    "11011000110",
+    "11000110110",
+    "10100011000",
+    "10001011000",
+    "10001000110",
+    "10110001000",
+    "10001101000",
+    "10001100010",
+    "11010001000",
+    "11000101000",
+    "11000100010",
+    "10110111000",
+    "10110001110",
+    "10001101110",
+    "10111011000",
+    "10111000110",
+    "10001110110",
+    "11101110110",
+    "11010001110",
+    "11000101110",
+    "11011101000",
+    "11011100010",
+    "11011101110",
+    "11101011000",
+    "11101000110",
+    "11100010110",
+    "11101101000",
+    "11101100010",
+    "11100011010",
+    "11101111010",
+    "11001000010",
+    "11110001010",
+    "10100110000",
+    "10100001100",
+    "10010110000",
+    "10010000110",
+    "10000101100",
+    "10000100110",
+    "10110010000",
+    "10110000100",
+    "10011010000",
+    "10011000010",
+    "10000110100",
+    "10000110010",
+    "11000010010",
+    "11001010000",
+    "11110111010",
+    "11000010100",
+    "10001111010",
+    "10100111100",
+    "10010111100",
+    "10010011110",
+    "10111100100",
+    "10011110100",
+    "10011110010",
+    "11110100100",
+    "11110010100",
+    "11110010010",
+    "11110110110",
+    "11011110110",
+    "11110110110",
+    "10101111000",
+    "10100011110",
+    "10001011110",
+    "10111101000",
+    "10111100010",
+    "11110101000",
+    "11110100010",
+    "10111011110",
+    "10111101110",
+    "11101011110",
+    "11110101110",
+    "11010000100",
+    "11010010000",
+    "11010011100",
+    "1100011101011",
+  ],
+  encode(text) {
+    let codes = [this.S_B],
+      cs = this.S_B;
+    for (let i = 0; i < text.length; i++) {
+      const idx = this.CH.indexOf(text[i]);
+      if (idx < 0) continue;
+      codes.push(idx);
+      cs += idx * (i + 1);
+    }
+    codes.push(cs % 103);
+    codes.push(this.STOP);
+    return codes.map((c) => this.P[c]).join("") + "11";
+  },
+};
+
+function BarcodeCanvas({ value, width = 340, height = 64 }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!ref.current || !value) return;
+    const canvas = ref.current,
+      ctx = canvas.getContext("2d");
+    const bars = C128.encode(value);
+    const bw = Math.max(1, Math.floor(width / bars.length));
+    canvas.width = bw * bars.length;
+    canvas.height = height;
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#000";
+    for (let i = 0; i < bars.length; i++)
+      if (bars[i] === "1") ctx.fillRect(i * bw, 0, bw, height);
+  }, [value, width, height]);
+  return (
+    <canvas
+      ref={ref}
+      style={{
+        display: "block",
+        maxWidth: "100%",
+        imageRendering: "pixelated",
+      }}
+    />
+  );
 }
 
-// ── Halaman Detail Aset (inline, bukan modal) ──
-function AssetDetailPage({ asset, loans, onBack, onBorrow }) {
-  const [imgErr, setImgErr] = useState(false);
-  const cat = categoryConf[asset.category] || categoryConf.OTHER;
-  const st = statusConf[asset.status];
-  const isDisposed = isDisposedStatus(asset.status);
-  const photo = getAssetPhoto(asset);
+// ── SVG ICONS ─────────────────────────────────────────────────────
+const Icon = {
+  Inventory: () => (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="3" y="3" width="7" height="7" rx="1.5" />
+      <rect x="14" y="3" width="7" height="7" rx="1.5" />
+      <rect x="3" y="14" width="7" height="7" rx="1.5" />
+      <rect x="14" y="14" width="7" height="7" rx="1.5" />
+    </svg>
+  ),
+  Shield: () => (
+    <svg
+      width="11"
+      height="11"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    </svg>
+  ),
+  Plus: () => (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <line x1="5" y1="12" x2="19" y2="12" />
+    </svg>
+  ),
+  Minus: () => (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <line x1="5" y1="12" x2="19" y2="12" />
+    </svg>
+  ),
+  Layers: () => (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <polygon points="12 2 2 7 12 12 22 7 12 2" />
+      <polyline points="2 17 12 22 22 17" />
+      <polyline points="2 12 12 17 22 12" />
+    </svg>
+  ),
+  CheckRound: () => (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="9 12 11 14 15 10" />
+    </svg>
+  ),
+  ArrowUpRight: () => (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="12 8 16 12 12 16" />
+      <line x1="8" y1="12" x2="16" y2="12" />
+    </svg>
+  ),
+  Wrench: () => (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+    </svg>
+  ),
+  Coins: () => (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="8" cy="8" r="6" />
+      <path d="M18.09 10.37A6 6 0 1 1 10.34 18" />
+      <path d="M7 6h1v4" />
+      <path d="m16.71 13.88.7.71-2.82 2.82" />
+    </svg>
+  ),
+  Search: () => (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    >
+      <circle cx="11" cy="11" r="8" />
+      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+  ),
+  Filter: () => (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    >
+      <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+    </svg>
+  ),
+  Download: () => (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    >
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="7 10 12 15 17 10" />
+      <line x1="12" y1="15" x2="12" y2="3" />
+    </svg>
+  ),
+  ChevronDown: ({ deg = 0 }) => (
+    <svg
+      width="10"
+      height="10"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      style={{ transform: `rotate(${deg}deg)`, transition: "transform .2s" }}
+    >
+      <polyline points="6 9 12 15 18 9" />
+    </svg>
+  ),
+  ChevronLeft: () => (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+    >
+      <polyline points="15 18 9 12 15 6" />
+    </svg>
+  ),
+  ChevronRight: () => (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+    >
+      <polyline points="9 18 15 12 9 6" />
+    </svg>
+  ),
+  Eye: () => (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    >
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  ),
+  Barcode: () => (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    >
+      <path d="M3 5v14M7 5v14M11 5v14M15 5v14M19 5v14M21 5v14" />
+    </svg>
+  ),
+  Edit: () => (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      style={{ display: "block", position: "relative", zIndex: 1, flexShrink: 0 }}
+    >
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+    </svg>
+  ),
+  Trash: () => (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      style={{ display: "block", position: "relative", zIndex: 1, flexShrink: 0 }}
+    >
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+    </svg>
+  ),
+  Dots: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+      <circle cx="12" cy="5" r="1.5" />
+      <circle cx="12" cy="12" r="1.5" />
+      <circle cx="12" cy="19" r="1.5" />
+    </svg>
+  ),
+  Calendar: () => (
+    <svg
+      width="11"
+      height="11"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    >
+      <rect x="3" y="4" width="18" height="18" rx="2" />
+      <line x1="16" y1="2" x2="16" y2="6" />
+      <line x1="8" y1="2" x2="8" y2="6" />
+      <line x1="3" y1="10" x2="21" y2="10" />
+    </svg>
+  ),
+  InfoCircle: () => (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="16" x2="12" y2="12" />
+      <line x1="12" y1="8" x2="12.01" y2="8" />
+    </svg>
+  ),
+  Times: () => (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 14 14"
+      fill="none"
+      style={{ display: "block" }}
+    >
+      <line
+        x1="1"
+        y1="1"
+        x2="13"
+        y2="13"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <line
+        x1="13"
+        y1="1"
+        x2="1"
+        y2="13"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  ),
+  Save: () => (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    >
+      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+      <polyline points="17 21 17 13 7 13 7 21" />
+      <polyline points="7 3 7 8 15 8" />
+    </svg>
+  ),
+  Print: () => (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    >
+      <polyline points="6 9 6 2 18 2 18 9" />
+      <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+      <rect x="6" y="14" width="12" height="8" />
+    </svg>
+  ),
+  Warn: () => (
+    <svg
+      width="38"
+      height="38"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+    >
+      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+      <line x1="12" y1="9" x2="12" y2="13" />
+      <line x1="12" y1="17" x2="12.01" y2="17" />
+    </svg>
+  ),
+  WarnSm: () => (
+    <svg
+      width="11"
+      height="11"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+    >
+      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+    </svg>
+  ),
+  Tag: () => (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    >
+      <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+      <line x1="7" y1="7" x2="7.01" y2="7" />
+    </svg>
+  ),
+  Cogs: () => (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    >
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </svg>
+  ),
+  MapPin: () => (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    >
+      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+      <circle cx="12" cy="10" r="3" />
+    </svg>
+  ),
+  LayersIcon: () => (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+    >
+      <polygon points="12 2 2 7 12 12 22 7 12 2" />
+      <polyline points="2 17 12 22 22 17" />
+      <polyline points="2 12 12 17 22 12" />
+    </svg>
+  ),
+  Database: () => (
+    <svg
+      width="17"
+      height="17"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    >
+      <ellipse cx="12" cy="5" rx="9" ry="3" />
+      <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+      <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+    </svg>
+  ),
+  DatabaseSm: () => (
+    <svg
+      width="11"
+      height="11"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    >
+      <ellipse cx="12" cy="5" rx="9" ry="3" />
+      <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+      <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+    </svg>
+  ),
+  Magic: () => (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    >
+      <path d="M15 4V2m0 14v-2M8 9H2m14 0h-2M13.8 6.2 12 4.4m3.8 9.4L14 12m-3.8-9.4L8.4 4.4m9.4 9.4-1.8-1.8" />
+      <path d="m3 21 9-9" />
+    </svg>
+  ),
+  BarcodeModal: () => (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    >
+      <path d="M3 5v14M7 5v14M11 5v14M15 5v14M19 5v14M21 5v14" />
+    </svg>
+  ),
+  QrCode: () => (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    >
+      <rect x="3" y="3" width="7" height="7" />
+      <rect x="14" y="3" width="7" height="7" />
+      <rect x="3" y="14" width="7" height="7" />
+      <rect x="17" y="17" width="3" height="3" />
+    </svg>
+  ),
+  Check: () => (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+    >
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  ),
+  CheckSm: () => (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="#16a34a"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+    >
+      <circle cx="12" cy="12" r="10" stroke="#16a34a" strokeWidth="2" />
+      <polyline points="9 12 11 14 15 10" stroke="#16a34a" />
+    </svg>
+  ),
+  BoxOpen: () => (
+    <svg
+      width="48"
+      height="48"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.3"
+      strokeLinecap="round"
+    >
+      <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+      <path d="m3.3 7 8.7 5 8.7-5" />
+      <path d="M12 22V12" />
+    </svg>
+  ),
+  SmallTrash: () => (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      style={{ display: "block" }}
+    >
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+    </svg>
+  ),
+  History: () => (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <polyline points="12 8 12 12 14 14" />
+      <path d="M3.05 11a9 9 0 1 1 .5 4m-.5-4v4h4" />
+    </svg>
+  ),
+  ArrowRight: () => (
+    <svg
+      width="11"
+      height="11"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <line x1="5" y1="12" x2="19" y2="12" />
+      <polyline points="12 5 19 12 12 19" />
+    </svg>
+  ),
+  User: () => (
+    <svg
+      width="11"
+      height="11"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
+  ),
+  ClipboardEmpty: () => (
+    <svg
+      width="36"
+      height="36"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+      <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+    </svg>
+  ),
+  Photo: () => (
+    <svg
+      width="32"
+      height="32"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <circle cx="8.5" cy="8.5" r="1.5" />
+      <polyline points="21 15 16 10 5 21" />
+    </svg>
+  ),
+  PhotoSm: () => (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <circle cx="8.5" cy="8.5" r="1.5" />
+      <polyline points="21 15 16 10 5 21" />
+    </svg>
+  ),
+  Grid: () => (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    >
+      <rect x="3" y="3" width="7" height="7" />
+      <rect x="14" y="3" width="7" height="7" />
+      <rect x="3" y="14" width="7" height="7" />
+      <rect x="14" y="14" width="7" height="7" />
+    </svg>
+  ),
+  List: () => (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    >
+      <line x1="8" y1="6" x2="21" y2="6" />
+      <line x1="8" y1="12" x2="21" y2="12" />
+      <line x1="8" y1="18" x2="21" y2="18" />
+      <line x1="3" y1="6" x2="3.01" y2="6" />
+      <line x1="3" y1="12" x2="3.01" y2="12" />
+      <line x1="3" y1="18" x2="3.01" y2="18" />
+    </svg>
+  ),
+  Upload: () => (
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="17 8 12 3 7 8" />
+      <line x1="12" y1="3" x2="12" y2="15" />
+    </svg>
+  ),
+  XCircle: () => (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <line x1="15" y1="9" x2="9" y2="15" />
+      <line x1="9" y1="9" x2="15" y2="15" />
+    </svg>
+  ),
+  Box: () => (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+      <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+      <line x1="12" y1="22.08" x2="12" y2="12" />
+    </svg>
+  ),
+  UserCheck: () => (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+      <circle cx="8.5" cy="7" r="4" />
+      <polyline points="17 11 19 13 23 9" />
+    </svg>
+  ),
+  RefreshCw: () => (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <polyline points="23 4 23 10 17 10" />
+      <polyline points="1 20 1 14 7 14" />
+      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+    </svg>
+  ),
+  Briefcase: () => (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="2" y="7" width="20" height="14" rx="2" />
+      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+    </svg>
+  ),
+};
 
-  // Riwayat peminjaman untuk aset ini
-  const assetLoans = (loans || []).filter((l) => l.asset_id === asset.id);
+// ── REUSABLE MODERN TABLE COMPONENTS ─────────────────────────────
+const ModernTable = ({ children }) => (
+  <div
+    style={{
+      borderRadius: "12px",
+      border: "1px solid #e2e8f0",
+      overflow: "hidden",
+      marginBottom: "24px",
+      background: "#fff",
+    }}
+  >
+    <table
+      style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}
+    >
+      <tbody>{children}</tbody>
+    </table>
+  </div>
+);
+
+const TableRow = ({ label, required, children, alignTop }) => (
+  <tr style={{ borderBottom: "1px solid #f1f5f9" }}>
+    <td
+      style={{
+        width: "28%",
+        padding: "12px 16px",
+        background: "#f8fafc",
+        color: "#475569",
+        fontSize: "13.5px",
+        fontWeight: "600",
+        verticalAlign: alignTop ? "top" : "middle",
+        borderRight: "1px solid #f1f5f9",
+      }}
+    >
+      {label} {required && <span style={{ color: "#ef4444" }}>*</span>}
+    </td>
+    <td
+      style={{
+        padding: "12px 16px",
+        verticalAlign: alignTop ? "top" : "middle",
+        background: "#fff",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+          flexWrap: "wrap",
+        }}
+      >
+        {children}
+      </div>
+    </td>
+  </tr>
+);
+
+// ── SHARED STYLES FOR FORMS ──────────────────────────────────────
+const modernInputStyle = {
+  padding: "8px 12px",
+  borderRadius: "8px",
+  border: "1px solid #cbd5e1",
+  width: "100%",
+  fontSize: "13.5px",
+  outline: "none",
+  fontFamily: "var(--font)",
+  color: "#0f172a",
+  background: "#fff",
+  transition: "border-color 0.2s ease",
+};
+
+const modernSelectStyle = {
+  ...modernInputStyle,
+  appearance: "none",
+  background:
+    "#fff url(\"data:image/svg+xml;utf8,<svg fill='%2364748b' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>\") no-repeat right 10px center",
+  backgroundSize: "20px",
+  paddingRight: "36px",
+};
+
+// ── COMPONENT RIWAYAT PINJAM ──────────────────────────────────────
+function AssetHistoryTab({ assetCode, allBorrows }) {
+  const [snFilter, setSnFilter] = useState("all");
+
+  const fmtDate = (d) =>
+    d
+      ? new Date(d).toLocaleDateString("id-ID", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })
+      : "—";
+
+  const history = useMemo(
+    () =>
+      allBorrows
+        .filter((b) => b.code === assetCode)
+        .sort((a, b) => new Date(b.borrow_date) - new Date(a.borrow_date)),
+    [assetCode, allBorrows],
+  );
+
+  const availableSNs = useMemo(() => {
+    const sns = new Set();
+    history.forEach(h => { if (h.serial_number) sns.add(h.serial_number); });
+    return Array.from(sns);
+  }, [history]);
+
+  const allEvents = useMemo(() => {
+    const events = [];
+    history.forEach(h => {
+      // Event Pinjam
+      events.push({
+        id: `${h.id}-borrow`,
+        type: "PINJAM",
+        serial_number: h.serial_number,
+        date: h.borrow_date,
+        person: h.performed_by_name,
+        branch: h.performed_by_branch,
+        location: `${h.from_zone} → ${h.to_zone}`,
+        condition: h.condition,
+        notes: h.reason,
+        timestamp: new Date(h.borrow_date).getTime()
+      });
+      // Event Kembali
+      if (h.is_returned) {
+        events.push({
+          id: `${h.id}-return`,
+          type: "KEMBALI",
+          serial_number: h.serial_number,
+          date: h.return_date,
+          person: h.returned_by_name || h.performed_by_name,
+          branch: h.performed_by_branch,
+          location: `${h.to_zone} → ${h.from_zone}`,
+          condition: h.return_condition,
+          notes: h.return_notes,
+          timestamp: new Date(h.return_date).getTime()
+        });
+      }
+    });
+    return events.sort((a, b) => a.timestamp - b.timestamp);
+  }, [history]);
+
+  const filteredEvents = useMemo(() => {
+    if (snFilter === "all") return allEvents;
+    return allEvents.filter(e => e.serial_number === snFilter);
+  }, [allEvents, snFilter]);
+
+  if (history.length === 0)
+    return (
+      <div
+        className="hist-empty"
+        style={{
+          padding: "40px 0",
+          border: "1px solid #e2e8f0",
+          borderRadius: "12px",
+        }}
+      >
+        <span className="hist-empty-ico">
+          <Icon.ClipboardEmpty />
+        </span>
+        <span className="hist-empty-title">Belum Ada Riwayat</span>
+        <span className="hist-empty-sub">
+          Barang ini belum pernah dipinjam sebelumnya.
+        </span>
+      </div>
+    );
 
   return (
-    <div className="inv-detail-page">
-      {/* ── Breadcrumb / Back ── */}
-      <div className="inv-detail-breadcrumb">
-        <button className="inv-back-btn" onClick={onBack}>
-          <Ico n="arrowLeft" s={16} />
-          Kembali ke Inventaris
-        </button>
-        <span className="inv-breadcrumb-sep">/</span>
-        <span className="inv-breadcrumb-current">{asset.name}</span>
-      </div>
+    <div
+      className="hist-wrap"
+      style={{
+        border: "1px solid #e2e8f0",
+        borderRadius: "12px",
+        background: "#fff",
+        overflow: "hidden",
+      }}
+    >
+      <div
+        className="hist-summary-row"
+        style={{
+          borderBottom: "1px solid #e2e8f0",
+          padding: "16px",
+          background: "#f8fafc",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: "16px"
+        }}
+      >
+        <div style={{ display: "flex", gap: "12px" }}>
+          <span className="hist-summary-pill hist-pill-total">
+            {history.length}x Transaksi
+          </span>
+          <span className="hist-summary-pill hist-pill-returned">
+            {history.filter((h) => h.is_returned).length}x Dikembalikan
+          </span>
+          {history.some((h) => !h.is_returned) && (
+            <span className="hist-summary-pill hist-pill-active">
+              {history.filter(h => !h.is_returned).length} Dipinjam
+            </span>
+          )}
+        </div>
 
-      {/* ── Hero foto ── */}
-      <div className="inv-detail-hero">
-        <img
-          src={!imgErr ? photo : getAssetPhotoFallback(asset)}
-          alt={asset.name}
-          className={`inv-detail-hero-img${isDisposed ? " is-disposed" : ""}`}
-          onError={() => setImgErr(true)}
-        />
-
-        {isDisposed && (
-          <div className="inv-disposed-overlay">
-            <div className="inv-disposed-badge">
-              <Ico n="ban" s={12} c="#f1f5f9" />
-              Aset Disposed
-            </div>
+        {availableSNs.length > 0 && (
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ fontSize: "12px", fontWeight: "600", color: "#64748b" }}>Filter Unit:</span>
+            <select
+              value={snFilter}
+              onChange={(e) => setSnFilter(e.target.value)}
+              style={{
+                padding: "6px 12px",
+                borderRadius: "8px",
+                border: "1px solid #cbd5e1",
+                fontSize: "12.5px",
+                background: "#fff",
+                color: "#1e293b",
+                outline: "none"
+              }}
+            >
+              <option value="all">Semua Unit</option>
+              {availableSNs.map(sn => (
+                <option key={sn} value={sn}>{sn}</option>
+              ))}
+            </select>
           </div>
         )}
       </div>
 
-      {/* Konten Detail */}
-      <div className="inv-detail-content">
-        {/* Kolom kiri: info aset */}
-        <div className="inv-detail-main">
-          <div className="card inv-detail-card">
-            <h2 className="inv-detail-name">{asset.name}</h2>
-            <p className="inv-detail-brand">
-              {asset.brand} · {asset.model}
-            </p>
+      <div className="hist-table-wrap" style={{ overflowX: "auto" }}>
+        <table
+          className="hist-table"
+          style={{
+            width: "100%",
+            textAlign: "left",
+            borderCollapse: "collapse",
+            minWidth: "1000px"
+          }}
+        >
+          <thead style={{ background: "#f8fafc" }}>
+            <tr>
+              <th style={{ padding: "12px 16px", fontSize: "12px", color: "#f7faffff", borderBottom: "1px solid #e2e8f0", width: "50px" }}>NO</th>
+              
+              <th style={{ padding: "12px 16px", fontSize: "12px", color: "#f7faffff", borderBottom: "1px solid #e2e8f0" }}>UNIT / SERIAL NUMBER</th>
+              <th style={{ padding: "12px 16px", fontSize: "12px", color: "#f7faffff", borderBottom: "1px solid #e2e8f0" }}>PEMINJAM</th>
+              <th style={{ padding: "12px 16px", fontSize: "12px", color: "#f7faffff", borderBottom: "1px solid #e2e8f0" }}>LOKASI</th>
+              <th style={{ padding: "12px 16px", fontSize: "12px", color: "#f7faffff", borderBottom: "1px solid #e2e8f0" }}>WAKTU</th>
+              <th style={{ padding: "12px 16px", fontSize: "12px", color: "#f7faffff", borderBottom: "1px solid #e2e8f0" }}>KONDISI</th>
+              <th style={{ padding: "12px 16px", fontSize: "12px", color: "#f7faffff", borderBottom: "1px solid #e2e8f0" }}>CATATAN</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredEvents.map((e, idx) => {
+              const cond = conditionConfig[e.condition] || conditionConfig.GOOD;
 
-            <div className="inv-detail-divider" />
-
-            <div className="inv-detail-grid">
-              <div className="inv-detail-field">
-                <span className="inv-detail-label">ID</span>
-                <span
-                  className="inv-detail-value inv-detail-mono"
+              return (
+                <tr
+                  key={e.id}
                   style={{
-                    background: "var(--gray-50)",
-                    padding: "4px 10px",
-                    borderRadius: "6px",
-                    fontSize: "12.5px",
-                    color: "var(--gray-600)",
+                    borderBottom: "1px solid #f1f5f9",
+                    background: e.type === "PINJAM" ? "#f0fdf4" : "#fff",
                   }}
                 >
-                  {asset.id}
-                </span>
-              </div>
-
-              <div className="inv-detail-field">
-                <span className="inv-detail-label">Serial</span>
-                <span className="inv-detail-value">{asset.serial}</span>
-              </div>
-
-              <div className="inv-detail-field">
-                <span className="inv-detail-label">Kategori</span>
-                <span className="inv-detail-value">{cat.label}</span>
-              </div>
-
-              <div className="inv-detail-field">
-                <span className="inv-detail-label">Lokasi</span>
-                <span className="inv-detail-value">{asset.location}</span>
-              </div>
-
-              <div className="inv-detail-field">
-                <span className="inv-detail-label">Status</span>
-                <span className="inv-detail-value">{st.label}</span>
-              </div>
-
-              <div className="inv-detail-field">
-                <span className="inv-detail-label">Budget Type</span>
-                <span className="inv-detail-value">{asset.budget_type}</span>
-              </div>
-
-              {asset.purchase_date && (
-                <div className="inv-detail-field">
-                  <span className="inv-detail-label">Tanggal Beli</span>
-                  <span className="inv-detail-value">
-                    {asset.purchase_date}
-                  </span>
-                </div>
-              )}
-
-              {asset.warranty_until && (
-                <div className="inv-detail-field">
-                  <span className="inv-detail-label">Garansi s.d.</span>
-                  <span className="inv-detail-value">
-                    {asset.warranty_until}
-                  </span>
-                </div>
-              )}
-
-              {asset.notes && (
-                <div className="inv-detail-field inv-detail-field--full">
-                  <span className="inv-detail-label">Catatan</span>
-                  <span className="inv-detail-value">{asset.notes}</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* ── Tombol aksi ── */}
-          {!isDisposed && (
-            <div className="inv-detail-actions">
-              {asset.status === "AVAILABLE" && (
-                <button
-                  className="inv-action-btn inv-action-btn--primary"
-                  onClick={() => onBorrow(asset)}
-                >
-                  <Ico n="borrow" s={16} />
-                  Pinjam Aset
-                </button>
-              )}
-              <button
-                className="inv-action-btn inv-action-btn--secondary"
-                onClick={onBack}
-              >
-                <Ico n="arrowLeft" s={16} />
-                Kembali
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Kolom kanan: riwayat peminjaman */}
-        <div className="inv-detail-sidebar">
-          <div className="card inv-detail-card">
-            <h3 className="inv-detail-section-title">Riwayat Peminjaman</h3>
-            {assetLoans.length === 0 ? (
-              <p className="inv-detail-empty-loans">
-                Belum ada riwayat peminjaman untuk aset ini.
-              </p>
-            ) : (
-              <div className="inv-loan-list">
-                {assetLoans.map((loan, idx) => (
-                  <div key={loan.id || idx} className="inv-loan-item">
-                    <div className="inv-loan-header">
-                      <span className="inv-loan-user">
-                        {loan.borrower_name || loan.user_id}
-                      </span>
-                      <span
-                        className={`inv-loan-status ${loan.returned_at ? "returned" : "active"}`}
-                      >
-                        {loan.returned_at ? "Dikembalikan" : "Sedang dipinjam"}
-                      </span>
+                  <td style={{ padding: "12px 16px", fontSize: "13px", color: "#94a3b8", fontWeight: "bold" }}>
+                    {idx + 1}
+                  </td>
+                  <td style={{ padding: "12px 16px" }}>
+                    <span style={{
+                      padding: "4px 8px",
+                      borderRadius: "6px",
+                      fontSize: "11px",
+                      fontWeight: "bold",
+                      background: e.type === "PINJAM" ? "#dbeafe" : "#f1f5f9",
+                      color: e.type === "PINJAM" ? "#2563eb" : "#64748b",
+                      border: e.type === "PINJAM" ? "1px solid #bfdbfe" : "1px solid #e2e8f0"
+                    }}>
+                      {e.type}
+                    </span>
+                  </td>
+                  <td style={{ padding: "12px 16px", fontSize: "13.5px", color: "#1e293b", fontWeight: "600" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <Icon.Box /> {e.serial_number || "—"}
                     </div>
-                    <div className="inv-loan-dates">
-                      <span>
-                        <Ico n="calendar" s={11} c="var(--gray-400)" />
-                        {loan.borrow_date || loan.borrowed_at}
-                      </span>
-                      {loan.returned_at && <span>→ {loan.returned_at}</span>}
+                  </td>
+                  <td style={{ padding: "12px 16px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <div style={{
+                        width: "28px", height: "28px", borderRadius: "50%", background: "#e2e8f0",
+                        color: "#475569", display: "flex", alignItems: "center", justifyContent: "center",
+                        fontWeight: "bold", fontSize: "11px"
+                      }}>
+                        {e.person.charAt(0)}
+                      </div>
+                      <div>
+                        <div style={{ fontSize: "13px", fontWeight: "700", color: "#1e293b" }}>{e.person}</div>
+                        <div style={{ fontSize: "10px", color: "#64748b" }}>{e.branch}</div>
+                      </div>
                     </div>
-                    {loan.notes && (
-                      <p className="inv-loan-notes">{loan.notes}</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+                  </td>
+                  <td style={{ padding: "12px 16px", fontSize: "12.5px", color: "#475569" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <Icon.MapPin /> {e.location}
+                    </div>
+                  </td>
+                  <td style={{ padding: "12px 16px", fontSize: "13px", color: "#475569" }}>
+                    {fmtDate(e.date)}
+                  </td>
+                  <td style={{ padding: "12px 16px" }}>
+                    <span style={{ background: cond.bg, color: cond.color, fontSize: "10px", fontWeight: "700", padding: "3px 8px", borderRadius: "4px" }}>
+                      {cond.label}
+                    </span>
+                  </td>
+                  <td style={{ padding: "12px 16px", fontSize: "12px", color: "#64748b", maxWidth: "250px", whiteSpace: "normal", lineHeight: "1.4" }}>
+                    {e.notes || "—"}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
     </div>
   );
 }
 
-// ── Halaman Form Peminjaman (inline, bukan modal) ──
-function BorrowPage({ asset, onBack, onConfirm }) {
-  const [form, setForm] = useState({
-    borrower_name: currentUser.name || "",
-    borrow_date: new Date().toISOString().slice(0, 10),
-    return_plan: "",
-    notes: "",
+// ── PHOTO UPLOAD ──────────────────────────────────────────────────
+function PhotoUpload({ value, onChange }) {
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef(null);
+  const handleFile = (file) => {
+    if (!file) return;
+    const allowed = ["image/png", "image/jpeg", "image/jpg"];
+    if (!allowed.includes(file.type)) {
+      alert("Format tidak didukung. Gunakan PNG, JPG, atau JPEG.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Ukuran file maksimal 5MB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) =>
+      onChange({
+        dataUrl: e.target.result,
+        name: file.name,
+        size: file.size,
+        type: file.type,
+      });
+    reader.readAsDataURL(file);
+  };
+  const formatSize = (bytes) =>
+    bytes < 1024 * 1024
+      ? `${(bytes / 1024).toFixed(1)} KB`
+      : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  if (value) {
+    return (
+      <div className="photo-preview-wrap" style={{ margin: 0 }}>
+        <img src={value.dataUrl} alt="preview" className="photo-preview-img" />
+        <div className="photo-preview-overlay">
+          <button
+            type="button"
+            className="photo-preview-btn"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <Icon.RefreshCw /> Ganti Foto
+          </button>
+          <button
+            type="button"
+            className="photo-preview-btn danger"
+            onClick={() => onChange(null)}
+          >
+            <Icon.XCircle /> Hapus
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".png,.jpg,.jpeg"
+            style={{ display: "none" }}
+            onChange={(e) => handleFile(e.target.files[0])}
+          />
+        </div>
+        <div className="photo-preview-info">
+          <span>{value.name}</span>
+          <span className="photo-size-badge">{formatSize(value.size)}</span>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div
+      className={`photo-upload-zone ${dragOver ? "drag-over" : ""}`}
+      onDragOver={(e) => {
+        e.preventDefault();
+        setDragOver(true);
+      }}
+      onDragLeave={() => setDragOver(false)}
+      onDrop={(e) => {
+        e.preventDefault();
+        setDragOver(false);
+        handleFile(e.dataTransfer.files[0]);
+      }}
+      onClick={() => fileInputRef.current?.click()}
+      style={{
+        maxWidth: "400px",
+        margin: 0,
+        minHeight: "140px",
+        padding: "20px",
+      }}
+    >
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".png,.jpg,.jpeg"
+        style={{ display: "none" }}
+        onChange={(e) => handleFile(e.target.files[0])}
+      />
+      <div className="photo-upload-icon">
+        <Icon.Upload />
+      </div>
+      <div className="photo-upload-title">Upload Foto Barang</div>
+      <div className="photo-upload-sub">
+        Klik atau drag &amp; drop file di sini
+      </div>
+      <div className="photo-upload-formats">
+        <span className="photo-format-badge">PNG</span>
+        <span className="photo-format-badge">JPG</span>
+        <span className="photo-format-badge">JPEG</span>
+        <span className="photo-format-badge">Maks. 5MB</span>
+      </div>
+    </div>
+  );
+}
+
+// ── PROJECT BADGE ─────────────────────────────────────────────────
+function ProjectBadge({ id_pekerjaan }) {
+  const project = getProjectById(id_pekerjaan);
+  if (!project)
+    return <span className="project-badge project-badge--none">—</span>;
+  const isOpex = String(id_pekerjaan).startsWith("OPEX");
+  return (
+    <span
+      className={`project-badge ${isOpex ? "project-badge--opex" : "project-badge--capex"}`}
+      title={project.nm_pekerjaan}
+    >
+      <Icon.Briefcase />
+      {isOpex ? "OPEX" : "CAPEX"}
+    </span>
+  );
+}
+
+// ── PAGE WRAPPER ──────────────────────────────────────────────────
+// Dipindahkan ke luar komponen utama agar tidak re-render/hilang fokus saat mengetik
+const PageWrapper = ({ title, onBack, children, actions }) => (
+  <div
+    className="view-asset-wrapper"
+    style={{ animation: "fadeIn 0.25s ease" }}
+  >
+    <div
+      className="view-header"
+      style={{
+        marginBottom: "16px",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        background: "#fff",
+        padding: "16px 24px",
+        borderRadius: "16px",
+        boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1)",
+        border: "1px solid #f1f5f9",
+      }}
+    >
+      <div
+        className="view-header-left"
+        style={{ display: "flex", alignItems: "center", gap: "20px" }}
+      >
+        <button
+          onClick={onBack}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            padding: "8px 16px",
+            background: "#f8fafc",
+            border: "1px solid #e2e8f0",
+            borderRadius: "10px",
+            fontSize: "13px",
+            fontWeight: "700",
+            color: "#334155",
+            cursor: "pointer",
+            transition: "all 0.2s",
+            boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.background = "#f1f5f9";
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.background = "#f8fafc";
+            e.currentTarget.style.borderColor = "#e2e8f0";
+          }}
+        >
+          <Icon.ChevronLeft /> Kembali
+        </button>
+        <div>
+          <h1
+            className="view-title"
+            style={{
+              margin: 0,
+              fontSize: "20px",
+              fontWeight: "800",
+              color: "#0f172a",
+            }}
+          >
+            {title}
+          </h1>
+        </div>
+      </div>
+      {actions && <div style={{ display: "flex", gap: "12px" }}>{actions}</div>}
+    </div>
+    <div
+      style={{
+        background: "#fff",
+        borderRadius: "16px",
+        padding: "24px",
+        boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.05)",
+        border: "1px solid #e2e8f0",
+      }}
+    >
+      {children}
+    </div>
+  </div>
+);
+
+const LOCATION_MAP = {
+  "Belawan": {
+    "Lapangan": ["Dermaga", "Gudang", "Parkir"],
+    "Gedung": ["Lantai 1", "Lantai 2"],
+    "Data Center": ["Server Room"]
+  },
+  "Gresik": {
+    "Lapangan": ["Dermaga Utama", "Gudang Logistik"],
+    "Gedung": ["Kantor Cabang", "Ruang Rapat"]
+  },
+  "Dumai": {
+    "Gedung": ["Kantor Dumai"],
+    "Gudang": ["DMG"],
+    "Lapangan": ["Parkir Area"]
+  },
+  "Lhokseumawe": {
+    "Data Center": ["PKR"],
+    "Gedung": ["Kantor LHK"]
+  },
+  "Malahayati": {
+    "Data Center": ["PKR"],
+    "Lapangan": ["Dermaga Malahayati"]
+  }
+};
+
+const SmartLocationInput = ({ value, onChange, placeholder = "Pilih Branch / Zona / Subzona", readOnly = false, dbLocations = { branches: [], zonas: [], subzonas: [] } }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const wrapperRef = useRef(null);
+
+  const { branches = [], zonas = [], subzonas = [] } = dbLocations;
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setIsOpen(false);
+
+        // Validate and sanitize location string
+        const valStr = value || "";
+        const parts = valStr.split(" / ").map(p => p.trim()).filter(Boolean);
+        let validParts = [];
+
+        if (branches.length > 0) {
+          // Validate using database
+          const brObj = branches.find(b => b.name.toLowerCase() === parts[0]?.toLowerCase());
+          if (brObj) {
+            validParts.push(brObj.name);
+            if (parts[1]) {
+              const zoObj = zonas.find(z => z.name.toLowerCase() === parts[1].toLowerCase() && z.branch_code === brObj.branch_code);
+              if (zoObj) {
+                validParts.push(zoObj.name);
+                if (parts[2]) {
+                  const szObj = subzonas.find(s => s.name.toLowerCase() === parts[2].toLowerCase() && s.zona_code === zoObj.zona_code);
+                  if (szObj) {
+                    validParts.push(szObj.name);
+                  }
+                }
+              }
+            }
+          }
+        } else {
+          // Fallback to static maps
+          const allBranches = Object.values(BRANCH_BY_ENTITY).flat();
+          const brObj = allBranches.find(b => b.name.toLowerCase() === parts[0]?.toLowerCase());
+          if (brObj) {
+            validParts.push(brObj.name);
+            const branchName = brObj.name;
+            if (parts[1]) {
+              const zones = LOCATION_MAP[branchName] ? Object.keys(LOCATION_MAP[branchName]) : ZONA_LIST.map(z => z.name);
+              const matchedZone = zones.find(z => z.toLowerCase() === parts[1].toLowerCase());
+              if (matchedZone) {
+                validParts.push(matchedZone);
+                if (parts[2]) {
+                  const subzones = LOCATION_MAP[branchName]?.[matchedZone] || [];
+                  const matchedSub = subzones.find(s => s.toLowerCase() === parts[2].toLowerCase());
+                  if (matchedSub) {
+                    validParts.push(matchedSub);
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        const validatedVal = validParts.join(" / ") + (validParts.length > 0 && validParts.length < 3 ? " / " : "");
+        if (validatedVal !== valStr) {
+          onChange(validatedVal);
+        }
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [value, onChange, branches, zonas, subzonas]);
+
+  if (readOnly) {
+    if (!value) return null;
+    return (
+      <div style={{
+        fontSize: "13px",
+        color: "#64748b",
+        padding: "8px 12px",
+        background: "#f8fafc",
+        borderRadius: "6px",
+        border: "1px solid #e2e8f0",
+        minHeight: "36px",
+        display: "flex",
+        alignItems: "center",
+        cursor: "pointer"
+      }}>
+        {value}
+      </div>
+    );
+  }
+
+  const valStr = value || "";
+  const parts = valStr.split(" / ");
+  const currentPartIdx = Math.max(0, parts.length - 1);
+  const currentText = (parts[currentPartIdx] || "").trim();
+
+  let options = [];
+  let stepLabel = "";
+
+  const branch = (parts[0] || "").trim();
+  const zone = (parts[1] || "").trim();
+
+  const hasDbData = branches.length > 0;
+
+  if (currentPartIdx === 0) {
+    if (hasDbData) {
+      options = branches.map(b => b.name);
+    } else {
+      options = Object.values(BRANCH_BY_ENTITY).flat().map(b => b.name);
+    }
+    stepLabel = "Pilih Branch";
+  } else if (currentPartIdx === 1) {
+    if (hasDbData) {
+      const branchObj = branches.find(b => b.name.toLowerCase() === branch.toLowerCase());
+      if (branchObj) {
+        options = zonas.filter(z => z.branch_code === branchObj.branch_code).map(z => z.name);
+      } else {
+        options = [];
+      }
+    } else {
+      options = LOCATION_MAP[branch]
+        ? Object.keys(LOCATION_MAP[branch])
+        : ZONA_LIST.map(z => z.name);
+    }
+    stepLabel = `Zona di ${branch || 'Branch'}`;
+  } else if (currentPartIdx === 2) {
+    if (hasDbData) {
+      const branchObj = branches.find(b => b.name.toLowerCase() === branch.toLowerCase());
+      const zoneObj = branchObj ? zonas.find(z => z.name.toLowerCase() === zone.toLowerCase() && z.branch_code === branchObj.branch_code) : null;
+      if (zoneObj) {
+        options = subzonas.filter(s => s.zona_code === zoneObj.zona_code).map(s => s.name);
+      } else {
+        options = [];
+      }
+    } else {
+      options = (LOCATION_MAP[branch] && LOCATION_MAP[branch][zone])
+        ? LOCATION_MAP[branch][zone]
+        : [];
+    }
+    stepLabel = `Subzona di ${zone || 'Zona'}`;
+  }
+
+  const filteredOptions = options.filter(o => o.toLowerCase().includes(currentText.toLowerCase()));
+  const exactMatch = options.find(o => o.toLowerCase() === currentText.toLowerCase());
+
+  const handleSelect = (opt) => {
+    const newParts = [...parts];
+    newParts[currentPartIdx] = opt;
+    const nextVal = newParts.join(" / ") + (currentPartIdx < 2 ? " / " : "");
+    onChange(nextVal);
+    if (currentPartIdx >= 2) setIsOpen(false);
+  };
+
+  return (
+    <div ref={wrapperRef} className="unit-edit-input" style={{ position: "relative", width: "100%" }}>
+      <div style={{ position: 'relative' }}>
+        <input
+          autoFocus
+          value={valStr}
+          onChange={(e) => {
+            onChange(e.target.value);
+            setIsOpen(true);
+          }}
+          onFocus={() => setIsOpen(true)}
+          placeholder={placeholder}
+          style={{
+            width: "100%",
+            padding: "8px 12px",
+            paddingRight: "30px",
+            fontSize: "0.82rem",
+            background: "#fcfdfe",
+            color: "#111827",
+            border: "1px solid #cbd5e1",
+            borderRadius: 8,
+            fontWeight: 500,
+            outline: "none",
+            transition: "all 0.2s"
+          }}
+        />
+        {valStr && (
+          <button
+            type="button"
+            onClick={() => { onChange(""); setIsOpen(false); }}
+            style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: 4 }}
+          >
+            <Icon.XCircle />
+          </button>
+        )}
+      </div>
+
+      {isOpen && currentPartIdx <= 2 && (
+        <div style={{
+          position: "absolute",
+          top: "100%",
+          left: 0,
+          right: 0,
+          background: "white",
+          border: "1px solid #e2e8f0",
+          borderRadius: 12,
+          marginTop: 6,
+          zIndex: 100,
+          boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+          maxHeight: 250,
+          overflowY: "auto",
+        }}>
+          <div style={{ padding: "8px 12px", fontSize: "10px", fontWeight: 800, color: "#64748b", background: "#f8fafc", borderBottom: "1px solid #e2e8f0", textTransform: "uppercase", position: "sticky", top: 0, zIndex: 2 }}>
+            {stepLabel}
+          </div>
+
+          {filteredOptions.map((opt, i) => (
+            <div
+              key={i}
+              onClick={() => handleSelect(opt)}
+              style={{
+                padding: "10px 12px",
+                fontSize: "13px",
+                cursor: "pointer",
+                borderBottom: "1px solid #f1f5f9",
+                transition: "background 0.2s",
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                color: '#1e293b'
+              }}
+              onMouseEnter={(e) => e.target.style.background = "#eff6ff"}
+              onMouseLeave={(e) => e.target.style.background = "white"}
+            >
+              <Icon.Layers />
+              {opt}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ── MAIN COMPONENT ────────────────────────────────────────────────
+const Inventaris = () => {
+  const [assets, setAssets] = useState([]);
+  const [dbCategories, setDbCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [dbLocations, setDbLocations] = useState({ branches: [], zonas: [], subzonas: [] });
+
+  const fetchAssets = async () => {
+    setLoading(true);
+    try {
+      const [resAssets, resDevices, resCapex, resOpex, resB, resZ, resS] = await Promise.all([
+        barangAPI.getAll(),
+        barangAPI.getDevices(),
+        budgetAPI.getCapex(),
+        budgetAPI.getOpex(),
+        masterDataAPI.getBranches(),
+        masterDataAPI.getZonas(),
+        masterDataAPI.getSubzonas()
+      ]);
+      setAssets(resAssets.data);
+      setDbCategories(resDevices.data || []);
+
+      if (resB.data?.success && resZ.data?.success && resS.data?.success) {
+        setDbLocations({
+          branches: resB.data.data || [],
+          zonas: resZ.data.data || [],
+          subzonas: resS.data.data || []
+        });
+      }
+
+      // Rebuild CAPEX_ANGGARAN from database
+      const newCapex = [];
+      const capexData = resCapex.data?.data || resCapex.data || [];
+      if (Array.isArray(capexData)) {
+        capexData.forEach(a => {
+          const projects = a.projects || [];
+          newCapex.push({
+            kd_anggaran: String(a.db_id || a.id || a.kode),
+            nm_anggaran: a.nama || "",
+            thn_anggaran: a.thn_anggaran || 2026,
+            pekerjaan: projects.map(p => ({
+              id_pekerjaan: p.id,
+              nm_pekerjaan: p.nm_pekerjaan || ""
+            }))
+          });
+        });
+      }
+
+      // Rebuild OPEX_ANGGARAN from database
+      const newOpex = [];
+      const opexData = resOpex.data?.data || resOpex.data || [];
+      if (Array.isArray(opexData)) {
+        opexData.forEach(o => {
+          const projects = o.projects || [];
+          projects.forEach(p => {
+            newOpex.push({
+              kd_anggaran: String(o.db_id || o.id || o.kode),
+              nm_anggaran: o.nama || "",
+              kd_akun: o.kode || "",
+              thn_anggaran: o.thn_anggaran || 2026,
+              id_pekerjaan: p.id,
+              nm_pekerjaan: p.nm_pekerjaan || ""
+            });
+          });
+        });
+      }
+
+      if (newCapex.length > 0) CAPEX_ANGGARAN = newCapex;
+      if (newOpex.length > 0) OPEX_ANGGARAN = newOpex;
+
+      ALL_PROJECTS = [
+        ...CAPEX_ANGGARAN.flatMap((a) =>
+          (a.pekerjaan || []).map((p) => ({
+            ...p,
+            jenis: "CAPEX",
+            kd_anggaran: a.kd_anggaran,
+            nm_anggaran: a.nm_anggaran,
+            thn_anggaran: a.thn_anggaran,
+          })),
+        ),
+        ...OPEX_ANGGARAN.map((o) => ({
+          id_pekerjaan: o.id_pekerjaan,
+          nm_pekerjaan: o.nm_pekerjaan || o.nm_anggaran,
+          jenis: "OPEX",
+          kd_anggaran: o.kd_anggaran,
+          nm_anggaran: o.nm_anggaran,
+          thn_anggaran: o.thn_anggaran,
+          kd_akun: o.kd_akun,
+        })),
+      ];
+
+    } catch (err) {
+      console.error("Gagal mengambil data aset", err);
+    } finally {
+      // Small delay for quick but visible processing feedback
+      setTimeout(() => setLoading(false), 300);
+    }
+  };
+
+  const [allBorrows, setAllBorrows] = useState([]);
+
+  useEffect(() => {
+    fetchAssets();
+    fetchBorrows();
+  }, []);
+
+  const fetchBorrows = async () => {
+    try {
+      const res = await transactionAPI.getAll();
+      if (res.data.success) {
+        setAllBorrows(res.data.borrows || []);
+      }
+    } catch (err) {
+      console.error("Failed to fetch borrows:", err);
+    }
+  };
+
+  // Routing State
+  const [currentView, setCurrentView] = useState("list");
+  const [viewMode, setViewMode] = useState("table");
+  const [selectedAsset, setSelectedAsset] = useState(null);
+  const [barcodeReturnView, setBarcodeReturnView] = useState("list");
+
+  const [activeDropdown, setActiveDropdown] = useState(null);
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [detailTab, setDetailTab] = useState("info");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  const [editPhoto, setEditPhoto] = useState(null);
+  const [editData, setEditData] = useState({});
+  const [editSpecsData, setEditSpecsData] = useState({
+    specs: [],
+    customSpecs: [],
   });
 
-  const handleChange = (field, value) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleSubmit = () => {
-    if (!form.borrower_name || !form.borrow_date) return;
-    const newTrx = {
-      id: `TRX-${Date.now()}`,
-      asset_id: asset.id,
-      borrower_name: form.borrower_name,
-      borrow_date: form.borrow_date,
-      return_plan: form.return_plan,
-      notes: form.notes,
-      borrowed_at: form.borrow_date,
-      returned_at: null,
-    };
-    onConfirm(newTrx);
-  };
-
-  const cat = categoryConf[asset.category] || categoryConf.OTHER;
-
-  return (
-    <div className="inv-borrow-page">
-      {/* Breadcrumb */}
-      <div className="inv-detail-breadcrumb">
-        <button className="inv-back-btn" onClick={onBack}>
-          <Ico n="arrowLeft" s={16} />
-          Kembali ke Detail Aset
-        </button>
-        <span className="inv-breadcrumb-sep">/</span>
-        <span className="inv-breadcrumb-current">Pinjam Aset</span>
-      </div>
-
-      <div className="inv-borrow-layout">
-        {/* Info aset ringkas */}
-        <div className="card inv-borrow-asset-card">
-          <div className="inv-borrow-asset-info">
-            <span
-              className="inv-cat-chip"
-              style={{
-                background: cat.color,
-                position: "relative",
-                fontSize: 11,
-              }}
-            >
-              <Ico n={asset.category} s={10} c="#fff" />
-              {cat.label}
-            </span>
-            <div>
-              <p className="inv-borrow-asset-name">{asset.name}</p>
-              <p className="inv-borrow-asset-brand">
-                {asset.brand} · {asset.model}
-              </p>
-              <p className="inv-borrow-asset-serial">{asset.serial}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Form */}
-        <div className="card inv-borrow-form-card">
-          <h2 className="inv-borrow-title">Form Peminjaman</h2>
-
-          <div className="inv-borrow-field">
-            <label className="inv-borrow-label">Nama Peminjam *</label>
-            <input
-              className="inv-borrow-input"
-              type="text"
-              value={form.borrower_name}
-              onChange={(e) => handleChange("borrower_name", e.target.value)}
-              placeholder="Nama lengkap peminjam"
-            />
-          </div>
-
-          <div className="inv-borrow-row">
-            <div className="inv-borrow-field">
-              <label className="inv-borrow-label">Tanggal Pinjam *</label>
-              <input
-                className="inv-borrow-input"
-                type="date"
-                value={form.borrow_date}
-                onChange={(e) => handleChange("borrow_date", e.target.value)}
-              />
-            </div>
-            <div className="inv-borrow-field">
-              <label className="inv-borrow-label">Rencana Pengembalian</label>
-              <input
-                className="inv-borrow-input"
-                type="date"
-                value={form.return_plan}
-                onChange={(e) => handleChange("return_plan", e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="inv-borrow-field">
-            <label className="inv-borrow-label">Catatan</label>
-            <textarea
-              className="inv-borrow-input inv-borrow-textarea"
-              value={form.notes}
-              onChange={(e) => handleChange("notes", e.target.value)}
-              placeholder="Keterangan tambahan (opsional)"
-              rows={3}
-            />
-          </div>
-
-          <div className="inv-borrow-actions">
-            <button
-              className="inv-action-btn inv-action-btn--secondary"
-              onClick={onBack}
-            >
-              Batal
-            </button>
-            <button
-              className="inv-action-btn inv-action-btn--primary"
-              onClick={handleSubmit}
-              disabled={!form.borrower_name || !form.borrow_date}
-            >
-              <Ico n="borrow" s={16} />
-              Konfirmasi Peminjaman
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export default function Inventaris({ loans, setLoans }) {
   const [search, setSearch] = useState("");
-  const [catFilter, setCatFilter] = useState("");
-  const [statusFilter, setStatus] = useState("");
-  const [imgErr, setImgErr] = useState({});
+  const [filterStatus, setFilterStatus] = useState("");
+  const [filterCategory, setFilterCategory] = useState("");
+  const [filterBranch, setFilterBranch] = useState("");
+  const [filterAnggaran, setFilterAnggaran] = useState("");
+  const [filterProject, setFilterProject] = useState("");
+  const [selectedBrands, setSelectedBrands] = useState([]);
+  const [selectedTipes, setSelectedTipes] = useState([]);
+  const [showFilterSidebar, setShowFilterSidebar] = useState(false);
 
-  // ── View state: "list" | "detail" | "borrow" ──
-  const [view, setView] = useState("list");
-  const [selectedAsset, setSelectedAsset] = useState(null);
+  const [formPhoto, setFormPhoto] = useState(null);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [formData, setFormData] = useState({
+    assetId: "",
+    cekEksisting: "",
+    name: "",
+    tipeAset: "",
+    entitas: "",
+    entitasCode: "",
+    branch: "",
+    branchCode: "",
+    zona: "",
+    zonaCode: "",
+    subzona: "",
+    subzonaCode: "",
+    nomorAset: "",
+    category: "",
+    status: "Tersedia",
+    condition: "Baik",
+    merek: "",
+    tipe: "",
+    value: "",
+    id_pekerjaan: "",
+    thn_anggaran: "",
+    kd_anggaran: "",
+    procurementDate: "",
+    quantity: 1,
+    units: [{ serialNumber: "", location: "" }],
+  });
+  const [templateSpecs, setTemplateSpecs] = useState([]);
+  const [customSpecs, setCustomSpecs] = useState([]);
+  const [isEditingUnit, setIsEditingUnit] = useState({});
+  const [isSaving, setIsSaving] = useState(false);
+  const [showLocationBuilder, setShowLocationBuilder] = useState(false);
 
-  // ── Display mode: "table" | "grid" (default table) ──
-  const [displayMode, setDisplayMode] = useState("table");
+  const availableBranches = formData.entitasCode
+    ? BRANCH_BY_ENTITY[formData.entitasCode] || []
+    : [];
+  const dropdownRef = useRef(null);
 
-  // ── Sorting & paging state ──
-  const [sortKey, setSortKey] = useState("name_asc");
-  const [perPage, setPerPage] = useState(20);
-  const [page, setPage] = useState(1);
+  useEffect(() => {
+    const h = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target))
+        setActiveDropdown(null);
+    };
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, []);
 
-  const branchAssets = assetsMock.filter(
-    (a) => a.branch_code === currentUser.branch_code,
+  useEffect(() => {
+    setIsEditingUnit({});
+  }, [currentView]);
+
+  useEffect(() => {
+    const handleOutsideEdit = (e) => {
+      if (Object.keys(isEditingUnit).filter(k => isEditingUnit[k]).length === 0) return;
+      if (!e.target.closest(".unit-edit-input")) {
+        setIsEditingUnit({});
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideEdit);
+    return () => document.removeEventListener("mousedown", handleOutsideEdit);
+  }, [isEditingUnit]);
+
+  // Pemetaan Nama Lengkap Kategori berdasarkan Device Code
+  const CATEGORY_NAMES = {
+    LPT: "LAPTOP",
+    CTV: "CCTV CAMERA",
+    RTR: "ROUTER / JARINGAN",
+    PC: "PC DESKTOP",
+    SRV: "SERVER",
+    SWT: "SWITCH",
+    PRN: "PRINTER",
+    KND: "KENDARAAN",
+    AB: "ALAT BERAT",
+    FRN: "FURNITURE",
+    MAT: "MATERIAL",
+    SFT: "SOFTWARE LICENSE",
+    HDW: "HARDWARE",
+    OTH: "IT LAINNYA"
+  };
+
+  // Pemetaan Prefix berdasarkan Kategori
+  const CATEGORY_PREFIX = {
+    "LPT": "LAP",
+    "CTV": "CCTV",
+    "RTR": "RTR",
+    "PC": "PC",
+    "SRV": "SRV",
+    "SWT": "SWT",
+    "PRN": "PRN",
+    "KND": "KND",
+    "AB": "ALAT",
+    "FRN": "FURN",
+    "MAT": "MAT",
+    "SFT": "SFT",
+    "HDW": "HW",
+    "OTH": "BRG",
+    "Laptop": "LAP",
+    "CCTV": "CCTV",
+    "Router": "RTR",
+    "PC Desktop": "PC",
+    "Server": "SRV",
+    "Switch": "SWT",
+    "Printer": "PRN",
+    "Kendaraan": "KND",
+    "Alat Berat": "ALAT",
+    "Furniture": "FURN",
+    "Material": "MAT",
+    "Software": "SFT",
+    "Hardware": "HW",
+    "Lainnya": "BRG"
+  };
+
+  // Otomatis generate ID saat Kategori dan Nama Barang sudah diisi
+  useEffect(() => {
+    if (currentView === "add") {
+      if (formData.category && formData.tipeAset) {
+        const prefix = `${CATEGORY_PREFIX[formData.category] || "BRG"}-`;
+
+        // Cari angka terbesar khusus untuk prefix kategori ini
+        const maxId = assets.reduce((max, a) => {
+          if (a.id.startsWith(prefix)) {
+            const part = a.id.split("-").pop();
+            const num = parseInt(part, 10);
+            return isNaN(num) ? max : Math.max(max, num);
+          }
+          return max;
+        }, 0);
+
+        const nextId = `${prefix}${String(maxId + 1).padStart(4, "0")}`;
+
+        // Check if current ID is auto-generated (matches any category prefix)
+        const isAutoGenerated = Object.values(CATEGORY_PREFIX).some(p => formData.assetId.startsWith(`${p}-`)) || formData.assetId.startsWith("BRG-");
+
+        // Hanya update jika ID belum ada atau masih menggunakan format auto-generate
+        if (!formData.assetId || isAutoGenerated) {
+          setFormData((prev) => ({ ...prev, assetId: nextId }));
+        }
+      } else if (formData.assetId) {
+        setFormData((prev) => ({ ...prev, assetId: "" }));
+      }
+    }
+  }, [currentView, assets, formData.category, formData.tipeAset, formData.assetId]);
+
+  const kpi = useMemo(
+    () => ({
+      total: assets.length,
+      tersedia: assets.filter((a) => a.status === "Tersedia").length,
+      maintenance: assets.filter((a) => a.status === "Maintenance").length,
+      dipinjam: assets.filter((a) => a.status === "Dipinjam").length,
+      totalNilai: assets.reduce((s, a) => s + ((a.value || 0) * (a.quantity || 1)), 0),
+    }),
+    [assets],
   );
 
-  // Filter
   const filtered = useMemo(
     () =>
-      branchAssets.filter((a) => {
+      assets.filter((a) => {
         const q = search.toLowerCase();
+        const proj = getProjectById(a.id_pekerjaan);
         return (
           (!q ||
+            a.id.toLowerCase().includes(q) ||
             a.name.toLowerCase().includes(q) ||
-            a.serial.toLowerCase().includes(q) ||
-            a.brand.toLowerCase().includes(q)) &&
-          (!catFilter || a.category === catFilter) &&
-          (!statusFilter || a.status === statusFilter)
+            a.category.toLowerCase().includes(q) ||
+            a.branch.toLowerCase().includes(q) ||
+            (a.tipeAset && a.tipeAset.toLowerCase().includes(q)) ||
+            (a.entitas && a.entitas.toLowerCase().includes(q)) ||
+            (proj?.nm_pekerjaan && proj.nm_pekerjaan.toLowerCase().includes(q))) &&
+          (!filterStatus || a.status === filterStatus) &&
+          (!filterCategory || a.category === filterCategory) &&
+          (!filterBranch || a.branch === filterBranch) &&
+          (!filterAnggaran || proj?.kd_anggaran === filterAnggaran) &&
+          (!filterProject || String(a.id_pekerjaan) === filterProject) &&
+          (selectedBrands.length === 0 || (a.merek && selectedBrands.includes(a.merek.trim()))) &&
+          (selectedTipes.length === 0 || (a.tipe && selectedTipes.includes(a.tipe.trim())))
         );
       }),
-    [search, catFilter, statusFilter],
+    [
+      assets,
+      search,
+      filterStatus,
+      filterCategory,
+      filterBranch,
+      filterAnggaran,
+      filterProject,
+      selectedBrands,
+      selectedTipes,
+    ],
   );
 
-  // Sort — disposed/deleted always pinned to the very bottom
-  const sorted = useMemo(() => {
-    const opt = SORT_OPTIONS.find((o) => o.key === sortKey);
-    if (!opt) return filtered;
-    return [...filtered].sort((a, b) => {
-      const aDisposed = isDisposedStatus(a.status);
-      const bDisposed = isDisposedStatus(b.status);
-      if (aDisposed && !bDisposed) return 1;
-      if (!aDisposed && bDisposed) return -1;
-      const va = (a[opt.field] || "").toString().toLowerCase();
-      const vb = (b[opt.field] || "").toString().toLowerCase();
-      if (va < vb) return opt.dir === "asc" ? -1 : 1;
-      if (va > vb) return opt.dir === "asc" ? 1 : -1;
-      return 0;
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const paginated = filtered.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE,
+  );
+
+  const activeFiltersCount = [
+    filterStatus,
+    filterCategory,
+    filterBranch,
+    filterAnggaran,
+    filterProject,
+  ].filter(Boolean).length + (selectedBrands.length > 0 ? 1 : 0) + (selectedTipes.length > 0 ? 1 : 0);
+
+  const resetFilters = () => {
+    setFilterStatus("");
+    setFilterCategory("");
+    setFilterBranch("");
+    setFilterAnggaran("");
+    setFilterProject("");
+    setSelectedBrands([]);
+    setSelectedTipes([]);
+    setCurrentPage(1);
+  };
+
+  const fmt = (n) =>
+    new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      maximumFractionDigits: 0,
+    }).format(n || 0);
+  const fmtDate = (d) =>
+    d
+      ? new Date(d).toLocaleDateString("id-ID", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })
+      : "—";
+  const statusClass = (s) =>
+    s === "Tersedia"
+      ? "tersedia"
+      : s === "Dipinjam"
+        ? "dipinjam"
+        : "maintenance";
+  const getAssetImage = (asset) => {
+    if (typeof asset.photo === "string") return asset.photo;
+    return asset.photo?.dataUrl || CATEGORY_IMAGES[asset.category] || null;
+  };
+
+  const getNextNomor = (eCode, bCode, zCode, szCode) => {
+    const prefix = `${eCode}-${bCode}-${zCode}-${szCode}-`;
+    const nums = assets
+      .filter((a) => a.id.startsWith(prefix))
+      .map((a) => {
+        const parts = a.id.split("-");
+        const n = parseInt(parts[parts.length - 1], 10);
+        return isNaN(n) ? 0 : n;
+      });
+    return String((nums.length > 0 ? Math.max(...nums) : 0) + 1).padStart(
+      3,
+      "0",
+    );
+  };
+
+  const canGenerate = true;
+
+  const handleGenerateCode = () => {
+    const prefix = "BRG-";
+    const nums = assets
+      .filter((a) => a.id.startsWith(prefix))
+      .map((a) => {
+        const n = parseInt(a.id.slice(prefix.length), 10);
+        return isNaN(n) ? 0 : n;
+      });
+    const nextNum = String((nums.length > 0 ? Math.max(...nums) : 0) + 1).padStart(4, "0");
+    const generated = `${prefix}${nextNum}`;
+    setFormData((p) => ({ ...p, assetId: generated }));
+  };
+
+  const handleEntitasChange = (e) => {
+    const f = ENTITAS_LIST.find((en) => en.code === e.target.value);
+    setFormData((p) => ({
+      ...p,
+      entitas: f?.name || "",
+      entitasCode: f?.code || "",
+      branch: "",
+      branchCode: "",
+      nomorAset: "",
+      assetId: "",
+    }));
+  };
+  const handleBranchChange = (e) => {
+    const f = availableBranches.find((b) => b.code === e.target.value);
+    setFormData((p) => ({
+      ...p,
+      branch: f?.name || "",
+      branchCode: f?.code || "",
+      nomorAset: "",
+      assetId: "",
+    }));
+  };
+  const handleZonaChange = (e) => {
+    const f = ZONA_LIST.find((z) => z.code === e.target.value);
+    setFormData((p) => ({
+      ...p,
+      zona: f?.name || "",
+      zonaCode: f?.code || "",
+      nomorAset: "",
+      assetId: "",
+    }));
+  };
+  const handleSubzonaChange = (e) => {
+    const f = SUBZONA_LIST.find((s) => s.code === e.target.value);
+    setFormData((p) => ({
+      ...p,
+      subzona: f?.name || "",
+      subzonaCode: f?.code || "",
+      nomorAset: "",
+      assetId: "",
+    }));
+  };
+  const handleCategoryChange = (e) => {
+    const category = e.target.value;
+    setFormData((p) => ({ ...p, category }));
+    const tpl = SPEC_TEMPLATES_BY_CATEGORY[category] || [];
+    setTemplateSpecs(tpl.map((t) => ({ ...t, value: "", _unitMode: "pick" })));
+  };
+
+  const resetForm = () => {
+    setFormData({
+      assetId: "",
+      cekEksisting: "",
+      name: "",
+      tipeAset: "",
+      entitas: "",
+      entitasCode: "",
+      branch: "",
+      branchCode: "",
+      zona: "",
+      zonaCode: "",
+      subzona: "",
+      subzonaCode: "",
+      nomorAset: "",
+      category: "",
+      status: "Tersedia",
+      condition: "Baik",
+      merek: "",
+      tipe: "",
+      value: "",
+      id_pekerjaan: "",
+      thn_anggaran: "",
+      kd_anggaran: "",
+      quantity: 1,
+      units: [{ serialNumber: "", location: "" }],
     });
-  }, [filtered, sortKey]);
-
-  // Pagination
-  const totalPages = Math.max(1, Math.ceil(sorted.length / perPage));
-  const safePage = Math.min(page, totalPages);
-  const pageItems = sorted.slice((safePage - 1) * perPage, safePage * perPage);
-  const startItem = sorted.length === 0 ? 0 : (safePage - 1) * perPage + 1;
-  const endItem = Math.min(safePage * perPage, sorted.length);
-
-  const handleSearch = (v) => {
-    setSearch(v);
-    setPage(1);
-  };
-  const handleCat = (v) => {
-    setCatFilter(v);
-    setPage(1);
-  };
-  const handleStatus = (v) => {
-    setStatus(v);
-    setPage(1);
-  };
-  const handleSort = (key) => {
-    setSortKey(key);
-    setPage(1);
-  };
-  const handlePerPage = (n) => {
-    setPerPage(n);
-    setPage(1);
+    setTemplateSpecs([]);
+    setCustomSpecs([]);
+    setFormPhoto(null);
   };
 
-  const handleCardClick = (a) => {
-    if (isDisposedStatus(a.status)) return;
-    setSelectedAsset(a);
-    setView("detail");
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  const handleQuantityChange = (val) => {
+    const qty = Math.max(1, parseInt(val) || 1);
+    setFormData((prev) => {
+      let newUnits = [...prev.units];
+      if (qty > newUnits.length) {
+        for (let i = newUnits.length; i < qty; i++) {
+          newUnits.push({ serialNumber: "", location: "" });
+        }
+      } else {
+        newUnits = newUnits.slice(0, qty);
+      }
+      return { ...prev, quantity: qty, units: newUnits };
+    });
   };
 
-  const handleBackToList = () => {
-    setView("list");
-    setSelectedAsset(null);
+  const updateUnitField = (index, field, val) => {
+    setFormData((prev) => {
+      const newUnits = [...prev.units];
+      newUnits[index] = { ...newUnits[index], [field]: val };
+      return { ...prev, units: newUnits };
+    });
   };
 
-  const handleGoToBorrow = (a) => {
-    setSelectedAsset(a);
-    setView("borrow");
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  const handleEditQuantityChange = (val) => {
+    const qty = Math.max(1, parseInt(val) || 1);
+    setEditData((prev) => {
+      let newUnits = [...(prev.units || [])];
+      if (qty > newUnits.length) {
+        for (let i = newUnits.length; i < qty; i++) {
+          newUnits.push({ serialNumber: "", location: "" });
+        }
+      } else {
+        newUnits = newUnits.slice(0, qty);
+      }
+      return { ...prev, quantity: qty, units: newUnits };
+    });
   };
 
-  const handleBorrowConfirm = (newTrx) => {
-    setLoans((prev) => [...prev, newTrx]);
-    setView("list");
-    setSelectedAsset(null);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  const updateEditUnitField = (index, field, val) => {
+    setEditData((prev) => {
+      const newUnits = [...(prev.units || [])];
+      newUnits[index] = { ...newUnits[index], [field]: val };
+      return { ...prev, units: newUnits };
+    });
   };
 
-  const pageList = buildPageList(safePage, totalPages);
+  const handleSave = async (goToBarcode = false) => {
+    if (isSaving) return;
+    setIsSaving(true);
+    
+    try {
+      // ID akan di-generate otomatis jika masih kosong
+      let startId = formData.assetId;
+      const prefix = `${CATEGORY_PREFIX[formData.category] || "BRG"}-`;
 
-  // ── Render: halaman detail ──
-  if (view === "detail" && selectedAsset) {
-    return (
-      <AssetDetailPage
-        asset={selectedAsset}
-        loans={loans}
-        onBack={handleBackToList}
-        onBorrow={handleGoToBorrow}
-      />
+      if (!startId) {
+        const maxId = assets.reduce((max, a) => {
+          if (a.id.startsWith(prefix)) {
+            const part = a.id.split("-").pop();
+            const num = parseInt(part, 10);
+            return isNaN(num) ? max : Math.max(max, num);
+          }
+          return max;
+        }, 0);
+        startId = `${prefix}${String(maxId + 1).padStart(4, "0")}`;
+      }
+
+      const groupedAsset = {
+        id: startId,
+        name: formData.name || formData.tipeAset || "-",
+        category: formData.category,
+        tipeAset: formData.tipeAset || formData.name || "-",
+        status: formData.status,
+        entitas: formData.entitasCode, // menggunakan code
+        branch: formData.branchCode,
+        zona: formData.zonaCode,
+        subzona: formData.subzonaCode,
+        value: parseFloat(formData.value) || 0,
+        merek: formData.merek,
+        tipe: formData.tipe,
+        id_pekerjaan:
+          formData.id_pekerjaan ||
+          (formData.kd_anggaran
+            ? OPEX_ANGGARAN.find((o) => o.kd_anggaran === formData.kd_anggaran)
+              ?.id_pekerjaan || null
+            : null),
+        quantity: formData.quantity,
+        units: (formData.units || []).map((unit, index) => ({
+          serialNumber: unit.serialNumber?.trim() || `${startId}-SN-${String(index + 1).padStart(3, "0")}`,
+          location: unit.location || "",
+          id_pekerjaan: unit.id_pekerjaan || null,
+        })),
+        photo: formPhoto,
+        specs: (templateSpecs || []).map(({ _unitMode, ...s }) => s),
+        customSpecs: (customSpecs || []).map(({ _unitMode, ...s }) => s),
+      };
+
+      await barangAPI.create(groupedAsset);
+      setAssets([groupedAsset, ...assets]);
+      if (goToBarcode) {
+        setSelectedAsset(groupedAsset);
+        setBarcodeReturnView("add");
+        setCurrentView("barcode");
+      } else {
+        setCurrentView("list");
+        resetForm();
+      }
+    } catch (err) {
+      alert("Gagal memproses data penyimpanan: " + err.message);
+      console.error(err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handlePreviewBarcode = () => {
+    const tempAsset = {
+      id: formData.assetId,
+      name: formData.tipeAset || formData.name || "-",
+      category: formData.category,
+      tipeAset: formData.tipeAset || formData.name || "-",
+      status: formData.status,
+      branch: formData.branch,
+      zona: formData.zonaCode,
+      subzona: formData.subzonaCode,
+      units: formData.units.map((unit) => ({
+        serialNumber: unit.serialNumber,
+        location: unit.location,
+      })),
+      photo: formPhoto,
+      specs: templateSpecs.map(({ _unitMode, ...s }) => s),
+      customSpecs: customSpecs.map(({ _unitMode, ...s }) => s),
+    };
+    setSelectedAsset(tempAsset);
+    setBarcodeReturnView("add");
+    setCurrentView("barcode");
+  };
+
+  const handleDelete = async () => {
+    if (!selectedAsset) return;
+    try {
+      await barangAPI.delete(selectedAsset.id);
+      setAssets(assets.filter((a) => a.id !== selectedAsset.id));
+      setCurrentView("list");
+      setSelectedAsset(null);
+      setShowDeleteModal(false);
+      alert("Barang berhasil dihapus dari database.");
+    } catch (err) {
+      console.error("Gagal menghapus barang:", err);
+      alert("Gagal menghapus barang: " + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const openEditPage = (asset) => {
+    setSelectedAsset(asset);
+    const existingProj = ALL_PROJECTS.find(
+      (p) => String(p.id_pekerjaan) === String(asset.id_pekerjaan),
     );
-  }
+    setEditData({
+      name: asset.name,
+      category: asset.category,
+      status: asset.status,
+      value: asset.value,
+      entitas: asset.entitas,
+      branch: asset.branch,
+      zona: asset.zona,
+      subzona: asset.subzona,
+      merek: asset.merek || "",
+      tipe: asset.tipe || "",
+      id_pekerjaan: asset.id_pekerjaan || "",
+      quantity: asset.quantity || (asset.units ? asset.units.length : 1),
+      units: asset.units
+        ? asset.units.map((u) => ({
+          ...u,
+          location: u.location || [asset.branch, asset.zona, asset.subzona].filter(Boolean).join(" / ")
+        }))
+        : [
+          {
+            serialNumber: asset.serialNumber || "",
+            location: asset.unitLocation || [asset.branch, asset.zona, asset.subzona].filter(Boolean).join(" / "),
+          },
+        ],
+      thn_anggaran: existingProj?.thn_anggaran
+        ? String(existingProj.thn_anggaran)
+        : "",
+      kd_anggaran: existingProj?.kd_anggaran || "",
+    });
+    setEditPhoto(asset.photo || null);
 
-  // ── Render: halaman form pinjam ──
-  if (view === "borrow" && selectedAsset) {
-    return (
-      <BorrowPage
-        asset={selectedAsset}
-        onBack={() => setView("detail")}
-        onConfirm={handleBorrowConfirm}
-      />
+    const defaultTpl = SPEC_TEMPLATES_BY_CATEGORY[asset.category] || [];
+    const mergedSpecs = defaultTpl.map((t) => {
+      const existing = (asset.specs || []).find(
+        (s) => s.spec_label.toLowerCase() === t.spec_label.toLowerCase()
+      );
+      return {
+        ...t,
+        value: existing ? existing.value : "",
+        _unitMode: "pick",
+      };
+    });
+
+    // If there are other template specs loaded from the database that don't match defaultTpl,
+    // we can still append them to mergedSpecs so they don't get lost.
+    (asset.specs || []).forEach((s) => {
+      const alreadyAdded = mergedSpecs.some(
+        (m) => m.spec_label.toLowerCase() === s.spec_label.toLowerCase()
+      );
+      if (!alreadyAdded) {
+        mergedSpecs.push({
+          ...s,
+          _unitMode: "pick",
+        });
+      }
+    });
+
+    setEditSpecsData({
+      specs: mergedSpecs,
+      customSpecs: (asset.customSpecs || []).map((s) => ({
+        ...s,
+        _unitMode: "pick",
+      })),
+    });
+
+    setCurrentView("edit");
+  };
+
+  const handleSaveEdit = async () => {
+    if (isSaving) return;
+    setIsSaving(true);
+    const resolvedId =
+      editData.id_pekerjaan ||
+      (editData.kd_anggaran
+        ? OPEX_ANGGARAN.find((o) => o.kd_anggaran === editData.kd_anggaran)
+          ?.id_pekerjaan || null
+        : null);
+
+    const cleanSpecs = editSpecsData.specs.map(({ _unitMode, ...s }) => s);
+    const cleanCustom = editSpecsData.customSpecs.map(
+      ({ _unitMode, ...s }) => s,
     );
-  }
 
-  // ── Render: halaman daftar inventaris ──
-  return (
-    <div className="inventaris">
-      {/* ── Header ── */}
-      <div className="inv-header">
-        <div className="inv-header-text">
-          <h1 className="inv-title">Inventaris Aset</h1>
-          <p className="inv-sub">
-            {currentUser.branch_name} — <strong>{branchAssets.length}</strong>{" "}
-            total aset terdaftar
-          </p>
-        </div>
-        <div className="inv-header-stat">
-          <div className="inv-stat-pill">
-            <span className="inv-stat-dot inv-stat-dot--green" />
-            <span>
-              {branchAssets.filter((a) => a.status === "AVAILABLE").length}{" "}
-              Tersedia
-            </span>
-          </div>
-          <div className="inv-stat-pill">
-            <span className="inv-stat-dot inv-stat-dot--amber" />
-            <span>
-              {branchAssets.filter((a) => a.status === "BORROWED").length}{" "}
-              Dipinjam
-            </span>
-          </div>
-        </div>
-      </div>
+    const saveData = {
+      ...editData,
+      id_pekerjaan: resolvedId,
+      name: editData.name,
+      category: editData.category,
+      tipeAset: editData.tipeAset || editData.name,
+      merek: editData.merek,
+      tipe: editData.tipe,
+      value: parseFloat(editData.value) || 0,
+      units: (editData.units || []).map((unit, index) => {
+        let newCond = unit.condition;
+        if (unit.status && unit.status.includes("Tersedia")) {
+          newCond = "BAIK";
+        }
+        return {
+          serialNumber: unit.serialNumber?.trim() || `${selectedAsset.id}-SN-${String(index + 1).padStart(3, "0")}`,
+          location: unit.location,
+          id_pekerjaan: unit.id_pekerjaan || null,
+          status: unit.status,
+          condition: newCond,
+        };
+      }),
+      photo: editPhoto,
+      specs: cleanSpecs,
+      customSpecs: cleanCustom
+    };
 
-      {/* ── Filter bar ── */}
-      <div className="inv-filterbar card">
-        <div className="inv-search-wrap">
-          <Ico n="search" s={15} c="var(--gray-400)" />
-          <input
-            className="inv-search"
-            placeholder="Cari nama, serial, brand..."
-            value={search}
-            onChange={(e) => handleSearch(e.target.value)}
-          />
-          {search && (
-            <button
-              className="inv-search-clear"
-              onClick={() => handleSearch("")}
-            >
-              <Ico n="x" s={13} />
+    try {
+      await barangAPI.update(selectedAsset.id, saveData);
+
+      const updated = assets.map((a) =>
+        a.id === selectedAsset.id
+          ? {
+            ...a,
+            ...saveData,
+          }
+          : a,
+      );
+      setAssets(updated);
+      setSelectedAsset((prev) => ({
+        ...prev,
+        ...saveData,
+      }));
+      setCurrentView("list");
+      alert("Perubahan barang berhasil disimpan dan disesuaikan ke pekerjaan terkait.");
+    } catch (err) {
+      console.error("Gagal menyimpan edit barang:", err);
+      alert("Gagal menyimpan perubahan: " + (err.response?.data?.message || err.message));
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleExport = () => {
+    const headers = [
+      "ID Barang",
+      "Nama",
+      "Kategori",
+      "Entitas",
+      "Branch",
+      "Zona",
+      "Subzona",
+      "Status",
+      "ID Pekerjaan",
+      "Nama Pekerjaan",
+      "Nilai",
+      "Tgl Pengadaan",
+    ];
+    const rows = filtered.map((a) => [
+      a.id,
+      a.name,
+      a.category,
+      a.entitas,
+      a.branch,
+      a.zona,
+      a.subzona,
+      a.status,
+      a.id_pekerjaan || "",
+      getProjectName(a.id_pekerjaan),
+      a.value,
+      a.procurementDate,
+    ]);
+    const csv = [headers, ...rows]
+      .map((r) => r.map((v) => `"${v}"`).join(","))
+      .join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "inventory-aset.csv";
+    link.click();
+  };
+
+  const handlePrintBarcode = () => {
+    const asset = selectedAsset;
+    const units = asset.units && asset.units.length > 0 ? asset.units : [{ serialNumber: asset.id }];
+
+    const w = window.open("", "_blank", "width=800,height=800");
+    let html = `<!DOCTYPE html><html><head><title>Print Barcodes — ${asset.name}</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Courier New',monospace;background:#fff;padding:20px}
+  .label-container{display:flex;flex-direction:column;gap:30px;align-items:center}
+  .label{width:360px;background:#fff;border:2.5px solid #111;border-radius:10px;padding:18px 20px;page-break-inside:avoid}
+  .lh{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1.5px solid #111;padding-bottom:10px;margin-bottom:10px}
+  .lbrand{font-size:16px;font-weight:900;letter-spacing:3px;color:#000}
+  .lsub{font-size:8px;font-weight:700;color:#555;letter-spacing:1.5px;margin-top:2px}
+  .lstatus{border:1.5px solid #000;border-radius:4px;padding:3px 8px;font-size:8px;font-weight:900;letter-spacing:1px;text-transform:uppercase}
+  .lname{font-size:14px;font-weight:800;margin:8px 0 3px;color:#000;font-family:sans-serif}
+  .lid{font-size:10px;font-weight:700;color:#444;letter-spacing:.5px;margin-bottom:10px}
+  .lbar{text-align:center;border-top:1px dashed #ddd;border-bottom:1px dashed #ddd;padding:6px 0;margin:8px 0}
+  .lmeta{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px;border-top:1px solid #eee;padding-top:8px}
+  .mi label{display:block;font-size:7.5px;color:#888;text-transform:uppercase;letter-spacing:.4px;margin-bottom:1px}
+  .mi span{font-size:9.5px;font-weight:700;color:#111}
+  .lfoot{text-align:center;margin-top:10px;font-size:7px;color:#aaa;letter-spacing:.5px;border-top:1px dashed #ddd;padding-top:7px;text-transform:uppercase}
+  @media print{body{padding:0}.label{box-shadow:none;margin-bottom:20px}}
+</style></head><body><div class="label-container">`;
+
+    units.forEach((u) => {
+      const barcodeVal = u.serialNumber || asset.id;
+      const canvas = document.createElement("canvas");
+      const bars = C128.encode(barcodeVal);
+      const width = 340;
+      const height = 64;
+      const bw = Math.max(1, Math.floor(width / bars.length));
+      canvas.width = bw * bars.length;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#000";
+      for (let i = 0; i < bars.length; i++) {
+        if (bars[i] === "1") ctx.fillRect(i * bw, 0, bw, height);
+      }
+      const base64Barcode = canvas.toDataURL("image/png");
+
+      html += `
+<div class="label">
+  <div class="lh"><div><div class="lbrand">PELINDO</div><div class="lsub">ASSET MANAGEMENT SYSTEM</div></div><span class="lstatus">${asset.status}</span></div>
+  <div class="lname">${asset.name}</div>
+  <div class="lid">${barcodeVal}</div>
+  <div class="lbar"><img src="${base64Barcode}" style="width:100%;height:auto;image-rendering:pixelated;" /></div>
+  <div class="lmeta">
+    <div class="mi"><label>Entitas</label><span>${asset.entitas || "—"}</span></div>
+    <div class="mi"><label>Cabang</label><span>${asset.branch}</span></div>
+    <div class="mi"><label>Zona · Subz</label><span>${asset.zona}/${asset.subzona}</span></div>
+    <div class="mi"><label>Aset ID</label><span>${asset.id}</span></div>
+  </div>
+  <div class="lfoot">SCAN UNTUK PEMINJAMAN · ${new Date().getFullYear()}</div>
+</div>`;
+    });
+
+    html += `</div><script>setTimeout(()=>{window.print();window.close();},600);</script></body></html>`;
+    w.document.write(html);
+    w.document.close();
+  };
+
+  // ── RENDER LIST VIEW (TAMPILAN AWAL - TIDAK DIUBAH) ─────────────
+  const renderListView = () => {
+    const uniqueCategories = [...new Set(assets.map(a => a.category).filter(Boolean))].sort();
+    const autoNomor = canGenerate
+      ? getNextNomor(
+        formData.entitasCode,
+        formData.branchCode,
+        formData.zonaCode,
+        formData.subzonaCode,
+      )
+      : null;
+    const codePreview = canGenerate
+      ? `${formData.entitasCode}-${formData.branchCode}-${formData.zonaCode}-${formData.subzonaCode}-${autoNomor}`
+      : null;
+    const filterAnggaranCapexEntry = filterAnggaran
+      ? CAPEX_ANGGARAN.find((a) => a.kd_anggaran === filterAnggaran)
+      : null;
+
+    // Get unique brands for the current filtered category (or all if no category selected)
+    const availableBrands = [...new Set(assets
+      .filter(a => !filterCategory || a.category === filterCategory)
+      .map(a => a.merek ? a.merek.trim() : null)
+      .filter(Boolean)
+    )].sort();
+
+    // Get unique tipes for the current filtered category & brands
+    const availableTipes = [...new Set(assets
+      .filter(a => !filterCategory || a.category === filterCategory)
+      .filter(a => selectedBrands.length === 0 || (a.merek && selectedBrands.includes(a.merek.trim())))
+      .map(a => a.tipe ? a.tipe.trim() : null)
+      .filter(Boolean)
+    )].sort();
+
+    return (
+      <div className="view-asset-wrapper">
+        <div className="view-header">
+          <div className="view-header-left">
+            <div className="view-header-icon">
+              <Icon.Inventory />
+            </div>
+            <div>
+              <h1 className="view-title">List Barang</h1>
+              <p className="view-subtitle">
+                <Icon.Shield /> Super Admin Access · {assets.length} total barang
+                terdaftar
+              </p>
+            </div>
+          </div>
+          <button
+            className="add-asset-btn" style={{ display: "none" }}
+            onClick={() => setCurrentView("add")}
+          >
+            <Icon.Plus /> Tambah Barang Baru
+          </button>
+        </div>
+
+        <div className="kpi-grid">
+          {[
+            {
+              cls: "kpi-total",
+              icon: <Icon.Layers />,
+              val: kpi.total,
+              lbl: "Total Barang",
+              glow: "blue",
+            },
+            {
+              cls: "kpi-tersedia",
+              icon: <Icon.CheckRound />,
+              val: kpi.tersedia,
+              lbl: "Tersedia",
+              glow: "green",
+            },
+            {
+              cls: "kpi-dipinjam",
+              icon: <Icon.ArrowUpRight />,
+              val: kpi.dipinjam,
+              lbl: "Dipinjam",
+              glow: "yellow",
+            },
+            {
+              cls: "kpi-maintenance",
+              icon: <Icon.Wrench />,
+              val: kpi.maintenance,
+              lbl: "Maintenance",
+              glow: "red",
+            },
+            {
+              cls: "kpi-nilai",
+              icon: <Icon.Coins />,
+              val: fmt(kpi.totalNilai),
+              lbl: "Total Nilai Barang",
+              glow: "cyan",
+              sm: true,
+            },
+          ].map(({ cls, icon, val, lbl, glow, sm }) => (
+            <div key={lbl} className={`kpi-card ${cls}`}>
+              <div className="kpi-icon">{icon}</div>
+              <div className="kpi-body">
+                <div className={`kpi-val${sm ? " kpi-val--sm" : ""}`}>
+                  {val}
+                </div>
+                <div className="kpi-lbl">{lbl}</div>
+              </div>
+              <div className={`kpi-glow kpi-glow--${glow}`} />
+            </div>
+          ))}
+        </div>
+
+        <div className="table-controls">
+          <div className="search-box">
+            <span className="search-icon">
+              <Icon.Search />
+            </span>
+            <input
+              type="text"
+              placeholder="Cari ID barang, nama, atau branch..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setCurrentPage(1);
+              }}
+            />
+          </div>
+          <div className="filter-actions">
+            <div className="view-toggle">
+              <button
+                className={`view-toggle-btn ${viewMode === "table" ? "active" : ""}`}
+                onClick={() => setViewMode("table")}
+              >
+                <Icon.List /> Tabel
+              </button>
+              <button
+                className={`view-toggle-btn ${viewMode === "grid" ? "active" : ""}`}
+                onClick={() => setViewMode("grid")}
+              >
+                <Icon.Grid /> Grid
+              </button>
+            </div>
+            
+            <div style={{ position: "relative" }}>
+              <button 
+                className="control-btn" 
+                onClick={() => setShowFilterSidebar(true)}
+                style={{ 
+                  background: (activeFiltersCount > 0) ? "#eff6ff" : "#fff",
+                  color: (activeFiltersCount > 0) ? "#2563eb" : "#475569",
+                  borderColor: (activeFiltersCount > 0) ? "#bfdbfe" : "#e2e8f0"
+                }}
+              >
+                <Icon.Filter /> Filter {activeFiltersCount > 0 ? `(${activeFiltersCount})` : ""}
+              </button>
+            </div>
+
+            <button className="control-btn" onClick={handleExport}>
+              <Icon.Download /> Export CSV
             </button>
+          </div>
+        </div>
+        
+        {/* SIDEBAR FILTER */}
+        {showFilterSidebar && (
+          <>
+            <div 
+              style={{
+                position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+                background: "rgba(0,0,0,0.4)", zIndex: 9998,
+                backdropFilter: "blur(2px)", transition: "all 0.3s"
+              }}
+              onClick={() => setShowFilterSidebar(false)}
+            />
+            <div 
+              style={{
+                position: "fixed", top: 0, right: 0, bottom: 0,
+                width: "320px", background: "#fff", zIndex: 9999,
+                boxShadow: "-4px 0 24px rgba(0,0,0,0.1)",
+                display: "flex", flexDirection: "column",
+                animation: "slideInRight 0.3s forwards"
+              }}
+            >
+              <style>{`
+                @keyframes slideInRight {
+                  from { transform: translateX(100%); }
+                  to { transform: translateX(0); }
+                }
+                .filter-sidebar-section {
+                  padding: 20px;
+                  border-bottom: 1px solid #f1f5f9;
+                }
+                .filter-sidebar-title {
+                  font-size: 14px;
+                  font-weight: 700;
+                  color: #0f172a;
+                  margin-bottom: 12px;
+                }
+              `}</style>
+              
+              <div style={{ padding: "20px", borderBottom: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#f8fafc" }}>
+                <h3 style={{ margin: 0, fontSize: "16px", fontWeight: "800", display: "flex", alignItems: "center", gap: "8px" }}>
+                  <Icon.Filter /> FILTER
+                </h3>
+                <button 
+                  onClick={() => setShowFilterSidebar(false)}
+                  style={{ background: "transparent", border: "none", cursor: "pointer", color: "#64748b", padding: "4px" }}
+                >
+                  <Icon.XCircle />
+                </button>
+              </div>
+
+              <div style={{ flex: 1, overflowY: "auto" }}>
+                <div className="filter-sidebar-section">
+                  <div className="filter-sidebar-title">Kategori</div>
+                  <select
+                    value={filterCategory}
+                    onChange={(e) => {
+                      setFilterCategory(e.target.value);
+                      setSelectedBrands([]); // reset brands when category changes
+                      setSelectedTipes([]); // reset tipes when category changes
+                      setCurrentPage(1);
+                    }}
+                    style={{...modernSelectStyle, width: "100%", background: "#f8fafc", padding: "10px 12px"}}
+                  >
+                    <option value="">Semua Kategori</option>
+                    {uniqueCategories.map(cat => (
+                      <option key={cat} value={cat}>{CATEGORY_NAMES[cat] || cat}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="filter-sidebar-section">
+                  <div className="filter-sidebar-title">Merek Barang</div>
+                  {availableBrands.length === 0 ? (
+                    <div style={{ fontSize: "13px", color: "#94a3b8", padding: "4px 0" }}>
+                      Tidak ada merek untuk ditampilkan.
+                    </div>
+                  ) : (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                      {availableBrands.map(brand => (
+                        <label key={brand} style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontSize: "13.5px", color: "#334155" }}>
+                          <input 
+                            type="checkbox" 
+                            checked={selectedBrands.includes(brand)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedBrands([...selectedBrands, brand]);
+                              } else {
+                                setSelectedBrands(selectedBrands.filter(b => b !== brand));
+                              }
+                              // reset tipes selection if brand filter changes to avoid orphaned tipes
+                              setSelectedTipes([]);
+                              setCurrentPage(1);
+                            }}
+                            style={{ width: "16px", height: "16px", cursor: "pointer", accentColor: "#2563eb" }}
+                          />
+                          {brand}
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="filter-sidebar-section">
+                  <div className="filter-sidebar-title">Tipe Barang</div>
+                  {availableTipes.length === 0 ? (
+                    <div style={{ fontSize: "13px", color: "#94a3b8", padding: "4px 0" }}>
+                      Tidak ada tipe untuk ditampilkan.
+                    </div>
+                  ) : (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "10px", maxHeight: "240px", overflowY: "auto" }}>
+                      {availableTipes.map(tipe => (
+                        <label key={tipe} style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontSize: "13.5px", color: "#334155" }}>
+                          <input 
+                            type="checkbox" 
+                            checked={selectedTipes.includes(tipe)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedTipes([...selectedTipes, tipe]);
+                              } else {
+                                setSelectedTipes(selectedTipes.filter(t => t !== tipe));
+                              }
+                              setCurrentPage(1);
+                            }}
+                            style={{ width: "16px", height: "16px", cursor: "pointer", accentColor: "#2563eb" }}
+                          />
+                          {tipe}
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="filter-sidebar-section">
+                  <div className="filter-sidebar-title">Status</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                    {["Tersedia", "Dipinjam", "Maintenance"].map(status => (
+                      <label key={status} style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontSize: "13.5px", color: "#334155" }}>
+                        <input 
+                          type="radio" name="statusFilter" 
+                          checked={filterStatus === status} 
+                          onChange={() => { setFilterStatus(status); setCurrentPage(1); }} 
+                          style={{ width: "16px", height: "16px", accentColor: "#2563eb" }} 
+                        /> {status}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ padding: "20px", borderTop: "1px solid #e2e8f0", display: "flex", gap: "12px", background: "#f8fafc" }}>
+                <button 
+                  onClick={() => { resetFilters(); setShowFilterSidebar(false); }}
+                  style={{ flex: 1, padding: "10px", background: "#fff", border: "1px solid #cbd5e1", borderRadius: "8px", fontWeight: "600", color: "#64748b", cursor: "pointer" }}
+                >
+                  Reset
+                </button>
+                <button 
+                  onClick={() => setShowFilterSidebar(false)}
+                  style={{ flex: 1, padding: "10px", background: "#2563eb", border: "none", borderRadius: "8px", fontWeight: "600", color: "#fff", cursor: "pointer" }}
+                >
+                  Terapkan
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+
+
+
+        <div className="table-container" style={{ position: "relative", minHeight: loading ? "300px" : "auto" }}>
+          {loading && (
+            <div style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: "rgba(255, 255, 255, 0.7)",
+              zIndex: 10,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "12px",
+              backdropFilter: "blur(2px)",
+              borderRadius: "16px"
+            }}>
+              <style>{`
+                .spinner-loader {
+                  width: 32px;
+                  height: 32px;
+                  border: 3px solid #f3f3f3;
+                  border-top: 3px solid #2563eb;
+                  border-radius: 50%;
+                  animation: spin-loader 0.8s linear infinite;
+                }
+                @keyframes spin-loader {
+                  0% { transform: rotate(0deg); }
+                  100% { transform: rotate(360deg); }
+                }
+              `}</style>
+              <div className="spinner-loader"></div>
+              <span style={{ fontSize: "12px", fontWeight: "700", color: "#475569", letterSpacing: "0.5px" }}>MEMUAT DATA...</span>
+            </div>
           )}
-        </div>
-
-        <div className="inv-filters-right">
-          <div className="inv-select-wrap">
-            <Ico n="tag" s={13} c="var(--gray-400)" />
-            <select
-              className="inv-select"
-              value={catFilter}
-              onChange={(e) => handleCat(e.target.value)}
-            >
-              <option value="">Semua Kategori</option>
-              {Object.entries(categoryConf).map(([k, v]) => (
-                <option key={k} value={k}>
-                  {v.label}
-                </option>
-              ))}
-            </select>
+          <div className="table-info-bar">
+            <span>
+              Menampilkan <strong>{paginated.length}</strong> dari{" "}
+              <strong>{filtered.length}</strong> aset
+            </span>
+            {activeFiltersCount > 0 && (
+              <span className="filter-active-note">
+                <Icon.WarnSm /> Filter aktif
+              </span>
+            )}
           </div>
 
-          <div className="inv-select-wrap">
-            <Ico n="filter" s={13} c="var(--gray-400)" />
-            <select
-              className="inv-select"
-              value={statusFilter}
-              onChange={(e) => handleStatus(e.target.value)}
-            >
-              <option value="">Semua Status</option>
-              {Object.entries(statusConf).map(([k, v]) => (
-                <option key={k} value={k}>
-                  {v.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <span className="inv-count">{filtered.length} aset</span>
-        </div>
-      </div>
-
-      {/* ── Toolbar: Sort + Per-page + View Toggle ── */}
-      <div className="inv-toolbar">
-        <div className="inv-toolbar-left">
-          <span className="inv-toolbar-label">Urutkan:</span>
-          {SORT_OPTIONS.map((opt) => {
-            const isActive = sortKey === opt.key;
-            const iconName =
-              opt.dir === "asc"
-                ? "sortAsc"
-                : opt.dir === "desc"
-                  ? "sortDesc"
-                  : "sort";
-            return (
-              <button
-                key={opt.key}
-                className={`inv-sort-btn${isActive ? " active" : ""}`}
-                onClick={() => handleSort(opt.key)}
-              >
-                <Ico n={iconName} s={12} />
-                {opt.label}
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="inv-toolbar-right">
-          {/* View Mode Toggle */}
-          <div className="inv-view-toggle">
-            <button
-              className={`inv-view-btn${displayMode === "table" ? " active" : ""}`}
-              onClick={() => setDisplayMode("table")}
-              title="Tampilan Tabel"
-            >
-              <Ico n="hash" s={14} />
-              Tabel
-            </button>
-            <button
-              className={`inv-view-btn${displayMode === "grid" ? " active" : ""}`}
-              onClick={() => setDisplayMode("grid")}
-              title="Tampilan Grid"
-            >
-              <Ico n="cube" s={14} />
-              Grid
-            </button>
-          </div>
-
-          <span className="inv-perpage-label">Tampilkan:</span>
-          <div className="inv-perpage-group">
-            {PER_PAGE_OPTIONS.map((n) => (
-              <button
-                key={n}
-                className={`inv-perpage-btn${perPage === n ? " active" : ""}`}
-                onClick={() => handlePerPage(n)}
-              >
-                {n}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* ── Table / Grid / Empty ── */}
-      {filtered.length === 0 ? (
-        <div className="card inv-empty">
-          <div className="inv-empty-icon">
-            <Ico n="search" s={28} c="#94a3b8" />
-          </div>
-          <p className="inv-empty-title">Tidak ada aset ditemukan</p>
-          <p className="inv-empty-sub">
-            Coba ubah filter atau kata kunci pencarian
-          </p>
-        </div>
-      ) : displayMode === "table" ? (
-        /* ── TABLE VIEW ── */
-        <>
-          <div className="inv-table-container">
-            <table className="inv-table">
+          {viewMode === "grid" ? (
+            <>
+              {paginated.length === 0 ? (
+                <div className="empty-state">
+                  <div className="empty-state-icon">
+                    <Icon.BoxOpen />
+                  </div>
+                  <div className="empty-state-title">
+                    Tidak ada aset ditemukan
+                  </div>
+                  <div className="empty-state-sub">
+                    Coba ubah kata kunci atau reset filter.
+                  </div>
+                </div>
+              ) : (
+                <div className="asset-card-grid">
+                  {paginated.map((asset) => {
+                    const imgSrc = getAssetImage(asset);
+                    const project = getProjectById(asset.id_pekerjaan);
+                    return (
+                      <div
+                        key={asset.id}
+                        className="asset-card"
+                        onClick={() => {
+                          setSelectedAsset(asset);
+                          setCurrentView("detail");
+                          setDetailTab("info");
+                        }}
+                      >
+                        <div className="asset-card-img-wrap">
+                          {imgSrc ? (
+                            <img
+                              src={imgSrc}
+                              alt={asset.name}
+                              className="asset-card-img"
+                              onError={(e) => {
+                                e.target.style.display = "none";
+                                e.target.nextSibling.style.display = "flex";
+                              }}
+                            />
+                          ) : null}
+                          {!imgSrc && (
+                            <div className="asset-card-img-placeholder">
+                              <Icon.Photo />
+                              <span>Tidak ada foto</span>
+                            </div>
+                          )}
+                          {imgSrc && (
+                            <div
+                              className="asset-card-img-placeholder"
+                              style={{ display: "none" }}
+                            >
+                              <Icon.Photo />
+                              <span>Tidak ada foto</span>
+                            </div>
+                          )}
+                          <div className="asset-card-status">
+                            <span
+                              className={`status-badge ${statusClass(asset.status)}`}
+                            >
+                              {asset.status}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="asset-card-body">
+                          <code className="asset-card-id">{asset.id}</code>
+                          <div className="asset-card-name">{asset.name}</div>
+                          <div className="asset-card-meta">
+                            <span className="cat-badge">{CATEGORY_NAMES[asset.category] || asset.category}</span>
+                            <span
+                              style={{
+                                fontSize: "11px",
+                                fontWeight: "700",
+                                color: "#0f172a",
+                                background: "#f1f5f9",
+                                padding: "2px 8px",
+                                borderRadius: "4px",
+                              }}
+                            >
+                              {asset.quantity || (asset.units ? asset.units.length : 1)} Unit
+                            </span>
+                          </div>
+                        </div>
+                        <div className="asset-card-footer" style={{ flexDirection: "column", alignItems: "flex-start", gap: "4px" }}>
+                          <div style={{ fontSize: "10px", color: "#64748b", fontWeight: "600" }}>HARGA SATUAN: {fmt(asset.value)}</div>
+                          <div style={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
+                            <span className="asset-card-value">
+                              {fmt(asset.value * (asset.quantity || 1))}
+                            </span>
+                            <div
+                              className="asset-card-actions"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <button
+                                className="card-action-btn"
+                                onClick={() => {
+                                  setSelectedAsset(asset);
+                                  setCurrentView("barcode");
+                                }}
+                              >
+                                <Icon.Barcode />
+                              </button>
+                              <button
+                                className="card-action-btn danger"
+                                onClick={() => {
+                                  setSelectedAsset(asset);
+                                  setShowDeleteModal(true);
+                                }}
+                              >
+                                <Icon.Trash />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </>
+          ) : (
+            <table className="asset-table">
               <thead>
                 <tr>
-                  <th className="inv-table-id">ID Aset</th>
-                  <th className="inv-table-name">Nama Aset</th>
-                  <th className="inv-table-brand">Brand · Model</th>
-                  <th className="inv-table-serial">Serial</th>
-                  <th className="inv-table-location">Lokasi</th>
-                  <th className="inv-table-category">Kategori</th>
-                  <th className="inv-table-status">Status</th>
-                  <th className="inv-table-action">Aksi</th>
+                  <th style={{ width: "60px" }}>GAMBAR</th>
+                  <th>ID BARANG</th>
+                  <th>NAMA BARANG</th>
+                  <th style={{ minWidth: "150px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <span style={{ fontSize: "12px", color: "#475569", fontWeight: "600" }}>
+                        Kategori
+                      </span>
+                      <select
+                        value={filterCategory}
+                        onChange={(e) => setFilterCategory(e.target.value)}
+                        style={{
+                          width: "18px",
+                          height: "18px",
+                          padding: "0",
+                          fontSize: "12px",
+                          borderRadius: "4px",
+                          border: "1px solid #cbd5e1",
+                          background: "#fff",
+                          color: "#475569",
+                          outline: "none",
+                          cursor: "pointer",
+                          appearance: "none",
+                          textAlign: "center",
+                          textAlignLast: "center",
+                          lineHeight: "1"
+                        }}
+                      >
+                        <option value={filterCategory} hidden>▾</option>
+                        <option value="">Semua Kategori</option>
+                        {uniqueCategories.map(cat => (
+                          <option key={cat} value={cat}>{CATEGORY_NAMES[cat] || cat}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </th>
+                  <th>LOKASI</th>
+                  <th>STATUS</th>
+                  <th>KUANTITAS</th>
+                  <th>TOTAL NILAI</th>
+                  
                 </tr>
               </thead>
               <tbody>
-                {pageItems.map((a) => {
-                  const cat = categoryConf[a.category] || categoryConf.OTHER;
-                  const st = statusConf[a.status];
-                  const photo = getAssetPhoto(a);
-                  const hasErr = imgErr[a.id];
-                  const isDisposed = isDisposedStatus(a.status);
-                  const isAvailable = a.status === "AVAILABLE";
+                {paginated.length === 0 ? (
+                  <tr>
+                    <td colSpan="5">
+                      <div className="empty-state">
+                        <div className="empty-state-icon">
+                          <Icon.BoxOpen />
+                        </div>
+                        <div className="empty-state-title">
+                          Tidak ada barang ditemukan
+                        </div>
+                        <div className="empty-state-sub">
+                          {activeFiltersCount > 0 || search
+                            ? "Coba ubah kata kunci atau reset filter."
+                            : 'Belum ada barang. Klik "Tambah Barang Baru" untuk mulai.'}
+                        </div>
+                        {(activeFiltersCount > 0 || search) && (
+                          <button
+                            className="empty-reset-btn"
+                            onClick={() => {
+                              resetFilters();
+                              setSearch("");
+                            }}
+                          >
+                            Reset Pencarian & Filter
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  paginated.map((asset, idx) => {
+                    const imgSrc = getAssetImage(asset);
+                    const project = getProjectById(asset.id_pekerjaan);
+                    return (
+                      <tr
+                        key={asset.id}
+                        className="asset-row"
+                        onClick={() => {
+                          setSelectedAsset(asset);
+                          setCurrentView("detail");
+                          setDetailTab("info");
+                        }}
+                      >
+                        <td>
+                          {imgSrc ? (
+                            <img
+                              src={imgSrc}
+                              alt={asset.name}
+                              className="asset-thumb"
+                              onError={(e) => {
+                                e.target.style.display = "none";
+                              }}
+                            />
+                          ) : (
+                            <div className="asset-thumb-placeholder">
+                              <Icon.PhotoSm />
+                            </div>
+                          )}
+                        </td>
+                        <td>
+                          <code className="asset-id-code">{asset.id}</code>
+                        </td>
+                        <td>
+                          <div className="fw-bold">{asset.name}</div>
+                        </td>
+                        <td>
+                          <span className="cat-badge">{CATEGORY_NAMES[asset.category] || asset.category}</span>
+                        </td>
+                        <td>
+                          <div style={{
+                            fontSize: "13px",
+                            maxWidth: "180px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            fontWeight: asset.units?.[0]?.location ? "700" : "400",
+                            color: asset.units?.[0]?.location ? "var(--blue)" : "#475569"
+                          }} title={asset.units?.[0]?.location || ""}>
+                            {asset.units?.[0]?.location || [asset.branch, asset.zona].filter(Boolean).join(" / ") || "—"}
+                          </div>
+                        </td>
+                        <td>
+                          <span className={`status-badge ${statusClass(asset.status)}`} style={{ padding: "4px 8px", fontSize: "11px" }}>
+                            {asset.status}
+                          </span>
+                        </td>
+                        <td>
+                          <span
+                            style={{
+                              fontSize: "14px",
+                              fontWeight: "700",
+                              color: "#0f172a",
+                              background: "#f1f5f9",
+                              padding: "4px 10px",
+                              borderRadius: "6px",
+                            }}
+                          >
+                            {asset.quantity || (asset.units ? asset.units.length : 1)}
+                          </span>
+                        </td>
+                        <td className="fw-bold">{fmt(asset.value * (asset.quantity || 1))}</td>
+                        <td onClick={(e) => e.stopPropagation()}>
+                          <div
+                            className="action-wrap"
+                            ref={
+                              activeDropdown === asset.id ? dropdownRef : null
+                            }
+                          >
+                            <button
+                              className="action-dot-btn"
+                              onClick={() =>
+                                setActiveDropdown(
+                                  activeDropdown === asset.id ? null : asset.id,
+                                )
+                              }
+                            >
+                              <span style={{ display: "none" }}><Icon.Dots /></span>
+                            </button>
+                            {activeDropdown === asset.id && (
+                              <div className={`action-dropdown ${idx >= paginated.length - 2 ? "dropdown-up" : ""}`}>
+                                <button
+                                  onClick={() => {
+                                    setSelectedAsset(asset);
+                                    setCurrentView("detail");
+                                    setDetailTab("info");
+                                    setActiveDropdown(null);
+                                  }}
+                                >
+                                  <Icon.Eye /> Lihat Detail
+                                </button>
+                                <button
+                                  className="action-history"
+                                  onClick={() => {
+                                    setSelectedAsset(asset);
+                                    setCurrentView("detail");
+                                    setDetailTab("history");
+                                    setActiveDropdown(null);
+                                  }}
+                                >
+                                  <Icon.History /> Riwayat Pinjam
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setSelectedAsset(asset);
+                                    setCurrentView("barcode");
+                                    setActiveDropdown(null);
+                                  }}
+                                >
+                                  <span style={{ display: "none" }}><Icon.Barcode /> Cetak Barcode</span>
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setActiveDropdown(null);
+                                    openEditPage(asset);
+                                  }}
+                                >
+                                  <span style={{ display: "none" }}><span style={{ display: "none" }}><Icon.Edit /> Edit Barang</span></span>
+                                </button>
+                                <button
+                                  className="action-delete"
+                                  onClick={() => {
+                                    setSelectedAsset(asset);
+                                    setShowDeleteModal(true);
+                                    setActiveDropdown(null);
+                                  }}
+                                >
+                                  <Icon.Trash /> Hapus
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          )}
+
+          {totalPages > 1 && (
+            <div className="pagination">
+              <button
+                className="pg-btn"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((p) => p - 1)}
+              >
+                <Icon.ChevronLeft />
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                <button
+                  key={p}
+                  className={`pg-btn ${p === currentPage ? "pg-active" : ""}`}
+                  onClick={() => setCurrentPage(p)}
+                >
+                  {p}
+                </button>
+              ))}
+              <button
+                className="pg-btn"
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage((p) => p + 1)}
+              >
+                <Icon.ChevronRight />
+              </button>
+              <span className="pg-info">
+                Halaman {currentPage} dari {totalPages}
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // ── RENDER ADD PAGE ─────────────────────────────────────────────
+  const renderAddPage = () => {
+    const isAddValid =
+      formData.category &&
+      formData.tipeAset &&
+      templateSpecs.every((s) => s.value && s.value.toString().trim() !== "");
+
+    return (
+      <PageWrapper
+        title="Input Data Barang Baru"
+        onBack={() => setCurrentView("list")}
+      >
+        <div style={{ maxWidth: "900px", margin: "0 auto" }}>
+          <h3
+            style={{
+              fontSize: "15px",
+              color: "#0f172a",
+              marginBottom: "10px",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            <Icon.Tag /> Informasi Utama
+          </h3>
+          <ModernTable>
+
+            <TableRow label="Kategori" required>
+              <select
+                value={formData.category}
+                onChange={handleCategoryChange}
+                style={modernSelectStyle}
+              >
+                <option value="">— Pilih Kategori —</option>
+                {Object.entries(CATEGORY_NAMES).map(([code, name]) => (
+                  <option key={code} value={code}>{name}</option>
+                ))}
+              </select>
+            </TableRow>
+            <TableRow label="Nama Barang" required>
+              <div style={{ position: "relative", width: "100%" }}>
+                <input
+                  type="text"
+                  placeholder={formData.category ? "Ketik nama barang — pilih dari saran jika sudah ada..." : "Pilih kategori terlebih dahulu"}
+                  value={formData.tipeAset}
+                  disabled={!formData.category}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setFormData((p) => ({ ...p, tipeAset: val, name: val }));
+                    setShowSuggestions(val.trim().length > 0);
+                  }}
+                  onFocus={() => {
+                    if (formData.tipeAset.trim().length > 0) {
+                      setShowSuggestions(true);
+                    }
+                  }}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                  style={{
+                    ...modernInputStyle,
+                    background: !formData.category ? "#f8fafc" : "#fff",
+                    cursor: !formData.category ? "not-allowed" : "text",
+                  }}
+                />
+                {/* Smart autocomplete: tampil hanya jika sudah ada huruf yang diketik dan kategori dipilih */}
+                {showSuggestions && formData.category && formData.tipeAset.trim().length > 0 && (() => {
+                  const searchStr = formData.tipeAset.toLowerCase();
+                  const suggestions = assets
+                    .filter((a, index, self) =>
+                      a.category === formData.category &&
+                      (a.name || a.tipeAset || "").toLowerCase().includes(searchStr) &&
+                      self.findIndex(t => (t.tipeAset || t.name) === (a.tipeAset || a.name)) === index
+                    );
+
+                  if (suggestions.length === 0) return null;
 
                   return (
-                    <tr
-                      key={a.id}
-                      className={`inv-table-row${isDisposed ? " is-disposed" : ""}`}
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: "100%",
+                        left: 0,
+                        right: 0,
+                        background: "#fff",
+                        border: "1px solid #3b82f6",
+                        borderRadius: "8px",
+                        marginTop: "4px",
+                        maxHeight: "220px",
+                        overflowY: "auto",
+                        zIndex: 50,
+                        boxShadow: "0 8px 24px -4px rgb(59 130 246 / 0.15)",
+                      }}
                     >
-                      {/* ID Aset */}
-                      <td className="inv-table-id">
-                        <code className="inv-table-code">{a.id}</code>
-                      </td>
-
-                      {/* Nama Aset dengan foto */}
-                      <td className="inv-table-name">
-                        <div className="inv-table-cell-name">
-                          <img
-                            src={!hasErr ? photo : getAssetPhotoFallback(a)}
-                            alt={a.name}
-                            className="inv-table-thumb"
-                            onError={() => {
-                              if (!hasErr) {
-                                setImgErr((p) => ({ ...p, [a.id]: true }));
-                              }
-                            }}
-                          />
-                          <span className="inv-table-text-strong">
-                            {a.name}
-                          </span>
-                          {isDisposed && (
-                            <span className="inv-table-badge inv-table-badge--disposed">
-                              Disposed
-                            </span>
-                          )}
-                        </div>
-                      </td>
-
-                      {/* Brand · Model */}
-                      <td className="inv-table-brand">
-                        <span className="inv-table-text">
-                          {a.brand} · {a.model}
-                        </span>
-                      </td>
-
-                      {/* Serial */}
-                      <td className="inv-table-serial">
-                        <code className="inv-table-code">{a.serial}</code>
-                      </td>
-
-                      {/* Lokasi */}
-                      <td className="inv-table-location">
-                        <div className="inv-table-location-text">
-                          <div className="inv-table-loc-main">{a.location}</div>
-                        </div>
-                      </td>
-
-                      {/* Kategori */}
-                      <td className="inv-table-category">
-                        <span
-                          className="inv-table-badge"
-                          style={{
-                            background: cat.color + "20",
-                            color: cat.color,
+                      {suggestions.map((a) => (
+                        <div
+                          key={a.id}
+                          style={{ padding: "9px 12px", cursor: "pointer", borderBottom: "1px solid #f1f5f9", fontSize: "14px", color: "#334155" }}
+                          onMouseDown={() => {
+                            setFormData((p) => ({
+                              ...p,
+                              tipeAset: a.tipeAset || a.name || "",
+                              name: a.tipeAset || a.name || "",
+                              assetId: "",
+                              value: "",
+                              id_pekerjaan: "",
+                              kd_anggaran: "",
+                              units: [{ serialNumber: "", location: "" }],
+                              quantity: 1,
+                            }));
+                            const tpl = a.specs
+                              ? a.specs.map((t) => ({ ...t, value: "", _unitMode: "pick" }))
+                              : (SPEC_TEMPLATES_BY_CATEGORY[a.category] || []).map(
+                                (t) => ({ ...t, value: "", _unitMode: "pick" })
+                              );
+                            setTemplateSpecs(tpl);
+                            setCustomSpecs(a.customSpecs ? a.customSpecs.map((c) => ({ ...c, value: "", _unitMode: "pick" })) : []);
+                            setFormPhoto(null);
+                            setShowSuggestions(false);
                           }}
+                          onMouseEnter={(e) => (e.currentTarget.style.background = "#eff6ff")}
+                          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                         >
-                          {cat.label}
-                        </span>
-                      </td>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <span style={{ fontWeight: 500 }}>{a.tipeAset || a.name}</span>
+                            <span style={{ fontSize: "11px", color: "#3b82f6", background: "#eff6ff", padding: "2px 8px", borderRadius: "4px", fontWeight: 600 }}>
+                              {a.quantity || 0} unit terdaftar
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
+            </TableRow>
+            <TableRow label="Merek (Brand)">
+              <input
+                type="text"
+                placeholder="Contoh: Asus, HP, Lenovo (Opsional)"
+                value={formData.merek || ""}
+                onChange={(e) => setFormData((p) => ({ ...p, merek: e.target.value }))}
+                style={modernInputStyle}
+              />
+            </TableRow>
+            <TableRow label="Tipe (Model)">
+              <input
+                type="text"
+                placeholder="Contoh: Thinkpad T480, Ideapad (Opsional)"
+                value={formData.tipe || ""}
+                onChange={(e) => setFormData((p) => ({ ...p, tipe: e.target.value }))}
+                style={modernInputStyle}
+              />
+            </TableRow>
+            <TableRow label="ID Barang">
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "100%" }}>
+                <div style={{ position: "relative", width: "100%" }}>
+                  <input
+                    type="text"
+                    value={formData.assetId}
+                    onChange={(e) => setFormData((p) => ({ ...p, assetId: e.target.value }))}
+                    placeholder="Pilih kategori & nama barang terlebih dahulu"
+                    style={{
+                      ...modernInputStyle,
+                      width: "100%",
+                      paddingRight: "36px",
+                      background: "#f8fafc",
+                      color: "#64748b",
+                      fontFamily: formData.assetId ? "monospace" : "inherit",
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowLocationBuilder(!showLocationBuilder)}
+                    style={{
+                      position: "absolute",
+                      right: "6px",
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      width: "28px",
+                      height: "28px",
+                      background: "transparent",
+                      border: "none",
+                      color: showLocationBuilder ? "#94a3b8" : "#cbd5e1",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      transition: "all 0.2s",
+                      opacity: 0.6
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = "#94a3b8";
+                      e.currentTarget.style.opacity = 1;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = showLocationBuilder ? "#94a3b8" : "#cbd5e1";
+                      e.currentTarget.style.opacity = showLocationBuilder ? 1 : 0.6;
+                    }}
+                    title="Pengaturan ID"
+                  >
+                    <Icon.Cogs />
+                  </button>
+                </div>
+                
+                {showLocationBuilder && (
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", width: "100%", padding: "12px", background: "#f1f5f9", border: "1px dashed #cbd5e1", borderRadius: "8px" }}>
+                    <select
+                      value={formData.entitasCode}
+                      onChange={handleEntitasChange}
+                      style={{...modernSelectStyle, background: "#fff", border: "1px solid #e2e8f0"}}
+                    >
+                      <option value="">— Entitas —</option>
+                      {ENTITAS_LIST.map((e) => <option key={e.code} value={e.code}>{e.name}</option>)}
+                    </select>
+                    <select
+                      value={formData.branchCode}
+                      onChange={handleBranchChange}
+                      disabled={!formData.entitasCode}
+                      style={{...modernSelectStyle, background: "#fff", border: "1px solid #e2e8f0"}}
+                    >
+                      <option value="">— Cabang —</option>
+                      {availableBranches.map((b) => <option key={b.code} value={b.code}>{b.name}</option>)}
+                    </select>
+                    <select
+                      value={formData.zonaCode}
+                      onChange={handleZonaChange}
+                      style={{...modernSelectStyle, background: "#fff", border: "1px solid #e2e8f0"}}
+                    >
+                      <option value="">— Zona —</option>
+                      {ZONA_LIST.map((z) => <option key={z.code} value={z.code}>{z.name}</option>)}
+                    </select>
+                    <select
+                      value={formData.subzonaCode}
+                      onChange={handleSubzonaChange}
+                      style={{...modernSelectStyle, background: "#fff", border: "1px solid #e2e8f0"}}
+                    >
+                      <option value="">— Subzona —</option>
+                      {SUBZONA_LIST.map((s) => <option key={s.code} value={s.code}>{s.name}</option>)}
+                    </select>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!formData.entitasCode || !formData.branchCode || !formData.zonaCode || !formData.subzonaCode || !formData.category) {
+                          alert("Lengkapi Entitas, Cabang, Zona, Subzona, dan Kategori terlebih dahulu!");
+                          return;
+                        }
+                        const catPrefix = CATEGORY_PREFIX[formData.category] || "BRG";
+                        const nextNum = getNextNomor(formData.entitasCode, formData.branchCode, formData.zonaCode, formData.subzonaCode);
+                        setFormData(p => ({ ...p, assetId: `${formData.entitasCode}-${formData.branchCode}-${formData.zonaCode}-${formData.subzonaCode}-${catPrefix}-${nextNum}` }));
+                        setShowLocationBuilder(false);
+                      }}
+                      style={{
+                        gridColumn: "1 / -1",
+                        padding: "8px",
+                        background: "#0f172a",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: "6px",
+                        fontWeight: "600",
+                        fontSize: "13px",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "6px"
+                      }}
+                    >
+                      <Icon.Tag /> Terapkan ke Kolom ID
+                    </button>
+                  </div>
+                )}
+              </div>
+            </TableRow>
+            <TableRow label="Kuantitas" required>
+              <input
+                type="number"
+                min="1"
+                max="100"
+                value={formData.quantity}
+                onChange={(e) => {
+                  const rawValue = e.target.value;
+                  if (rawValue === "") {
+                    setFormData((p) => ({ ...p, quantity: "" }));
+                    return;
+                  }
+                  const val = parseInt(rawValue, 10);
+                  if (isNaN(val)) return;
+                  const clamped = Math.max(1, Math.min(100, val));
+                  setFormData((p) => {
+                    let newUnits = [...p.units];
+                    if (clamped > newUnits.length) {
+                      const diff = clamped - newUnits.length;
+                      for (let i = 0; i < diff; i++) {
+                        newUnits.push({
+                          serialNumber: "",
+                          location: ""
+                        });
+                      }
+                    } else if (clamped < newUnits.length) {
+                      newUnits = newUnits.slice(0, clamped);
+                    }
+                    return { ...p, quantity: clamped, units: newUnits };
+                  });
+                }}
+                onBlur={(e) => {
+                  if (e.target.value === "" || parseInt(e.target.value, 10) < 1) {
+                    setFormData((p) => ({ ...p, quantity: Math.max(1, p.units.length) }));
+                  }
+                }}
+                style={{
+                  ...modernInputStyle,
+                  width: "120px",
+                  fontWeight: "700",
+                }}
+              />
+            </TableRow>
+          </ModernTable>
 
-                      {/* Status */}
-                      <td className="inv-table-status">
-                        <span
-                          className="inv-table-status-badge"
-                          style={{ background: st.bg, color: st.color }}
+          <h3
+            style={{
+              fontSize: "15px",
+              color: "#0f172a",
+              marginBottom: "10px",
+              marginTop: "24px",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            <Icon.Layers /> Informasi Unit ({formData.quantity} Unit)
+          </h3>
+          <div
+            style={{
+              background: "#fff",
+              border: "1px solid var(--border)",
+              borderRadius: "12px",
+              // overflow: "hidden", (removed to allow location dropdown)
+              position: "relative",
+              zIndex: 1
+            }}
+          >
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead style={{ background: "#f8fafc" }}>
+                <tr>
+                  <th
+                    style={{
+                      padding: "12px",
+                      textAlign: "left",
+                      fontSize: "12px",
+                      color: "#64748b",
+                      borderBottom: "1px solid #e2e8f0",
+                      width: "60px",
+                    }}
+                  >
+                    NO
+                  </th>
+                  <th
+                    style={{
+                      padding: "12px",
+                      textAlign: "left",
+                      fontSize: "12px",
+                      color: "#64748b",
+                      borderBottom: "1px solid #e2e8f0",
+                    }}
+                  >
+                    SERIAL NUMBER
+                  </th>
+                  {formData.cekEksisting && (
+                    <th
+                      style={{
+                        padding: "12px",
+                        textAlign: "left",
+                        fontSize: "12px",
+                        color: "#64748b",
+                        borderBottom: "1px solid #e2e8f0",
+                      }}
+                    >
+                      LOKASI
+                    </th>
+                  )}
+                  <th
+                    style={{
+                      padding: "12px",
+                      textAlign: "center",
+                      fontSize: "12px",
+                      color: "#64748b",
+                      borderBottom: "1px solid #e2e8f0",
+                      width: "100px",
+                    }}
+                  >
+                    AKSI
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {formData.units.map((unit, idx) => {
+                  const isSnEditing = !!isEditingUnit[`${idx}-sn`];
+                  const isLocEditing = !!isEditingUnit[`${idx}-loc`];
+                  return (
+                    <tr key={idx}>
+                      <td
+                        style={{
+                          padding: "12px",
+                          fontSize: "14px",
+                          borderBottom: "1px solid #f1f5f9",
+                          textAlign: "center",
+                          color: "#94a3b8",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        {idx + 1}
+                      </td>
+                      <td
+                        style={{
+                          padding: "8px 12px",
+                          borderBottom: "1px solid #f1f5f9",
+                        }}
+                      >
+                        <input
+                          type="text"
+                          autoFocus={isSnEditing}
+                          placeholder="Contoh: SN-123456"
+                          value={unit.serialNumber}
+                          readOnly={!isSnEditing}
+                          onClick={(e) => { e.stopPropagation(); if (!isSnEditing) setIsEditingUnit({ [`${idx}-sn`]: true }); }}
+                          onChange={(e) =>
+                            updateUnitField(idx, "serialNumber", e.target.value)
+                          }
+                          style={{
+                            ...modernInputStyle,
+                            padding: "8px 12px",
+                            fontSize: "13px",
+                            background: !isSnEditing ? "#f8fafc" : "#fff",
+                            color: !isSnEditing ? "#64748b" : "#0f172a",
+                            border: !isSnEditing ? "1px solid #e2e8f0" : "1px solid #cbd5e1",
+                            cursor: !isSnEditing ? "pointer" : "text",
+                          }}
+                          className="unit-edit-input"
+                        />
+                      </td>
+                      {formData.cekEksisting && (
+                        <td
+                          style={{
+                            padding: "8px 12px",
+                            borderBottom: "1px solid #f1f5f9",
+                          }}
+                          onClick={(e) => { e.stopPropagation(); if (!isLocEditing) setIsEditingUnit({ [`${idx}-loc`]: true }); }}
+                          className="unit-edit-input"
                         >
-                          {st.label}
-                        </span>
-                      </td>
-
-                      {/* Aksi */}
-                      <td className="inv-table-action">
-                        <div className="inv-table-actions">
+                          <SmartLocationInput
+                            value={unit.location}
+                            readOnly={!isLocEditing}
+                            dbLocations={dbLocations}
+                            onChange={(val) =>
+                              updateUnitField(idx, "location", val)
+                            }
+                          />
+                        </td>
+                      )}
+                      <td
+                        style={{
+                          padding: "8px 12px",
+                          borderBottom: "1px solid #f1f5f9",
+                          textAlign: "center",
+                        }}
+                      >
+                        <div style={{ display: "flex", justifyContent: "center", gap: "8px" }}>
                           <button
-                            className="inv-table-action-btn inv-table-action-btn--detail"
-                            onClick={() => handleCardClick(a)}
-                            title="Lihat Detail"
+                            type="button"
+                            onClick={() => {
+                              const newUnits = formData.units.filter((_, i) => i !== idx);
+                              setFormData(p => ({ ...p, units: newUnits, quantity: newUnits.length }));
+                            }}
+                            style={{
+                              width: "32px",
+                              height: "32px",
+                              borderRadius: "6px",
+                              border: "1px solid #e2e8f0",
+                              background: "#f8fafc",
+                              color: "#64748b",
+                              cursor: "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              transition: "all 0.2s",
+                              padding: 0,
+                            }}
+                            onMouseOver={(e) => { e.currentTarget.style.background = "#f1f5f9"; }}
+                            onMouseOut={(e) => { e.currentTarget.style.background = "#f8fafc"; }}
+                            title="Hapus Unit"
                           >
-                            <Ico n="eye" s={13} />
+                            <Icon.Trash />
                           </button>
-                          {isAvailable && !isDisposed && (
-                            <button
-                              className="inv-table-action-btn inv-table-action-btn--borrow"
-                              onClick={() => handleGoToBorrow(a)}
-                              title="Pinjam Aset"
-                            >
-                              <Ico n="borrow" s={13} />
-                            </button>
-                          )}
                         </div>
                       </td>
                     </tr>
@@ -1040,203 +4560,1905 @@ export default function Inventaris({ loans, setLoans }) {
             </table>
           </div>
 
-          {/* ── Pagination ── */}
-          {totalPages > 1 && (
-            <div className="inv-pagination-wrap">
-              <p className="inv-pagination-info">
-                Menampilkan{" "}
-                <strong>
-                  {startItem}–{endItem}
-                </strong>{" "}
-                dari <strong>{sorted.length}</strong> aset
-              </p>
+          <h3
+            style={{
+              fontSize: "15px",
+              color: "#0f172a",
+              marginBottom: "10px",
+              marginTop: "24px",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            <Icon.PhotoSm /> Foto Barang
+          </h3>
+          <ModernTable>
+            <TableRow label="Upload Foto" alignTop>
+              <PhotoUpload value={formPhoto} onChange={setFormPhoto} />
+            </TableRow>
+          </ModernTable>
 
-              <div className="inv-pagination">
-                <button
-                  className="inv-pg-btn"
-                  disabled={safePage === 1}
-                  onClick={() => setPage((p) => p - 1)}
-                  title="Halaman sebelumnya"
+          <h3
+            style={{
+              fontSize: "15px",
+              color: "#0f172a",
+              marginBottom: "10px",
+              marginTop: "24px",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            <Icon.Cogs /> Spesifikasi & Atribut Tambahan
+          </h3>
+          <ModernTable>
+            {!formData.category ? (
+              <tr>
+                <td
+                  colSpan="2"
+                  style={{
+                    padding: "16px",
+                    color: "#94a3b8",
+                    fontSize: "13.5px",
+                    textAlign: "center",
+                  }}
                 >
-                  <Ico n="chevLeft" s={13} />
-                </button>
+                  Pilih kategori di atas untuk memuat form spesifikasi.
+                </td>
+              </tr>
+            ) : (
+              <>
+                {templateSpecs.map((spec, i) => (
+                  <TableRow label={spec.spec_label} key={i}>
+                    <input
+                      type={spec.input_type === "number" ? "number" : "text"}
+                      placeholder="Isi nilai..."
+                      value={spec.value}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setTemplateSpecs((prev) =>
+                          prev.map((s, idx) =>
+                            idx === i ? { ...s, value: val } : s,
+                          ),
+                        );
+                      }}
+                      style={{ ...modernInputStyle, flex: 2 }}
+                    />
+                    {spec._unitMode !== "custom" ? (
+                      <select
+                        value={spec.default_unit}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setTemplateSpecs((prev) =>
+                            prev.map((s, idx) =>
+                              idx === i
+                                ? {
+                                  ...s,
+                                  default_unit:
+                                    val === "__custom__" ? "" : val,
+                                  _unitMode:
+                                    val === "__custom__" ? "custom" : "pick",
+                                }
+                                : s,
+                            ),
+                          );
+                        }}
+                        style={{
+                          ...modernSelectStyle,
+                          flex: 1,
+                          background: "#f8fafc",
+                        }}
+                      >
+                        <option value="">Satuan</option>
+                        {SPEC_UNIT_OPTIONS.map((g) => (
+                          <optgroup key={g.group} label={g.group}>
+                            {g.units.map((u) => (
+                              <option key={u} value={u}>
+                                {u}
+                              </option>
+                            ))}
+                          </optgroup>
+                        ))}
+                        <option value="__custom__">✏ Ketik baru...</option>
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        placeholder="Satuan..."
+                        value={spec.default_unit}
+                        autoFocus
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setTemplateSpecs((prev) =>
+                            prev.map((s, idx) =>
+                              idx === i ? { ...s, default_unit: val } : s,
+                            ),
+                          );
+                        }}
+                        onBlur={() => {
+                          if (!spec.default_unit)
+                            setTemplateSpecs((prev) =>
+                              prev.map((s, idx) =>
+                                idx === i ? { ...s, _unitMode: "pick" } : s,
+                              ),
+                            );
+                        }}
+                        style={{
+                          ...modernInputStyle,
+                          flex: 1,
+                          background: "#f0f9ff",
+                          borderColor: "#bae6fd",
+                        }}
+                      />
+                    )}
+                  </TableRow>
+                ))}
 
-                {pageList.map((p, i) =>
-                  p === "…" ? (
-                    <span key={`ellipsis-${i}`} className="inv-pg-ellipsis">
-                      …
-                    </span>
-                  ) : (
-                    <button
-                      key={p}
-                      className={`inv-pg-btn${p === safePage ? " active" : ""}`}
-                      onClick={() => setPage(p)}
+                <tr>
+                  <td
+                    colSpan="2"
+                    style={{
+                      padding: "16px",
+                      background: "#f8fafc",
+                      borderTop: "1px solid #e2e8f0",
+                      borderBottom: "1px solid #f1f5f9",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
                     >
-                      {p}
+                      <span
+                        style={{
+                          fontSize: "13.5px",
+                          fontWeight: "600",
+                          color: "#475569",
+                        }}
+                      >
+                        Atribut Tambahan (Opsional)
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setCustomSpecs([
+                            ...customSpecs,
+                            {
+                              spec_label: "",
+                              value: "",
+                              default_unit: "",
+                              input_type: "text",
+                              _unitMode: "pick",
+                            },
+                          ])
+                        }
+                        style={{
+                          padding: "6px 12px",
+                          borderRadius: "8px",
+                          background: "#eff6ff",
+                          color: "#2563eb",
+                          border: "1px solid #bfdbfe",
+                          fontSize: "12px",
+                          fontWeight: "bold",
+                          cursor: "pointer",
+                        }}
+                      >
+                        + Tambah Atribut
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                {customSpecs.map((spec, i) => (
+                  <TableRow
+                    key={`custom-${i}`}
+                    alignTop
+                    label={
+                      <input
+                        type="text"
+                        placeholder="Nama Atribut..."
+                        value={spec.spec_label}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setCustomSpecs((prev) =>
+                            prev.map((s, idx) =>
+                              idx === i ? { ...s, spec_label: val } : s,
+                            ),
+                          );
+                        }}
+                        style={{
+                          ...modernInputStyle,
+                          background: "#fff",
+                          border: "1px dashed #cbd5e1",
+                          padding: "6px 10px",
+                        }}
+                      />
+                    }
+                  >
+                    <input
+                      type="text"
+                      placeholder="Nilai..."
+                      value={spec.value}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setCustomSpecs((prev) =>
+                          prev.map((s, idx) =>
+                            idx === i ? { ...s, value: val } : s,
+                          ),
+                        );
+                      }}
+                      style={{ ...modernInputStyle, flex: 2 }}
+                    />
+
+                    {spec._unitMode !== "custom" ? (
+                      <select
+                        value={spec.default_unit}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setCustomSpecs((prev) =>
+                            prev.map((s, idx) =>
+                              idx === i
+                                ? {
+                                  ...s,
+                                  default_unit:
+                                    val === "__custom__" ? "" : val,
+                                  _unitMode:
+                                    val === "__custom__" ? "custom" : "pick",
+                                }
+                                : s,
+                            ),
+                          );
+                        }}
+                        style={{
+                          ...modernSelectStyle,
+                          flex: 1,
+                          background: "#f8fafc",
+                        }}
+                      >
+                        <option value="">Satuan</option>
+                        {SPEC_UNIT_OPTIONS.map((g) => (
+                          <optgroup key={g.group} label={g.group}>
+                            {g.units.map((u) => (
+                              <option key={u} value={u}>
+                                {u}
+                              </option>
+                            ))}
+                          </optgroup>
+                        ))}
+                        <option value="__custom__">✏ Ketik baru...</option>
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        placeholder="Satuan..."
+                        value={spec.default_unit}
+                        autoFocus
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setCustomSpecs((prev) =>
+                            prev.map((s, idx) =>
+                              idx === i ? { ...s, default_unit: val } : s,
+                            ),
+                          );
+                        }}
+                        onBlur={() => {
+                          if (!spec.default_unit)
+                            setCustomSpecs((prev) =>
+                              prev.map((s, idx) =>
+                                idx === i ? { ...s, _unitMode: "pick" } : s,
+                              ),
+                            );
+                        }}
+                        style={{
+                          ...modernInputStyle,
+                          flex: 1,
+                          background: "#f0f9ff",
+                          borderColor: "#bae6fd",
+                        }}
+                      />
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const n = [...customSpecs];
+                        n.splice(i, 1);
+                        setCustomSpecs(n);
+                      }}
+                      style={{
+                        width: "34px",
+                        height: "34px",
+                        borderRadius: "8px",
+                        background: "#fef2f2",
+                        border: "1px solid #fecaca",
+                        color: "#dc2626",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Icon.Trash />
                     </button>
-                  ),
-                )}
+                  </TableRow>
+                ))}
+              </>
+            )}
+          </ModernTable>
 
-                <button
-                  className="inv-pg-btn"
-                  disabled={safePage === totalPages}
-                  onClick={() => setPage((p) => p + 1)}
-                  title="Halaman berikutnya"
-                >
-                  <Ico n="chevRight" s={13} />
-                </button>
+          {/* Button Simpan di Bawah Kanan */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              marginTop: "32px",
+              paddingBottom: "40px",
+              gap: "12px"
+            }}
+          >
+            <button
+              disabled={!isAddValid}
+              onClick={handlePreviewBarcode}
+              style={{
+                padding: "12px 24px",
+                fontSize: "14px",
+                fontWeight: "bold",
+                background: isAddValid ? "#fff" : "#f1f5f9",
+                border: isAddValid ? "1.5px solid #2563eb" : "1.5px solid #cbd5e1",
+                color: isAddValid ? "#2563eb" : "#94a3b8",
+                borderRadius: "10px",
+                cursor: isAddValid ? "pointer" : "not-allowed",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                opacity: isAddValid ? 1 : 0.7
+              }}
+            >
+              <span style={{ display: "none" }}><Icon.Barcode /> Cetak Barcode</span> Unit
+            </button>
+            <button
+              className="btn-save"
+              disabled={!isAddValid || isSaving}
+              onClick={() => handleSave(false)}
+              style={{
+                padding: "12px 24px",
+                fontSize: "14px",
+                fontWeight: "bold",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                background: (!isAddValid || isSaving) ? "#94a3b8" : "",
+                cursor: (!isAddValid || isSaving) ? "not-allowed" : "pointer",
+                opacity: (!isAddValid || isSaving) ? 0.7 : 1
+              }}
+            >
+              {isSaving ? (
+                <>
+                  <div className="spinner-loader" style={{ width: "16px", height: "16px", borderWidth: "2px", borderTopColor: "currentColor" }}></div>
+                  Menyimpan...
+                </>
+              ) : (
+                <>
+                  <Icon.Save /> Simpan Barang Baru
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </PageWrapper>
+    );
+  };
+
+  // ── RENDER EDIT PAGE ────────────────────────────────────────────
+  const renderEditPage = () => {
+    return (
+      <PageWrapper
+        title="Edit Data Barang"
+        onBack={() => setCurrentView("list")}
+      >
+        <div style={{ maxWidth: "900px", margin: "0 auto" }}>
+          <h3
+            style={{
+              fontSize: "15px",
+              color: "#0f172a",
+              marginBottom: "10px",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            <Icon.Tag /> Informasi Utama
+          </h3>
+          <ModernTable>
+            <TableRow label="ID Barang">
+              <span
+                style={{
+                  padding: "4px 10px",
+                  background: "#e2e8f0",
+                  borderRadius: "6px",
+                  fontFamily: "monospace",
+                  fontWeight: "bold",
+                  color: "#334155",
+                }}
+              >
+                {selectedAsset.id}
+              </span>
+              <span
+                style={{
+                  fontSize: "12px",
+                  color: "#94a3b8",
+                  marginLeft: "12px",
+                }}
+              >
+                (Kode Tidak dapat diubah)
+              </span>
+            </TableRow>
+            <TableRow label="Nama Barang" required>
+              <input
+                type="text"
+                value={editData.name || ""}
+                onChange={(e) =>
+                  setEditData((p) => ({ ...p, name: e.target.value }))
+                }
+                style={modernInputStyle}
+              />
+            </TableRow>
+            <TableRow label="Merek (Brand)">
+              <input
+                type="text"
+                placeholder="Contoh: Asus, HP, Lenovo (Opsional)"
+                value={editData.merek || ""}
+                onChange={(e) =>
+                  setEditData((p) => ({ ...p, merek: e.target.value }))
+                }
+                style={modernInputStyle}
+              />
+            </TableRow>
+            <TableRow label="Tipe (Model)">
+              <input
+                type="text"
+                placeholder="Contoh: Thinkpad T480, Ideapad (Opsional)"
+                value={editData.tipe || ""}
+                onChange={(e) =>
+                  setEditData((p) => ({ ...p, tipe: e.target.value }))
+                }
+                style={modernInputStyle}
+              />
+            </TableRow>
+            <TableRow label="Kuantitas">
+              <div style={{ fontSize: "15px", fontWeight: "700", color: "#0f172a" }}>
+                {editData.quantity} Unit barang
               </div>
-            </div>
-          )}
-        </>
-      ) : (
-        /* ── GRID VIEW ── */
-        <>
-          <div className="inv-grid">
-            {pageItems.map((a) => {
-              const cat = categoryConf[a.category] || categoryConf.OTHER;
-              const st = statusConf[a.status];
-              const photo = getAssetPhoto(a);
-              const hasErr = imgErr[a.id];
-              const isDisposed = isDisposedStatus(a.status);
+            </TableRow>
+            <TableRow label="Nilai Aset">
+              <div style={{ fontSize: "15px", fontWeight: "800", color: "#059669" }}>
+                {fmt(editData.value)}
+              </div>
+            </TableRow>
+            <TableRow label="Kategori" required>
+              <select
+                value={editData.category || ""}
+                onChange={(e) =>
+                  setEditData((p) => ({ ...p, category: e.target.value }))
+                }
+                style={modernSelectStyle}
+              >
+                <option value="">— Pilih Kategori —</option>
+                {Object.entries(CATEGORY_NAMES).map(([code, name]) => (
+                  <option key={code} value={code}>{name}</option>
+                ))}
+              </select>
+            </TableRow>
 
+            <TableRow label="Tahun Anggaran" required>
+              <select
+                value={editData.thn_anggaran || ""}
+                onChange={(e) =>
+                  setEditData((p) => ({
+                    ...p,
+                    thn_anggaran: e.target.value,
+                    kd_anggaran: "",
+                    id_pekerjaan: "",
+                  }))
+                }
+                style={modernSelectStyle}
+              >
+                <option value="">— Pilih Tahun —</option>
+                {ALL_TAHUN_LIST.map((t) => (
+                  <option key={t} value={String(t)}>
+                    {t}
+                  </option>
+                ))}
+              </select>
+            </TableRow>
+            {editData.thn_anggaran && (
+              <TableRow label="Nama Anggaran" required>
+                <select
+                  value={editData.kd_anggaran || ""}
+                  onChange={(e) =>
+                    setEditData((p) => ({
+                      ...p,
+                      kd_anggaran: e.target.value,
+                      id_pekerjaan: "",
+                    }))
+                  }
+                  style={modernSelectStyle}
+                >
+                  <option value="">— Pilih Anggaran —</option>
+                  {getAnggaranByTahun(editData.thn_anggaran).filter(
+                    (a) => a.jenis === "CAPEX",
+                  ).length > 0 && (
+                      <optgroup label="CAPEX">
+                        {getAnggaranByTahun(editData.thn_anggaran)
+                          .filter((a) => a.jenis === "CAPEX")
+                          .map((a) => (
+                            <option key={a.kd_anggaran} value={a.kd_anggaran}>
+                              {a.nm_anggaran}
+                            </option>
+                          ))}
+                      </optgroup>
+                    )}
+                  {getAnggaranByTahun(editData.thn_anggaran).filter(
+                    (a) => a.jenis === "OPEX",
+                  ).length > 0 && (
+                      <optgroup label="OPEX">
+                        {getAnggaranByTahun(editData.thn_anggaran)
+                          .filter((a) => a.jenis === "OPEX")
+                          .map((a) => (
+                            <option key={a.kd_anggaran} value={a.kd_anggaran}>
+                              {a.nm_anggaran}
+                            </option>
+                          ))}
+                      </optgroup>
+                    )}
+                </select>
+              </TableRow>
+            )}
+            {editData.kd_anggaran &&
+              CAPEX_ANGGARAN.find(
+                (a) => a.kd_anggaran === editData.kd_anggaran,
+              ) && (
+                <TableRow label="Nama Pekerjaan" required>
+                  <select
+                    value={editData.id_pekerjaan || ""}
+                    onChange={(e) =>
+                      setEditData((p) => ({
+                        ...p,
+                        id_pekerjaan: e.target.value,
+                      }))
+                    }
+                    style={modernSelectStyle}
+                  >
+                    <option value="">— Pilih Pekerjaan —</option>
+                    {CAPEX_ANGGARAN.find(
+                      (a) => a.kd_anggaran === editData.kd_anggaran,
+                    ).pekerjaan.map((p) => (
+                      <option
+                        key={p.id_pekerjaan}
+                        value={String(p.id_pekerjaan)}
+                      >
+                        {p.nm_pekerjaan}
+                      </option>
+                    ))}
+                  </select>
+                </TableRow>
+              )}
+          </ModernTable>
+
+          <h3
+            style={{
+              fontSize: "15px",
+              color: "#0f172a",
+              marginBottom: "10px",
+              marginTop: "24px",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            <Icon.Layers /> Informasi Unit ({editData.quantity} Unit)
+          </h3>
+          <div
+            style={{
+              background: "#fff",
+              border: "1px solid #e2e8f0",
+              borderRadius: "12px",
+              // overflow: "hidden", (removed for location dropdown)
+              position: "relative",
+              zIndex: 1,
+              boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1)",
+            }}
+          >
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead style={{ background: "#f8fafc" }}>
+                <tr>
+                  <th
+                    style={{
+                      padding: "12px 16px",
+                      textAlign: "left",
+                      fontSize: "12px",
+                      color: "#64748b",
+                      borderBottom: "1px solid #e2e8f0",
+                      width: "50px",
+                    }}
+                  >
+                    NO
+                  </th>
+                  <th
+                    style={{
+                      padding: "12px 16px",
+                      textAlign: "left",
+                      fontSize: "12px",
+                      color: "#64748b",
+                      borderBottom: "1px solid #e2e8f0",
+                    }}
+                  >
+                    SERIAL NUMBER
+                  </th>
+                  <th
+                    style={{
+                      padding: "12px 16px",
+                      textAlign: "left",
+                      fontSize: "12px",
+                      color: "#64748b",
+                      borderBottom: "1px solid #e2e8f0",
+                    }}
+                  >
+                    STATUS
+                  </th>
+                  <th
+                    style={{
+                      padding: "12px 16px",
+                      textAlign: "center",
+                      fontSize: "12px",
+                      color: "#64748b",
+                      borderBottom: "1px solid #e2e8f0",
+                      width: "100px",
+                    }}
+                  >
+                    AKSI
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {(editData.units || []).map((unit, i) => {
+                  const isSnEditing = !!isEditingUnit[`${i}-sn`];
+                  const isLocEditing = !!isEditingUnit[`${i}-loc`];
+                  return (
+                    <tr key={i}>
+                      <td
+                        style={{
+                          padding: "12px 16px",
+                          fontSize: "14px",
+                          borderBottom: "1px solid #f1f5f9",
+                          color: "#94a3b8",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        {i + 1}
+                      </td>
+                      <td
+                        style={{
+                          padding: "12px 16px",
+                          fontSize: "14px",
+                          borderBottom: "1px solid #f1f5f9",
+                        }}
+                      >
+                        <input
+                          type="text"
+                          autoFocus={isSnEditing}
+                          value={unit.serialNumber}
+                          readOnly={!isSnEditing}
+                          onClick={(e) => { e.stopPropagation(); if (!isSnEditing) setIsEditingUnit({ [`${i}-sn`]: true }); }}
+                          onChange={(e) =>
+                            updateEditUnitField(i, "serialNumber", e.target.value)
+                          }
+                          placeholder="Masukkan Serial Number..."
+                          style={{
+                            ...modernInputStyle,
+                            background: !isSnEditing ? "#f8fafc" : "#fff",
+                            color: !isSnEditing ? "#64748b" : "#0f172a",
+                            border: !isSnEditing ? "1px solid #e2e8f0" : "1px solid #cbd5e1",
+                            cursor: !isSnEditing ? "pointer" : "text",
+                          }}
+                          className="unit-edit-input"
+                        />
+                      </td>
+                      <td
+                        style={{
+                          padding: "12px 16px",
+                          fontSize: "14px",
+                          borderBottom: "1px solid #f1f5f9",
+                        }}
+                      >
+                        {(() => {
+                          const uCond = (unit.condition || "BAIK").toUpperCase();
+                          const needsMaintenance = uCond === "RUSAK" || uCond === "HILANG" || uCond === "DIPERBAIKI";
+
+                          if (!needsMaintenance) {
+                            return (
+                              <div style={{ fontSize: "13px", fontWeight: "600", color: "#10b981", padding: "6px 12px", background: "#ecfdf5", borderRadius: "6px", display: "inline-block", border: "1px solid #a7f3d0" }}>
+                                Tersedia (Baik)
+                              </div>
+                            );
+                          }
+
+                          return (
+                            <select
+                              value={unit.status || "Pilih Status Baru"}
+                              onChange={(e) => updateEditUnitField(i, "status", e.target.value)}
+                              style={{ ...modernSelectStyle, padding: "8px", background: "#fff", borderColor: "#f59e0b", color: "#b45309" }}
+                            >
+                              <option value="Pilih Status Baru" disabled>-- Perbarui Status --</option>
+                              {uCond === "HILANG" ? (
+                                <option>Tersedia (Telah Ditemukan)</option>
+                              ) : (
+                                <option>Tersedia (Telah Diperbaiki)</option>
+                              )}
+                            </select>
+                          );
+                        })()}
+                      </td>
+                      <td
+                        style={{
+                          padding: "12px 16px",
+                          borderBottom: "1px solid #f1f5f9",
+                          textAlign: "center",
+                        }}
+                      >
+                        <div style={{ display: "flex", justifyContent: "center", gap: "8px" }}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newUnits = editData.units.filter((_, idx) => idx !== i);
+                              setEditData(p => ({ ...p, units: newUnits, quantity: newUnits.length }));
+                            }}
+                            style={{
+                              width: "32px",
+                              height: "32px",
+                              borderRadius: "6px",
+                              border: "1px solid #e2e8f0",
+                              background: "#f8fafc",
+                              color: "#64748b",
+                              cursor: "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              transition: "all 0.2s",
+                              padding: 0,
+                            }}
+                            onMouseOver={(e) => { e.currentTarget.style.background = "#f1f5f9"; }}
+                            onMouseOut={(e) => { e.currentTarget.style.background = "#f8fafc"; }}
+                            title="Hapus Unit"
+                          >
+                            <Icon.Trash />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          <h3
+            style={{
+              fontSize: "15px",
+              color: "#0f172a",
+              marginBottom: "10px",
+              marginTop: "24px",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            <Icon.PhotoSm /> Foto Barang
+          </h3>
+          <ModernTable>
+            <TableRow label="Upload Foto" alignTop>
+              <PhotoUpload value={editPhoto} onChange={setEditPhoto} />
+            </TableRow>
+          </ModernTable>
+
+          <h3
+            style={{
+              fontSize: "15px",
+              color: "#0f172a",
+              marginBottom: "10px",
+              marginTop: "24px",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            <Icon.Cogs /> Spesifikasi & Atribut
+          </h3>
+          <ModernTable>
+            {editSpecsData.specs.map((spec, i) => (
+              <TableRow label={spec.spec_label} key={i}>
+                <input
+                  type="text"
+                  placeholder="Isi nilai..."
+                  value={spec.value}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setEditSpecsData((prev) => ({
+                      ...prev,
+                      specs: prev.specs.map((s, idx) =>
+                        idx === i ? { ...s, value: val } : s,
+                      ),
+                    }));
+                  }}
+                  style={{ ...modernInputStyle, flex: 2 }}
+                />
+                {spec._unitMode !== "custom" ? (
+                  <select
+                    value={spec.default_unit}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setEditSpecsData((prev) => ({
+                        ...prev,
+                        specs: prev.specs.map((s, idx) =>
+                          idx === i
+                            ? {
+                              ...s,
+                              default_unit: val === "__custom__" ? "" : val,
+                              _unitMode:
+                                val === "__custom__" ? "custom" : "pick",
+                            }
+                            : s,
+                        ),
+                      }));
+                    }}
+                    style={{
+                      ...modernSelectStyle,
+                      flex: 1,
+                      background: "#f8fafc",
+                    }}
+                  >
+                    <option value="">Satuan</option>
+                    {SPEC_UNIT_OPTIONS.map((g) => (
+                      <optgroup key={g.group} label={g.group}>
+                        {g.units.map((u) => (
+                          <option key={u} value={u}>
+                            {u}
+                          </option>
+                        ))}
+                      </optgroup>
+                    ))}
+                    <option value="__custom__">✏ Ketik baru...</option>
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    placeholder="Satuan..."
+                    value={spec.default_unit}
+                    autoFocus
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setEditSpecsData((prev) => ({
+                        ...prev,
+                        specs: prev.specs.map((s, idx) =>
+                          idx === i ? { ...s, default_unit: val } : s,
+                        ),
+                      }));
+                    }}
+                    onBlur={() => {
+                      if (!spec.default_unit)
+                        setEditSpecsData((prev) => ({
+                          ...prev,
+                          specs: prev.specs.map((s, idx) =>
+                            idx === i ? { ...s, _unitMode: "pick" } : s,
+                          ),
+                        }));
+                    }}
+                    style={{
+                      ...modernInputStyle,
+                      flex: 1,
+                      background: "#f0f9ff",
+                      borderColor: "#bae6fd",
+                    }}
+                  />
+                )}
+              </TableRow>
+            ))}
+
+            <tr>
+              <td
+                colSpan="2"
+                style={{
+                  padding: "16px",
+                  background: "#f8fafc",
+                  borderTop: "1px solid #e2e8f0",
+                  borderBottom: "1px solid #f1f5f9",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: "13.5px",
+                      fontWeight: "600",
+                      color: "#475569",
+                    }}
+                  >
+                    Atribut Tambahan
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setEditSpecsData((prev) => ({
+                        ...prev,
+                        customSpecs: [
+                          ...prev.customSpecs,
+                          {
+                            spec_label: "",
+                            value: "",
+                            default_unit: "",
+                            _unitMode: "pick",
+                          },
+                        ],
+                      }))
+                    }
+                    style={{
+                      padding: "6px 12px",
+                      borderRadius: "8px",
+                      background: "#eff6ff",
+                      color: "#2563eb",
+                      border: "1px solid #bfdbfe",
+                      fontSize: "12px",
+                      fontWeight: "bold",
+                      cursor: "pointer",
+                    }}
+                  >
+                    + Tambah Atribut
+                  </button>
+                </div>
+              </td>
+            </tr>
+            {editSpecsData.customSpecs.map((spec, i) => (
+              <TableRow
+                key={`custom-${i}`}
+                alignTop
+                label={
+                  <input
+                    type="text"
+                    placeholder="Nama Atribut"
+                    value={spec.spec_label}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setEditSpecsData((prev) => ({
+                        ...prev,
+                        customSpecs: prev.customSpecs.map((s, idx) =>
+                          idx === i ? { ...s, spec_label: val } : s,
+                        ),
+                      }));
+                    }}
+                    style={{
+                      ...modernInputStyle,
+                      background: "#fff",
+                      border: "1px dashed #cbd5e1",
+                      padding: "6px 10px",
+                    }}
+                  />
+                }
+              >
+                <input
+                  type="text"
+                  placeholder="Nilai..."
+                  value={spec.value}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setEditSpecsData((prev) => ({
+                      ...prev,
+                      customSpecs: prev.customSpecs.map((s, idx) =>
+                        idx === i ? { ...s, value: val } : s,
+                      ),
+                    }));
+                  }}
+                  style={{ ...modernInputStyle, flex: 2 }}
+                />
+
+                {spec._unitMode !== "custom" ? (
+                  <select
+                    value={spec.default_unit}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setEditSpecsData((prev) => ({
+                        ...prev,
+                        customSpecs: prev.customSpecs.map((s, idx) =>
+                          idx === i
+                            ? {
+                              ...s,
+                              default_unit: val === "__custom__" ? "" : val,
+                              _unitMode:
+                                val === "__custom__" ? "custom" : "pick",
+                            }
+                            : s,
+                        ),
+                      }));
+                    }}
+                    style={{
+                      ...modernSelectStyle,
+                      flex: 1,
+                      background: "#f8fafc",
+                    }}
+                  >
+                    <option value="">Satuan</option>
+                    {SPEC_UNIT_OPTIONS.map((g) => (
+                      <optgroup key={g.group} label={g.group}>
+                        {g.units.map((u) => (
+                          <option key={u} value={u}>
+                            {u}
+                          </option>
+                        ))}
+                      </optgroup>
+                    ))}
+                    <option value="__custom__">✏ Ketik baru...</option>
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    placeholder="Satuan..."
+                    value={spec.default_unit}
+                    autoFocus
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setEditSpecsData((prev) => ({
+                        ...prev,
+                        customSpecs: prev.customSpecs.map((s, idx) =>
+                          idx === i ? { ...s, default_unit: val } : s,
+                        ),
+                      }));
+                    }}
+                    onBlur={() => {
+                      if (!spec.default_unit)
+                        setEditSpecsData((prev) => ({
+                          ...prev,
+                          customSpecs: prev.customSpecs.map((s, idx) =>
+                            idx === i ? { ...s, _unitMode: "pick" } : s,
+                          ),
+                        }));
+                    }}
+                    style={{
+                      ...modernInputStyle,
+                      flex: 1,
+                      background: "#f0f9ff",
+                      borderColor: "#bae6fd",
+                    }}
+                  />
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const n = [...editSpecsData.customSpecs];
+                    n.splice(i, 1);
+                    setEditSpecsData((prev) => ({ ...prev, customSpecs: n }));
+                  }}
+                  style={{
+                    width: "34px",
+                    height: "34px",
+                    borderRadius: "8px",
+                    background: "#fef2f2",
+                    border: "1px solid #fecaca",
+                    color: "#dc2626",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  <Icon.Trash />
+                </button>
+              </TableRow>
+            ))}
+          </ModernTable>
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              marginTop: "32px",
+              paddingBottom: "40px",
+            }}
+          >
+            <button
+              className="btn-save"
+              onClick={handleSaveEdit}
+              disabled={isSaving}
+              style={{
+                padding: "12px 24px",
+                fontSize: "14px",
+                fontWeight: "bold",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                background: isSaving ? "#94a3b8" : "",
+                cursor: isSaving ? "not-allowed" : "pointer",
+                opacity: isSaving ? 0.7 : 1
+              }}
+            >
+              {isSaving ? (
+                <>
+                  <div className="spinner-loader" style={{ width: "16px", height: "16px", borderWidth: "2px", borderTopColor: "currentColor" }}></div>
+                  Menyimpan...
+                </>
+              ) : (
+                <>
+                  <Icon.Save /> Simpan Perubahan
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </PageWrapper>
+    );
+  };
+
+  // ── RENDER DETAIL PAGE ──────────────────────────────────────────
+  const renderDetailPage = () => {
+    const a = selectedAsset;
+    if (!a) return null;
+
+    const proj = getProjectById(a.id_pekerjaan);
+    const isOpexProj = proj?.jenis === "OPEX";
+    const history = allBorrows.filter((b) => b.asset_code === a.id).sort(
+      (x, y) => new Date(y.borrow_date) - new Date(x.borrow_date),
+    );
+
+    return (
+      <PageWrapper
+        title="Detail Barang"
+        onBack={() => setCurrentView("list")}
+        actions={null && 
+          <div style={{ display: "flex", gap: "12px" }}>
+            <button
+              onClick={() => setCurrentView("barcode")}
+              style={{
+                padding: "8px 16px",
+                background: "#fff",
+                border: "1.5px solid #e2e8f0",
+                borderRadius: "10px",
+                fontSize: "13px",
+                fontWeight: "700",
+                color: "#475569",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                transition: "all 0.2s",
+              }}
+            >
+              <span style={{ display: "none" }}><Icon.Barcode /> Cetak Barcode</span>
+            </button>
+            <button
+              onClick={() => openEditPage(a)}
+              style={{
+                padding: "8px 16px",
+                background: "#2563eb",
+                border: "none",
+                borderRadius: "10px",
+                fontSize: "13px",
+                fontWeight: "700",
+                color: "#fff",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                transition: "all 0.2s",
+              }}
+            >
+              <span style={{ display: "none" }}><span style={{ display: "none" }}><Icon.Edit /> Edit Barang</span></span>
+            </button>
+          </div>
+        }
+      >
+        {/* TABS NATIVE */}
+        <div
+          style={{
+            display: "flex",
+            borderBottom: "2px solid #f1f5f9",
+            marginBottom: "24px",
+          }}
+        >
+          {[
+            {
+              key: "info",
+              label: "Informasi Utama",
+              icon: <Icon.InfoCircle />,
+            },
+            {
+              key: "units",
+              label: `Daftar Unit (${(a.units || []).length})`,
+              icon: <Icon.Box />,
+            },
+            {
+              key: "spec",
+              label: `Spesifikasi (${(a.specs || []).length + (a.customSpecs || []).length})`,
+              icon: <Icon.Cogs />,
+            },
+            {
+              key: "history",
+              label: `Riwayat Pinjam (${history.length})`,
+              icon: <Icon.History />,
+            },
+          ].map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setDetailTab(t.key)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "10px 20px",
+                background: "transparent",
+                border: "none",
+                fontSize: "13.5px",
+                fontWeight: detailTab === t.key ? "700" : "600",
+                color: detailTab === t.key ? "#2563eb" : "#64748b",
+                cursor: "pointer",
+                borderBottom:
+                  detailTab === t.key
+                    ? "2px solid #2563eb"
+                    : "2px solid transparent",
+                marginBottom: "-2px",
+                transition: "all 0.2s ease",
+              }}
+            >
+              {t.icon} {t.label}
+            </button>
+          ))}
+        </div>
+
+        {detailTab === "info" && (
+          <div style={{ maxWidth: "900px" }}>
+            <h3
+              style={{
+                fontSize: "15px",
+                color: "#0f172a",
+                marginBottom: "10px",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+              }}
+            >
+              <Icon.Tag /> Identitas & Status
+            </h3>
+            <ModernTable>
+              <TableRow label="ID Barang">
+                <span
+                  style={{
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    color: "#334155",
+                  }}
+                >
+                  {a.id}
+                </span>
+              </TableRow>
+              <TableRow label="Nama Barang">
+                <span
+                  style={{
+                    fontSize: "15px",
+                    fontWeight: "700",
+                    color: "#0f172a",
+                  }}
+                >
+                  {a.name}
+                </span>
+              </TableRow>
+              <TableRow label="Foto Barang" alignTop>
+                {getAssetImage(a) ? (
+                  <img
+                    src={getAssetImage(a)}
+                    alt={a.name}
+                    style={{
+                      width: "140px",
+                      height: "100px",
+                      objectFit: "cover",
+                      borderRadius: "8px",
+                      border: "1px solid #e2e8f0",
+                    }}
+                  />
+                ) : (
+                  <span style={{ fontSize: "13px", color: "#94a3b8" }}>
+                    Tidak ada foto
+                  </span>
+                )}
+              </TableRow>
+              <TableRow label="Kategori">
+                <span
+                  style={{
+                    fontSize: "14px",
+                    color: "#334155",
+                  }}
+                >
+                  {CATEGORY_NAMES[a.category] || a.category}
+                </span>
+              </TableRow>
+              <TableRow label="Status">
+                <span
+                  style={{
+                    fontSize: "14px",
+                    color: "#334155",
+                  }}
+                >
+                  {a.status}
+                </span>
+              </TableRow>
+              <TableRow label="Nilai Aset">
+                <span
+                  style={{
+                    fontSize: "15px",
+                    fontWeight: "800",
+                    color: "#059669",
+                  }}
+                >
+                  {fmt(a.value)}
+                </span>
+              </TableRow>
+            </ModernTable>
+
+            <h3
+              style={{
+                fontSize: "15px",
+                color: "#0f172a",
+                marginBottom: "10px",
+                marginTop: "24px",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+              }}
+            >
+              <Icon.MapPin /> Lokasi & Administrasi
+            </h3>
+            <ModernTable>
+              {/* Entitas dan Cabang/Lokasi dihapus karena redundan dengan Lokasi Penempatan */}
+              {a.units?.[0]?.location && (
+                <TableRow label="Lokasi Penempatan">
+                  <span style={{
+                    fontSize: "14px",
+                    color: "var(--blue)",
+                    fontWeight: "800",
+                    padding: "4px 8px",
+                    background: "var(--blue-lt)",
+                    borderRadius: "4px"
+                  }}>
+                    {a.units[0].location}
+                  </span>
+                </TableRow>
+              )}
+              <TableRow label="Tipe Anggaran">
+                <span
+                  style={{
+                    fontSize: "14px",
+                    color: "#334155",
+                  }}
+                >
+                  {a.id_pekerjaan && proj ? (isOpexProj ? "OPEX" : "CAPEX") : "Belum Ditentukan"}
+                </span>
+              </TableRow>
+              <TableRow label="Pekerjaan Terkait">
+                <span
+                  style={{
+                    fontSize: "13.5px",
+                    color: "#334155",
+                    lineHeight: "1.5",
+                  }}
+                >
+                  {proj ? proj.nm_pekerjaan : "—"}
+                </span>
+              </TableRow>
+            </ModernTable>
+          </div>
+        )}
+
+        {detailTab === "units" && (
+          <div style={{ maxWidth: "900px" }}>
+            <h3
+              style={{
+                fontSize: "15px",
+                color: "#0f172a",
+                marginBottom: "16px",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+              }}
+            >
+              <Icon.Layers /> Detail Unit & Status Terkini
+            </h3>
+            <div
+              style={{
+                background: "#fff",
+                border: "1px solid #e2e8f0",
+                borderRadius: "12px",
+                overflow: "hidden",
+                boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1)",
+              }}
+            >
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead style={{ background: "#f8fafc" }}>
+                  <tr>
+                    <th style={{ padding: "12px 16px", textAlign: "left", fontSize: "12px", color: "#64748b", borderBottom: "1px solid #e2e8f0", width: "50px" }}>NO</th>
+                    <th style={{ padding: "12px 16px", textAlign: "left", fontSize: "12px", color: "#64748b", borderBottom: "1px solid #e2e8f0" }}>KODE BARANG</th>
+                    <th style={{ padding: "12px 16px", textAlign: "left", fontSize: "12px", color: "#64748b", borderBottom: "1px solid #e2e8f0" }}>HARGA SATUAN</th>
+                    <th style={{ padding: "12px 16px", textAlign: "left", fontSize: "12px", color: "#64748b", borderBottom: "1px solid #e2e8f0" }}>STATUS</th>
+                    <th style={{ padding: "12px 16px", textAlign: "left", fontSize: "12px", color: "#64748b", borderBottom: "1px solid #e2e8f0" }}>LOKASI SAAT INI</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(a.units || []).map((u, idx) => {
+                    const activeBorrow = history.find(h => h.code === u.serialNumber && !h.is_returned);
+                    const status = activeBorrow ? "Dipinjam" : "Tersedia";
+                    return (
+                      <tr key={idx}>
+                        <td style={{ padding: "12px 16px", fontSize: "14px", borderBottom: "1px solid #f1f5f9", color: "#94a3b8", fontWeight: "bold" }}>{idx + 1}</td>
+                        <td style={{ padding: "12px 16px", fontSize: "14px", borderBottom: "1px solid #f1f5f9", color: "#0f172a", fontWeight: "600" }}>{u.serialNumber}</td>
+                        <td style={{ padding: "12px 16px", fontSize: "14px", borderBottom: "1px solid #f1f5f9", color: "#475569" }}>{fmt(a.value)}</td>
+                        <td style={{ padding: "12px 16px", fontSize: "14px", borderBottom: "1px solid #f1f5f9" }}>
+                          <span style={{
+                            padding: "4px 8px",
+                            borderRadius: "6px",
+                            fontSize: "11px",
+                            fontWeight: "bold",
+                            background: status === "Tersedia" ? "#dcfce7" : "#fee2e2",
+                            color: status === "Tersedia" ? "#16a34a" : "#dc2626"
+                          }}>
+                            {status}
+                          </span>
+                        </td>
+                        <td style={{ padding: "12px 16px", fontSize: "13.5px", borderBottom: "1px solid #f1f5f9", color: "#475569" }}>
+                          {activeBorrow ? (
+                            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                              <Icon.ArrowUpRight /> {activeBorrow.to_zone}
+                            </div>
+                          ) : (
+                            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                              <Icon.MapPin /> {u.location || [a.branch, a.zona, a.subzona].filter(Boolean).join(" / ")}
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+                <tfoot style={{ background: "#f8fafc", borderTop: "2px solid #e2e8f0" }}>
+                  <tr>
+                    <td colSpan="4" style={{ padding: "12px 16px", textAlign: "right", fontSize: "13px", fontWeight: "800", color: "#64748b" }}>TOTAL NILAI KESELURUHAN ASET:</td>
+                    <td style={{ padding: "12px 16px", fontSize: "16px", fontWeight: "900", color: "#16a34a" }}>{fmt(a.value * (a.quantity || 1))}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {detailTab === "spec" && (
+          <div style={{ maxWidth: "900px" }}>
+            <h3
+              style={{
+                fontSize: "15px",
+                color: "#0f172a",
+                marginBottom: "10px",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+              }}
+            >
+              <Icon.Cogs /> Spesifikasi Utama
+            </h3>
+            <ModernTable>
+              {!a.specs || a.specs.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan="2"
+                    style={{
+                      padding: "16px",
+                      color: "#94a3b8",
+                      fontSize: "13.5px",
+                    }}
+                  >
+                    Tidak ada data spesifikasi.
+                  </td>
+                </tr>
+              ) : (
+                (a.specs || []).map((s, idx) => (
+                  <TableRow key={idx} label={s.spec_label}>
+                    <span
+                      style={{
+                        fontSize: "14px",
+                        color: "#0f172a",
+                        fontWeight: "600",
+                      }}
+                    >
+                      {s.value}{" "}
+                      <span style={{ color: "#64748b", fontWeight: "normal" }}>
+                        {s.default_unit}
+                      </span>
+                    </span>
+                  </TableRow>
+                ))
+              )}
+            </ModernTable>
+
+            <h3
+              style={{
+                fontSize: "15px",
+                color: "#0f172a",
+                marginBottom: "10px",
+                marginTop: "24px",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+              }}
+            >
+              <Icon.LayersIcon /> Atribut Tambahan
+            </h3>
+            <ModernTable>
+              {!a.customSpecs || a.customSpecs.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan="2"
+                    style={{
+                      padding: "16px",
+                      color: "#94a3b8",
+                      fontSize: "13.5px",
+                    }}
+                  >
+                    Tidak ada data atribut tambahan.
+                  </td>
+                </tr>
+              ) : (
+                (a.customSpecs || []).map((s, idx) => (
+                  <TableRow key={idx} label={s.spec_label}>
+                    <span
+                      style={{
+                        fontSize: "14px",
+                        color: "#0f172a",
+                        fontWeight: "600",
+                      }}
+                    >
+                      {s.value}{" "}
+                      <span style={{ color: "#64748b", fontWeight: "normal" }}>
+                        {s.default_unit}
+                      </span>
+                    </span>
+                  </TableRow>
+                ))
+              )}
+            </ModernTable>
+          </div>
+        )}
+
+        {detailTab === "history" && (
+          <div>
+            <AssetHistoryTab assetCode={a.id} allBorrows={allBorrows} />
+          </div>
+        )}
+      </PageWrapper>
+    );
+  };
+
+  // ── RENDER DELETE CONFIRMATION PAGE ─────────────────────────────
+  const renderDeletePage = () => {
+    return (
+      <PageWrapper title="Hapus Barang" onBack={() => setCurrentView("list")}>
+        <div
+          style={{
+            maxWidth: "600px",
+            margin: "0 auto",
+            textAlign: "center",
+            padding: "40px 0",
+          }}
+        >
+          <div
+            style={{
+              display: "inline-flex",
+              width: "80px",
+              height: "80px",
+              borderRadius: "50%",
+              background: "#fef2f2",
+              color: "#ef4444",
+              alignItems: "center",
+              justifyContent: "center",
+              marginBottom: "24px",
+            }}
+          >
+            <Icon.Warn />
+          </div>
+          <h2
+            style={{ fontSize: "24px", color: "#0f172a", marginBottom: "16px" }}
+          >
+            Konfirmasi Penghapusan
+          </h2>
+          <p
+            style={{
+              fontSize: "15px",
+              color: "#64748b",
+              lineHeight: "1.6",
+              marginBottom: "32px",
+            }}
+          >
+            Anda yakin ingin menghapus aset secara permanen? Data riwayat,
+            spesifikasi, dan barcode aset ini juga akan ikut terhapus dan tidak
+            dapat dikembalikan.
+          </p>
+
+          <ModernTable>
+            <TableRow label="ID Barang">
+              <code style={{ fontWeight: "bold" }}>{selectedAsset.id}</code>
+            </TableRow>
+            <TableRow label="Nama Barang">
+              <span style={{ fontWeight: "bold" }}>{selectedAsset.name}</span>
+            </TableRow>
+            <TableRow label="Lokasi">
+              <span>
+                {selectedAsset.branch} ({selectedAsset.zona})
+              </span>
+            </TableRow>
+          </ModernTable>
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: "16px",
+              marginTop: "24px",
+            }}
+          >
+            <button
+              onClick={() => setCurrentView("list")}
+              style={{
+                padding: "10px 20px",
+                borderRadius: "10px",
+                fontSize: "14px",
+                fontWeight: "bold",
+                background: "#fff",
+                border: "1.5px solid #cbd5e1",
+                color: "#475569",
+                cursor: "pointer",
+              }}
+            >
+              Batal
+            </button>
+            <button
+              onClick={handleDelete}
+              style={{
+                padding: "10px 20px",
+                borderRadius: "10px",
+                fontSize: "14px",
+                fontWeight: "bold",
+                background: "#ef4444",
+                border: "none",
+                color: "#fff",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+              }}
+            >
+              <Icon.Trash /> Ya, Hapus Barang
+            </button>
+          </div>
+        </div>
+      </PageWrapper>
+    );
+  };
+
+  // ── RENDER BARCODE PAGE ─────────────────────────────────────────
+  const renderBarcodePage = () => {
+    const asset = selectedAsset;
+    const units = asset.units && asset.units.length > 0 ? asset.units : [{ serialNumber: asset.id }];
+
+    return (
+      <PageWrapper
+        title="Cetak Barcode Per Unit"
+        onBack={() => {
+          setCurrentView(barcodeReturnView);
+          if (barcodeReturnView !== "add") {
+            setSelectedAsset(null);
+          }
+        }}
+      >
+        <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+            <div>
+              <h2 style={{ fontSize: "20px", fontWeight: "800", color: "#0f172a", margin: 0 }}>
+                {asset.name}
+              </h2>
+              <p style={{ fontSize: "13px", color: "#64748b", marginTop: "4px" }}>
+                Terdapat {units.length} unit yang siap dicetak labelnya.
+              </p>
+            </div>
+            <button
+              onClick={handlePrintBarcode}
+              style={{
+                padding: "12px 24px",
+                background: "#2563eb",
+                border: "none",
+                borderRadius: "10px",
+                fontSize: "14px",
+                fontWeight: "700",
+                color: "#fff",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                boxShadow: "0 4px 12px rgba(37, 99, 235, 0.2)"
+              }}
+            >
+              <Icon.Print /> Cetak Semua Barcode ({units.length})
+            </button>
+          </div>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))",
+              gap: "24px",
+              paddingBottom: "40px"
+            }}
+          >
+            {units.map((u, idx) => {
+              const barcodeVal = u.serialNumber || asset.id;
               return (
                 <div
-                  key={a.id}
-                  className={`inv-card card${isDisposed ? " is-disposed" : ""}`}
-                  onClick={() => handleCardClick(a)}
-                  title={isDisposed ? "Aset ini sudah di-dispose" : undefined}
+                  key={idx}
+                  style={{
+                    background: "#fff",
+                    border: "2px solid #e2e8f0",
+                    borderRadius: "12px",
+                    padding: "20px",
+                    position: "relative"
+                  }}
                 >
-                  {/* ── Foto ── */}
-                  <div className="inv-card-photo">
-                    <img
-                      src={!hasErr ? photo : getAssetPhotoFallback(a)}
-                      alt={a.name}
-                      className="inv-card-img"
-                      onError={(e) => {
-                        if (!hasErr) {
-                          setImgErr((p) => ({ ...p, [a.id]: true }));
-                        } else {
-                          e.currentTarget.style.display = "none";
-                        }
-                      }}
-                    />
-                    <div className="inv-photo-gradient" />
-
-                    <span
-                      className="inv-status-badge"
-                      style={{ background: st.bg, color: st.color }}
-                    >
-                      <span
-                        className="badge-dot"
-                        style={{ background: st.dot }}
-                      />
-                      {st.label}
-                    </span>
-
-                    <span
-                      className="inv-cat-chip"
-                      style={{ background: cat.color }}
-                    >
-                      <Ico n={a.category} s={10} c="#fff" />
-                      {cat.label}
-                    </span>
-
-                    {isDisposed && (
-                      <div className="inv-disposed-overlay">
-                        <div className="inv-disposed-badge">
-                          <Ico n="ban" s={12} c="#f1f5f9" />
-                          Aset Disposed
-                        </div>
-                      </div>
-                    )}
-
-                    {!isDisposed && (
-                      <div className="inv-hover-overlay">
-                        <div className="inv-hover-btn">
-                          <Ico n="eye" s={16} c="#fff" />
-                          Lihat Detail
-                        </div>
-                      </div>
-                    )}
+                  <div style={{
+                    position: "absolute",
+                    top: "12px",
+                    right: "12px",
+                    fontSize: "10px",
+                    fontWeight: "800",
+                    color: "#94a3b8",
+                    background: "#f8fafc",
+                    padding: "2px 6px",
+                    borderRadius: "4px"
+                  }}>
+                    UNIT {idx + 1}
                   </div>
 
-                  {/* ── Body ── */}
-                  <div className="inv-card-body">
-                    <div className="inv-card-top">
-                      <p className="inv-card-name">{a.name}</p>
-                      <span
-                        className={`inv-budget ${a.budget_type === "CAPEX" ? "capex" : "opex"}`}
-                      >
-                        {a.budget_type}
-                      </span>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "1.5px solid #111", paddingBottom: "10px", marginBottom: "10px" }}>
+                    <div>
+                      <div style={{ fontSize: "14px", fontWeight: "900", letterSpacing: "2px", color: "#000" }}>PELINDO</div>
+                      <div style={{ fontSize: "7px", fontWeight: "700", color: "#555", letterSpacing: "1px" }}>ASSET MANAGEMENT</div>
                     </div>
-                    <p className="inv-card-brand">
-                      {a.brand} · {a.model}
-                    </p>
-                    <div className="inv-card-loc">
-                      <Ico n="pin" s={11} c="var(--gray-400)" />
-                      <span>{a.location}</span>
+                    <span style={{ border: "1.5px solid #000", borderRadius: "4px", padding: "2px 6px", fontSize: "7px", fontWeight: "900", textTransform: "uppercase" }}>{asset.status}</span>
+                  </div>
+
+                  <div style={{ fontSize: "13px", fontWeight: "800", margin: "6px 0 2px", color: "#000" }}>{asset.name}</div>
+                  <div style={{ fontSize: "10px", fontWeight: "700", color: "#444", marginBottom: "8px" }}>{barcodeVal}</div>
+
+                  <div style={{ textAlign: "center", borderTop: "1px dashed #ddd", borderBottom: "1px dashed #ddd", padding: "8px 0", margin: "8px 0" }}>
+                    <BarcodeCanvas value={barcodeVal} width={300} height={50} />
+                  </div>
+
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginTop: "10px" }}>
+                    <div>
+                      <span style={{ display: "block", fontSize: "7px", color: "#888", textTransform: "uppercase" }}>Cabang</span>
+                      <span style={{ fontSize: "9px", fontWeight: "700", color: "#111" }}>{asset.branch}</span>
                     </div>
-                    <div className="inv-card-footer">
-                      <span className="inv-serial">{a.serial}</span>
+                    <div>
+                      <span style={{ display: "block", fontSize: "7px", color: "#888", textTransform: "uppercase" }}>Zona/Sub</span>
+                      <span style={{ fontSize: "9px", fontWeight: "700", color: "#111" }}>{asset.zona}/{asset.subzona}</span>
                     </div>
                   </div>
                 </div>
               );
             })}
           </div>
+        </div>
+      </PageWrapper>
+    );
+  };
 
-          {/* ── Pagination ── */}
-          {totalPages > 1 && (
-            <div className="inv-pagination-wrap">
-              <p className="inv-pagination-info">
-                Menampilkan{" "}
-                <strong>
-                  {startItem}–{endItem}
-                </strong>{" "}
-                dari <strong>{sorted.length}</strong> aset
-              </p>
+  // ── RENDER ROOT ───────────────────────────────────────────────────
+  return (
+    <>
+      {currentView === "list" && renderListView()}
+      {currentView === "add" && renderAddPage()}
+      {currentView === "edit" && renderEditPage()}
+      {currentView === "detail" && renderDetailPage()}
+      {currentView === "barcode" && renderBarcodePage()}
 
-              <div className="inv-pagination">
-                <button
-                  className="inv-pg-btn"
-                  disabled={safePage === 1}
-                  onClick={() => setPage((p) => p - 1)}
-                  title="Halaman sebelumnya"
-                >
-                  <Ico n="chevLeft" s={13} />
-                </button>
-
-                {pageList.map((p, i) =>
-                  p === "…" ? (
-                    <span key={`ellipsis-${i}`} className="inv-pg-ellipsis">
-                      …
-                    </span>
-                  ) : (
-                    <button
-                      key={p}
-                      className={`inv-pg-btn${p === safePage ? " active" : ""}`}
-                      onClick={() => setPage(p)}
-                    >
-                      {p}
-                    </button>
-                  ),
-                )}
-
-                <button
-                  className="inv-pg-btn"
-                  disabled={safePage === totalPages}
-                  onClick={() => setPage((p) => p + 1)}
-                  title="Halaman berikutnya"
-                >
-                  <Ico n="chevRight" s={13} />
-                </button>
-              </div>
+      {/* RENDER DELETE MODAL */}
+      {showDeleteModal && selectedAsset && (
+        <div style={{
+          position: "fixed",
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: "rgba(0,0,0,0.5)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 9999,
+          backdropFilter: "blur(2px)"
+        }}>
+          <div style={{
+            background: "#fff",
+            borderRadius: "16px",
+            padding: "32px",
+            maxWidth: "500px",
+            width: "90%",
+            textAlign: "center",
+            boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+            animation: "fadeInUp 0.2s ease"
+          }}>
+            <div style={{
+              display: "inline-flex",
+              width: "64px", height: "64px",
+              borderRadius: "50%",
+              background: "#fef2f2",
+              color: "#ef4444",
+              alignItems: "center",
+              justifyContent: "center",
+              marginBottom: "20px"
+            }}>
+              <Icon.Warn />
             </div>
-          )}
-        </>
+            <h2 style={{ fontSize: "20px", color: "#0f172a", marginBottom: "12px" }}>Konfirmasi Penghapusan</h2>
+            <p style={{ fontSize: "14px", color: "#64748b", lineHeight: "1.6", marginBottom: "24px" }}>
+              Anda yakin ingin menghapus <strong>{selectedAsset.name}</strong> (<code style={{ color: "#0f172a", fontWeight: "600", fontSize: "13px" }}>{selectedAsset.id}</code>) secara permanen? Data riwayat, spesifikasi, dan barcode aset ini juga akan ikut terhapus dan tidak dapat dikembalikan.
+            </p>
+            <div style={{ display: "flex", justifyContent: "center", gap: "12px" }}>
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                style={{
+                  padding: "10px 20px",
+                  borderRadius: "8px",
+                  fontSize: "14px",
+                  fontWeight: "600",
+                  background: "#fff",
+                  border: "1px solid #cbd5e1",
+                  color: "#475569",
+                  cursor: "pointer",
+                  transition: "all 0.2s"
+                }}
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleDelete}
+                style={{
+                  padding: "10px 20px",
+                  borderRadius: "8px",
+                  fontSize: "14px",
+                  fontWeight: "600",
+                  background: "#ef4444",
+                  border: "none",
+                  color: "#fff",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  transition: "all 0.2s"
+                }}
+              >
+                <Icon.Trash /> Hapus Barang
+              </button>
+            </div>
+          </div>
+        </div>
       )}
-    </div>
+    </>
   );
-}
+};
+
+export default Inventaris;
+
