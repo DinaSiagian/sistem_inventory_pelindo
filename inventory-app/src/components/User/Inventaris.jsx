@@ -3342,10 +3342,9 @@ const Inventaris = () => {
               <Icon.Inventory />
             </div>
             <div>
-              <h1 className="view-title">List Barang</h1>
+              <h1 className="view-title">Inventaris Aset</h1>
               <p className="view-subtitle">
-                <Icon.Shield /> Super Admin Access · {assets.length} total barang
-                terdaftar
+                {assets.length} total barang terdaftar
               </p>
             </div>
           </div>

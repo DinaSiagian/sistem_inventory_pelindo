@@ -1,1 +1,0 @@
-<?php require 'vendor/autoload.php'; \ = require_once 'bootstrap/app.php'; \ = \->make(Illuminate\Contracts\Console\Kernel::class); \->bootstrap(); \ = DB::table('asset_transactions')->orderBy('transaction_id', 'desc')->take(3)->get(); print_r(\);
