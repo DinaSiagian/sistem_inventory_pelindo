@@ -9,7 +9,7 @@ let CAPEX_ANGGARAN = [
     thn_anggaran: 2024,
     pekerjaan: [
       {
-        id_pekerjaan: 6,
+        id_pekerjaan: "PKJ-2440015-001",
         nm_pekerjaan: "Pekerjaan Implementasi CCTV",
       },
       {
@@ -47,7 +47,7 @@ let CAPEX_ANGGARAN = [
     thn_anggaran: 2024,
     pekerjaan: [
       {
-        id_pekerjaan: 1,
+        id_pekerjaan: "PKJ-2440013-001",
         nm_pekerjaan: "Pengadaan Server dan Network",
       },
     ],
@@ -86,7 +86,7 @@ let CAPEX_ANGGARAN = [
     thn_anggaran: 2025,
     pekerjaan: [
       {
-        id_pekerjaan: 11,
+        id_pekerjaan: "PKJ-2540011-001",
         nm_pekerjaan: "Penyediaan Alat Berat Excavator",
       },
       {
@@ -2520,6 +2520,7 @@ const ViewAsset = () => {
       console.error("Failed to fetch borrows:", err);
     }
   };
+
 
   // Routing State
   const [currentView, setCurrentView] = useState("list");

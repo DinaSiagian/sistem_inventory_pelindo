@@ -2928,7 +2928,7 @@ function BorrowDetailPage({ data, onBack, onEdit, onReturn }) {
               gap: 8,
             }}
           >
-            
+
           </div>
         </div>
 
@@ -3195,7 +3195,7 @@ function ReturnDetailPage({ item, borrows, returns, onBack, onViewHistory }) {
             >
               <Icon.History /> Riwayat ({histCount})
             </button>
-            
+
           </div>
         </div>
         {pekerjaan && (
@@ -3423,391 +3423,401 @@ function HistoryPage({ assetCode, assetName, borrows, returns, onBack }) {
           gap: 10,
           marginBottom: "1rem",
         }}
-      >
-        <button style={S.backBtn} onClick={onBack}>
-          <Icon.ArrowLeft /> Kembali
-        </button>
-        <span style={{ fontSize: ".75rem", color: "#94a3b8" }}>
-          / Riwayat Aset
-        </span>
-      </div>
-      <div style={S.page}>
-        <div style={{ ...S.pageHeader, borderTop: "3px solid #7c3aed" }}>
-          <div style={S.pageTitle}>
-            <span
-              style={{
-                width: 28,
-                height: 28,
-                borderRadius: 7,
-                background: "#f3e8ff",
-                color: "#7c3aed",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Icon.History />
-            </span>
-            Riwayat Serah Terima
-          </div>
-          <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-            <span
-              style={{
-                ...S.histPill,
-                background: "#eff6ff",
-                color: "#1d4ed8",
-                border: "1px solid #bfdbfe",
-              }}
-            >
-              {allHistory.length}x Total
-            </span>
-            <span
-              style={{
-                ...S.histPill,
-                background: "#dcfce7",
-                color: "#15803d",
-                border: "1px solid #bbf7d0",
-              }}
-            >
-              {doneCount}x Selesai
-            </span>
-            {activeCount > 0 && (
+
+        return (
+      <div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            marginBottom: "1rem",
+          }}
+        >
+          <button style={S.backBtn} onClick={onBack}>
+            <Icon.ArrowLeft /> Kembali
+          </button>
+          <span style={{ fontSize: ".75rem", color: "#94a3b8" }}>
+            / Riwayat Aset
+          </span>
+        </div>
+        <div style={S.page}>
+          <div style={{ ...S.pageHeader, borderTop: "3px solid #7c3aed" }}>
+            <div style={S.pageTitle}>
+              <span
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: 7,
+                  background: "#f3e8ff",
+                  color: "#7c3aed",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Icon.History />
+              </span>
+              Riwayat Serah Terima
+            </div>
+            <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
               <span
                 style={{
                   ...S.histPill,
-                  background: "#fef9c3",
-                  color: "#92400e",
-                  border: "1px solid #fde68a",
+                  background: "#eff6ff",
+                  color: "#1d4ed8",
+                  border: "1px solid #bfdbfe",
                 }}
               >
-                {activeCount}x Aktif
+                {allHistory.length}x Total
               </span>
-            )}
+              <span
+                style={{
+                  ...S.histPill,
+                  background: "#dcfce7",
+                  color: "#15803d",
+                  border: "1px solid #bbf7d0",
+                }}
+              >
+                {doneCount}x Selesai
+              </span>
+              {activeCount > 0 && (
+                <span
+                  style={{
+                    ...S.histPill,
+                    background: "#fef9c3",
+                    color: "#92400e",
+                    border: "1px solid #fde68a",
+                  }}
+                >
+                  {activeCount}x Aktif
+                </span>
+              )}
+            </div>
           </div>
-        </div>
-        <div
-          style={{ padding: "1rem 1.25rem", borderBottom: "1px solid #f1f5f9" }}
-        >
           <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: ".75rem",
-              padding: ".75rem .9rem",
-              background: "#f8fafc",
-              border: "1px solid #e2e8f0",
-              borderRadius: 9,
-            }}
+            style={{ padding: "1rem 1.25rem", borderBottom: "1px solid #f1f5f9" }}
           >
             <div
               style={{
-                ...S.catIco,
-                background: cat.bg,
-                color: cat.color,
-                width: 32,
-                height: 32,
-                borderRadius: 8,
+                display: "flex",
+                alignItems: "center",
+                gap: ".75rem",
+                padding: ".75rem .9rem",
+                background: "#f8fafc",
+                border: "1px solid #e2e8f0",
+                borderRadius: 9,
               }}
             >
-              {cat.icon}
-            </div>
-            <div>
-              <code style={S.code}>{assetCode}</code>
-              <div style={{ ...S.assetName, marginTop: 3 }}>{assetName}</div>
+              <div
+                style={{
+                  ...S.catIco,
+                  background: cat.bg,
+                  color: cat.color,
+                  width: 32,
+                  height: 32,
+                  borderRadius: 8,
+                }}
+              >
+                {cat.icon}
+              </div>
+              <div>
+                <code style={S.code}>{assetCode}</code>
+                <div style={{ ...S.assetName, marginTop: 3 }}>{assetName}</div>
+              </div>
             </div>
           </div>
-        </div>
-        {allHistory.length === 0 ? (
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              padding: "3rem 1rem",
-              color: "#94a3b8",
-              gap: ".5rem",
-            }}
-          >
-            <Icon.ClipboardEmpty />
-            <span style={{ fontWeight: 700, color: "#475569" }}>
-              Belum Ada Riwayat
-            </span>
-            <span style={{ fontSize: ".78rem" }}>
-              Aset ini belum pernah diserahterimakan.
-            </span>
-          </div>
-        ) : (
-          <div style={{ overflowX: "auto" }}>
-            <table style={S.table}>
-              <thead>
-                <tr
-                  style={{
-                    background: "linear-gradient(135deg,#4c1d95,#7c3aed)",
-                  }}
-                >
-                  {[
-                    "#",
-                    "Pemberi → Penerima",
-                    "Dari → Ke",
-                    "Tgl Pinjam",
-                    "Tgl Kembali",
-                    "Kondisi",
-                    "Status",
-                  ].map((h) => (
-                    <th
-                      key={h}
-                      style={{
-                        ...S.th,
-                        color: "#fff",
-                        fontWeight: 600,
-                        fontSize: ".7rem",
-                      }}
-                    >
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {allHistory.map((h, idx) => {
-                  const giver = getUser(h.giver_id);
-                  const receiver = getUser(h.receiver_id);
-                  const rawCond = h.is_returned ? h.return_condition : h.condition;
-                  const condKey = (rawCond || "").toUpperCase();
-                  const cond = conditionConfig[condKey];
-                  return (
-                    <tr
-                      key={`${h.id}-${h.source}`}
-                      style={{
-                        ...S.tr,
-                        ...(!h.is_returned ? { background: "#fffbeb" } : {}),
-                      }}
-                    >
-                      <td
+          {allHistory.length === 0 ? (
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                padding: "3rem 1rem",
+                color: "#94a3b8",
+                gap: ".5rem",
+              }}
+            >
+              <Icon.ClipboardEmpty />
+              <span style={{ fontWeight: 700, color: "#475569" }}>
+                Belum Ada Riwayat
+              </span>
+              <span style={{ fontSize: ".78rem" }}>
+                Aset ini belum pernah diserahterimakan.
+              </span>
+            </div>
+          ) : (
+            <div style={{ overflowX: "auto" }}>
+              <table style={S.table}>
+                <thead>
+                  <tr
+                    style={{
+                      background: "linear-gradient(135deg,#4c1d95,#7c3aed)",
+                    }}
+                  >
+                    {[
+                      "#",
+                      "Pemberi → Penerima",
+                      "Dari → Ke",
+                      "Tgl Pinjam",
+                      "Tgl Kembali",
+                      "Kondisi",
+                      "Status",
+                    ].map((h) => (
+                      <th
+                        key={h}
                         style={{
-                          ...S.td,
-                          fontFamily: "monospace",
-                          fontSize: ".68rem",
-                          color: "#94a3b8",
-                          textAlign: "center",
+                          ...S.th,
+                          color: "#fff",
+                          fontWeight: 600,
+                          fontSize: ".7rem",
                         }}
                       >
-                        {allHistory.length - idx}
-                      </td>
-                      <td style={S.td}>
-                        <div
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {allHistory.map((h, idx) => {
+                    const giver = getUser(h.giver_id);
+                    const receiver = getUser(h.receiver_id);
+                    const rawCond = h.is_returned ? h.return_condition : h.condition;
+                    const condKey = (rawCond || "").toUpperCase();
+                    const cond = conditionConfig[condKey];
+                    return (
+                      <tr
+                        key={`${h.id}-${h.source}`}
+                        style={{
+                          ...S.tr,
+                          ...(!h.is_returned ? { background: "#fffbeb" } : {}),
+                        }}
+                      >
+                        <td
                           style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 4,
+                            ...S.td,
+                            fontFamily: "monospace",
+                            fontSize: ".68rem",
+                            color: "#94a3b8",
+                            textAlign: "center",
                           }}
                         >
+                          {allHistory.length - idx}
+                        </td>
+                        <td style={S.td}>
                           <div
                             style={{
                               display: "flex",
                               alignItems: "center",
-                              gap: 5,
+                              gap: 4,
                             }}
                           >
                             <div
                               style={{
-                                ...S.avatar,
-                                background: "#fef3c7",
-                                color: "#d97706",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 5,
                               }}
                             >
-                              {giver.name.charAt(0)}
-                            </div>
-                            <div>
                               <div
                                 style={{
-                                  fontSize: ".73rem",
-                                  fontWeight: 600,
-                                  color: "#1e293b",
-                                  whiteSpace: "nowrap",
+                                  ...S.avatar,
+                                  background: "#fef3c7",
+                                  color: "#d97706",
                                 }}
                               >
-                                {giver.name}
+                                {giver.name.charAt(0)}
                               </div>
+                              <div>
+                                <div
+                                  style={{
+                                    fontSize: ".73rem",
+                                    fontWeight: 600,
+                                    color: "#1e293b",
+                                    whiteSpace: "nowrap",
+                                  }}
+                                >
+                                  {giver.name}
+                                </div>
+                                <div
+                                  style={{ fontSize: ".63rem", color: "#94a3b8" }}
+                                >
+                                  Pemberi
+                                </div>
+                              </div>
+                            </div>
+                            <span style={{ color: "#94a3b8", display: "flex" }}>
+                              <Icon.ArrowRight />
+                            </span>
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 5,
+                              }}
+                            >
                               <div
-                                style={{ fontSize: ".63rem", color: "#94a3b8" }}
+                                style={{
+                                  ...S.avatar,
+                                  background: "#dbeafe",
+                                  color: "#2563eb",
+                                }}
                               >
-                                Pemberi
+                                {receiver.name.charAt(0)}
+                              </div>
+                              <div>
+                                <div
+                                  style={{
+                                    fontSize: ".73rem",
+                                    fontWeight: 600,
+                                    color: "#1e293b",
+                                    whiteSpace: "nowrap",
+                                  }}
+                                >
+                                  {receiver.name}
+                                </div>
+                                <div
+                                  style={{ fontSize: ".63rem", color: "#94a3b8" }}
+                                >
+                                  Penerima
+                                </div>
                               </div>
                             </div>
                           </div>
-                          <span style={{ color: "#94a3b8", display: "flex" }}>
-                            <Icon.ArrowRight />
-                          </span>
+                        </td>
+                        <td style={S.td}>
                           <div
                             style={{
                               display: "flex",
                               alignItems: "center",
-                              gap: 5,
+                              gap: 4,
+                              fontSize: ".73rem",
+                              whiteSpace: "nowrap",
                             }}
                           >
-                            <div
-                              style={{
-                                ...S.avatar,
-                                background: "#dbeafe",
-                                color: "#2563eb",
-                              }}
-                            >
-                              {receiver.name.charAt(0)}
-                            </div>
-                            <div>
-                              <div
-                                style={{
-                                  fontSize: ".73rem",
-                                  fontWeight: 600,
-                                  color: "#1e293b",
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {receiver.name}
-                              </div>
-                              <div
-                                style={{ fontSize: ".63rem", color: "#94a3b8" }}
-                              >
-                                Penerima
-                              </div>
-                            </div>
+                            <span style={{ color: "#64748b" }}>
+                              {h.from_zone}
+                            </span>
+                            <span style={{ color: "#94a3b8", display: "flex" }}>
+                              <Icon.ArrowRight />
+                            </span>
+                            <span style={{ color: "#2563eb", fontWeight: 600 }}>
+                              {h.to_zone}
+                            </span>
                           </div>
-                        </div>
-                      </td>
-                      <td style={S.td}>
-                        <div
+                        </td>
+                        <td
                           style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 4,
+                            ...S.td,
                             fontSize: ".73rem",
+                            color: "#64748b",
                             whiteSpace: "nowrap",
                           }}
                         >
-                          <span style={{ color: "#64748b" }}>
-                            {h.from_zone}
-                          </span>
-                          <span style={{ color: "#94a3b8", display: "flex" }}>
-                            <Icon.ArrowRight />
-                          </span>
-                          <span style={{ color: "#2563eb", fontWeight: 600 }}>
-                            {h.to_zone}
-                          </span>
-                        </div>
-                      </td>
-                      <td
-                        style={{
-                          ...S.td,
-                          fontSize: ".73rem",
-                          color: "#64748b",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {fmtDateShort(h.borrow_date)}
-                      </td>
-                      <td style={{ ...S.td, whiteSpace: "nowrap" }}>
-                        {h.is_returned ? (
-                          <span
-                            style={{
-                              fontSize: ".73rem",
-                              color: "#16a34a",
-                              fontWeight: 600,
-                            }}
-                          >
-                            {fmtDateShort(h.return_date)}
-                          </span>
-                        ) : (
-                          <span
-                            style={{
-                              fontSize: ".71rem",
-                              color: "#d97706",
-                              fontWeight: 600,
-                            }}
-                          >
-                            Belum kembali
-                          </span>
-                        )}
-                      </td>
-                      <td style={S.td}>
-                        {cond && (
-                          <span
-                            style={{
-                              ...S.pill,
-                              background: cond.bg,
-                              color: cond.color,
-                            }}
-                          >
-                            {cond.label}
-                          </span>
-                        )}
-                      </td>
-                      <td style={S.td}>
-                        {h.is_returned ? (
-                          <span
-                            style={{
-                              ...S.pill,
-                              background: "#dcfce7",
-                              color: "#15803d",
-                              border: "1px solid #bbf7d0",
-                            }}
-                          >
-                            Selesai
-                          </span>
-                        ) : (
-                          <span
-                            style={{
-                              ...S.pill,
-                              background: "#fef9c3",
-                              color: "#92400e",
-                              border: "1px solid #fde68a",
-                            }}
-                          >
-                            Aktif
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
+                          {fmtDateShort(h.borrow_date)}
+                        </td>
+                        <td style={{ ...S.td, whiteSpace: "nowrap" }}>
+                          {h.is_returned ? (
+                            <span
+                              style={{
+                                fontSize: ".73rem",
+                                color: "#16a34a",
+                                fontWeight: 600,
+                              }}
+                            >
+                              {fmtDateShort(h.return_date)}
+                            </span>
+                          ) : (
+                            <span
+                              style={{
+                                fontSize: ".71rem",
+                                color: "#d97706",
+                                fontWeight: 600,
+                              }}
+                            >
+                              Belum kembali
+                            </span>
+                          )}
+                        </td>
+                        <td style={S.td}>
+                          {cond && (
+                            <span
+                              style={{
+                                ...S.pill,
+                                background: cond.bg,
+                                color: cond.color,
+                              }}
+                            >
+                              {cond.label}
+                            </span>
+                          )}
+                        </td>
+                        <td style={S.td}>
+                          {h.is_returned ? (
+                            <span
+                              style={{
+                                ...S.pill,
+                                background: "#dcfce7",
+                                color: "#15803d",
+                                border: "1px solid #bbf7d0",
+                              }}
+                            >
+                              Selesai
+                            </span>
+                          ) : (
+                            <span
+                              style={{
+                                ...S.pill,
+                                background: "#fef9c3",
+                                color: "#92400e",
+                                border: "1px solid #fde68a",
+                              }}
+                            >
+                              Aktif
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-  );
+      );
 }
 
-// ─── PAGE: CATAT SERAH TERIMA (REVISED) ──────────────────────
-function BorrowFormPage({ borrow, borrows, returns, assets, onBack, onSave, setNav }) {
-  const [pihak1, setPihak1] = useState({ id: "", locked: false }); // Pemberi
-  const [pihak2, setPihak2] = useState({ id: "", locked: false }); // Penerima
+      // ─── PAGE: CATAT SERAH TERIMA (REVISED) ──────────────────────
+      function BorrowFormPage({borrow, borrows, returns, assets, onBack, onSave, setNav}) {
+  const [pihak1, setPihak1] = useState({id: "", locked: false }); // Pemberi
+      const [pihak2, setPihak2] = useState({id: "", locked: false }); // Penerima
 
   // Backdate: "now" atau tanggal tertentu
   const nowISO = () => new Date().toISOString().slice(0, 16);
-  const [backdateMode, setBackdateMode] = useState("now"); // "now" | "custom"
-  const [backdateValue, setBackdateValue] = useState(nowISO());
+      const [backdateMode, setBackdateMode] = useState("now"); // "now" | "custom"
+      const [backdateValue, setBackdateValue] = useState(nowISO());
 
-  const [assetSearchQuery, setAssetSearchQuery] = useState("");
-  const [baDraft, setBaDraft] = useState([]);
+      const [assetSearchQuery, setAssetSearchQuery] = useState("");
+      const [baDraft, setBaDraft] = useState([]);
 
-  const userOptions1 = mockUsers
+      const userOptions1 = mockUsers
     .filter((u) => String(u.id) !== String(pihak2.id))
-    .map((u) => ({ value: u.id, label: u.name, sub: u.branch }));
+    .map((u) => ({value: u.id, label: u.name, sub: u.branch }));
 
-  const userOptions2 = mockUsers
+      const userOptions2 = mockUsers
     .filter((u) => String(u.id) !== String(pihak1.id))
-    .map((u) => ({ value: u.id, label: u.name, sub: u.branch }));
+    .map((u) => ({value: u.id, label: u.name, sub: u.branch }));
 
   const assetResults = useMemo(() => {
     if (!pihak1.id) return [];
 
     const p1User = mockUsers.find(u => u.id === Number(pihak1.id));
     const p2User = mockUsers.find(u => u.id === Number(pihak2.id));
-    
-    const isP1Admin = p1User && (p1User.jabatan === 'admin' || p1User.jabatan === 'superadmin');
-    const isP2Admin = p2User && (p2User.jabatan === 'admin' || p2User.jabatan === 'superadmin');
+
+      const isP1Admin = p1User && (p1User.jabatan === 'admin' || p1User.jabatan === 'superadmin');
+      const isP2Admin = p2User && (p2User.jabatan === 'admin' || p2User.jabatan === 'superadmin');
 
     // [1] Barang yang sedang dipegang / dipinjam oleh pemberi (pihak1)
     const giverAssets = assets.filter((a) => {
@@ -3817,56 +3827,56 @@ function BorrowFormPage({ borrow, borrows, returns, assets, onBack, onSave, setN
       return a.owner_id === Number(pihak1.id);
     });
 
-    // [2] Semua barang IT/admin yang belum dipinjam siapapun
-    //     Hanya tambahkan jika kondisinya BAIK dan Penerima BUKAN admin.
-    const adminFreeAssets =
+      // [2] Semua barang IT/admin yang belum dipinjam siapapun
+      //     Hanya tambahkan jika kondisinya BAIK dan Penerima BUKAN admin.
+      const adminFreeAssets =
       !isP1Admin && !isP2Admin
         ? assets.filter((a) => a.owner_id === `GUDANG_${p1User?.branch}` && a.status_id === 1 && (a.kondisi || "").toUpperCase() === "BAIK")
-        : [];
+      : [];
 
-    // Gabungkan dan hilangkan duplikat berdasarkan serial number (code)
-    const seenCodes = new Set();
-    let resultAssets = [];
-    for (const a of [...giverAssets, ...adminFreeAssets]) {
+      // Gabungkan dan hilangkan duplikat berdasarkan serial number (code)
+      const seenCodes = new Set();
+      let resultAssets = [];
+      for (const a of [...giverAssets, ...adminFreeAssets]) {
       if (!seenCodes.has(a.code)) {
         seenCodes.add(a.code);
-        resultAssets.push(a);
+      resultAssets.push(a);
       }
     }
 
-    if (assetSearchQuery) {
-      resultAssets = resultAssets.filter(
-        (a) =>
-          a.name.toLowerCase().includes(assetSearchQuery.toLowerCase()) ||
-          a.code.toLowerCase().includes(assetSearchQuery.toLowerCase()),
-      );
+      if (assetSearchQuery) {
+        resultAssets = resultAssets.filter(
+          (a) =>
+            a.name.toLowerCase().includes(assetSearchQuery.toLowerCase()) ||
+            a.code.toLowerCase().includes(assetSearchQuery.toLowerCase()),
+        );
     }
-    return resultAssets;
+      return resultAssets;
   }, [pihak1.id, assets, assetSearchQuery]);
 
   const addToDraft = (item) => {
     if (!pihak1.id || !pihak2.id) {
-      alert("Pilih Pemberi dan Penerima terlebih dahulu.");
+        alert("Pilih Pemberi dan Penerima terlebih dahulu.");
       return;
     }
     if (baDraft.find((d) => d.item.code === item.code)) {
-      alert("Barang ini sudah ada di daftar Berita Acara.");
+        alert("Barang ini sudah ada di daftar Berita Acara.");
       return;
     }
-    setBaDraft([
+      setBaDraft([
       ...baDraft,
-      { item, condition: item.kondisi || "BAIK", notes: "" },
-    ]);
+      {item, condition: item.kondisi || "BAIK", notes: "" },
+      ]);
   };
 
   const updateDraftItem = (code, field, value) => {
-    setBaDraft((prev) =>
-      prev.map((d) => (d.item.code === code ? { ...d, [field]: value } : d)),
-    );
+        setBaDraft((prev) =>
+          prev.map((d) => (d.item.code === code ? { ...d, [field]: value } : d)),
+        );
   };
 
   const removeFromDraft = (code) => {
-    setBaDraft(baDraft.filter((d) => d.item.code !== code));
+        setBaDraft(baDraft.filter((d) => d.item.code !== code));
   };
 
   // Expand draft into 2 rows per item for the BA Table
@@ -3879,59 +3889,59 @@ function BorrowFormPage({ borrow, borrows, returns, assets, onBack, onSave, setN
       // Baris untuk Pemberi
       rows.push({
         key: d.item.code + "-giver",
-        name: d.item.name,
-        sn: d.item.code,
-        status: "kembalikan",
-        user: p1.name,
+      name: d.item.name,
+      sn: d.item.code,
+      status: "kembalikan",
+      user: p1.name,
       });
       // Baris untuk Penerima
       rows.push({
         key: d.item.code + "-receiver",
-        name: d.item.name,
-        sn: d.item.code,
-        status: "diterima",
-        user: p2.name,
+      name: d.item.name,
+      sn: d.item.code,
+      status: "diterima",
+      user: p2.name,
       });
     });
-    return rows;
+      return rows;
   };
 
   const handleSave = async () => {
     if (baDraft.length === 0) {
-      alert("Tambahkan minimal satu barang ke daftar Berita Acara.");
+        alert("Tambahkan minimal satu barang ke daftar Berita Acara.");
       return;
     }
-    const finalDate =
+      const finalDate =
       backdateMode === "now"
-        ? new Date().toISOString()
-        : new Date(backdateValue).toISOString();
+      ? new Date().toISOString()
+      : new Date(backdateValue).toISOString();
 
-    try {
+      try {
       const returnPromises = [];
       const borrowItems = [];
 
       baDraft.forEach((d) => {
         const p2User = mockUsers.find(u => u.id === Number(pihak2.id));
-        const isP2Admin = p2User && (p2User.jabatan === 'admin' || p2User.jabatan === 'superadmin');
-        const isReturn = isP2Admin || Number(pihak2.id) === d.item.previous_giver_id;
+      const isP2Admin = p2User && (p2User.jabatan === 'admin' || p2User.jabatan === 'superadmin');
+      const isReturn = isP2Admin || Number(pihak2.id) === d.item.previous_giver_id;
 
-        if (isReturn) {
-          returnPromises.push(
-            transactionAPI.returnAsset({
-              code: d.item.code,
-              giver_id: Number(pihak1.id),
-              receiver_id: Number(pihak2.id),
-              return_date: finalDate,
-              return_condition: d.condition,
-              return_notes: d.notes || "",
-            })
-          );
+      if (isReturn) {
+        returnPromises.push(
+          transactionAPI.returnAsset({
+            code: d.item.code,
+            giver_id: Number(pihak1.id),
+            receiver_id: Number(pihak2.id),
+            return_date: finalDate,
+            return_condition: d.condition,
+            return_notes: d.notes || "",
+          })
+        );
         } else {
-          borrowItems.push({
-            serial_number: d.item.code,
-            condition: d.condition,
-            notes: d.notes || "",
-          });
+        borrowItems.push({
+          serial_number: d.item.code,
+          condition: d.condition,
+          notes: d.notes || "",
+        });
         }
       });
 
@@ -3941,14 +3951,14 @@ function BorrowFormPage({ borrow, borrows, returns, assets, onBack, onSave, setN
 
       if (borrowItems.length > 0) {
         const payload = {
-          giver_id: Number(pihak1.id),
-          receiver_id: Number(pihak2.id),
-          transaction_date: finalDate,
-          items: borrowItems,
+        giver_id: Number(pihak1.id),
+      receiver_id: Number(pihak2.id),
+      transaction_date: finalDate,
+      items: borrowItems,
         };
 
-        const res = await transactionAPI.create(payload);
-        if (!res.data || !res.data.success) {
+      const res = await transactionAPI.create(payload);
+      if (!res.data || !res.data.success) {
           throw new Error(res.data?.message || "Gagal menyimpan BAST");
         }
       }
@@ -3959,963 +3969,1084 @@ function BorrowFormPage({ borrow, borrows, returns, assets, onBack, onSave, setN
       }
       onBack();
     } catch (err) {
-      console.error("Error saving BAST:", err);
+        console.error("Error saving BAST:", err);
       alert("Terjadi kesalahan saat menyimpan BAST ke database: " + (err.message || ""));
     }
   };
 
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <button style={S.backBtn} onClick={onBack}>
-          <Icon.ArrowLeft /> Kembali
-        </button>
-        <span style={{ fontSize: ".75rem", color: "#94a3b8" }}>
-          / Catat Serah Terima
-        </span>
-      </div>
-
-      <div style={S.page}>
-        <div style={{ ...S.pageHeader, borderTop: "3px solid #2563eb" }}>
-          <div style={S.pageTitle}>
-            <Icon.Exchange /> Catat Serah Terima Baru
-          </div>
+      return (
+      <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <button style={S.backBtn} onClick={onBack}>
+            <Icon.ArrowLeft /> Kembali
+          </button>
+          <span style={{ fontSize: ".75rem", color: "#94a3b8" }}>
+            / Catat Serah Terima
+          </span>
         </div>
 
-        <div
-          style={{
-            padding: "1.5rem",
-            display: "flex",
-            flexDirection: "column",
-            gap: "1.5rem",
-          }}
-        >
-          {/* ── SECTION 1: USER SELECTION ── */}
+        <div style={S.page}>
+          <div style={{ ...S.pageHeader, borderTop: "3px solid #2563eb" }}>
+            <div style={S.pageTitle}>
+              <Icon.Exchange /> Catat Serah Terima Baru
+            </div>
+          </div>
+
           <div
             style={{
+              padding: "1.5rem",
               display: "flex",
               flexDirection: "column",
-              gap: "1.25rem",
-              background: "#f8fafc",
-              padding: "1.5rem",
-              borderRadius: "12px",
-              border: "1px solid #e2e8f0",
+              gap: "1.5rem",
             }}
           >
-            {/* Pemberi (Pihak 1) */}
+            {/* ── SECTION 1: USER SELECTION ── */}
             <div
-              style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "1.25rem",
+                background: "#f8fafc",
+                padding: "1.5rem",
+                borderRadius: "12px",
+                border: "1px solid #e2e8f0",
+              }}
             >
-              <label
-                style={{
-                  ...S.flabel,
-                  marginBottom: 0,
-                  minWidth: "180px",
-                  fontSize: ".75rem",
-                }}
-              >
-                User Pemberi [Pihak 1]
-              </label>
+              {/* Pemberi (Pihak 1) */}
               <div
-                style={{
-                  flex: 1,
-                  display: "flex",
-                  gap: "8px",
-                  alignItems: "center",
-                }}
-              >
-                <div style={{ flex: 1 }}>
-                  <SearchCombobox
-                    options={userOptions1}
-                    value={pihak1.id}
-                    onChange={(id) => {
-                      setPihak1({ ...pihak1, id });
-                      setBaDraft([]);
-                    }}
-                    disabled={pihak1.locked}
-                    placeholder="Pilih pemberi aset..."
-                    renderLabel={(o) => o.label}
-                  />
-                </div>
-                <button
-                  onClick={() =>
-                    setPihak1({ ...pihak1, locked: !pihak1.locked })
-                  }
-                  style={{
-                    padding: "8px",
-                    borderRadius: "8px",
-                    border: "1.5px solid #e2e8f0",
-                    background: pihak1.locked ? "#fef3c7" : "#fff",
-                    color: pihak1.locked ? "#d97706" : "#64748b",
-                    cursor: "pointer",
-                    display: "flex",
-                  }}
-                >
-                  {pihak1.locked ? <Icon.Lock /> : <Icon.Unlock />}
-                </button>
-              </div>
-            </div>
-
-            {/* Penerima (Pihak 2) */}
-            <div
-              style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}
-            >
-              <label
-                style={{
-                  ...S.flabel,
-                  marginBottom: 0,
-                  minWidth: "180px",
-                  fontSize: ".75rem",
-                }}
-              >
-                User Penerima [Pihak 2]
-              </label>
-              <div
-                style={{
-                  flex: 1,
-                  display: "flex",
-                  gap: "8px",
-                  alignItems: "center",
-                }}
-              >
-                <div style={{ flex: 1 }}>
-                  <SearchCombobox
-                    options={userOptions2}
-                    value={pihak2.id}
-                    onChange={(id) => {
-                      setPihak2({ ...pihak2, id });
-                      setBaDraft([]);
-                    }}
-                    disabled={pihak2.locked}
-                    placeholder="Pilih penerima aset..."
-                    renderLabel={(o) => o.label}
-                  />
-                </div>
-                <button
-                  onClick={() =>
-                    setPihak2({ ...pihak2, locked: !pihak2.locked })
-                  }
-                  style={{
-                    padding: "8px",
-                    borderRadius: "8px",
-                    border: "1.5px solid #e2e8f0",
-                    background: pihak2.locked ? "#fef3c7" : "#fff",
-                    color: pihak2.locked ? "#d97706" : "#64748b",
-                    cursor: "pointer",
-                    display: "flex",
-                  }}
-                >
-                  {pihak2.locked ? <Icon.Lock /> : <Icon.Unlock />}
-                </button>
-              </div>
-            </div>
-
-            {/* --- Tanggal Serah Terima (Backdate) --- */}
-            {pihak1.id && (
-              <div
-                style={{
-                  borderTop: "1px solid #e2e8f0",
-                  paddingTop: "1.1rem",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.6rem",
-                  flexWrap: "wrap",
-                }}
+                style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}
               >
                 <label
                   style={{
-                    fontSize: ".72rem",
-                    fontWeight: 700,
-                    color: "#475569",
-                    textTransform: "uppercase",
-                    letterSpacing: ".04em",
-                    margin: 0,
-                    whiteSpace: "nowrap",
+                    ...S.flabel,
+                    marginBottom: 0,
+                    minWidth: "180px",
+                    fontSize: ".75rem",
                   }}
                 >
-                  Tanggal Serah Terima
+                  User Pemberi [Pihak 1]
                 </label>
-
-                {/* Tombol ikon Kalender */}
-                <div style={{ position: "relative", display: "inline-flex" }}>
-                  <button
-                    type="button"
-                    title="Pilih tanggal"
-                    onClick={() => {
-                      setBackdateMode("custom");
-                      const el = document.getElementById("bast-backdate-input");
-                      if (el) {
-                        try {
-                          el.showPicker();
-                        } catch {
-                          el.click();
-                        }
-                      }
-                    }}
-                    style={{
-                      padding: "4px 8px",
-                      borderRadius: "7px",
-                      border: "1.5px solid",
-                      borderColor:
-                        backdateMode === "custom" ? "#7c3aed" : "#cbd5e1",
-                      background:
-                        backdateMode === "custom" ? "#f3e8ff" : "#fff",
-                      color: backdateMode === "custom" ? "#7c3aed" : "#94a3b8",
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      transition: "all .15s",
-                    }}
-                  >
-                    <svg
-                      width="13"
-                      height="13"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                      <line x1="16" y1="2" x2="16" y2="6" />
-                      <line x1="8" y1="2" x2="8" y2="6" />
-                      <line x1="3" y1="10" x2="21" y2="10" />
-                    </svg>
-                  </button>
-                  <input
-                    id="bast-backdate-input"
-                    type="datetime-local"
-                    value={backdateValue}
-                    max={nowISO()}
-                    onChange={(e) => {
-                      setBackdateValue(e.target.value);
-                      setBackdateMode("custom");
-                    }}
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      opacity: 0,
-                      pointerEvents: "none",
-                      width: "100%",
-                      height: "100%",
-                    }}
-                  />
-                </div>
-
-                {/* Preview tanggal */}
-                <span
-                  style={{
-                    fontSize: ".73rem",
-                    color: backdateMode === "custom" ? "#7c3aed" : "#16a34a",
-                    fontWeight: 700,
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 4,
-                  }}
-                >
-                  <svg
-                    width="9"
-                    height="9"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  {backdateMode === "now"
-                    ? "Sekarang (" +
-                    new Date().toLocaleString("id-ID", {
-                      day: "2-digit",
-                      month: "short",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    }) +
-                    ")"
-                    : new Date(backdateValue).toLocaleString("id-ID", {
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                </span>
-
-                {backdateMode === "custom" && (
-                  <button
-                    onClick={() => {
-                      setBackdateMode("now");
-                      setBackdateValue(nowISO());
-                    }}
-                    style={{
-                      fontSize: ".65rem",
-                      color: "#2563eb",
-                      background: "none",
-                      border: "none",
-                      cursor: "pointer",
-                      textDecoration: "underline",
-                      padding: 0,
-                    }}
-                  >
-                    Reset ke Sekarang
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* ── SECTION 2: DAFTAR BARANG MILIK PEMBERI ── */}
-          {pihak1.id && (
-            <div
-              style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
-            >
-              <div
-                style={{
-                  ...S.fg,
-                  background: "#eff6ff",
-                  padding: "10px",
-                  borderRadius: "8px",
-                  border: "1px solid #bfdbfe",
-                }}
-              >
                 <div
                   style={{
+                    flex: 1,
+                    display: "flex",
+                    gap: "8px",
+                    alignItems: "center",
+                  }}
+                >
+                  <div style={{ flex: 1 }}>
+                    <SearchCombobox
+                      options={userOptions1}
+                      value={pihak1.id}
+                      onChange={(id) => {
+                        setPihak1({ ...pihak1, id });
+                        setBaDraft([]);
+                      }}
+                      disabled={pihak1.locked}
+                      placeholder="Pilih pemberi aset..."
+                      renderLabel={(o) => o.label}
+                    />
+                  </div>
+                  <button
+                    onClick={() =>
+                      setPihak1({ ...pihak1, locked: !pihak1.locked })
+                    }
+                    style={{
+                      padding: "8px",
+                      borderRadius: "8px",
+                      border: "1.5px solid #e2e8f0",
+                      background: pihak1.locked ? "#fef3c7" : "#fff",
+                      color: pihak1.locked ? "#d97706" : "#64748b",
+                      cursor: "pointer",
+                      display: "flex",
+                    }}
+                  >
+                    {pihak1.locked ? <Icon.Lock /> : <Icon.Unlock />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Penerima (Pihak 2) */}
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}
+              >
+                <label
+                  style={{
+                    ...S.flabel,
+                    marginBottom: 0,
+                    minWidth: "180px",
+                    fontSize: ".75rem",
+                  }}
+                >
+                  User Penerima [Pihak 2]
+                </label>
+                <div
+                  style={{
+                    flex: 1,
+                    display: "flex",
+                    gap: "8px",
+                    alignItems: "center",
+                  }}
+                >
+                  <div style={{ flex: 1 }}>
+                    <SearchCombobox
+                      options={userOptions2}
+                      value={pihak2.id}
+                      onChange={(id) => {
+                        setPihak2({ ...pihak2, id });
+                        setBaDraft([]);
+                      }}
+                      disabled={pihak2.locked}
+                      placeholder="Pilih penerima aset..."
+                      renderLabel={(o) => o.label}
+                    />
+                  </div>
+                  <button
+                    onClick={() =>
+                      setPihak2({ ...pihak2, locked: !pihak2.locked })
+                    }
+                    style={{
+                      padding: "8px",
+                      borderRadius: "8px",
+                      border: "1.5px solid #e2e8f0",
+                      background: pihak2.locked ? "#fef3c7" : "#fff",
+                      color: pihak2.locked ? "#d97706" : "#64748b",
+                      cursor: "pointer",
+                      display: "flex",
+                    }}
+                  >
+                    {pihak2.locked ? <Icon.Lock /> : <Icon.Unlock />}
+                  </button>
+                </div>
+              </div>
+
+              {/* --- Tanggal Serah Terima (Backdate) --- */}
+              {pihak1.id && (
+                <div
+                  style={{
+                    borderTop: "1px solid #e2e8f0",
+                    paddingTop: "1.1rem",
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "space-between",
-                    marginBottom: "8px",
+                    gap: "0.6rem",
+                    flexWrap: "wrap",
                   }}
                 >
                   <label
-                    style={{ ...S.flabel, marginBottom: 0, color: "#1e40af" }}
+                    style={{
+                      fontSize: ".72rem",
+                      fontWeight: 700,
+                      color: "#475569",
+                      textTransform: "uppercase",
+                      letterSpacing: ".04em",
+                      margin: 0,
+                      whiteSpace: "nowrap",
+                    }}
                   >
-                    Daftar Barang Milik:{" "}
-                    <strong>{getUser(Number(pihak1.id)).name}</strong>
+                    Tanggal Serah Terima
                   </label>
-                  <div
-                    style={{
-                      fontSize: ".65rem",
-                      color: "#60a5fa",
-                      fontWeight: 600,
-                    }}
-                  >
-                    {assetResults.length} barang ditemukan
-                  </div>
-                </div>
-                <div style={{ position: "relative" }}>
-                  <div
-                    style={{
-                      position: "absolute",
-                      left: "10px",
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      color: "#94a3b8",
-                    }}
-                  >
-                    <Icon.Search />
-                  </div>
-                  <input
-                    type="text"
-                    value={assetSearchQuery}
-                    onChange={(e) => setAssetSearchQuery(e.target.value)}
-                    placeholder="Cari nama atau kode barang di list ini..."
-                    style={{
-                      ...S.finput,
-                      paddingLeft: "35px",
-                      fontSize: ".75rem",
-                    }}
-                  />
-                </div>
-              </div>
 
-              <div style={{ ...S.tableCard }}>
+                  {/* Tombol ikon Kalender */}
+                  <div style={{ position: "relative", display: "inline-flex" }}>
+                    <button
+                      type="button"
+                      title="Pilih tanggal"
+                      onClick={() => {
+                        setBackdateMode("custom");
+                        const el = document.getElementById("bast-backdate-input");
+                        if (el) {
+                          try {
+                            el.showPicker();
+                          } catch {
+                            el.click();
+                          }
+                        }
+                      }}
+                      style={{
+                        padding: "4px 8px",
+                        borderRadius: "7px",
+                        border: "1.5px solid",
+                        borderColor:
+                          backdateMode === "custom" ? "#7c3aed" : "#cbd5e1",
+                        background:
+                          backdateMode === "custom" ? "#f3e8ff" : "#fff",
+                        color: backdateMode === "custom" ? "#7c3aed" : "#94a3b8",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        transition: "all .15s",
+                      }}
+                    >
+                      <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                        <line x1="16" y1="2" x2="16" y2="6" />
+                        <line x1="8" y1="2" x2="8" y2="6" />
+                        <line x1="3" y1="10" x2="21" y2="10" />
+                      </svg>
+                    </button>
+                    <input
+                      id="bast-backdate-input"
+                      type="datetime-local"
+                      value={backdateValue}
+                      max={nowISO()}
+                      onChange={(e) => {
+                        setBackdateValue(e.target.value);
+                        setBackdateMode("custom");
+                      }}
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        opacity: 0,
+                        pointerEvents: "none",
+                        width: "100%",
+                        height: "100%",
+                      }}
+                    />
+                  </div>
+
+                  {/* Preview tanggal */}
+                  <span
+                    style={{
+                      fontSize: ".73rem",
+                      color: backdateMode === "custom" ? "#7c3aed" : "#16a34a",
+                      fontWeight: 700,
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 4,
+                    }}
+                  >
+                    <svg
+                      width="9"
+                      height="9"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    {backdateMode === "now"
+                      ? "Sekarang (" +
+                      new Date().toLocaleString("id-ID", {
+                        day: "2-digit",
+                        month: "short",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      }) +
+                      ")"
+                      : new Date(backdateValue).toLocaleString("id-ID", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                  </span>
+
+                  {backdateMode === "custom" && (
+                    <button
+                      onClick={() => {
+                        setBackdateMode("now");
+                        setBackdateValue(nowISO());
+                      }}
+                      style={{
+                        fontSize: ".65rem",
+                        color: "#2563eb",
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        textDecoration: "underline",
+                        padding: 0,
+                      }}
+                    >
+                      Reset ke Sekarang
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* ── SECTION 2: DAFTAR BARANG MILIK PEMBERI ── */}
+            {pihak1.id && (
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+              >
                 <div
                   style={{
-                    padding: "10px 15px",
-                    background: "#f8fafc",
-                    borderBottom: "1px solid #e2e8f0",
-                    fontWeight: 700,
-                    fontSize: ".7rem",
+                    ...S.fg,
+                    background: "#eff6ff",
+                    padding: "10px",
+                    borderRadius: "8px",
+                    border: "1px solid #bfdbfe",
                   }}
                 >
-                  HASIL PENCARIAN BARANG
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginBottom: "8px",
+                    }}
+                  >
+                    <label
+                      style={{ ...S.flabel, marginBottom: 0, color: "#1e40af" }}
+                    >
+                      Daftar Barang Milik:{" "}
+                      <strong>{getUser(Number(pihak1.id)).name}</strong>
+                    </label>
+                    <div
+                      style={{
+                        fontSize: ".65rem",
+                        color: "#60a5fa",
+                        fontWeight: 600,
+                      }}
+                    >
+                      {assetResults.length} barang ditemukan
+                    </div>
+                  </div>
+                  <div style={{ position: "relative" }}>
+                    <div
+                      style={{
+                        position: "absolute",
+                        left: "10px",
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        color: "#94a3b8",
+                      }}
+                    >
+                      <Icon.Search />
+                    </div>
+                    <input
+                      type="text"
+                      value={assetSearchQuery}
+                      onChange={(e) => setAssetSearchQuery(e.target.value)}
+                      placeholder="Cari nama atau kode barang di list ini..."
+                      style={{
+                        ...S.finput,
+                        paddingLeft: "35px",
+                        fontSize: ".75rem",
+                      }}
+                    />
+                  </div>
                 </div>
-                <table style={S.table}>
-                  <thead style={S.thead}>
-                    <tr>
-                      <th style={{ ...S.th, width: 40 }}>No</th>
-                      <th style={S.th}>ID Barang</th>
-                      <th style={S.th}>Nama Barang</th>
-                      <th style={{ ...S.th, width: 60 }}>CP/OP</th>
-                      <th style={S.th}>Nama Pekerjaan</th>
-                      <th style={{ ...S.th, width: 100 }}>Thn Pengadaan</th>
-                      <th style={{ ...S.th, width: 80 }}>Kondisi</th>
-                      <th style={{ ...S.th, width: 80 }}>Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {assetResults.length === 0 ? (
+
+                <div style={{ ...S.tableCard }}>
+                  <div
+                    style={{
+                      padding: "10px 15px",
+                      background: "#f8fafc",
+                      borderBottom: "1px solid #e2e8f0",
+                      fontWeight: 700,
+                      fontSize: ".7rem",
+                    }}
+                  >
+                    HASIL PENCARIAN BARANG
+                  </div>
+                  <table style={S.table}>
+                    <thead style={S.thead}>
                       <tr>
-                        <td
-                          colSpan="6"
-                          style={{
-                            ...S.td,
-                            textAlign: "center",
-                            color: "#94a3b8",
-                            padding: "2rem",
-                          }}
-                        >
-                          {assetSearchQuery
-                            ? "Tidak ada barang yang cocok dengan pencarian."
-                            : (() => {
+                        <th style={{ ...S.th, width: 40 }}>No</th>
+                        <th style={S.th}>ID Barang</th>
+                        <th style={S.th}>Nama Barang</th>
+                        <th style={{ ...S.th, width: 60 }}>CP/OP</th>
+                        <th style={S.th}>Nama Pekerjaan</th>
+                        <th style={{ ...S.th, width: 100 }}>Thn Pengadaan</th>
+                        <th style={{ ...S.th, width: 80 }}>Kondisi</th>
+                        <th style={{ ...S.th, width: 80 }}>Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {assetResults.length === 0 ? (
+                        <tr>
+                          <td
+                            colSpan="6"
+                            style={{
+                              ...S.td,
+                              textAlign: "center",
+                              color: "#94a3b8",
+                              padding: "2rem",
+                            }}
+                          >
+                            {assetSearchQuery
+                              ? "Tidak ada barang yang cocok dengan pencarian."
+                              : (() => {
                                 const p1 = mockUsers.find((u) => String(u.id) === String(pihak1.id));
                                 const p1IsAdmin = p1 && (p1.jabatan === 'admin' || p1.jabatan === 'superadmin');
                                 const loggedInUserStr = localStorage.getItem("user");
                                 const loggedInUser = loggedInUserStr ? JSON.parse(loggedInUserStr) : null;
                                 const loggedBranch = loggedInUser?.branch_code || loggedInUser?.branches_code || "Jakarta";
-                                
+
                                 if (p1IsAdmin && p1.branch !== loggedBranch && p1.branch) {
                                   return `Sistem Isolasi Data Aktif: Anda tidak memiliki hak akses untuk melihat atau menarik barang dari Gudang ${p1.branch}.`;
                                 }
                                 return "User ini tidak memiliki barang untuk diserahterimakan.";
                               })()}
-                        </td>
-                      </tr>
-                    ) : (
-                      assetResults.map((item, idx) => {
-                        const pkj = getPekerjaan(item.pekerjaan_kode);
-                        const isInDraft = baDraft.some(
-                          (d) => d.item.code === item.code,
-                        );
+                          </td>
+                        </tr>
+                      ) : (
+                        assetResults.map((item, idx) => {
+                          const pkj = getPekerjaan(item.pekerjaan_kode);
+                          const isInDraft = baDraft.some(
+                            (d) => d.item.code === item.code,
+                          );
 
-                        // Dummy data if not present in mockAssets
-                        const thnPengadaan = item.tahun_pengadaan || "2023";
-                        const kondisi = item.kondisi || "BAIK";
+                          // Dummy data if not present in mockAssets
+                          const thnPengadaan = item.tahun_pengadaan || "2023";
+                          const kondisi = item.kondisi || "BAIK";
 
-                        return (
-                          <tr
-                            key={item.code}
-                            style={{
-                              ...S.tr,
-                              background: isInDraft ? "#f0fdf4" : undefined,
-                              opacity: isInDraft ? 0.6 : 1,
-                              cursor: "default", // Non-clickable row
-                            }}
-                          >
-                            <td style={{ ...S.td, textAlign: "center" }}>
-                              {idx + 1}
-                            </td>
-                            <td style={S.td}>
-                              <code style={S.code}>{item.asset_code || item.code}</code>
-                            </td>
-                            <td
+                          return (
+                            <tr
+                              key={item.code}
                               style={{
-                                ...S.td,
-                                fontWeight: 700,
-                                fontSize: ".7rem",
-                                color: "#1e293b",
+                                ...S.tr,
+                                background: isInDraft ? "#f0fdf4" : undefined,
+                                opacity: isInDraft ? 0.6 : 1,
+                                cursor: "default", // Non-clickable row
                               }}
                             >
-                              {item.name}
-                            </td>
-                            <td style={{ ...S.td, textAlign: "center" }}>
-                              {pkj?.jenis ? (
-                                <span
-                                  style={{
-                                    ...S.pill,
-                                    background:
-                                      pkj.jenis === "Capex"
-                                        ? "#eff6ff"
-                                        : "#f0fdf4",
-                                    color:
-                                      pkj.jenis === "Capex"
-                                        ? "#2563eb"
-                                        : "#16a34a",
-                                  }}
-                                >
-                                  {pkj.jenis === "Capex" ? "CP" : "OP"}
-                                </span>
-                              ) : (
-                                <span style={{ color: "#94a3b8" }}>—</span>
-                              )}
-                            </td>
-                            <td
-                              style={{
-                                ...S.td,
-                                maxWidth: "250px",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                whiteSpace: "nowrap",
-                              }}
-                              title={pkj?.nama}
-                            >
-                              {pkj?.nama || "—"}
-                            </td>
-                            <td style={{ ...S.td, textAlign: "center" }}>
-                              {thnPengadaan}
-                            </td>
-                            <td style={{ ...S.td, textAlign: "center" }}>
-                              <span
+                              <td style={{ ...S.td, textAlign: "center" }}>
+                                {idx + 1}
+                              </td>
+                              <td style={S.td}>
+                                <code style={S.code}>{item.asset_code || item.code}</code>
+                              </td>
+                              <td
                                 style={{
-                                  fontSize: ".65rem",
+                                  ...S.td,
                                   fontWeight: 700,
-                                  color: conditionConfig[kondisi?.toUpperCase()]?.color || "#475569",
-                                  background: conditionConfig[kondisi?.toUpperCase()]?.bg || "#f1f5f9",
-                                  padding: "2px 6px",
-                                  borderRadius: "4px",
+                                  fontSize: ".7rem",
+                                  color: "#1e293b",
                                 }}
                               >
-                                {conditionConfig[kondisi?.toUpperCase()]?.label || kondisi}
-                              </span>
-                            </td>
-                            <td style={S.td}>
-                              {isInDraft ? (
+                                {item.name}
+                              </td>
+                              <td style={{ ...S.td, textAlign: "center" }}>
+                                {pkj?.jenis ? (
+                                  <span
+                                    style={{
+                                      ...S.pill,
+                                      background:
+                                        pkj.jenis === "Capex"
+                                          ? "#eff6ff"
+                                          : "#f0fdf4",
+                                      color:
+                                        pkj.jenis === "Capex"
+                                          ? "#2563eb"
+                                          : "#16a34a",
+                                    }}
+                                  >
+                                    {pkj.jenis === "Capex" ? "CP" : "OP"}
+                                  </span>
+                                ) : (
+                                  <span style={{ color: "#94a3b8" }}>—</span>
+                                )}
+                              </td>
+                              <td
+                                style={{
+                                  ...S.td,
+                                  maxWidth: "250px",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  whiteSpace: "nowrap",
+                                }}
+                                title={pkj?.nama}
+                              >
+                                {pkj?.nama || "—"}
+                              </td>
+                              <td style={{ ...S.td, textAlign: "center" }}>
+                                {thnPengadaan}
+                              </td>
+                              <td style={{ ...S.td, textAlign: "center" }}>
                                 <span
                                   style={{
                                     fontSize: ".65rem",
-                                    color: "#16a34a",
                                     fontWeight: 700,
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: 3,
+                                    color: conditionConfig[kondisi?.toUpperCase()]?.color || "#475569",
+                                    background: conditionConfig[kondisi?.toUpperCase()]?.bg || "#f1f5f9",
+                                    padding: "2px 6px",
+                                    borderRadius: "4px",
                                   }}
                                 >
-                                  <Icon.Check /> Dipilih
+                                  {conditionConfig[kondisi?.toUpperCase()]?.label || kondisi}
                                 </span>
-                              ) : (
-                                <button
-                                  onClick={() => addToDraft(item)}
-                                  disabled={!pihak2.id}
-                                  title={
-                                    !pihak2.id
-                                      ? "Pilih Penerima dulu"
-                                      : "Pilih Barang"
-                                  }
-                                  style={{
-                                    padding: "5px 12px",
-                                    borderRadius: "6px",
-                                    background: pihak2.id
-                                      ? "#eff6ff"
-                                      : "#f8fafc",
-                                    border: "1.5px solid",
-                                    borderColor: pihak2.id
-                                      ? "#2563eb"
-                                      : "#e2e8f0",
-                                    color: pihak2.id ? "#2563eb" : "#cbd5e1",
-                                    cursor: pihak2.id
-                                      ? "pointer"
-                                      : "not-allowed",
-                                    fontSize: ".7rem",
-                                    fontWeight: 700,
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: "4px",
-                                    transition: "all .15s",
-                                  }}
-                                >
-                                  <Icon.Plus /> Pilih
-                                </button>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })
-                    )}
+                              </td>
+                              <td style={S.td}>
+                                {isInDraft ? (
+                                  <span
+                                    style={{
+                                      fontSize: ".65rem",
+                                      color: "#16a34a",
+                                      fontWeight: 700,
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: 3,
+                                    }}
+                                  >
+                                    <Icon.Check /> Dipilih
+                                  </span>
+                                ) : (
+                                  <button
+                                    onClick={() => addToDraft(item)}
+                                    disabled={!pihak2.id}
+                                    title={
+                                      !pihak2.id
+                                        ? "Pilih Penerima dulu"
+                                        : "Pilih Barang"
+                                    }
+                                    style={{
+                                      padding: "5px 12px",
+                                      borderRadius: "6px",
+                                      background: pihak2.id
+                                        ? "#eff6ff"
+                                        : "#f8fafc",
+                                      border: "1.5px solid",
+                                      borderColor: pihak2.id
+                                        ? "#2563eb"
+                                        : "#e2e8f0",
+                                      color: pihak2.id ? "#2563eb" : "#cbd5e1",
+                                      cursor: pihak2.id
+                                        ? "pointer"
+                                        : "not-allowed",
+                                      fontSize: ".7rem",
+                                      fontWeight: 700,
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: "4px",
+                                      transition: "all .15s",
+                                    }}
+                                  >
+                                    <Icon.Plus /> Pilih
+                                  </button>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* ── SECTION 3: TABEL BERITA ACARA (DRAFT) ── */}
+            {baDraft.length > 0 && (
+              <div
+                style={{
+                  ...S.tableCard,
+                  animation: "fadeIn 0.2s ease-in",
+                  border: "2px solid #2563eb",
+                }}
+              >
+                <div
+                  style={{
+                    padding: "10px 15px",
+                    background: "#eff6ff",
+                    borderBottom: "2px solid #2563eb",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: ".75rem",
+                      fontWeight: 800,
+                      color: "#1e293b",
+                    }}
+                  >
+                    TABEL BERITA ACARA (PREVIEW)
+                  </div>
+                  <button
+                    onClick={() => setBaDraft([])}
+                    style={{
+                      fontSize: ".65rem",
+                      color: "#ef4444",
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      fontWeight: 600,
+                    }}
+                  >
+                    Reset Semua
+                  </button>
+                </div>
+                <table style={S.table}>
+                  <thead style={{ ...S.thead, background: "#f8fafc" }}>
+                    <tr>
+                      <th style={{ ...S.th, width: 30 }}>No</th>
+                      <th style={{ ...S.th, width: 110 }}>No.BAST</th>
+                      <th style={{ ...S.th, width: 80 }}>Tgl BAST</th>
+                      <th style={S.th}>Barang / ID Barang</th>
+                      <th style={S.th}>Pemberi / Penerima</th>
+                      <th style={{ ...S.th, width: 110 }}>Kondisi</th>
+                      <th style={S.th}>Keterangan (Notes)</th>
+                      <th style={{ ...S.th, width: 50 }}>Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {baDraft.map((d, i) => {
+                      const bastNo = `BAST/${new Date().getFullYear()}/${((borrows?.length || 0) + 1 + i).toString().padStart(3, "0")}`;
+                      const p1 = getUser(Number(pihak1.id));
+                      const p2 = getUser(Number(pihak2.id));
+                      const bastDate =
+                        backdateMode === "now"
+                          ? fmtDateShort(new Date().toISOString())
+                          : fmtDateShort(backdateValue);
+
+                      return (
+                        <tr key={d.item.code} style={S.tr}>
+                          <td
+                            style={{
+                              ...S.td,
+                              textAlign: "center",
+                              color: "#94a3b8",
+                            }}
+                          >
+                            {i + 1}
+                          </td>
+                          <td style={S.td}>
+                            <code
+                              style={{
+                                ...S.code,
+                                color: "#1e293b",
+                                background: "#f1f5f9",
+                                fontSize: ".65rem",
+                              }}
+                            >
+                              {bastNo}
+                            </code>
+                          </td>
+                          <td
+                            style={{
+                              ...S.td,
+                              fontSize: ".65rem",
+                              color: "#64748b",
+                            }}
+                          >
+                            {bastDate}
+                          </td>
+                          <td style={S.td}>
+                            <div
+                              style={{
+                                fontWeight: 700,
+                                color: "#2563eb",
+                                fontSize: ".75rem",
+                              }}
+                            >
+                              {d.item.name}
+                            </div>
+                            <code style={{ fontSize: ".6rem", color: "#64748b" }}>
+                              {d.item.asset_code || d.item.code}
+                            </code>
+                          </td>
+                          <td style={S.td}>
+                            <div style={{ fontSize: ".7rem", color: "#64748b" }}>
+                              P:{" "}
+                              <strong style={{ color: "#1e293b" }}>
+                                {p1.name}
+                              </strong>
+                            </div>
+                            <div style={{ fontSize: ".7rem", color: "#64748b" }}>
+                              R:{" "}
+                              <strong style={{ color: "#1e293b" }}>
+                                {p2.name}
+                              </strong>
+                            </div>
+                          </td>
+                          <td style={S.td}>
+                            <select
+                              value={d.condition || "BAIK"}
+                              onChange={(e) =>
+                                updateDraftItem(
+                                  d.item.code,
+                                  "condition",
+                                  e.target.value,
+                                )
+                              }
+                              style={{
+                                ...S.finput,
+                                padding: "4px 8px",
+                                fontSize: ".7rem",
+                                height: "auto",
+                              }}
+                            >
+                              <option value="BAIK">BAIK</option>
+                              <option value="RUSAK">RUSAK</option>
+                              <option value="HILANG">HILANG</option>
+                              <option value="DIPERBAIKI">DIPERBAIKI</option>
+                            </select>
+                          </td>
+                          <td style={S.td}>
+                            <input
+                              type="text"
+                              value={d.notes || ""}
+                              onChange={(e) =>
+                                updateDraftItem(
+                                  d.item.code,
+                                  "notes",
+                                  e.target.value,
+                                )
+                              }
+                              placeholder='Contoh: "Terbentur meja"'
+                              style={{
+                                ...S.finput,
+                                padding: "4px 8px",
+                                fontSize: ".7rem",
+                                height: "auto",
+                              }}
+                            />
+                          </td>
+                          <td style={{ ...S.td, textAlign: "center" }}>
+                            <button
+                              onClick={() => removeFromDraft(d.item.code)}
+                              style={{
+                                background: "none",
+                                border: "none",
+                                color: "#ef4444",
+                                cursor: "pointer",
+                              }}
+                            >
+                              <Icon.Trash />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
-              </div>
-            </div>
-          )}
 
-          {/* ── SECTION 3: TABEL BERITA ACARA (DRAFT) ── */}
-          {baDraft.length > 0 && (
-            <div
-              style={{
-                ...S.tableCard,
-                animation: "fadeIn 0.2s ease-in",
-                border: "2px solid #2563eb",
-              }}
-            >
-              <div
-                style={{
-                  padding: "10px 15px",
-                  background: "#eff6ff",
-                  borderBottom: "2px solid #2563eb",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
+                {/* Dynamic Automated Narrative Section */}
                 <div
                   style={{
-                    fontSize: ".75rem",
-                    fontWeight: 800,
-                    color: "#1e293b",
+                    padding: "1.25rem",
+                    background: "#f8fafc",
+                    borderTop: "2px solid #2563eb",
+                    marginTop: "1px",
                   }}
                 >
-                  TABEL BERITA ACARA (PREVIEW)
-                </div>
-                <button
-                  onClick={() => setBaDraft([])}
-                  style={{
-                    fontSize: ".65rem",
-                    color: "#ef4444",
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    fontWeight: 600,
-                  }}
-                >
-                  Reset Semua
-                </button>
-              </div>
-              <table style={S.table}>
-                <thead style={{ ...S.thead, background: "#f8fafc" }}>
-                  <tr>
-                    <th style={{ ...S.th, width: 30 }}>No</th>
-                    <th style={{ ...S.th, width: 110 }}>No.BAST</th>
-                    <th style={{ ...S.th, width: 80 }}>Tgl BAST</th>
-                    <th style={S.th}>Barang / ID Barang</th>
-                    <th style={S.th}>Pemberi / Penerima</th>
-                    <th style={{ ...S.th, width: 110 }}>Kondisi</th>
-                    <th style={S.th}>Keterangan (Notes)</th>
-                    <th style={{ ...S.th, width: 50 }}>Aksi</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {baDraft.map((d, i) => {
-                    const bastNo = `BAST/${new Date().getFullYear()}/${((borrows?.length || 0) + 1 + i).toString().padStart(3, "0")}`;
-                    const p1 = getUser(Number(pihak1.id));
-                    const p2 = getUser(Number(pihak2.id));
-                    const bastDate =
-                      backdateMode === "now"
-                        ? fmtDateShort(new Date().toISOString())
-                        : fmtDateShort(backdateValue);
-
-                    return (
-                      <tr key={d.item.code} style={S.tr}>
-                        <td
-                          style={{
-                            ...S.td,
-                            textAlign: "center",
-                            color: "#94a3b8",
-                          }}
-                        >
-                          {i + 1}
-                        </td>
-                        <td style={S.td}>
-                          <code
-                            style={{
-                              ...S.code,
-                              color: "#1e293b",
-                              background: "#f1f5f9",
-                              fontSize: ".65rem",
-                            }}
-                          >
-                            {bastNo}
-                          </code>
-                        </td>
-                        <td
-                          style={{
-                            ...S.td,
-                            fontSize: ".65rem",
-                            color: "#64748b",
-                          }}
-                        >
-                          {bastDate}
-                        </td>
-                        <td style={S.td}>
-                          <div
-                            style={{
-                              fontWeight: 700,
-                              color: "#2563eb",
-                              fontSize: ".75rem",
-                            }}
-                          >
-                            {d.item.name}
-                          </div>
-                          <code style={{ fontSize: ".6rem", color: "#64748b" }}>
-                            {d.item.asset_code || d.item.code}
-                          </code>
-                        </td>
-                        <td style={S.td}>
-                          <div style={{ fontSize: ".7rem", color: "#64748b" }}>
-                            P:{" "}
-                            <strong style={{ color: "#1e293b" }}>
-                              {p1.name}
-                            </strong>
-                          </div>
-                          <div style={{ fontSize: ".7rem", color: "#64748b" }}>
-                            R:{" "}
-                            <strong style={{ color: "#1e293b" }}>
-                              {p2.name}
-                            </strong>
-                          </div>
-                        </td>
-                        <td style={S.td}>
-                          <select
-                            value={d.condition || "BAIK"}
-                            onChange={(e) =>
-                              updateDraftItem(
-                                d.item.code,
-                                "condition",
-                                e.target.value,
-                              )
-                            }
-                            style={{
-                              ...S.finput,
-                              padding: "4px 8px",
-                              fontSize: ".7rem",
-                              height: "auto",
-                            }}
-                          >
-                            <option value="BAIK">BAIK</option>
-                            <option value="RUSAK">RUSAK</option>
-                            <option value="HILANG">HILANG</option>
-                            <option value="DIPERBAIKI">DIPERBAIKI</option>
-                          </select>
-                        </td>
-                        <td style={S.td}>
-                          <input
-                            type="text"
-                            value={d.notes || ""}
-                            onChange={(e) =>
-                              updateDraftItem(
-                                d.item.code,
-                                "notes",
-                                e.target.value,
-                              )
-                            }
-                            placeholder='Contoh: "Terbentur meja"'
-                            style={{
-                              ...S.finput,
-                              padding: "4px 8px",
-                              fontSize: ".7rem",
-                              height: "auto",
-                            }}
-                          />
-                        </td>
-                        <td style={{ ...S.td, textAlign: "center" }}>
-                          <button
-                            onClick={() => removeFromDraft(d.item.code)}
-                            style={{
-                              background: "none",
-                              border: "none",
-                              color: "#ef4444",
-                              cursor: "pointer",
-                            }}
-                          >
-                            <Icon.Trash />
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-
-              {/* Dynamic Automated Narrative Section */}
-              <div
-                style={{
-                  padding: "1.25rem",
-                  background: "#f8fafc",
-                  borderTop: "2px solid #2563eb",
-                  marginTop: "1px",
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: ".7rem",
-                    fontWeight: 800,
-                    color: "#64748b",
-                    marginBottom: "12px",
-                    textTransform: "uppercase",
-                    letterSpacing: "1px",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                  }}
-                >
-                  <Icon.Edit /> Draft Narasi Berita Acara (Otomatis):
-                </div>
-
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "12px",
-                    background: "#fff",
-                    padding: "1.5rem",
-                    borderRadius: "10px",
-                    border: "1px solid #e2e8f0",
-                    boxShadow: "inset 0 2px 4px rgba(0,0,0,0.02)",
-                  }}
-                >
-                  {baDraft.map((d, i) => {
-                    const p1Name = getUser(Number(pihak1.id)).name || "—";
-                    const p2Name = getUser(Number(pihak2.id)).name || "—";
-                    const condText = (d.condition || "BAIK").toLowerCase();
-                    const notesText = d.notes
-                      ? ` dengan keterangan: "${d.notes}"`
-                      : "";
-
-                    return (
-                      <div
-                        key={i}
-                        style={{
-                          fontSize: ".8rem",
-                          color: "#1e293b",
-                          lineHeight: 1.6,
-                          display: "flex",
-                          gap: "12px",
-                          paddingBottom: i === baDraft.length - 1 ? 0 : "12px",
-                          borderBottom:
-                            i === baDraft.length - 1
-                              ? "none"
-                              : "1px dashed #e2e8f0",
-                        }}
-                      >
-                        <span
-                          style={{
-                            width: "20px",
-                            height: "20px",
-                            background: "#eff6ff",
-                            color: "#2563eb",
-                            borderRadius: "50%",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            fontSize: ".65rem",
-                            fontWeight: 800,
-                            flexShrink: 0,
-                          }}
-                        >
-                          {i + 1}
-                        </span>
-                        <span>
-                          Pihak Pertama (<strong>{p1Name}</strong>) menyerahkan
-                          barang <strong>{d.item.name}</strong> dengan nomor
-                          seri <code>{d.item.code}</code> kepada Pihak Kedua (
-                          <strong>{p2Name}</strong>) dalam kondisi{" "}
-                          <strong>{condText.toUpperCase()}</strong>
-                          {notesText}.
-                        </span>
-                      </div>
-                    );
-                  })}
+                  <div
+                    style={{
+                      fontSize: ".7rem",
+                      fontWeight: 800,
+                      color: "#64748b",
+                      marginBottom: "12px",
+                      textTransform: "uppercase",
+                      letterSpacing: "1px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
+                  >
+                    <Icon.Edit /> Draft Narasi Berita Acara (Otomatis):
+                  </div>
 
                   <div
                     style={{
-                      marginTop: "8px",
-                      paddingTop: "12px",
-                      borderTop: "2px solid #f1f5f9",
-                      fontSize: ".75rem",
-                      fontStyle: "italic",
-                      color: "#64748b",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "12px",
+                      background: "#fff",
+                      padding: "1.5rem",
+                      borderRadius: "10px",
+                      border: "1px solid #e2e8f0",
+                      boxShadow: "inset 0 2px 4px rgba(0,0,0,0.02)",
                     }}
                   >
-                    Demikian Berita Acara ini dibuat untuk dapat dipergunakan
-                    sebagaimana mestinya.
+                    {baDraft.map((d, i) => {
+                      const p1Name = getUser(Number(pihak1.id)).name || "—";
+                      const p2Name = getUser(Number(pihak2.id)).name || "—";
+                      const condText = (d.condition || "BAIK").toLowerCase();
+                      const notesText = d.notes
+                        ? ` dengan keterangan: "${d.notes}"`
+                        : "";
+
+                      return (
+                        <div
+                          key={i}
+                          style={{
+                            fontSize: ".8rem",
+                            color: "#1e293b",
+                            lineHeight: 1.6,
+                            display: "flex",
+                            gap: "12px",
+                            paddingBottom: i === baDraft.length - 1 ? 0 : "12px",
+                            borderBottom:
+                              i === baDraft.length - 1
+                                ? "none"
+                                : "1px dashed #e2e8f0",
+                          }}
+                        >
+                          <span
+                            style={{
+                              width: "20px",
+                              height: "20px",
+                              background: "#eff6ff",
+                              color: "#2563eb",
+                              borderRadius: "50%",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              fontSize: ".65rem",
+                              fontWeight: 800,
+                              flexShrink: 0,
+                            }}
+                          >
+                            {i + 1}
+                          </span>
+                          <span>
+                            Pihak Pertama (<strong>{p1Name}</strong>) menyerahkan
+                            barang <strong>{d.item.name}</strong> dengan nomor
+                            seri <code>{d.item.code}</code> kepada Pihak Kedua (
+                            <strong>{p2Name}</strong>) dalam kondisi{" "}
+                            <strong>{condText.toUpperCase()}</strong>
+                            {notesText}.
+                          </span>
+                        </div>
+                      );
+                    })}
+
+                    <div
+                      style={{
+                        marginTop: "8px",
+                        paddingTop: "12px",
+                        borderTop: "2px solid #f1f5f9",
+                        fontSize: ".75rem",
+                        fontStyle: "italic",
+                        color: "#64748b",
+                      }}
+                    >
+                      Demikian Berita Acara ini dibuat untuk dapat dipergunakan
+                      sebagaimana mestinya.
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
 
-        <div style={S.btnRow}>
-          <button style={S.btnGhost} onClick={onBack}>
-            Batal
-          </button>
-          <button style={S.btnBlue} onClick={handleSave}>
-            <Icon.Check /> Simpan Berita Acara
-          </button>
+          <div style={S.btnRow}>
+            <button style={S.btnGhost} onClick={onBack}>
+              Batal
+            </button>
+            <button style={S.btnBlue} onClick={handleSave}>
+              <Icon.Check /> Simpan Berita Acara
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-  );
+      );
 }
 
-// ─── PAGE: USER RECEIVER LIST ──────────────────────────────
-function UserReceiverListPage({ borrows, onBack, onDetail }) {
+      // ─── PAGE: USER RECEIVER LIST ──────────────────────────────
+      function UserReceiverListPage({borrows, onBack, onDetail}) {
   const activeReceivers = useMemo(() => {
-    const userMap = {};
-    borrows
+    const userMap = { };
+      borrows
       .filter((b) => !b.is_returned)
       .forEach((b) => {
         if (!userMap[b.receiver_id]) {
-          userMap[b.receiver_id] = {
-            user: getUser(b.receiver_id),
-            count: 0,
-          };
+        userMap[b.receiver_id] = {
+          user: getUser(b.receiver_id),
+          count: 0,
+        };
         }
-        userMap[b.receiver_id].count++;
+      userMap[b.receiver_id].count++;
       });
     return Object.values(userMap).sort((a, b) => b.count - a.count);
   }, [borrows]);
 
-  return (
-    <div style={{ animation: "fadeIn 0.2s ease" }}>
-      <div
-        style={{
-          ...S.pageHeader,
-          background: "transparent",
-          padding: "0 0 1.5rem 0",
-        }}
-      >
-        <button style={S.backBtn} onClick={onBack}>
-          <Icon.ArrowLeft /> Kembali
-        </button>
-        <h2 style={S.pageTitle}>
-          <Icon.User /> Daftar User Penerima Aset
-        </h2>
-      </div>
+      return (
+      <div style={{ animation: "fadeIn 0.2s ease" }}>
+        <div
+          style={{
+            ...S.pageHeader,
+            background: "transparent",
+            padding: "0 0 1.5rem 0",
+          }}
+        >
+          <button style={S.backBtn} onClick={onBack}>
+            <Icon.ArrowLeft /> Kembali
+          </button>
+          <h2 style={S.pageTitle}>
+            <Icon.User /> Daftar User Penerima Aset
+          </h2>
+        </div>
 
-      <div style={S.page}>
-        <table style={S.table}>
-          <thead style={S.thead}>
-            <tr>
-              <th style={{ ...S.th, width: 40, textAlign: "center" }}>No</th>
-              <th style={S.th}>Nama Personel</th>
-              <th style={S.th}>NIP / ID</th>
-              <th style={S.th}>Lokasi Kerja (Homebase)</th>
-              <th style={{ ...S.th, width: 140, textAlign: "center" }}>
-                Jumlah Aset
-              </th>
-              <th style={{ ...S.th, textAlign: "center", width: 100 }}>Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            {activeReceivers.length === 0 ? (
+        <div style={S.page}>
+          <table style={S.table}>
+            <thead style={S.thead}>
               <tr>
-                <td
-                  colSpan="6"
-                  style={{
-                    ...S.td,
-                    textAlign: "center",
-                    padding: "3rem",
-                    color: "#94a3b8",
-                  }}
-                >
-                  Tidak ada data user penerima aktif.
-                </td>
+                <th style={{ ...S.th, width: 40, textAlign: "center" }}>No</th>
+                <th style={S.th}>Nama Personel</th>
+                <th style={S.th}>NIP / ID</th>
+                <th style={S.th}>Lokasi Kerja (Homebase)</th>
+                <th style={{ ...S.th, width: 140, textAlign: "center" }}>
+                  Jumlah Aset
+                </th>
+                <th style={{ ...S.th, textAlign: "center", width: 100 }}>Aksi</th>
               </tr>
-            ) : (
-              activeReceivers.map((item, idx) => (
-                <tr
-                  key={item.user.id}
-                  style={S.tr}
-                  onMouseOver={(e) =>
-                    (e.currentTarget.style.background = "#f8fafc")
-                  }
-                  onMouseOut={(e) =>
-                    (e.currentTarget.style.background = "transparent")
-                  }
-                >
+            </thead>
+            <tbody>
+              {activeReceivers.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan="6"
+                    style={{
+                      ...S.td,
+                      textAlign: "center",
+                      padding: "3rem",
+                      color: "#94a3b8",
+                    }}
+                  >
+                    Tidak ada data user penerima aktif.
+                  </td>
+                </tr>
+              ) : (
+                activeReceivers.map((item, idx) => (
+                  <tr
+                    key={item.user.id}
+                    style={S.tr}
+                    onMouseOver={(e) =>
+                      (e.currentTarget.style.background = "#f8fafc")
+                    }
+                    onMouseOut={(e) =>
+                      (e.currentTarget.style.background = "transparent")
+                    }
+                  >
+                    <td
+                      style={{
+                        ...S.td,
+                        textAlign: "center",
+                        color: "#94a3b8",
+                        fontWeight: 700,
+                      }}
+                    >
+                      {idx + 1}
+                    </td>
+                    <td style={S.td}>
+                      <div
+                        style={{ display: "flex", alignItems: "center", gap: 10 }}
+                      >
+                        <div
+                          style={{
+                            ...S.avatar,
+                            background: "#f1f5f9",
+                            color: "#64748b",
+                          }}
+                        >
+                          {item.user.name.charAt(0)}
+                        </div>
+                        <div style={S.assetName}>{item.user.name}</div>
+                      </div>
+                    </td>
+                    <td style={S.td}>
+                      <code style={S.code}>{item.user.nip || "—"} / {item.user.id}</code>
+                    </td>
+                    <td style={S.td}>{item.user.branch}</td>
+                    <td style={{ ...S.td, textAlign: "center" }}>
+                      <span
+                        style={{
+                          ...S.pill,
+                          background: "#eff6ff",
+                          color: "#2563eb",
+                        }}
+                      >
+                        {item.count} Perangkat
+                      </span>
+                    </td>
+                    <td style={{ ...S.td, textAlign: "center" }}>
+                      <button
+                        onClick={() => onDetail(item.user)}
+                        style={{
+                          ...S.iconBtn,
+                          color: "#2563eb",
+                          margin: "0 auto",
+                        }}
+                      >
+                        <Icon.Eye /> Detail
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      );
+}
+
+      // ─── PAGE: USER ASSET DETAIL ──────────────────────────────
+      function UserAssetDetailPage({user, borrows, onBack}) {
+  const userAssets = useMemo(() => {
+    const activeBorrows = borrows.filter(
+      (b) => !b.is_returned && b.receiver_id === user.id,
+      );
+    return activeBorrows.map((b) => ({
+        ...b,
+        pkj: getPekerjaan(b.pekerjaan_kode),
+      asset: getAsset(b.code),
+    }));
+  }, [user, borrows]);
+
+      return (
+      <div style={{ animation: "fadeIn 0.2s ease" }}>
+        <div
+          style={{
+            ...S.pageHeader,
+            background: "transparent",
+            padding: "0 0 1.5rem 0",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+            <button style={S.backBtn} onClick={onBack}>
+              <Icon.ArrowLeft /> Kembali
+            </button>
+            <div>
+              <h2 style={S.pageTitle}>{user.name}</h2>
+              <p style={S.muted}>
+                {user.nip || "—"} / {user.id} • {user.branch}
+              </p>
+            </div>
+          </div>
+          <div style={S.countBadge}>
+            Total Aset IT: <strong>{userAssets.length} Item</strong>
+          </div>
+        </div>
+
+        <div style={S.page}>
+          <table style={S.table}>
+            <thead style={S.thead}>
+              <tr>
+                <th style={{ ...S.th, width: 40, textAlign: "center" }}>No</th>
+                <th style={S.th}>Nama Barang</th>
+                <th style={{ ...S.th, width: 140 }}>SN</th>
+                <th style={{ ...S.th, width: 60, textAlign: "center" }}>CP/OP</th>
+                <th style={S.th}>Nama Pekerjaan</th>
+                <th style={{ ...S.th, width: 90, textAlign: "center" }}>
+                  Thn Pengadaan
+                </th>
+                <th style={{ ...S.th, width: 80, textAlign: "center" }}>
+                  Kondisi
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {userAssets.map((item, idx) => (
+                <tr key={idx} style={S.tr}>
                   <td
                     style={{
                       ...S.td,
@@ -4927,237 +5058,116 @@ function UserReceiverListPage({ borrows, onBack, onDetail }) {
                     {idx + 1}
                   </td>
                   <td style={S.td}>
-                    <div
-                      style={{ display: "flex", alignItems: "center", gap: 10 }}
-                    >
-                      <div
-                        style={{
-                          ...S.avatar,
-                          background: "#f1f5f9",
-                          color: "#64748b",
-                        }}
-                      >
-                        {item.user.name.charAt(0)}
-                      </div>
-                      <div style={S.assetName}>{item.user.name}</div>
+                    <div style={{ fontWeight: 600, color: "#1e293b" }}>
+                      {item.asset?.name || item.name}
                     </div>
                   </td>
                   <td style={S.td}>
-                    <code style={S.code}>{item.user.nip || "—"} / {item.user.id}</code>
+                    <code style={S.code}>{item.code}</code>
                   </td>
-                  <td style={S.td}>{item.user.branch}</td>
                   <td style={{ ...S.td, textAlign: "center" }}>
                     <span
                       style={{
                         ...S.pill,
-                        background: "#eff6ff",
-                        color: "#2563eb",
+                        background:
+                          item.pkj?.jenis === "Capex" ? "#eff6ff" : "#f0fdf4",
+                        color:
+                          item.pkj?.jenis === "Capex" ? "#2563eb" : "#16a34a",
                       }}
                     >
-                      {item.count} Perangkat
+                      {item.pkj?.jenis === "Capex" ? "CP" : "OP"}
                     </span>
                   </td>
-                  <td style={{ ...S.td, textAlign: "center" }}>
-                    <button
-                      onClick={() => onDetail(item.user)}
+                  <td style={{ ...S.td, maxWidth: "300px" }}>
+                    <div
                       style={{
-                        ...S.iconBtn,
-                        color: "#2563eb",
-                        margin: "0 auto",
+                        fontSize: ".75rem",
+                        lineHeight: 1.4,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
                       }}
+                      title={item.pkj?.nama}
                     >
-                      <Icon.Eye /> Detail
-                    </button>
+                      {item.pkj?.nama || "—"}
+                    </div>
+                  </td>
+                  <td
+                    style={{
+                      ...S.td,
+                      textAlign: "center",
+                      fontWeight: 600,
+                      color: "#64748b",
+                    }}
+                  >
+                    {item.asset?.tahun_pengadaan || "2023"}
+                  </td>
+                  <td style={{ ...S.td, textAlign: "center" }}>
+                    {(() => {
+                      const rawCond = (item.return_condition || item.condition || "").toUpperCase() || "BAIK";
+                      let condKey = rawCond;
+                      if (condKey === "GOOD") condKey = "BAIK";
+                      if (condKey === "MINOR_DAMAGE" || condKey === "DAMAGED") condKey = "RUSAK";
+                      if (condKey === "MISSING") condKey = "HILANG";
+
+                      const cond = conditionConfig[condKey];
+                      return (
+                        <span
+                          style={{
+                            fontSize: ".68rem",
+                            fontWeight: 800,
+                            padding: "2px 8px",
+                            borderRadius: "4px",
+                            background: cond?.bg || "#f1f5f9",
+                            color: cond?.color || "#475569",
+                            border: cond?.color ? `1px solid ${cond.color}40` : "none"
+                          }}
+                        >
+                          {(cond?.label || rawCond).toUpperCase()}
+                        </span>
+                      );
+                    })()}
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
-// ─── PAGE: USER ASSET DETAIL ──────────────────────────────
-function UserAssetDetailPage({ user, borrows, onBack }) {
-  const userAssets = useMemo(() => {
-    const activeBorrows = borrows.filter(
-      (b) => !b.is_returned && b.receiver_id === user.id,
-    );
-    return activeBorrows.map((b) => ({
-      ...b,
-      pkj: getPekerjaan(b.pekerjaan_kode),
-      asset: getAsset(b.code),
-    }));
-  }, [user, borrows]);
-
-  return (
-    <div style={{ animation: "fadeIn 0.2s ease" }}>
-      <div
-        style={{
-          ...S.pageHeader,
-          background: "transparent",
-          padding: "0 0 1.5rem 0",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-          <button style={S.backBtn} onClick={onBack}>
-            <Icon.ArrowLeft /> Kembali
-          </button>
-          <div>
-            <h2 style={S.pageTitle}>{user.name}</h2>
-            <p style={S.muted}>
-              {user.nip || "—"} / {user.id} • {user.branch}
-            </p>
-          </div>
-        </div>
-        <div style={S.countBadge}>
-          Total Aset IT: <strong>{userAssets.length} Item</strong>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
-
-      <div style={S.page}>
-        <table style={S.table}>
-          <thead style={S.thead}>
-            <tr>
-              <th style={{ ...S.th, width: 40, textAlign: "center" }}>No</th>
-              <th style={S.th}>Nama Barang</th>
-              <th style={{ ...S.th, width: 140 }}>SN</th>
-              <th style={{ ...S.th, width: 60, textAlign: "center" }}>CP/OP</th>
-              <th style={S.th}>Nama Pekerjaan</th>
-              <th style={{ ...S.th, width: 90, textAlign: "center" }}>
-                Thn Pengadaan
-              </th>
-              <th style={{ ...S.th, width: 80, textAlign: "center" }}>
-                Kondisi
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {userAssets.map((item, idx) => (
-              <tr key={idx} style={S.tr}>
-                <td
-                  style={{
-                    ...S.td,
-                    textAlign: "center",
-                    color: "#94a3b8",
-                    fontWeight: 700,
-                  }}
-                >
-                  {idx + 1}
-                </td>
-                <td style={S.td}>
-                  <div style={{ fontWeight: 600, color: "#1e293b" }}>
-                    {item.asset?.name || item.name}
-                  </div>
-                </td>
-                <td style={S.td}>
-                  <code style={S.code}>{item.code}</code>
-                </td>
-                <td style={{ ...S.td, textAlign: "center" }}>
-                  <span
-                    style={{
-                      ...S.pill,
-                      background:
-                        item.pkj?.jenis === "Capex" ? "#eff6ff" : "#f0fdf4",
-                      color:
-                        item.pkj?.jenis === "Capex" ? "#2563eb" : "#16a34a",
-                    }}
-                  >
-                    {item.pkj?.jenis === "Capex" ? "CP" : "OP"}
-                  </span>
-                </td>
-                <td style={{ ...S.td, maxWidth: "300px" }}>
-                  <div
-                    style={{
-                      fontSize: ".75rem",
-                      lineHeight: 1.4,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                    title={item.pkj?.nama}
-                  >
-                    {item.pkj?.nama || "—"}
-                  </div>
-                </td>
-                <td
-                  style={{
-                    ...S.td,
-                    textAlign: "center",
-                    fontWeight: 600,
-                    color: "#64748b",
-                  }}
-                >
-                  {item.asset?.tahun_pengadaan || "2023"}
-                </td>
-                <td style={{ ...S.td, textAlign: "center" }}>
-                  {(() => {
-                    const rawCond = (item.return_condition || item.condition || "").toUpperCase() || "BAIK";
-                    let condKey = rawCond;
-                    if (condKey === "GOOD") condKey = "BAIK";
-                    if (condKey === "MINOR_DAMAGE" || condKey === "DAMAGED") condKey = "RUSAK";
-                    if (condKey === "MISSING") condKey = "HILANG";
-
-                    const cond = conditionConfig[condKey];
-                    return (
-                      <span
-                        style={{
-                          fontSize: ".68rem",
-                          fontWeight: 800,
-                          padding: "2px 8px",
-                          borderRadius: "4px",
-                          background: cond?.bg || "#f1f5f9",
-                          color: cond?.color || "#475569",
-                          border: cond?.color ? `1px solid ${cond.color}40` : "none"
-                        }}
-                      >
-                        {(cond?.label || rawCond).toUpperCase()}
-                      </span>
-                    );
-                  })()}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
+      );
 }
 
-// ─── PAGE: RETURN FORM ────────────────────────────────────────
-function ReturnFormPage({ borrow, onBack, onSave }) {
+      // ─── PAGE: RETURN FORM ────────────────────────────────────────
+      function ReturnFormPage({borrow, onBack, onSave}) {
   if (!borrow) return null;
-  const giver = getUser(borrow.giver_id);
-  const receiver = getUser(borrow.receiver_id);
-  const pekerjaan = getPekerjaan(borrow.pekerjaan_kode);
-  const [form, setForm] = useState({
-    return_date: new Date().toISOString().slice(0, 16),
-    return_condition: "BAIK",
-    return_notes: "",
-    attachmentFile: null,
+      const giver = getUser(borrow.giver_id);
+      const receiver = getUser(borrow.receiver_id);
+      const pekerjaan = getPekerjaan(borrow.pekerjaan_kode);
+      const [form, setForm] = useState({
+        return_date: new Date().toISOString().slice(0, 16),
+      return_condition: "BAIK",
+      return_notes: "",
+      attachmentFile: null,
   });
 
   const handleSave = async () => {
     try {
       const payload = {
         code: borrow.code, // serial_number
-        giver_id: Number(borrow.receiver_id), // receiver is now the giver returning the asset
-        receiver_id: Number(borrow.giver_id), // giver is now the receiver getting back the asset
-        return_date: form.return_date,
-        return_condition: form.return_condition,
-        return_notes: form.return_notes || "",
+      giver_id: Number(borrow.receiver_id), // receiver is now the giver returning the asset
+      receiver_id: Number(borrow.giver_id), // giver is now the receiver getting back the asset
+      return_date: form.return_date,
+      return_condition: form.return_condition,
+      return_notes: form.return_notes || "",
       };
 
       const res = await transactionAPI.returnAsset(payload);
       if (res.data && res.data.success) {
         alert("Pengembalian barang berhasil dicatat.");
-        if (onSave) {
-          onSave();
+      if (onSave) {
+        onSave();
         }
-        onBack();
+      onBack();
       } else {
         alert(
           "Gagal mencatat pengembalian: " +
@@ -5165,290 +5175,290 @@ function ReturnFormPage({ borrow, onBack, onSave }) {
         );
       }
     } catch (err) {
-      console.error("Error returning asset:", err);
+        console.error("Error returning asset:", err);
       alert(
-        "Terjadi kesalahan saat menyimpan pengembalian barang ke database.",
+      "Terjadi kesalahan saat menyimpan pengembalian barang ke database.",
       );
     }
   };
 
   const handleGenerateBAST = () =>
-    generateBAST(
+      generateBAST(
       {
         ...borrow,
         giver_id: borrow.receiver_id,
-        receiver_id: borrow.giver_id,
-        return_date: form.return_date,
-        return_condition: form.return_condition,
-        return_notes: form.return_notes,
+      receiver_id: borrow.giver_id,
+      return_date: form.return_date,
+      return_condition: form.return_condition,
+      return_notes: form.return_notes,
       },
       "return",
-    );
+      );
 
-  return (
-    <div>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-          marginBottom: "1rem",
-        }}
-      >
-        <button style={S.backBtn} onClick={onBack}>
-          <Icon.ArrowLeft /> Batal
-        </button>
-        <span style={{ fontSize: ".75rem", color: "#94a3b8" }}>
-          / Catat Pengembalian
-        </span>
-      </div>
-      <div style={S.page}>
-        <div style={{ ...S.pageHeader, borderTop: "3px solid #16a34a" }}>
-          <div style={S.pageTitle}>
-            <span
-              style={{
-                width: 28,
-                height: 28,
-                borderRadius: 7,
-                background: "#dcfce7",
-                color: "#16a34a",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Icon.Undo />
-            </span>
-            Catat Pengembalian Aset
-          </div>
+      return (
+      <div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            marginBottom: "1rem",
+          }}
+        >
+          <button style={S.backBtn} onClick={onBack}>
+            <Icon.ArrowLeft /> Batal
+          </button>
+          <span style={{ fontSize: ".75rem", color: "#94a3b8" }}>
+            / Catat Pengembalian
+          </span>
         </div>
-        {pekerjaan && (
-          <div
-            style={{
-              padding: "1rem 1.25rem",
-              borderBottom: "1px solid #f1f5f9",
-            }}
-          >
+        <div style={S.page}>
+          <div style={{ ...S.pageHeader, borderTop: "3px solid #16a34a" }}>
+            <div style={S.pageTitle}>
+              <span
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: 7,
+                  background: "#dcfce7",
+                  color: "#16a34a",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Icon.Undo />
+              </span>
+              Catat Pengembalian Aset
+            </div>
+          </div>
+          {pekerjaan && (
             <div
               style={{
-                display: "flex",
-                alignItems: "flex-start",
-                gap: ".5rem",
-                padding: ".6rem .9rem",
-                background: "#ecfeff",
-                border: "1px solid #a5f3fc",
-                borderRadius: 9,
+                padding: "1rem 1.25rem",
+                borderBottom: "1px solid #f1f5f9",
               }}
             >
-              <span style={{ color: "#0891b2", display: "flex", marginTop: 2 }}>
-                <Icon.Briefcase />
-              </span>
-              <div>
-                <div
-                  style={{
-                    fontSize: ".65rem",
-                    fontWeight: 800,
-                    color: "#0891b2",
-                    textTransform: "uppercase",
-                    letterSpacing: ".04em",
-                  }}
-                >
-                  Pekerjaan
-                </div>
-                <div style={S.pkjInfoName}>{pekerjaan.nama}</div>
-                <div style={S.pkjInfoMeta}>
-                  {pekerjaan.no_anggaran} · {pekerjaan.jenis}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: ".5rem",
+                  padding: ".6rem .9rem",
+                  background: "#ecfeff",
+                  border: "1px solid #a5f3fc",
+                  borderRadius: 9,
+                }}
+              >
+                <span style={{ color: "#0891b2", display: "flex", marginTop: 2 }}>
+                  <Icon.Briefcase />
+                </span>
+                <div>
+                  <div
+                    style={{
+                      fontSize: ".65rem",
+                      fontWeight: 800,
+                      color: "#0891b2",
+                      textTransform: "uppercase",
+                      letterSpacing: ".04em",
+                    }}
+                  >
+                    Pekerjaan
+                  </div>
+                  <div style={S.pkjInfoName}>{pekerjaan.nama}</div>
+                  <div style={S.pkjInfoMeta}>
+                    {pekerjaan.no_anggaran} · {pekerjaan.jenis}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
-        <div
-          style={{ padding: "1rem 1.25rem", borderBottom: "1px solid #f1f5f9" }}
-        >
-          <div style={S.sectionLabel}>Informasi Peminjaman</div>
-          <div
-            style={{
-              background: "#f8fafc",
-              border: "1px solid #e2e8f0",
-              borderRadius: 9,
-              padding: ".75rem 1rem",
-            }}
-          >
-            <HRow label="Aset">
-              <code style={S.code}>{borrow.code}</code>
-              <span style={{ fontSize: ".78rem" }}>{borrow.name}</span>
-            </HRow>
-            <HRow label="Dikembalikan oleh">
-              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <div
-                  style={{
-                    ...S.avatar,
-                    background: "#dbeafe",
-                    color: "#2563eb",
-                  }}
-                >
-                  {receiver.name.charAt(0)}
-                </div>
-                <span style={{ fontWeight: 600, fontSize: ".78rem" }}>
-                  {receiver.name}
-                </span>
-              </div>
-            </HRow>
-            <HRow label="Dikembalikan ke">
-              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <div
-                  style={{
-                    ...S.avatar,
-                    background: "#fef3c7",
-                    color: "#d97706",
-                  }}
-                >
-                  {giver.name.charAt(0)}
-                </div>
-                <span
-                  style={{
-                    fontWeight: 600,
-                    color: "#16a34a",
-                    fontSize: ".78rem",
-                  }}
-                >
-                  {giver.name}
-                </span>
-              </div>
-            </HRow>
-            <HRow label="Dipinjam sejak" last>
-              <span style={{ fontSize: ".78rem", color: "#64748b" }}>
-                {fmtDate(borrow.borrow_date)}
-              </span>
-            </HRow>
-          </div>
-        </div>
-        <div style={S.formSection}>
-          <FHRow label="Kondisi Dikembalikan">
-            <div style={S.chips}>
-              {Object.entries(conditionConfig).map(([val, cfg]) => (
-                <button
-                  key={val}
-                  type="button"
-                  style={{
-                    ...S.chip,
-                    ...(form.return_condition === val
-                      ? {
-                        background: cfg.bg,
-                        color: cfg.color,
-                        borderColor: cfg.color,
-                      }
-                      : {}),
-                  }}
-                  onClick={() => setForm({ ...form, return_condition: val })}
-                >
-                  {cfg.label}
-                </button>
-              ))}
-            </div>
-          </FHRow>
-          <FHRow label="Tanggal Pengembalian">
-            <input
-              type="datetime-local"
-              value={form.return_date}
-              onChange={(e) =>
-                setForm({ ...form, return_date: e.target.value })
-              }
-              style={S.finput}
-            />
-          </FHRow>
-          <FHRow label="Catatan Pengembalian" last>
-            <textarea
-              value={form.return_notes}
-              onChange={(e) =>
-                setForm({ ...form, return_notes: e.target.value })
-              }
-              rows={3}
-              placeholder="Kondisi, kerusakan, atau catatan lainnya..."
-              style={{ ...S.finput, resize: "vertical" }}
-            />
-          </FHRow>
-          <div style={{ marginTop: 8 }}>
-            <PdfUpload
-              value={form.attachmentFile}
-              onChange={(f) => setForm({ ...form, attachmentFile: f })}
-            />
-          </div>
-        </div>
-        <div style={S.btnRow}>
-          <button style={S.btnGhost} onClick={onBack}>
-            Batal
-          </button>
-          {!form.attachmentFile && (
-            <button style={S.btnPurple} onClick={handleGenerateBAST}>
-              <Icon.Printer /> Generate BAST
-            </button>
           )}
-          <button style={S.btnGreen} onClick={handleSave}>
-            <Icon.Undo /> Konfirmasi Pengembalian
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── PAGE: DELETE CONFIRM ─────────────────────────────────────
-function DeletePage({ item, onBack, onConfirm }) {
-  if (!item) return null;
-  return (
-    <div>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-          marginBottom: "1rem",
-        }}
-      >
-        <button style={S.backBtn} onClick={onBack}>
-          <Icon.ArrowLeft /> Batal
-        </button>
-        <span style={{ fontSize: ".75rem", color: "#94a3b8" }}>
-          / Hapus Serah Terima
-        </span>
-      </div>
-      <div style={{ ...S.page, maxWidth: 480 }}>
-        <div style={S.deleteBox}>
-          <div style={S.deleteIco}>
-            <Icon.Trash />
-          </div>
-          <h3 style={S.deleteTitle}>Hapus Serah Terima?</h3>
-          <p style={S.deleteDesc}>
-            Data serah terima <strong>{item.code}</strong> — {item.name} akan
-            dihapus secara permanen dan tidak dapat dikembalikan.
-          </p>
-        </div>
-        <div style={{ ...S.btnRow, justifyContent: "center" }}>
-          <button style={S.btnGhost} onClick={onBack}>
-            Batal
-          </button>
-          <button
-            style={S.btnRed}
-            onClick={() => {
-              onConfirm(item.id);
-              onBack();
-            }}
+          <div
+            style={{ padding: "1rem 1.25rem", borderBottom: "1px solid #f1f5f9" }}
           >
-            <Icon.Trash /> Hapus Permanen
-          </button>
+            <div style={S.sectionLabel}>Informasi Peminjaman</div>
+            <div
+              style={{
+                background: "#f8fafc",
+                border: "1px solid #e2e8f0",
+                borderRadius: 9,
+                padding: ".75rem 1rem",
+              }}
+            >
+              <HRow label="Aset">
+                <code style={S.code}>{borrow.code}</code>
+                <span style={{ fontSize: ".78rem" }}>{borrow.name}</span>
+              </HRow>
+              <HRow label="Dikembalikan oleh">
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <div
+                    style={{
+                      ...S.avatar,
+                      background: "#dbeafe",
+                      color: "#2563eb",
+                    }}
+                  >
+                    {receiver.name.charAt(0)}
+                  </div>
+                  <span style={{ fontWeight: 600, fontSize: ".78rem" }}>
+                    {receiver.name}
+                  </span>
+                </div>
+              </HRow>
+              <HRow label="Dikembalikan ke">
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <div
+                    style={{
+                      ...S.avatar,
+                      background: "#fef3c7",
+                      color: "#d97706",
+                    }}
+                  >
+                    {giver.name.charAt(0)}
+                  </div>
+                  <span
+                    style={{
+                      fontWeight: 600,
+                      color: "#16a34a",
+                      fontSize: ".78rem",
+                    }}
+                  >
+                    {giver.name}
+                  </span>
+                </div>
+              </HRow>
+              <HRow label="Dipinjam sejak" last>
+                <span style={{ fontSize: ".78rem", color: "#64748b" }}>
+                  {fmtDate(borrow.borrow_date)}
+                </span>
+              </HRow>
+            </div>
+          </div>
+          <div style={S.formSection}>
+            <FHRow label="Kondisi Dikembalikan">
+              <div style={S.chips}>
+                {Object.entries(conditionConfig).map(([val, cfg]) => (
+                  <button
+                    key={val}
+                    type="button"
+                    style={{
+                      ...S.chip,
+                      ...(form.return_condition === val
+                        ? {
+                          background: cfg.bg,
+                          color: cfg.color,
+                          borderColor: cfg.color,
+                        }
+                        : {}),
+                    }}
+                    onClick={() => setForm({ ...form, return_condition: val })}
+                  >
+                    {cfg.label}
+                  </button>
+                ))}
+              </div>
+            </FHRow>
+            <FHRow label="Tanggal Pengembalian">
+              <input
+                type="datetime-local"
+                value={form.return_date}
+                onChange={(e) =>
+                  setForm({ ...form, return_date: e.target.value })
+                }
+                style={S.finput}
+              />
+            </FHRow>
+            <FHRow label="Catatan Pengembalian" last>
+              <textarea
+                value={form.return_notes}
+                onChange={(e) =>
+                  setForm({ ...form, return_notes: e.target.value })
+                }
+                rows={3}
+                placeholder="Kondisi, kerusakan, atau catatan lainnya..."
+                style={{ ...S.finput, resize: "vertical" }}
+              />
+            </FHRow>
+            <div style={{ marginTop: 8 }}>
+              <PdfUpload
+                value={form.attachmentFile}
+                onChange={(f) => setForm({ ...form, attachmentFile: f })}
+              />
+            </div>
+          </div>
+          <div style={S.btnRow}>
+            <button style={S.btnGhost} onClick={onBack}>
+              Batal
+            </button>
+            {!form.attachmentFile && (
+              <button style={S.btnPurple} onClick={handleGenerateBAST}>
+                <Icon.Printer /> Generate BAST
+              </button>
+            )}
+            <button style={S.btnGreen} onClick={handleSave}>
+              <Icon.Undo /> Konfirmasi Pengembalian
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-  );
+      );
 }
 
-// ─── PAGE: AVAILABLE ASSET LIST ────────────────────────────────
-function AvailableAssetListPage({ borrows, returns = [], assets, onBack }) {
+      // ─── PAGE: DELETE CONFIRM ─────────────────────────────────────
+      function DeletePage({item, onBack, onConfirm}) {
+  if (!item) return null;
+      return (
+      <div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            marginBottom: "1rem",
+          }}
+        >
+          <button style={S.backBtn} onClick={onBack}>
+            <Icon.ArrowLeft /> Batal
+          </button>
+          <span style={{ fontSize: ".75rem", color: "#94a3b8" }}>
+            / Hapus Serah Terima
+          </span>
+        </div>
+        <div style={{ ...S.page, maxWidth: 480 }}>
+          <div style={S.deleteBox}>
+            <div style={S.deleteIco}>
+              <Icon.Trash />
+            </div>
+            <h3 style={S.deleteTitle}>Hapus Serah Terima?</h3>
+            <p style={S.deleteDesc}>
+              Data serah terima <strong>{item.code}</strong> — {item.name} akan
+              dihapus secara permanen dan tidak dapat dikembalikan.
+            </p>
+          </div>
+          <div style={{ ...S.btnRow, justifyContent: "center" }}>
+            <button style={S.btnGhost} onClick={onBack}>
+              Batal
+            </button>
+            <button
+              style={S.btnRed}
+              onClick={() => {
+                onConfirm(item.id);
+                onBack();
+              }}
+            >
+              <Icon.Trash /> Hapus Permanen
+            </button>
+          </div>
+        </div>
+      </div>
+      );
+}
+
+      // ─── PAGE: AVAILABLE ASSET LIST ────────────────────────────────
+      function AvailableAssetListPage({borrows, returns = [], assets, onBack}) {
   const [search, setSearch] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+      const [currentPage, setCurrentPage] = useState(1);
+      const itemsPerPage = 10;
 
   const allAvailableAssets = useMemo(() => {
     const activeBorrows = borrows.filter(b => !b.is_returned);
@@ -5461,14 +5471,14 @@ function AvailableAssetListPage({ borrows, returns = [], assets, onBack }) {
       return d2 - d1;
     });
 
-    return assets
+      return assets
       .filter(a => !borrowedSNs.has(a.code))
       .filter(a => {
         // Use backend condition which already incorporates the latest transaction (including MAINTENANCE)
         let latestCond = a.kondisi || a.condition || "BAIK";
 
-        const st = latestCond.toUpperCase();
-        return st === "BAIK" || st === "GOOD";
+      const st = latestCond.toUpperCase();
+      return st === "BAIK" || st === "GOOD";
       })
       .map(a => ({
         ...a,
@@ -5478,288 +5488,290 @@ function AvailableAssetListPage({ borrows, returns = [], assets, onBack }) {
 
   const filteredAssets = useMemo(() => {
     const q = search.toLowerCase();
-    return allAvailableAssets.filter(
+      return allAvailableAssets.filter(
       (a) =>
-        (a.code || "").toLowerCase().includes(q) || (a.name || "").toLowerCase().includes(q),
-    );
+      (a.code || "").toLowerCase().includes(q) || (a.name || "").toLowerCase().includes(q),
+      );
   }, [allAvailableAssets, search]);
 
-  const totalPages = Math.ceil(filteredAssets.length / itemsPerPage) || 1;
-  const paginatedAssets = filteredAssets.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
-  );
+      const totalPages = Math.ceil(filteredAssets.length / itemsPerPage) || 1;
+      const paginatedAssets = filteredAssets.slice(
+      (currentPage - 1) * itemsPerPage,
+      currentPage * itemsPerPage,
+      );
 
   // Reset to page 1 on search
   useEffect(() => {
-    setCurrentPage(1);
+        setCurrentPage(1);
   }, [search]);
 
-  return (
-    <div style={{ animation: "fadeIn 0.2s ease" }}>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-          marginBottom: "1rem",
-        }}
-      >
-        <button style={S.backBtn} onClick={onBack}>
-          <Icon.ArrowLeft /> Kembali
-        </button>
-        <span style={{ fontSize: ".75rem", color: "#94a3b8" }}>
-          / Daftar Barang Available
-        </span>
-      </div>
-
-      <div style={S.page}>
+      return (
+      <div style={{ animation: "fadeIn 0.2s ease" }}>
         <div
           style={{
-            padding: "1.25rem 1.5rem",
-            borderBottom: "1px solid #f1f5f9",
             display: "flex",
-            justifyContent: "space-between",
             alignItems: "center",
-            flexWrap: "wrap",
-            gap: "1rem",
+            gap: 10,
+            marginBottom: "1rem",
           }}
         >
-          <div>
-            <h2 style={S.pageTitle}>
-              <Icon.CheckCircle /> Barang Ready / Available
-            </h2>
-            <p style={{ fontSize: ".7rem", color: "#64748b", marginTop: 4 }}>
-              Daftar stok barang yang siap didistribusikan
-            </p>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: ".75rem" }}>
-            <div style={{ ...S.searchWrap, width: 240, flex: "none" }}>
-              <Icon.Search />
-              <input
-                placeholder="Cari SN atau Nama..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                style={S.searchInput}
-              />
-              {search && (
-                <button
-                  style={{
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    color: "#94a3b8",
-                    display: "flex",
-                  }}
-                  onClick={() => setSearch("")}
-                >
-                  <Icon.Times />
-                </button>
-              )}
-            </div>
-            <div style={S.countBadge}>
-              Total: <strong>{filteredAssets.length} Item</strong>
-            </div>
-          </div>
+          <button style={S.backBtn} onClick={onBack}>
+            <Icon.ArrowLeft /> Kembali
+          </button>
+          <span style={{ fontSize: ".75rem", color: "#94a3b8" }}>
+            / Daftar Barang Available
+          </span>
         </div>
 
-        <div style={{ overflowX: "auto" }}>
-          <table style={S.table}>
-            <thead style={S.thead}>
-              <tr>
-                <th style={{ ...S.th, width: 40, textAlign: "center" }}>No</th>
-                <th style={{ ...S.th, width: 140 }}>SN / Kode</th>
-                <th style={S.th}>Nama Barang</th>
-                <th style={{ ...S.th, width: 80, textAlign: "center" }}>
-                  CP/OP
-                </th>
-                <th style={S.th}>Referensi Pengadaan</th>
-                <th style={{ ...S.th, width: 80, textAlign: "center" }}>
-                  Tahun
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedAssets.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan="6"
+        <div style={S.page}>
+          <div
+            style={{
+              padding: "1.25rem 1.5rem",
+              borderBottom: "1px solid #f1f5f9",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: "1rem",
+            }}
+          >
+            <div>
+              <h2 style={S.pageTitle}>
+                <Icon.CheckCircle /> Barang Ready / Available
+              </h2>
+              <p style={{ fontSize: ".7rem", color: "#64748b", marginTop: 4 }}>
+                Daftar stok barang yang siap didistribusikan
+              </p>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: ".75rem" }}>
+              <div style={{ ...S.searchWrap, width: 240, flex: "none" }}>
+                <Icon.Search />
+                <input
+                  placeholder="Cari SN atau Nama..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  style={S.searchInput}
+                />
+                {search && (
+                  <button
                     style={{
-                      ...S.td,
-                      textAlign: "center",
-                      padding: "3rem",
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
                       color: "#94a3b8",
+                      display: "flex",
                     }}
+                    onClick={() => setSearch("")}
                   >
-                    {search
-                      ? "Barang tidak ditemukan."
-                      : "Semua barang sedang dipinjam."}
-                  </td>
-                </tr>
-              ) : (
-                paginatedAssets.map((item, idx) => {
-                  const thn = item.pkj?.tahun_pengadaan || item.pkj?.tahun || item.tahun_pengadaan || "2024";
-                  const realIdx = (currentPage - 1) * itemsPerPage + idx + 1;
-                  return (
-                    <tr key={item.code} style={S.tr}>
-                      <td
-                        style={{
-                          ...S.td,
-                          textAlign: "center",
-                          color: "#94a3b8",
-                          fontWeight: 700,
-                        }}
-                      >
-                        {realIdx}
-                      </td>
-                      <td style={S.td}>
-                        <code style={S.code}>{item.code}</code>
-                      </td>
-                      <td style={S.td}>
-                        <div style={{ fontWeight: 600, color: "#1e293b" }}>
-                          {item.name}
-                        </div>
-                      </td>
-                      <td style={{ ...S.td, textAlign: "center" }}>
-                        {item.pkj?.jenis ? (
-                          <span
-                            style={{
-                              ...S.pill,
-                              background:
-                                item.pkj.jenis === "Capex"
-                                  ? "#eff6ff"
-                                  : "#f0fdf4",
-                              color:
-                                item.pkj.jenis === "Capex"
-                                  ? "#2563eb"
-                                  : "#16a34a",
-                            }}
-                          >
-                            {item.pkj.jenis === "Capex" ? "CP" : "OP"}
-                          </span>
-                        ) : (
-                          <span style={{ color: "#94a3b8" }}>—</span>
-                        )}
-                      </td>
-                      <td style={S.td}>
-                        <div
-                          style={{
-                            fontSize: ".72rem",
-                            color: "#64748b",
-                            maxWidth: 300,
-                            whiteSpace: "nowrap",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                          }}
-                          title={item.pkj?.nama}
-                        >
-                          {item.pkj?.nama || "—"}
-                        </div>
-                      </td>
-                      <td
-                        style={{
-                          ...S.td,
-                          textAlign: "center",
-                          fontWeight: 700,
-                          color: "#475569",
-                        }}
-                      >
-                        {thn}
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* ── PAGINATION ── */}
-        <div
-          style={{
-            padding: "1rem 1.5rem",
-            borderTop: "1px solid #f1f5f9",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <div style={{ fontSize: ".74rem", color: "#64748b" }}>
-            Menampilkan <strong>{paginatedAssets.length}</strong> dari{" "}
-            <strong>{filteredAssets.length}</strong> item
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: ".5rem" }}>
-            <button
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage((p) => p - 1)}
-              style={{
-                ...S.iconBtn,
-                color: "#475569",
-                border: "1px solid #e2e8f0",
-                background: currentPage === 1 ? "#f8fafc" : "#fff",
-                opacity: currentPage === 1 ? 0.4 : 1,
-                cursor: currentPage === 1 ? "not-allowed" : "pointer",
-                padding: "6px 14px",
-              }}
-            >
-              <Icon.ArrowLeft /> Prev
-            </button>
-            <div
-              style={{
-                fontSize: ".74rem",
-                fontWeight: 700,
-                color: "#1e293b",
-                background: "#f1f5f9",
-                padding: "6px 14px",
-                borderRadius: 6,
-                border: "1px solid #e2e8f0",
-              }}
-            >
-              Page {currentPage} of {totalPages}
+                    <Icon.Times />
+                  </button>
+                )}
+              </div>
+              <div style={S.countBadge}>
+                Total: <strong>{filteredAssets.length} Item</strong>
+              </div>
             </div>
-            <button
-              disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage((p) => p + 1)}
-              style={{
-                ...S.iconBtn,
-                color: "#475569",
-                border: "1px solid #e2e8f0",
-                background: currentPage === totalPages ? "#f8fafc" : "#fff",
-                opacity: currentPage === totalPages ? 0.4 : 1,
-                cursor: currentPage === totalPages ? "not-allowed" : "pointer",
-                padding: "6px 14px",
-              }}
-            >
-              Next <Icon.ArrowRight />
-            </button>
+          </div>
+
+          <div style={{ overflowX: "auto" }}>
+            <table style={S.table}>
+              <thead style={S.thead}>
+                <tr>
+                  <th style={{ ...S.th, width: 40, textAlign: "center" }}>No</th>
+                  <th style={{ ...S.th, width: 140 }}>SN / Kode</th>
+                  <th style={S.th}>Nama Barang</th>
+                  <th style={{ ...S.th, width: 80, textAlign: "center" }}>
+                    CP/OP
+                  </th>
+                  <th style={S.th}>Referensi Pengadaan</th>
+                  <th style={{ ...S.th, width: 80, textAlign: "center" }}>
+                    Tahun
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedAssets.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan="6"
+                      style={{
+                        ...S.td,
+                        textAlign: "center",
+                        padding: "3rem",
+                        color: "#94a3b8",
+                      }}
+                    >
+                      {search
+                        ? "Barang tidak ditemukan."
+                        : "Semua barang sedang dipinjam."}
+                    </td>
+                  </tr>
+                ) : (
+                  paginatedAssets.map((item, idx) => {
+                    const thn = item.pkj?.tahun_pengadaan || item.pkj?.tahun || item.tahun_pengadaan || "2024";
+                    const realIdx = (currentPage - 1) * itemsPerPage + idx + 1;
+                    return (
+                      <tr key={item.code} style={S.tr}>
+                        <td
+                          style={{
+                            ...S.td,
+                            textAlign: "center",
+                            color: "#94a3b8",
+                            fontWeight: 700,
+                          }}
+                        >
+                          {realIdx}
+                        </td>
+                        <td style={S.td}>
+                          <code style={S.code}>{item.code}</code>
+                        </td>
+                        <td style={S.td}>
+                          <div style={{ fontWeight: 600, color: "#1e293b" }}>
+                            {item.name}
+                          </div>
+                        </td>
+                        <td style={{ ...S.td, textAlign: "center" }}>
+                          {item.pkj?.jenis ? (
+                            <span
+                              style={{
+                                ...S.pill,
+                                background:
+                                  item.pkj.jenis === "Capex"
+                                    ? "#eff6ff"
+                                    : "#f0fdf4",
+                                color:
+                                  item.pkj.jenis === "Capex"
+                                    ? "#2563eb"
+                                    : "#16a34a",
+                              }}
+                            >
+                              {item.pkj.jenis === "Capex" ? "CP" : "OP"}
+                            </span>
+                          ) : (
+                            <span style={{ color: "#94a3b8" }}>—</span>
+                          )}
+                        </td>
+                        <td style={S.td}>
+                          <div
+                            style={{
+                              fontSize: ".72rem",
+                              color: "#64748b",
+                              maxWidth: 300,
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                            title={item.pkj?.nama}
+                          >
+                            {item.pkj?.nama || "—"}
+                          </div>
+                        </td>
+                        <td
+                          style={{
+                            ...S.td,
+                            textAlign: "center",
+                            fontWeight: 700,
+                            color: "#475569",
+                          }}
+                        >
+                          {thn}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* ── PAGINATION ── */}
+          <div
+            style={{
+              padding: "1rem 1.5rem",
+              borderTop: "1px solid #f1f5f9",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <div style={{ fontSize: ".74rem", color: "#64748b" }}>
+              Menampilkan <strong>{paginatedAssets.length}</strong> dari{" "}
+              <strong>{filteredAssets.length}</strong> item
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: ".5rem" }}>
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((p) => p - 1)}
+                style={{
+                  ...S.iconBtn,
+                  color: "#475569",
+                  border: "1px solid #e2e8f0",
+                  background: currentPage === 1 ? "#f8fafc" : "#fff",
+                  opacity: currentPage === 1 ? 0.4 : 1,
+                  cursor: currentPage === 1 ? "not-allowed" : "pointer",
+                  padding: "6px 14px",
+                }}
+              >
+                <Icon.ArrowLeft /> Prev
+              </button>
+              <div
+                style={{
+                  fontSize: ".74rem",
+                  fontWeight: 700,
+                  color: "#1e293b",
+                  background: "#f1f5f9",
+                  padding: "6px 14px",
+                  borderRadius: 6,
+                  border: "1px solid #e2e8f0",
+                }}
+              >
+                Page {currentPage} of {totalPages}
+              </div>
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage((p) => p + 1)}
+                style={{
+                  ...S.iconBtn,
+                  color: "#475569",
+                  border: "1px solid #e2e8f0",
+                  background: currentPage === totalPages ? "#f8fafc" : "#fff",
+                  opacity: currentPage === totalPages ? 0.4 : 1,
+                  cursor: currentPage === totalPages ? "not-allowed" : "pointer",
+                  padding: "6px 14px",
+                }}
+              >
+                Next <Icon.ArrowRight />
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
+      );
 }
 
-// ─── MAIN ──────────────────────────────────────────────────────
-export default function Peminjaman() {
+      // ─── MAIN ──────────────────────────────────────────────────────
+      export default function Peminjaman() {
   const [borrows, setBorrows] = useState([]);
-  const [returns, setReturns] = useState([]);
-  const [search, setSearch] = useState("");
-  const [filterUser, setFilterUser] = useState("semua");
-  const [filterPekerjaan, setFilterPekerjaan] = useState("semua");
-  const [nav, setNav] = useState(null);
-  const [openCats, setOpenCats] = useState({});
-  const [usersState, setUsersState] = useState(mockUsers);
-  const [assetsState, setAssetsState] = useState([]);
-  const [pekerjaanState, setPekerjaanState] = useState([]);
+      const [returns, setReturns] = useState([]);
+      const [search, setSearch] = useState("");
+      const [filterPekerjaan, setFilterPekerjaan] = useState("semua");
+      const [filterYear, setFilterYear] = useState("semua");
+      const [filterMonth, setFilterMonth] = useState("semua");
+      const [showDatePicker, setShowDatePicker] = useState(false);
+      const [nav, setNav] = useState(null);
+      const [openCats, setOpenCats] = useState({ });
+      const [usersState, setUsersState] = useState(mockUsers);
+      const [assetsState, setAssetsState] = useState([]);
+      const [pekerjaanState, setPekerjaanState] = useState([]);
 
   if (usersState && usersState.length > 0) {
-    mockUsers = usersState;
+        mockUsers = usersState;
   }
   if (assetsState && assetsState.length > 0) {
-    mockAssets = assetsState;
+        mockAssets = assetsState;
   }
   if (pekerjaanState && pekerjaanState.length > 0) {
-    mockPekerjaan = pekerjaanState;
+        mockPekerjaan = pekerjaanState;
   }
 
   // Load BAST data from database on mount
@@ -5767,13 +5779,13 @@ export default function Peminjaman() {
     try {
       // Fetch all required data concurrently for maximum speed
       const [projRes, txRes, userRes, barangRes] = await Promise.all([
-        budgetAPI.getProjects().catch(e => { console.error("Error projects:", e); return { data: null }; }),
-        transactionAPI.getAll().catch(e => { console.error("Error transactions:", e); return { data: null }; }),
-        userAPI.getAll().catch(e => { console.error("Error users:", e); return { data: null }; }),
-        barangAPI.getAll().catch(e => { console.error("Error assets:", e); return { data: null }; })
+        budgetAPI.getProjects().catch(e => {console.error("Error projects:", e); return {data: null }; }),
+        transactionAPI.getAll().catch(e => {console.error("Error transactions:", e); return {data: null }; }),
+        userAPI.getAll().catch(e => {console.error("Error users:", e); return {data: null }; }),
+        barangAPI.getAll().catch(e => {console.error("Error assets:", e); return {data: null }; })
       ]);
 
-      const dbProjects = {};
+      const dbProjects = { };
       if (projRes.data && projRes.data.success && Array.isArray(projRes.data.data)) {
         projRes.data.data.forEach(p => {
           dbProjects[String(p.kode)] = {
@@ -5786,30 +5798,30 @@ export default function Peminjaman() {
 
       let fetchedBorrows = [];
       if (txRes.data && txRes.data.success) {
-        let activeUser = {};
-        try { activeUser = JSON.parse(localStorage.getItem("user")) || JSON.parse(sessionStorage.getItem("currentUser")) || {}; } catch(e){}
-        const actId = activeUser.id ? Number(activeUser.id) : null;
+        let activeUser = { };
+      try {activeUser = JSON.parse(localStorage.getItem("user")) || JSON.parse(sessionStorage.getItem("currentUser")) || {}; } catch (e) { }
+      const actId = activeUser.id ? Number(activeUser.id) : null;
 
-        let allB = txRes.data.borrows || [];
-        let allR = txRes.data.returns || [];
+      let allB = txRes.data.borrows || [];
+      let allR = txRes.data.returns || [];
 
-        if (actId) {
-            allB = allB.filter(t => Number(t.giver_id) === actId || Number(t.receiver_id) === actId);
-            allR = allR.filter(t => Number(t.giver_id) === actId || Number(t.receiver_id) === actId);
+      if (actId) {
+        allB = allB.filter(t => Number(t.giver_id) === actId || Number(t.receiver_id) === actId);
+          allR = allR.filter(t => Number(t.giver_id) === actId || Number(t.receiver_id) === actId);
         }
 
-        fetchedBorrows = allB;
-        setBorrows(allB);
-        setReturns(allR);
+      fetchedBorrows = allB;
+      setBorrows(allB);
+      setReturns(allR);
 
         [...(allB), ...(allR)].forEach((tx) => {
           if (tx.pekerjaan && tx.pekerjaan.kode && !dbProjects[String(tx.pekerjaan.kode)]) {
-            dbProjects[String(tx.pekerjaan.kode)] = {
-              id: tx.pekerjaan.id, kode: String(tx.pekerjaan.kode),
-              nama: tx.pekerjaan.nama, no_anggaran: tx.pekerjaan.no_anggaran,
-              jenis: tx.pekerjaan.jenis, tahun: tx.pekerjaan.tahun_pengadaan,
-              tahun_pengadaan: tx.pekerjaan.tahun_pengadaan,
-            };
+        dbProjects[String(tx.pekerjaan.kode)] = {
+          id: tx.pekerjaan.id, kode: String(tx.pekerjaan.kode),
+          nama: tx.pekerjaan.nama, no_anggaran: tx.pekerjaan.no_anggaran,
+          jenis: tx.pekerjaan.jenis, tahun: tx.pekerjaan.tahun_pengadaan,
+          tahun_pengadaan: tx.pekerjaan.tahun_pengadaan,
+        };
           }
         });
       }
@@ -5817,73 +5829,95 @@ export default function Peminjaman() {
 
       if (userRes.data && userRes.data.success && userRes.data.data) {
         const mappedUsers = userRes.data.data.map((u) => ({
-          id: u.id, name: u.name, branch: u.branch_code || "Jakarta",
-          jabatan: u.role_code || "User", nip: u.nip,
+        id: u.id, name: u.name, branch: u.branch_code || "Jakarta",
+      jabatan: u.role_code || "User", nip: u.nip,
         }));
-        setUsersState(mappedUsers);
+      setUsersState(mappedUsers);
       }
 
       if (barangRes.data && Array.isArray(barangRes.data)) {
         const flattened = [];
         barangRes.data.forEach((item) => {
           if (item.units && Array.isArray(item.units)) {
-            item.units.forEach((u) => {
-              const activeBorrow = fetchedBorrows.find(
-                (b) => b.code === u.serialNumber && !b.is_returned,
-              );
-              flattened.push({
-                code: u.serialNumber, 
-                asset_code: item.id,
-                name: item.name || "-",
-                zone: u.location || "Gudang",
-                pekerjaan_kode: u.id_pekerjaan || item.id_pekerjaan || "-",
-                tahun_pengadaan: item.tahun_pengadaan || "-",
-                kondisi: u.condition || "BAIK",
-                status_id: activeBorrow ? 2 : 1,
-                owner_id: activeBorrow ? activeBorrow.receiver_id : `GUDANG_${item.branch}`,
-                previous_giver_id: activeBorrow ? activeBorrow.giver_id : null,
-              });
-            });
+        item.units.forEach((u) => {
+          const activeBorrow = fetchedBorrows.find(
+            (b) => b.code === u.serialNumber && !b.is_returned,
+          );
+          flattened.push({
+            code: u.serialNumber,
+            asset_code: item.id,
+            name: item.name || "-",
+            zone: u.location || "Gudang",
+            pekerjaan_kode: u.id_pekerjaan || item.id_pekerjaan || "-",
+            tahun_pengadaan: item.tahun_pengadaan || "-",
+            kondisi: u.condition || "BAIK",
+            status_id: activeBorrow ? 2 : 1,
+            owner_id: activeBorrow ? activeBorrow.receiver_id : `GUDANG_${item.branch}`,
+            previous_giver_id: activeBorrow ? activeBorrow.giver_id : null,
+          });
+        });
           }
         });
-        setAssetsState(flattened);
+      setAssetsState(flattened);
       }
     } catch (err) {
-      console.error("Error loading Peminjaman data:", err);
+        console.error("Error loading Peminjaman data:", err);
     }
   };
 
   useEffect(() => {
-    loadData();
+        loadData();
   }, []);
 
   const activeBorrows = borrows.filter((b) => !b.is_returned);
-  const allTransactions = [...borrows, ...returns];
+      const allTransactions = [...borrows, ...returns];
 
-  const activePekerjaanOptions = useMemo(() => {
-    const usedCodes = new Set(allTransactions.map(b => String(b.pekerjaan_kode)).filter(c => c && c !== 'undefined' && c !== '-'));
-    return mockPekerjaan.filter(p => usedCodes.has(String(p.kode)));
-  }, [allTransactions, mockPekerjaan]);
+  const availableYears = useMemo(() => {
+    const years = new Set(allTransactions.map(b => {
+      const dStr = b.return_date || b.borrow_date || "";
+      return dStr ? dStr.substring(0, 4) : "";
+    }).filter(y => y));
+      return Array.from(years).sort().reverse();
+  }, [allTransactions]);
+
+      const availableMonths = [
+      {v: "01", l: "Jan" }, {v: "02", l: "Feb" }, {v: "03", l: "Mar" },
+      {v: "04", l: "Apr" }, {v: "05", l: "Mei" }, {v: "06", l: "Jun" },
+      {v: "07", l: "Jul" }, {v: "08", l: "Agu" }, {v: "09", l: "Sep" },
+      {v: "10", l: "Okt" }, {v: "11", l: "Nov" }, {v: "12", l: "Des" }
+      ];
+
+      const displayWaktu = filterYear === "semua" ? "Tanggal/Bulan" :
+      (filterMonth === "semua" ? `Tahun ${filterYear}` : `${availableMonths.find(m => m.v === filterMonth)?.l} ${filterYear}`);
 
   const filteredBorrows = allTransactions.filter((b) => {
     const q = search.toLowerCase();
-    const ms =
-      b.code.toLowerCase().includes(q) ||
-      b.name.toLowerCase().includes(q) ||
-      b.to_zone.toLowerCase().includes(q);
-    const mu = filterUser === "semua" || b.receiver_id === parseInt(filterUser);
-    const mp =
-      filterPekerjaan === "semua" || b.pekerjaan_kode === filterPekerjaan;
-    return ms && mu && mp;
+    const giverObj = mockUsers.find(u => u.id === Number(b.giver_id)) || {name: "" };
+    const receiverObj = mockUsers.find(u => u.id === Number(b.receiver_id)) || {name: "" };
+      const bastStr = b.bast_number ? b.bast_number.toLowerCase() : "";
+
+      const ms =
+      (b.code || "").toLowerCase().includes(q) ||
+      (b.name || "").toLowerCase().includes(q) ||
+      (b.to_zone || "").toLowerCase().includes(q) ||
+      bastStr.includes(q) ||
+      (giverObj.name || "").toLowerCase().includes(q) ||
+      (receiverObj.name || "").toLowerCase().includes(q);
+
+      const dStr = b.return_date || b.borrow_date || "";
+      const matchYear = filterYear === "semua" || dStr.startsWith(filterYear);
+      const matchMonth = filterMonth === "semua" || (dStr && dStr.substring(5, 7) === filterMonth);
+
+      return ms && matchYear && matchMonth;
   });
 
   const groupedTransactions = useMemo(() => {
-    const groups = {};
+    const groups = { };
     filteredBorrows.forEach((b) => {
       const dStr = b.return_date || b.borrow_date || "";
       const dateKey = dStr.includes("T")
-        ? dStr.split("T")[0]
-        : dStr.split(" ")[0] || "unknown";
+      ? dStr.split("T")[0]
+      : dStr.split(" ")[0] || "unknown";
       const key = b.bast_number || `${b.id}_${dateKey}`;
       if (!groups[key]) {
         groups[key] = {
@@ -5906,33 +5940,33 @@ export default function Peminjaman() {
   }, [filteredBorrows]);
 
   const overdueCount = activeBorrows.filter((b) =>
-    isOverdue(b.due_date),
-  ).length;
+      isOverdue(b.due_date),
+      ).length;
   const handleSaveBorrow = () => {
-    loadData();
+        loadData();
   };
   const handleReturn = () => {
-    loadData();
+        loadData();
   };
   const handleDelete = async (id) => {
     try {
       const res = await transactionAPI.delete(id);
       if (res.data && res.data.success) {
         alert("Berhasil menghapus data transaksi.");
-        loadData();
+      loadData();
       } else {
         alert("Gagal menghapus data transaksi.");
       }
     } catch (err) {
-      console.error(err);
+        console.error(err);
       alert("Terjadi kesalahan saat menghapus data.");
     }
   };
   const goBack = () => setNav(null);
 
-  // ─── PAGE SWITCHER ──────────────────────────────────────────
-  if (nav?.page === "borrow-detail")
-    return (
+      // ─── PAGE SWITCHER ──────────────────────────────────────────
+      if (nav?.page === "borrow-detail")
+      return (
       <div style={S.root}>
         <BorrowDetailPage
           data={nav.data}
@@ -5941,10 +5975,10 @@ export default function Peminjaman() {
           onReturn={(d) => setNav({ page: "return-form", data: d })}
         />
       </div>
-    );
+      );
 
-  if (nav?.page === "borrow-form")
-    return (
+      if (nav?.page === "borrow-form")
+      return (
       <div style={S.root}>
         <BorrowFormPage
           borrow={nav.data}
@@ -5956,10 +5990,10 @@ export default function Peminjaman() {
           setNav={setNav}
         />
       </div>
-    );
+      );
 
-  if (nav?.page === "user-receiver-list")
-    return (
+      if (nav?.page === "user-receiver-list")
+      return (
       <div style={S.root}>
         <UserReceiverListPage
           borrows={borrows}
@@ -5967,10 +6001,10 @@ export default function Peminjaman() {
           onDetail={(u) => setNav({ page: "user-asset-detail", data: u })}
         />
       </div>
-    );
+      );
 
-  if (nav?.page === "user-asset-detail")
-    return (
+      if (nav?.page === "user-asset-detail")
+      return (
       <div style={S.root}>
         <UserAssetDetailPage
           user={nav.data}
@@ -5978,236 +6012,279 @@ export default function Peminjaman() {
           onBack={() => setNav({ page: "user-receiver-list", data: null })}
         />
       </div>
-    );
+      );
 
-  if (nav?.page === "available-asset-list")
-    return (
+      if (nav?.page === "available-asset-list")
+      return (
       <div style={S.root}>
         <AvailableAssetListPage borrows={borrows} returns={returns} assets={assetsState} onBack={goBack} />
       </div>
-    );
+      );
 
-  if (nav?.page === "delete")
-    return (
+      if (nav?.page === "delete")
+      return (
       <div style={S.root}>
         <DeletePage item={nav.data} onBack={goBack} onConfirm={handleDelete} />
       </div>
-    );
+      );
 
-  return (
-    <div style={S.root}>
-      <div style={S.header}>
-        <div>
-          <h1 style={S.title}>BAST Barang</h1>
-          <p style={S.subtitle}>
-            Kelola pencatatan BAST barang IT — peminjaman dan pengembalian per
-            kategori
-          </p>
+      return (
+      <div style={S.root}>
+        <div style={S.header}>
+          <div>
+            <h1 style={S.title}>BAST Barang</h1>
+            <p style={S.subtitle}>
+              Kelola pencatatan BAST barang IT — peminjaman dan pengembalian per
+              kategori
+            </p>
+          </div>
         </div>
-      </div>
 
 
 
-      <div style={S.toolbar}>
-        <div style={S.searchWrap}>
-          <Icon.Search />
-          <input
-            placeholder="Cari kode, nama barang, atau lokasi…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            style={S.searchInput}
-          />
-          {search && (
-            <button
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                color: "#94a3b8",
-                padding: 0,
-                display: "flex",
-              }}
-              onClick={() => setSearch("")}
+        <div style={S.toolbar}>
+          <div style={S.searchWrap}>
+            <Icon.Search />
+            <input
+              placeholder="Cari No. BAST, penerima, atau pemberi..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              style={S.searchInput}
+            />
+            {search && (
+              <button
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "#94a3b8",
+                  padding: 0,
+                  display: "flex",
+                }}
+                onClick={() => setSearch("")}
+              >
+                <Icon.Times />
+              </button>
+            )}
+          </div>
+          <div style={{ position: "relative" }}>
+            <div
+              style={{ ...S.filterWrap, cursor: "pointer", paddingRight: "1rem" }}
+              onClick={() => setShowDatePicker(!showDatePicker)}
             >
-              <Icon.Times />
-            </button>
-          )}
-        </div>
-        <div style={S.filterWrap}>
-          <Icon.Briefcase />
-          <select
-            value={filterPekerjaan}
-            onChange={(e) => setFilterPekerjaan(e.target.value)}
-            style={S.filterSelect}
-          >
-            <option value="semua">Semua Pekerjaan</option>
-            {activePekerjaanOptions.map((p) => (
-              <option key={p.kode} value={p.kode}>
-                {p.no_anggaran} — {p.nama.slice(0, 40)}…
-              </option>
-            ))}
-          </select>
-        </div>
+              <Icon.History />
+              <span style={{ fontSize: "0.8rem", color: "#475569", fontWeight: 600, minWidth: "110px", display: "inline-block" }}>
+                {displayWaktu}
+              </span>
+            </div>
+
+            {showDatePicker && (
+              <div style={{
+                position: "absolute", top: "110%", left: 0, background: "#fff",
+                border: "1px solid #e2e8f0", borderRadius: "8px", padding: "1rem",
+                boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)", zIndex: 100, width: "260px"
+              }}>
+                <div style={{ fontWeight: 600, fontSize: "0.8rem", marginBottom: "8px", color: "#1e293b" }}>Pilih Tahun</div>
+                <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginBottom: "12px" }}>
+                  <button
+                    onClick={() => { setFilterYear("semua"); setFilterMonth("semua"); }}
+                    style={{ padding: "4px 8px", borderRadius: "4px", fontSize: "0.75rem", border: filterYear === "semua" ? "1px solid #2563eb" : "1px solid #e2e8f0", background: filterYear === "semua" ? "#eff6ff" : "#fff", color: filterYear === "semua" ? "#2563eb" : "#475569", cursor: "pointer" }}
+                  >Semua</button>
+                  {availableYears.map(y => (
+                    <button
+                      key={y} onClick={() => { setFilterYear(y); if (filterMonth !== "semua") setFilterMonth("semua"); }}
+                      style={{ padding: "4px 8px", borderRadius: "4px", fontSize: "0.75rem", border: filterYear === y ? "1px solid #2563eb" : "1px solid #e2e8f0", background: filterYear === y ? "#eff6ff" : "#fff", color: filterYear === y ? "#2563eb" : "#475569", cursor: "pointer" }}
+                    >{y}</button>
+                  ))}
+                </div>
+
+                {filterYear !== "semua" && (
+                  <>
+                    <div style={{ fontWeight: 600, fontSize: "0.8rem", marginBottom: "8px", color: "#1e293b" }}>Pilih Bulan</div>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "6px" }}>
+                      <button
+                        onClick={() => setFilterMonth("semua")}
+                        style={{ padding: "4px", borderRadius: "4px", fontSize: "0.75rem", border: filterMonth === "semua" ? "1px solid #2563eb" : "1px solid #e2e8f0", background: filterMonth === "semua" ? "#eff6ff" : "#fff", color: filterMonth === "semua" ? "#2563eb" : "#475569", cursor: "pointer" }}
+                      >Semua</button>
+                      {availableMonths.map(m => (
+                        <button
+                          key={m.v} onClick={() => setFilterMonth(m.v)}
+                          style={{ padding: "4px", borderRadius: "4px", fontSize: "0.75rem", border: filterMonth === m.v ? "1px solid #2563eb" : "1px solid #e2e8f0", background: filterMonth === m.v ? "#eff6ff" : "#fff", color: filterMonth === m.v ? "#2563eb" : "#475569", cursor: "pointer" }}
+                        >{m.l}</button>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                <div style={{ marginTop: "16px", display: "flex", justifyContent: "flex-end" }}>
+                  <button onClick={() => setShowDatePicker(false)} style={{ background: "#2563eb", color: "#fff", border: "none", padding: "6px 12px", borderRadius: "4px", fontSize: "0.75rem", cursor: "pointer", fontWeight: 600 }}>Terapkan</button>
+                </div>
+              </div>
+            )}
+          </div>
 
 
-        <div style={{
-          marginLeft: "auto",
-          display: "flex",
-          alignItems: "center",
-          gap: "8px",
-          background: "#f1f5f9",
-          padding: "8px 16px",
-          borderRadius: "8px",
-          color: "#475569",
-          fontWeight: "600",
-          fontSize: "14px",
-          border: "1px solid #e2e8f0"
-        }}>
-          <Icon.FileText size={16} color="#64748b" />
-          Total BAST: <span style={{ color: "#0f172a" }}>{groupedTransactions.length}</span>
+          <div style={{
+            marginLeft: "auto",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            background: "#f1f5f9",
+            padding: "8px 16px",
+            borderRadius: "8px",
+            color: "#475569",
+            fontWeight: "600",
+            fontSize: "14px",
+            border: "1px solid #e2e8f0"
+          }}>
+            <Icon.FileText size={16} color="#64748b" />
+            Total BAST: <span style={{ color: "#0f172a" }}>{groupedTransactions.length}</span>
+          </div>
         </div>
-      </div>
 
-      <div style={{ ...S.page }}>
-        <div style={{ overflowX: "auto" }}>
-          <table style={S.table}>
-            <thead style={S.thead}>
-              <tr>
-                <th style={{ ...S.th, width: 40 }}>No</th>
-                <th style={S.th}>No.BAST</th>
-                <th style={S.th}>Tgl BAST</th>
-                <th style={S.th}>Pemberi</th>
-                <th style={S.th}>Penerima</th>
-                <th style={{ ...S.th, width: 100 }}>Jumlah Item</th>
-                
-              </tr>
-            </thead>
-            <tbody>
-              {groupedTransactions.length === 0 ? (
+        <div style={{ ...S.page }}>
+          <div style={{ overflowX: "auto" }}>
+            <table style={S.table}>
+              <thead style={S.thead}>
                 <tr>
-                  <td
-                    colSpan="7"
-                    style={{
-                      ...S.td,
-                      textAlign: "center",
-                      padding: "3rem",
-                      color: "#94a3b8",
-                    }}
-                  >
-                    Tidak ada data serah terima yang ditemukan.
-                  </td>
+                  <th style={{ ...S.th, width: 40 }}>No</th>
+                  <th style={S.th}>No.BAST</th>
+                  <th style={S.th}>Tgl BAST</th>
+                  <th style={S.th}>Pemberi</th>
+                  <th style={S.th}>Penerima</th>
+                  <th style={{ ...S.th, width: 100 }}>Jumlah Item</th>
+
                 </tr>
-              ) : (
-                groupedTransactions.map((tx, idx) => {
-                  const giver = getUser(tx.giver_id);
-                  const receiver = getUser(tx.receiver_id);
-                  const bastNo = tx.bast_number || `BAST/${new Date(tx.date).getFullYear()}/${(tx.id || 0).toString().padStart(3, "0")}`;
-                  return (
-                    <tr
-                      key={idx}
-                      style={S.tr}
-                      onClick={() =>
-                        setNav({ page: "borrow-detail", data: tx })
-                      }
+              </thead>
+              <tbody>
+                {groupedTransactions.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan="7"
+                      style={{
+                        ...S.td,
+                        textAlign: "center",
+                        padding: "3rem",
+                        color: "#94a3b8",
+                      }}
                     >
-                      <td style={{ ...S.td, textAlign: "center" }}>
-                        {idx + 1}
-                      </td>
-                      <td style={S.td}>
-                        <code
-                          style={{
-                            ...S.code,
-                            color: "#1e293b",
-                            background: "#f1f5f9",
-                          }}
-                        >
-                          {bastNo}
-                        </code>
-                      </td>
-                      <td style={S.td}>{fmtDateShort(tx.date)}</td>
-                      <td style={S.td}>
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 6,
-                          }}
-                        >
+                      Tidak ada data serah terima yang ditemukan.
+                    </td>
+                  </tr>
+                ) : (
+                  groupedTransactions.map((tx, idx) => {
+                    const giver = getUser(tx.giver_id);
+                    const receiver = getUser(tx.receiver_id);
+                    const bastNo = tx.bast_number || `BAST/${new Date(tx.date).getFullYear()}/${(tx.id || 0).toString().padStart(3, "0")}`;
+                    return (
+                      <tr
+                        key={idx}
+                        style={S.tr}
+                        onClick={() =>
+                          setNav({ page: "borrow-detail", data: tx })
+                        }
+                      >
+                        <td style={{ ...S.td, textAlign: "center" }}>
+                          {idx + 1}
+                        </td>
+                        <td style={S.td}>
+                          <code
+                            style={{
+                              ...S.code,
+                              color: "#1e293b",
+                              background: "#f1f5f9",
+                            }}
+                          >
+                            {bastNo}
+                          </code>
+                        </td>
+                        <td style={S.td}>{fmtDateShort(tx.date)}</td>
+                        <td style={S.td}>
                           <div
                             style={{
-                              ...S.avatar,
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 6,
+                            }}
+                          >
+                            <div
+                              style={{
+                                ...S.avatar,
+                                background: "#f1f5f9",
+                                color: "#64748b",
+                              }}
+                            >
+                              {giver.name.charAt(0)}
+                            </div>
+                            <span style={{ fontWeight: 600 }}>{giver.name}</span>
+                          </div>
+                        </td>
+                        <td style={S.td}>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 6,
+                            }}
+                          >
+                            <div
+                              style={{
+                                ...S.avatar,
+                                background: "#dbeafe",
+                                color: "#2563eb",
+                              }}
+                            >
+                              {receiver.name.charAt(0)}
+                            </div>
+                            <span style={{ fontWeight: 600 }}>
+                              {receiver.name}
+                            </span>
+                          </div>
+                        </td>
+                        <td style={{ ...S.td, textAlign: "center" }}>
+                          <span
+                            style={{
                               background: "#f1f5f9",
                               color: "#64748b",
+                              padding: "2px 8px",
+                              borderRadius: "12px",
+                              fontWeight: 700,
+                              fontSize: ".7rem",
+                              border: "1px solid #e2e8f0",
                             }}
                           >
-                            {giver.name.charAt(0)}
-                          </div>
-                          <span style={{ fontWeight: 600 }}>{giver.name}</span>
-                        </div>
-                      </td>
-                      <td style={S.td}>
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 6,
-                          }}
-                        >
-                          <div
-                            style={{
-                              ...S.avatar,
-                              background: "#dbeafe",
-                              color: "#2563eb",
-                            }}
-                          >
-                            {receiver.name.charAt(0)}
-                          </div>
-                          <span style={{ fontWeight: 600 }}>
-                            {receiver.name}
+                            {tx.items.length} Item
                           </span>
-                        </div>
-                      </td>
-                      <td style={{ ...S.td, textAlign: "center" }}>
-                        <span
-                          style={{
-                            background: "#f1f5f9",
-                            color: "#64748b",
-                            padding: "2px 8px",
-                            borderRadius: "12px",
-                            fontWeight: 700,
-                            fontSize: ".7rem",
-                            border: "1px solid #e2e8f0",
-                          }}
+                        </td>
+                        <td
+                          style={{ ...S.td, textAlign: "center" }}
+                          onClick={(e) => e.stopPropagation()}
                         >
-                          {tx.items.length} Item
-                        </span>
-                      </td>
-                      <td
-                        style={{ ...S.td, textAlign: "center" }}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <div style={S.actionRow}>
-                          <button
-                            style={{ ...S.iconBtn, color: "#2563eb" }}
-                            title="Detail"
-                            onClick={() =>
-                              setNav({ page: "borrow-detail", data: tx })
-                            }
-                          >
-                            <Icon.Eye />
-                          </button>
-                          
-                          
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+                          <div style={S.actionRow}>
+                            <button
+                              style={{ ...S.iconBtn, color: "#2563eb" }}
+                              title="Detail"
+                              onClick={() =>
+                                setNav({ page: "borrow-detail", data: tx })
+                              }
+                            >
+                              <Icon.Eye />
+                            </button>
+
+
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
-    </div>
+      );
+}
+    </div >
   );
 }

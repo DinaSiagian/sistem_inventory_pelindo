@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback } from "react";
-import { budgetAPI, barangAPI } from '../services/api';
+import { budgetAPI, barangAPI, transactionAPI, userAPI } from '../services/api';
 const CATEGORY_NAMES = {
   LPT: "LAPTOP",
   CTV: "CCTV CAMERA",
@@ -3826,6 +3826,22 @@ function AssetTablePage({
   const [searchQ, setSearchQ] = useState("");
   const [filterYear, setFilterYear] = useState("all");
   const [confirm, setConfirm] = useState(null);
+  const [users, setUsers] = useState([]);
+  const [borrows, setBorrows] = useState([]);
+
+  useEffect(() => {
+    userAPI.getAll().then(res => {
+      if(res.data && res.data.success) {
+        setUsers(res.data.data);
+      }
+    });
+    transactionAPI.getAll().then(res => {
+      if(res.data && res.data.success) {
+        setBorrows(res.data.borrows || []);
+      }
+    });
+  }, []);
+
   const allAssets = anggaran.assets || [];
   const assets = useMemo(() => {
     const rawFiltered = allAssets.filter((a) => String(a.id_pekerjaan) === String(project.id));
@@ -4034,13 +4050,14 @@ function AssetTablePage({
               <th style={{ textAlign: "center" }}>Jumlah</th>
               <th style={{ textAlign: "right" }}>Harga Satuan</th>
               <th style={{ textAlign: "right" }}>Total</th>
+              <th style={{ textAlign: "center" }}>Pemilik</th>
               <th className="th-actions">Aksi</th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
               <tr className="table-empty-row">
-                <td colSpan={8}>
+                <td colSpan={9}>
                   <div className="table-empty-inner">
                     <Icon d={I.package} size={36} style={{ opacity: 0.2 }} />
                     <span style={{ fontWeight: 600 }}>
@@ -4084,6 +4101,36 @@ function AssetTablePage({
                     <td style={{ textAlign: "right" }}>
                       <span className="td-value">{fmt(rowTotal)}</span>
                     </td>
+                    <td style={{ textAlign: "center" }}>
+                       {(() => {
+                          if (!a.units || a.units.length === 0) return <span style={{ color: "#94a3b8", fontSize: "0.8rem", fontWeight: 600 }}>Admin/Gudang</span>;
+                          const owners = [];
+                          a.units.forEach(u => {
+                             const activeB = borrows.find(b => b.code === u.serialNumber && !b.is_returned);
+                             if (activeB) {
+                                const usr = users.find(user => String(user.id) === String(activeB.receiver_id));
+                                owners.push(usr ? usr.name : "User");
+                             } else {
+                                owners.push("Admin/Gudang");
+                             }
+                          });
+                          const uniqueOwners = [...new Set(owners)];
+                          if (uniqueOwners.length === 1 && uniqueOwners[0] === "Admin/Gudang") {
+                             return <span style={{ color: "#94a3b8", fontSize: "0.8rem", fontWeight: 600 }}>Admin/Gudang</span>;
+                          } else if (uniqueOwners.length === 1) {
+                             return <span style={{ color: "#2563eb", fontSize: "0.8rem", fontWeight: 600 }}>{uniqueOwners[0]}</span>;
+                          } else {
+                             const adminCount = owners.filter(o => o === "Admin/Gudang").length;
+                             const userCount = owners.length - adminCount;
+                             return (
+                               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+                                 {userCount > 0 && <span style={{ color: "#2563eb", fontSize: "0.75rem", fontWeight: 600 }}>{userCount} User</span>}
+                                 {adminCount > 0 && <span style={{ color: "#94a3b8", fontSize: "0.75rem", fontWeight: 600 }}>{adminCount} Admin</span>}
+                               </div>
+                             );
+                          }
+                       })()}
+                    </td>
                     <td className="td-actions">
                       <div className="td-act-row">
                         <button className="abtn" onClick={() => onEditAsset(a)}>
@@ -4121,7 +4168,7 @@ function AssetTablePage({
                 >
                   {fmt(total)}
                 </td>
-                <td />
+                <td colSpan={2} />
               </tr>
             </tfoot>
           )}

@@ -5777,7 +5777,9 @@ export default function Peminjaman() {
   const [borrows, setBorrows] = useState([]);
   const [returns, setReturns] = useState([]);
   const [search, setSearch] = useState("");
-  const [filterUser, setFilterUser] = useState("semua");
+  const [filterYear, setFilterYear] = useState("semua");
+  const [filterMonth, setFilterMonth] = useState("semua");
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [filterPekerjaan, setFilterPekerjaan] = useState("semua");
   const [nav, setNav] = useState(null);
   const [openCats, setOpenCats] = useState({});
@@ -5789,7 +5791,7 @@ export default function Peminjaman() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [search, filterUser, filterPekerjaan]);
+  }, [search, filterYear, filterMonth]);
 
   if (usersState && usersState.length > 0) {
     mockUsers = usersState;
@@ -5886,16 +5888,44 @@ export default function Peminjaman() {
 
   const activeBorrows = borrows.filter((b) => !b.is_returned);
   const allTransactions = [...borrows, ...returns];
+
+  const availableYears = useMemo(() => {
+    const years = new Set(allTransactions.map(b => {
+      const dStr = b.return_date || b.borrow_date || "";
+      return dStr ? dStr.substring(0, 4) : "";
+    }).filter(y => y));
+    return Array.from(years).sort().reverse();
+  }, [allTransactions]);
+
+  const availableMonths = [
+    { v: "01", l: "Jan" }, { v: "02", l: "Feb" }, { v: "03", l: "Mar" },
+    { v: "04", l: "Apr" }, { v: "05", l: "Mei" }, { v: "06", l: "Jun" },
+    { v: "07", l: "Jul" }, { v: "08", l: "Agu" }, { v: "09", l: "Sep" },
+    { v: "10", l: "Okt" }, { v: "11", l: "Nov" }, { v: "12", l: "Des" }
+  ];
+
+  const displayWaktu = filterYear === "semua" ? "Tanggal/Bulan" : 
+    (filterMonth === "semua" ? `Tahun ${filterYear}` : `${availableMonths.find(m => m.v === filterMonth)?.l} ${filterYear}`);
+
   const filteredBorrows = allTransactions.filter((b) => {
     const q = search.toLowerCase();
+    const giverObj = mockUsers.find(u => u.id === Number(b.giver_id)) || { name: "" };
+    const receiverObj = mockUsers.find(u => u.id === Number(b.receiver_id)) || { name: "" };
+    const bastStr = b.bast_number ? b.bast_number.toLowerCase() : "";
+
     const ms =
-      b.code.toLowerCase().includes(q) ||
-      b.name.toLowerCase().includes(q) ||
-      b.to_zone.toLowerCase().includes(q);
-    const mu = filterUser === "semua" || b.receiver_id === parseInt(filterUser);
-    const mp =
-      filterPekerjaan === "semua" || b.pekerjaan_kode === filterPekerjaan;
-    return ms && mu && mp;
+      (b.code || "").toLowerCase().includes(q) ||
+      (b.name || "").toLowerCase().includes(q) ||
+      (b.to_zone || "").toLowerCase().includes(q) ||
+      bastStr.includes(q) ||
+      (giverObj.name || "").toLowerCase().includes(q) ||
+      (receiverObj.name || "").toLowerCase().includes(q);
+    
+    const dStr = b.return_date || b.borrow_date || "";
+    const matchYear = filterYear === "semua" || dStr.startsWith(filterYear);
+    const matchMonth = filterMonth === "semua" || (dStr && dStr.substring(5, 7) === filterMonth);
+    
+    return ms && matchYear && matchMonth;
   });
 
   const groupedTransactions = useMemo(() => {
@@ -6092,7 +6122,7 @@ export default function Peminjaman() {
         <div style={S.searchWrap}>
           <Icon.Search />
           <input
-            placeholder="Cari kode, nama barang, atau lokasi…"
+            placeholder="Cari No. BAST, penerima, atau pemberi"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={S.searchInput}
@@ -6113,35 +6143,60 @@ export default function Peminjaman() {
             </button>
           )}
         </div>
-        <div style={S.filterWrap}>
-          <Icon.Briefcase />
-          <select
-            value={filterPekerjaan}
-            onChange={(e) => setFilterPekerjaan(e.target.value)}
-            style={S.filterSelect}
+        <div style={{ position: "relative" }}>
+          <div 
+            style={{ ...S.filterWrap, cursor: "pointer", paddingRight: "1rem" }}
+            onClick={() => setShowDatePicker(!showDatePicker)}
           >
-            <option value="semua">Semua Pekerjaan</option>
-            {mockPekerjaan.map((p) => (
-              <option key={p.kode} value={p.kode}>
-                {p.no_anggaran} — {p.nama.slice(0, 40)}…
-              </option>
-            ))}
-          </select>
-        </div>
-        <div style={S.filterWrap}>
-          <Icon.User />
-          <select
-            value={filterUser}
-            onChange={(e) => setFilterUser(e.target.value)}
-            style={S.filterSelect}
-          >
-            <option value="semua">Semua Penerima</option>
-            {mockUsers.map((u) => (
-              <option key={u.id} value={u.id}>
-                {u.name}
-              </option>
-            ))}
-          </select>
+            <Icon.History />
+            <span style={{ fontSize: "0.8rem", color: "#475569", fontWeight: 600, minWidth: "110px", display: "inline-block" }}>
+              {displayWaktu}
+            </span>
+          </div>
+
+          {showDatePicker && (
+            <div style={{
+              position: "absolute", top: "110%", left: 0, background: "#fff", 
+              border: "1px solid #e2e8f0", borderRadius: "8px", padding: "1rem",
+              boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)", zIndex: 100, width: "260px"
+            }}>
+               <div style={{ fontWeight: 600, fontSize: "0.8rem", marginBottom: "8px", color: "#1e293b" }}>Pilih Tahun</div>
+               <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginBottom: "12px" }}>
+                  <button 
+                    onClick={() => { setFilterYear("semua"); setFilterMonth("semua"); }}
+                    style={{ padding: "4px 8px", borderRadius: "4px", fontSize: "0.75rem", border: filterYear === "semua" ? "1px solid #2563eb" : "1px solid #e2e8f0", background: filterYear === "semua" ? "#eff6ff" : "#fff", color: filterYear === "semua" ? "#2563eb" : "#475569", cursor: "pointer" }}
+                  >Semua</button>
+                  {availableYears.map(y => (
+                    <button 
+                      key={y} onClick={() => { setFilterYear(y); if(filterMonth !== "semua") setFilterMonth("semua"); }}
+                      style={{ padding: "4px 8px", borderRadius: "4px", fontSize: "0.75rem", border: filterYear === y ? "1px solid #2563eb" : "1px solid #e2e8f0", background: filterYear === y ? "#eff6ff" : "#fff", color: filterYear === y ? "#2563eb" : "#475569", cursor: "pointer" }}
+                    >{y}</button>
+                  ))}
+               </div>
+
+               {filterYear !== "semua" && (
+                 <>
+                   <div style={{ fontWeight: 600, fontSize: "0.8rem", marginBottom: "8px", color: "#1e293b" }}>Pilih Bulan</div>
+                   <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "6px" }}>
+                      <button 
+                        onClick={() => setFilterMonth("semua")}
+                        style={{ padding: "4px", borderRadius: "4px", fontSize: "0.75rem", border: filterMonth === "semua" ? "1px solid #2563eb" : "1px solid #e2e8f0", background: filterMonth === "semua" ? "#eff6ff" : "#fff", color: filterMonth === "semua" ? "#2563eb" : "#475569", cursor: "pointer" }}
+                      >Semua</button>
+                      {availableMonths.map(m => (
+                        <button 
+                          key={m.v} onClick={() => setFilterMonth(m.v)}
+                          style={{ padding: "4px", borderRadius: "4px", fontSize: "0.75rem", border: filterMonth === m.v ? "1px solid #2563eb" : "1px solid #e2e8f0", background: filterMonth === m.v ? "#eff6ff" : "#fff", color: filterMonth === m.v ? "#2563eb" : "#475569", cursor: "pointer" }}
+                        >{m.l}</button>
+                      ))}
+                   </div>
+                 </>
+               )}
+               
+               <div style={{ marginTop: "16px", display: "flex", justifyContent: "flex-end" }}>
+                 <button onClick={() => setShowDatePicker(false)} style={{ background: "#2563eb", color: "#fff", border: "none", padding: "6px 12px", borderRadius: "4px", fontSize: "0.75rem", cursor: "pointer", fontWeight: 600 }}>Terapkan</button>
+               </div>
+            </div>
+          )}
         </div>
         <div style={S.countBadge}>{filteredBorrows.length} barang</div>
       </div>
@@ -6185,123 +6240,123 @@ export default function Peminjaman() {
                   return paginatedTransactions.map((tx, idx) => {
                     const giver = getUser(tx.giver_id);
                     const receiver = getUser(tx.receiver_id);
-                  const bastNo = tx.bast_number || `BAST/${new Date(tx.date).getFullYear()}/${(tx.id || 0).toString().padStart(3, "0")}`;
-                  return (
-                    <tr
-                      key={idx}
-                      style={S.tr}
-                      onClick={() =>
-                        setNav({ page: "borrow-detail", data: tx })
-                      }
-                    >
-                      <td style={{ ...S.td, textAlign: "center" }}>
-                        {(currentPage - 1) * itemsPerPage + idx + 1}
-                      </td>
-                      <td style={S.td}>
-                        <code
-                          style={{
-                            ...S.code,
-                            color: "#1e293b",
-                            background: "#f1f5f9",
-                          }}
-                        >
-                          {bastNo}
-                        </code>
-                      </td>
-                      <td style={S.td}>{fmtDateShort(tx.date)}</td>
-                      <td style={S.td}>
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 6,
-                          }}
-                        >
+                    const bastNo = tx.bast_number || `BAST/${new Date(tx.date).getFullYear()}/${(tx.id || 0).toString().padStart(3, "0")}`;
+                    return (
+                      <tr
+                        key={idx}
+                        style={S.tr}
+                        onClick={() =>
+                          setNav({ page: "borrow-detail", data: tx })
+                        }
+                      >
+                        <td style={{ ...S.td, textAlign: "center" }}>
+                          {(currentPage - 1) * itemsPerPage + idx + 1}
+                        </td>
+                        <td style={S.td}>
+                          <code
+                            style={{
+                              ...S.code,
+                              color: "#1e293b",
+                              background: "#f1f5f9",
+                            }}
+                          >
+                            {bastNo}
+                          </code>
+                        </td>
+                        <td style={S.td}>{fmtDateShort(tx.date)}</td>
+                        <td style={S.td}>
                           <div
                             style={{
-                              ...S.avatar,
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 6,
+                            }}
+                          >
+                            <div
+                              style={{
+                                ...S.avatar,
+                                background: "#f1f5f9",
+                                color: "#64748b",
+                              }}
+                            >
+                              {giver.name.charAt(0)}
+                            </div>
+                            <span style={{ fontWeight: 600 }}>{giver.name}</span>
+                          </div>
+                        </td>
+                        <td style={S.td}>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 6,
+                            }}
+                          >
+                            <div
+                              style={{
+                                ...S.avatar,
+                                background: "#dbeafe",
+                                color: "#2563eb",
+                              }}
+                            >
+                              {receiver.name.charAt(0)}
+                            </div>
+                            <span style={{ fontWeight: 600 }}>
+                              {receiver.name}
+                            </span>
+                          </div>
+                        </td>
+                        <td style={{ ...S.td, textAlign: "center" }}>
+                          <span
+                            style={{
                               background: "#f1f5f9",
                               color: "#64748b",
+                              padding: "2px 8px",
+                              borderRadius: "12px",
+                              fontWeight: 700,
+                              fontSize: ".7rem",
+                              border: "1px solid #e2e8f0",
                             }}
                           >
-                            {giver.name.charAt(0)}
-                          </div>
-                          <span style={{ fontWeight: 600 }}>{giver.name}</span>
-                        </div>
-                      </td>
-                      <td style={S.td}>
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 6,
-                          }}
-                        >
-                          <div
-                            style={{
-                              ...S.avatar,
-                              background: "#dbeafe",
-                              color: "#2563eb",
-                            }}
-                          >
-                            {receiver.name.charAt(0)}
-                          </div>
-                          <span style={{ fontWeight: 600 }}>
-                            {receiver.name}
+                            {tx.items.length} Item
                           </span>
-                        </div>
-                      </td>
-                      <td style={{ ...S.td, textAlign: "center" }}>
-                        <span
-                          style={{
-                            background: "#f1f5f9",
-                            color: "#64748b",
-                            padding: "2px 8px",
-                            borderRadius: "12px",
-                            fontWeight: 700,
-                            fontSize: ".7rem",
-                            border: "1px solid #e2e8f0",
-                          }}
+                        </td>
+                        <td
+                          style={{ ...S.td, textAlign: "center" }}
+                          onClick={(e) => e.stopPropagation()}
                         >
-                          {tx.items.length} Item
-                        </span>
-                      </td>
-                      <td
-                        style={{ ...S.td, textAlign: "center" }}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <div style={S.actionRow}>
-                          <button
-                            style={{ ...S.iconBtn, color: "#2563eb" }}
-                            title="Detail"
-                            onClick={() =>
-                              setNav({ page: "borrow-detail", data: tx })
-                            }
-                          >
-                            <Icon.Eye />
-                          </button>
-                          <button
-                            style={{ ...S.iconBtn, color: "#7c3aed" }}
-                            title="Cetak BAST"
-                            onClick={() => generateBAST(tx.items[0], "borrow")}
-                          >
-                            <Icon.Printer />
-                          </button>
-                          <button
-                            style={{ ...S.iconBtn, color: "#dc2626" }}
-                            title="Hapus"
-                            onClick={() =>
-                              setNav({ page: "delete", data: tx.items[0] })
-                            }
-                          >
-                            <Icon.Trash />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                });
-              })()
+                          <div style={S.actionRow}>
+                            <button
+                              style={{ ...S.iconBtn, color: "#2563eb" }}
+                              title="Detail"
+                              onClick={() =>
+                                setNav({ page: "borrow-detail", data: tx })
+                              }
+                            >
+                              <Icon.Eye />
+                            </button>
+                            <button
+                              style={{ ...S.iconBtn, color: "#7c3aed" }}
+                              title="Cetak BAST"
+                              onClick={() => generateBAST(tx.items[0], "borrow")}
+                            >
+                              <Icon.Printer />
+                            </button>
+                            <button
+                              style={{ ...S.iconBtn, color: "#dc2626" }}
+                              title="Hapus"
+                              onClick={() =>
+                                setNav({ page: "delete", data: tx.items[0] })
+                              }
+                            >
+                              <Icon.Trash />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  });
+                })()
               )}
             </tbody>
           </table>
