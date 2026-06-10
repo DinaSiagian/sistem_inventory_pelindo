@@ -923,12 +923,12 @@ const CustomDonutLabel = ({ viewBox, val }) => {
 const tahunOptions = ["2023", "2024", "2025", "2026"];
 
 const Dashboard = () => {
-  const [dbBorrows, setDbBorrows] = useState([]);
-  const [dbReturns, setDbReturns] = useState([]);
-  const [dbAssets, setDbAssets] = useState([]);
-  const [dbCapex, setDbCapex] = useState([]);
-  const [dbOpex, setDbOpex] = useState({});
-  const [loading, setLoading] = useState(true);
+  const [dbBorrows, setDbBorrows] = useState(() => JSON.parse(sessionStorage.getItem('SWR_DashBorrows')) || []);
+  const [dbReturns, setDbReturns] = useState(() => JSON.parse(sessionStorage.getItem('SWR_DashReturns')) || []);
+  const [dbAssets, setDbAssets] = useState(() => JSON.parse(sessionStorage.getItem('SWR_DashAssets')) || []);
+  const [dbCapex, setDbCapex] = useState(() => JSON.parse(sessionStorage.getItem('SWR_DashCapex')) || []);
+  const [dbOpex, setDbOpex] = useState(() => JSON.parse(sessionStorage.getItem('SWR_DashOpex')) || {});
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -949,6 +949,9 @@ const Dashboard = () => {
         setDbAssets(assets);
         setDbBorrows(borrows);
         setDbReturns(txRes.data?.returns || []);
+        sessionStorage.setItem('SWR_DashAssets', JSON.stringify(assets));
+        sessionStorage.setItem('SWR_DashBorrows', JSON.stringify(borrows));
+        sessionStorage.setItem('SWR_DashReturns', JSON.stringify(txRes.data?.returns || []));
 
         // Format Capex
         const fmtCapex = capex.map(c => {
@@ -967,6 +970,7 @@ const Dashboard = () => {
           };
         });
         setDbCapex(fmtCapex);
+        sessionStorage.setItem('SWR_DashCapex', JSON.stringify(fmtCapex));
 
         // Format Opex grouping by year
         const opexByYear = {};
@@ -993,6 +997,7 @@ const Dashboard = () => {
           });
         });
         setDbOpex(opexByYear);
+        sessionStorage.setItem('SWR_DashOpex', JSON.stringify(opexByYear));
 
       } catch (err) {
         console.error("Error loading dashboard data:", err);
@@ -1010,11 +1015,16 @@ const Dashboard = () => {
     let tMaint = 0;
     const cond = { "Baik": 0, "Rusak": 0, "Hilang": 0, "Diperbaiki": 0 };
 
+    const activeBorrowSet = new Set();
+    dbBorrows.forEach(b => {
+      if (!b.is_returned) activeBorrowSet.add(b.code);
+    });
+
     dbAssets.forEach(item => {
       if (item.units && Array.isArray(item.units)) {
         item.units.forEach(u => {
           tAset++;
-          const isActive = dbBorrows.some(b => b.code === u.serialNumber && !b.is_returned);
+          const isActive = activeBorrowSet.has(u.serialNumber);
           const st = (u.condition || "BAIK").toUpperCase();
           if (!isActive && (st === "BAIK" || st === "GOOD")) tAvail++;
 

@@ -5778,8 +5778,8 @@ function AvailableAssetListPage({ borrows, returns = [], assets, onBack }) {
 
 // ─── MAIN ──────────────────────────────────────────────────────
 export default function Peminjaman() {
-  const [borrows, setBorrows] = useState([]);
-  const [returns, setReturns] = useState([]);
+  const [borrows, setBorrows] = useState(() => JSON.parse(sessionStorage.getItem('SWR_AdminBorrows')) || []);
+  const [returns, setReturns] = useState(() => JSON.parse(sessionStorage.getItem('SWR_AdminReturns')) || []);
   const [search, setSearch] = useState("");
   const [filterYear, setFilterYear] = useState("semua");
   const [filterMonth, setFilterMonth] = useState("semua");
@@ -5787,9 +5787,9 @@ export default function Peminjaman() {
   const [filterPekerjaan, setFilterPekerjaan] = useState("semua");
   const [nav, setNav] = useState(null);
   const [openCats, setOpenCats] = useState({});
-  const [usersState, setUsersState] = useState(mockUsers);
-  const [assetsState, setAssetsState] = useState([]);
-  const [pekerjaanState, setPekerjaanState] = useState([]);
+  const [usersState, setUsersState] = useState(() => JSON.parse(sessionStorage.getItem('SWR_AdminUsers')) || mockUsers);
+  const [assetsState, setAssetsState] = useState(() => JSON.parse(sessionStorage.getItem('SWR_AdminAssets')) || []);
+  const [pekerjaanState, setPekerjaanState] = useState(() => JSON.parse(sessionStorage.getItem('SWR_AdminPekerjaan')) || []);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -5834,6 +5834,8 @@ export default function Peminjaman() {
         fetchedBorrows = txRes.data.borrows || [];
         setBorrows(fetchedBorrows);
         setReturns(txRes.data.returns || []);
+        sessionStorage.setItem('SWR_AdminBorrows', JSON.stringify(fetchedBorrows));
+        sessionStorage.setItem('SWR_AdminReturns', JSON.stringify(txRes.data.returns || []));
 
         [...(txRes.data.borrows || []), ...(txRes.data.returns || [])].forEach((tx) => {
           if (tx.pekerjaan && tx.pekerjaan.kode && !dbProjects[String(tx.pekerjaan.kode)]) {
@@ -5847,6 +5849,7 @@ export default function Peminjaman() {
         });
       }
       setPekerjaanState(Object.values(dbProjects));
+      sessionStorage.setItem('SWR_AdminPekerjaan', JSON.stringify(Object.values(dbProjects)));
 
       if (userRes.data && userRes.data.success && userRes.data.data) {
         const mappedUsers = userRes.data.data.map((u) => ({
@@ -5854,16 +5857,20 @@ export default function Peminjaman() {
           jabatan: u.role_code || "User", nip: u.nip,
         }));
         setUsersState(mappedUsers);
+        sessionStorage.setItem('SWR_AdminUsers', JSON.stringify(mappedUsers));
       }
 
       if (barangRes.data && Array.isArray(barangRes.data)) {
         const flattened = [];
+        const activeBorrowsMap = new Map();
+        fetchedBorrows.forEach((b) => {
+          if (!b.is_returned) activeBorrowsMap.set(b.code, b);
+        });
+
         barangRes.data.forEach((item) => {
           if (item.units && Array.isArray(item.units)) {
             item.units.forEach((u) => {
-              const activeBorrow = fetchedBorrows.find(
-                (b) => b.code === u.serialNumber && !b.is_returned,
-              );
+              const activeBorrow = activeBorrowsMap.get(u.serialNumber);
               flattened.push({
                 code: u.serialNumber,
                 asset_code: item.id,
@@ -5880,6 +5887,7 @@ export default function Peminjaman() {
           }
         });
         setAssetsState(flattened);
+        sessionStorage.setItem('SWR_AdminAssets', JSON.stringify(flattened));
       }
     } catch (err) {
       console.error("Error loading Peminjaman data:", err);

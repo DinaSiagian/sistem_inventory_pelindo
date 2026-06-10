@@ -2407,13 +2407,11 @@ const SmartLocationInput = ({ value, onChange, placeholder = "Pilih Branch / Zon
 
 // ── MAIN COMPONENT ────────────────────────────────────────────────
 const ViewAsset = () => {
-  const [assets, setAssets] = useState([]);
-  const [dbCategories, setDbCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [dbLocations, setDbLocations] = useState({ branches: [], zonas: [], subzonas: [] });
+  const [assets, setAssets] = useState(() => JSON.parse(sessionStorage.getItem('SWR_assets')) || []);
+  const [dbCategories, setDbCategories] = useState(() => JSON.parse(sessionStorage.getItem('SWR_dbCategories')) || []);
+  const [dbLocations, setDbLocations] = useState(() => JSON.parse(sessionStorage.getItem('SWR_dbLocations')) || { branches: [], zonas: [], subzonas: [] });
 
   const fetchAssets = async () => {
-    setLoading(true);
     try {
       const [resAssets, resDevices, resCapex, resOpex, resB, resZ, resS] = await Promise.all([
         barangAPI.getAll(),
@@ -2425,14 +2423,18 @@ const ViewAsset = () => {
         masterDataAPI.getSubzonas()
       ]);
       setAssets(resAssets.data);
+      sessionStorage.setItem('SWR_assets', JSON.stringify(resAssets.data));
       setDbCategories(resDevices.data || []);
+      sessionStorage.setItem('SWR_dbCategories', JSON.stringify(resDevices.data || []));
 
       if (resB.data?.success && resZ.data?.success && resS.data?.success) {
-        setDbLocations({
+        const locs = {
           branches: resB.data.data || [],
           zonas: resZ.data.data || [],
           subzonas: resS.data.data || []
-        });
+        };
+        setDbLocations(locs);
+        sessionStorage.setItem('SWR_dbLocations', JSON.stringify(locs));
       }
 
       // Rebuild CAPEX_ANGGARAN from database
@@ -2499,12 +2501,11 @@ const ViewAsset = () => {
     } catch (err) {
       console.error("Gagal mengambil data aset", err);
     } finally {
-      // Small delay for quick but visible processing feedback
-      setTimeout(() => setLoading(false), 300);
+      // SWR hides loading time
     }
   };
 
-  const [allBorrows, setAllBorrows] = useState([]);
+  const [allBorrows, setAllBorrows] = useState(() => JSON.parse(sessionStorage.getItem('SWR_allBorrows')) || []);
 
   useEffect(() => {
     fetchAssets();
@@ -2516,6 +2517,7 @@ const ViewAsset = () => {
       const res = await transactionAPI.getAll();
       if (res.data.success) {
         setAllBorrows(res.data.borrows || []);
+        sessionStorage.setItem('SWR_allBorrows', JSON.stringify(res.data.borrows || []));
       }
     } catch (err) {
       console.error("Failed to fetch borrows:", err);
@@ -3634,42 +3636,7 @@ const ViewAsset = () => {
 
 
 
-        <div className="table-container" style={{ position: "relative", minHeight: loading ? "300px" : "auto" }}>
-          {loading && (
-            <div style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: "rgba(255, 255, 255, 0.7)",
-              zIndex: 10,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "12px",
-              backdropFilter: "blur(2px)",
-              borderRadius: "16px"
-            }}>
-              <style>{`
-                .spinner-loader {
-                  width: 32px;
-                  height: 32px;
-                  border: 3px solid #f3f3f3;
-                  border-top: 3px solid #2563eb;
-                  border-radius: 50%;
-                  animation: spin-loader 0.8s linear infinite;
-                }
-                @keyframes spin-loader {
-                  0% { transform: rotate(0deg); }
-                  100% { transform: rotate(360deg); }
-                }
-              `}</style>
-              <div className="spinner-loader"></div>
-              <span style={{ fontSize: "12px", fontWeight: "700", color: "#475569", letterSpacing: "0.5px" }}>MEMUAT DATA...</span>
-            </div>
-          )}
+        <div className="table-container" style={{ position: "relative" }}>
           <div className="table-info-bar">
             <span>
               Menampilkan <strong>{paginated.length}</strong> dari{" "}

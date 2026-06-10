@@ -700,16 +700,22 @@ class BudgetController extends Controller
         return $subCode;
     }
 
+    private static $locationCache = null;
+
     private function getFullLocationString($subzonaCode)
     {
         if (empty($subzonaCode)) return '';
 
-        $loc = DB::table('subzona')
-            ->join('zonas', 'subzona.zona_code', '=', 'zonas.zona_code')
-            ->join('branches', 'zonas.branch_code', '=', 'branches.branch_code')
-            ->where('subzona.subzona_code', $subzonaCode)
-            ->select('subzona.name as sub', 'zonas.name as zon', 'branches.name as br')
-            ->first();
+        if (self::$locationCache === null) {
+            self::$locationCache = DB::table('subzona')
+                ->join('zonas', 'subzona.zona_code', '=', 'zonas.zona_code')
+                ->join('branches', 'zonas.branch_code', '=', 'branches.branch_code')
+                ->select('subzona.subzona_code', 'subzona.name as sub', 'zonas.name as zon', 'branches.name as br')
+                ->get()
+                ->keyBy('subzona_code');
+        }
+
+        $loc = self::$locationCache->get($subzonaCode);
 
         if ($loc) {
             return $loc->br . ' / ' . $loc->zon . ' / ' . $loc->sub;
@@ -737,20 +743,29 @@ class BudgetController extends Controller
     public function syncAssetsCapex(Request $r,   $kd)  { return $this->syncAssets($r,   $kd,  'capex'); }
     public function syncAssetsOpex(Request $r,    $id)  { return $this->syncAssets($r,   $id,  'opex');  }
 
+    private static $budgetProjectOpexCache = null;
+    private static $budgetItemCache = null;
+
     private function formatOpex(BudgetAnnualOpex $item): array
     {
-        // Load projects dari budget_projects table
-        $projects = BudgetProject::where('jenis_anggaran', 'opex')
-            ->where('id_opex', $item->id_anggaran_tahunan)
-            ->get();
+        if (self::$budgetProjectOpexCache === null) {
+            self::$budgetProjectOpexCache = BudgetProject::where('jenis_anggaran', 'opex')->get()->groupBy('id_opex');
+        }
+        $projects = self::$budgetProjectOpexCache->get($item->id_anggaran_tahunan) ?? collect();
 
         $projectIds = $projects->pluck('id_pekerjaan')->toArray();
 
-        // Load assets dari budget_items table (flat, dengan id_pekerjaan)
-        $assets = $projectIds
-            ? BudgetItem::whereIn('id_pekerjaan', $projectIds)->get()
-                ->map(fn($i) => $this->formatItem($i))->values()->toArray()
-            : [];
+        if (self::$budgetItemCache === null) {
+            self::$budgetItemCache = BudgetItem::all()->groupBy('id_pekerjaan');
+        }
+
+        $assets = [];
+        foreach ($projectIds as $pid) {
+            $bItems = self::$budgetItemCache->get($pid) ?? collect();
+            foreach ($bItems as $i) {
+                $assets[] = $this->formatItem($i);
+            }
+        }
 
         return [
             'id'           => (string) $item->id_anggaran_tahunan,
@@ -768,20 +783,28 @@ class BudgetController extends Controller
         ];
     }
 
+    private static $budgetProjectCapexCache = null;
+
     private function formatCapex(BudgetAnnualCapex $item): array
     {
-        // Load projects dari budget_projects table
-        $projects = BudgetProject::where('jenis_anggaran', 'capex')
-            ->where('id_anggaran_tahunan', $item->kd_anggaran_capex)
-            ->get();
+        if (self::$budgetProjectCapexCache === null) {
+            self::$budgetProjectCapexCache = BudgetProject::where('jenis_anggaran', 'capex')->get()->groupBy('id_anggaran_tahunan');
+        }
+        $projects = self::$budgetProjectCapexCache->get($item->kd_anggaran_capex) ?? collect();
 
         $projectIds = $projects->pluck('id_pekerjaan')->toArray();
 
-        // Load assets flat dengan id_pekerjaan
-        $assets = $projectIds
-            ? BudgetItem::whereIn('id_pekerjaan', $projectIds)->get()
-                ->map(fn($i) => $this->formatItem($i))->values()->toArray()
-            : [];
+        if (self::$budgetItemCache === null) {
+            self::$budgetItemCache = BudgetItem::all()->groupBy('id_pekerjaan');
+        }
+
+        $assets = [];
+        foreach ($projectIds as $pid) {
+            $bItems = self::$budgetItemCache->get($pid) ?? collect();
+            foreach ($bItems as $i) {
+                $assets[] = $this->formatItem($i);
+            }
+        }
 
         return [
             'id'               => $item->kd_anggaran_capex,
@@ -805,18 +828,27 @@ class BudgetController extends Controller
         ];
     }
 
+    private static $parentCapexCache = null;
+    private static $parentOpexCache = null;
+
     private function formatProject(BudgetProject $p): array
     {
         $year = 2024;
         $noAnggaran = '';
         if ($p->jenis_anggaran === 'capex') {
-            $parent = DB::table('budget_annual_capex')->where('kd_anggaran_capex', $p->id_anggaran_tahunan)->first();
+            if (self::$parentCapexCache === null) {
+                self::$parentCapexCache = DB::table('budget_annual_capex')->get()->keyBy('kd_anggaran_capex');
+            }
+            $parent = self::$parentCapexCache->get($p->id_anggaran_tahunan);
             if ($parent) {
                 $year = $parent->thn_anggaran;
                 $noAnggaran = $parent->kd_anggaran_capex;
             }
         } else {
-            $parent = DB::table('budget_annual_opex')->where('id_anggaran_tahunan', $p->id_opex)->first();
+            if (self::$parentOpexCache === null) {
+                self::$parentOpexCache = DB::table('budget_annual_opex')->get()->keyBy('id_anggaran_tahunan');
+            }
+            $parent = self::$parentOpexCache->get($p->id_opex);
             if ($parent) {
                 $year = $parent->thn_anggaran;
                 $noAnggaran = $parent->kd_anggaran_master;
@@ -847,15 +879,24 @@ class BudgetController extends Controller
         ];
     }
 
+    private static $assetCache = null;
+    private static $barangCache = null;
+
     private function formatItem(BudgetItem $i): array
     {
         $assetCode = $i->asset_code;
-        $asset = $assetCode ? DB::table('assets')->where('asset_code', $assetCode)->first() : null;
         
-        $units = $assetCode ? DB::table('barang')
-            ->where('asset_code', $assetCode)
-            ->where('id_pekerjaan', $i->id_pekerjaan)
-            ->get() : collect();
+        if (self::$assetCache === null) {
+            self::$assetCache = DB::table('assets')->get()->keyBy('asset_code');
+        }
+        $asset = $assetCode ? self::$assetCache->get($assetCode) : null;
+        
+        if (self::$barangCache === null) {
+            self::$barangCache = collect(DB::table('barang')->get())->groupBy('asset_code');
+        }
+        $units = $assetCode ? (self::$barangCache->get($assetCode) ?? collect()) : collect();
+        $units = collect($units)->where('id_pekerjaan', $i->id_pekerjaan);
+
         $unitsArray = $units->map(function ($u) {
             return [
                 'serialNumber' => $u->serial_number,

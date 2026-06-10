@@ -5741,8 +5741,8 @@ function HistoryPage({ assetCode, assetName, borrows, returns, onBack }) {
 
       // ─── MAIN ──────────────────────────────────────────────────────
       export default function Peminjaman() {
-  const [borrows, setBorrows] = useState([]);
-      const [returns, setReturns] = useState([]);
+  const [borrows, setBorrows] = useState(() => JSON.parse(sessionStorage.getItem('SWR_UserBorrows')) || []);
+      const [returns, setReturns] = useState(() => JSON.parse(sessionStorage.getItem('SWR_UserReturns')) || []);
       const [search, setSearch] = useState("");
       const [filterPekerjaan, setFilterPekerjaan] = useState("semua");
       const [filterYear, setFilterYear] = useState("semua");
@@ -5750,9 +5750,9 @@ function HistoryPage({ assetCode, assetName, borrows, returns, onBack }) {
       const [showDatePicker, setShowDatePicker] = useState(false);
       const [nav, setNav] = useState(null);
       const [openCats, setOpenCats] = useState({ });
-      const [usersState, setUsersState] = useState(mockUsers);
-      const [assetsState, setAssetsState] = useState([]);
-      const [pekerjaanState, setPekerjaanState] = useState([]);
+      const [usersState, setUsersState] = useState(() => JSON.parse(sessionStorage.getItem('SWR_UserUsers')) || mockUsers);
+      const [assetsState, setAssetsState] = useState(() => JSON.parse(sessionStorage.getItem('SWR_UserAssets')) || []);
+      const [pekerjaanState, setPekerjaanState] = useState(() => JSON.parse(sessionStorage.getItem('SWR_UserPekerjaan')) || []);
 
   if (usersState && usersState.length > 0) {
         mockUsers = usersState;
@@ -5816,6 +5816,7 @@ function HistoryPage({ assetCode, assetName, borrows, returns, onBack }) {
         });
       }
       setPekerjaanState(Object.values(dbProjects));
+      sessionStorage.setItem('SWR_UserPekerjaan', JSON.stringify(Object.values(dbProjects)));
 
       if (userRes.data && userRes.data.success && userRes.data.data) {
         const mappedUsers = userRes.data.data.map((u) => ({

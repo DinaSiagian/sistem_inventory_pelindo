@@ -82,7 +82,17 @@ class BarangController extends Controller
                     'branches.entity_code'
                 )->get();
 
-            $grouped = $assets->map(function ($item) use ($barang, $specs, $locations) {
+            // OPTIMIZATION: Fetch all current transactions at once (Prevent N+1 Query)
+            $allSerialNumbers = $barang->pluck('serial_number')->unique()->toArray();
+            $activeTransactions = !empty($allSerialNumbers)
+                ? DB::table('asset_transactions')
+                    ->whereIn('serial_number', $allSerialNumbers)
+                    ->where('is_current', true)
+                    ->get()
+                    ->keyBy('serial_number')
+                : collect();
+
+            $grouped = $assets->map(function ($item) use ($barang, $specs, $locations, $activeTransactions) {
                 $itemUnits = $barang->where('asset_code', $item->asset_code)->values();
                 $itemSpecs = $specs->where('asset_code', $item->asset_code)->values();
 
@@ -90,12 +100,9 @@ class BarangController extends Controller
                 $firstUnit = $itemUnits->first();
                 $loc = $firstUnit ? $locations->where('subzona_code', $firstUnit->subzona_code)->first() : null;
 
-                $unitsArray = $itemUnits->map(function ($u) use ($locations) {
-                    // Fetch active BAST transaction condition/status
-                    $tx = DB::table('asset_transactions')
-                        ->where('serial_number', $u->serial_number)
-                        ->where('is_current', true)
-                        ->first();
+                $unitsArray = $itemUnits->map(function ($u) use ($locations, $activeTransactions) {
+                    // Get active BAST transaction from memory instead of DB
+                    $tx = $activeTransactions->get($u->serial_number);
 
                     $locMatch = $locations->where('subzona_code', $u->subzona_code)->first();
                     $fullLocationStr = $locMatch 

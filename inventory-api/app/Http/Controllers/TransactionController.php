@@ -80,15 +80,21 @@ class TransactionController extends Controller
                 ->get()
                 ->unique('transaction_id');
 
+            // OPTIMIZATION: Prevent N+1 Query by fetching max transaction_id for all returned serials
+            $borrowSerialNumbers = $borrowRows->pluck('serial_number')->unique()->toArray();
+            $newerTransactions = !empty($borrowSerialNumbers)
+                ? DB::table('asset_transactions')
+                    ->select('serial_number', DB::raw('MAX(transaction_id) as max_id'))
+                    ->whereIn('serial_number', $borrowSerialNumbers)
+                    ->groupBy('serial_number')
+                    ->pluck('max_id', 'serial_number')
+                : collect();
+
             $borrows = [];
             foreach ($borrowRows as $row) {
                 // A BORROW is "completed/returned" if any newer transaction exists for this serial number.
-                // This covers: (1) explicit RETURN transactions, and (2) subsequent BORROW transactions
-                // where the asset was transferred to another user (user-to-user serah terima).
-                $isReturned = DB::table('asset_transactions')
-                    ->where('serial_number', $row->serial_number)
-                    ->where('transaction_id', '>', $row->transaction_id)
-                    ->exists();
+                $maxId = $newerTransactions->get($row->serial_number);
+                $isReturned = $maxId && $maxId > $row->transaction_id;
 
                 $borrows[] = [
                     'id' => (int) $row->transaction_id,
@@ -168,15 +174,26 @@ class TransactionController extends Controller
                 ->get()
                 ->unique('transaction_id');
 
+            // OPTIMIZATION: Fetch all related BORROW transactions at once
+            $returnSerialNumbers = $returnRows->pluck('serial_number')->unique()->toArray();
+            $allBorrows = !empty($returnSerialNumbers)
+                ? DB::table('asset_transactions')
+                    ->whereIn('serial_number', $returnSerialNumbers)
+                    ->where('transaction_type', 'BORROW')
+                    ->orderBy('created_at', 'desc')
+                    ->get()
+                    ->groupBy('serial_number')
+                : collect();
+
             $returns = [];
             foreach ($returnRows as $row) {
-                // Find matching borrow transaction that was returned by this one (the latest borrow before this return)
-                $matchingBorrow = DB::table('asset_transactions')
-                    ->where('serial_number', $row->serial_number)
-                    ->where('transaction_type', 'BORROW')
-                    ->where('created_at', '<', $row->transaction_date) // Match using created_at
-                    ->orderBy('created_at', 'desc')
-                    ->first();
+                // Find matching borrow transaction from memory
+                $matchingBorrow = null;
+                if ($allBorrows->has($row->serial_number)) {
+                    $matchingBorrow = $allBorrows->get($row->serial_number)->first(function($b) use ($row) {
+                        return $b->created_at < $row->transaction_date;
+                    });
+                }
 
                 $returns[] = [
                     'id' => (int) $row->transaction_id,
