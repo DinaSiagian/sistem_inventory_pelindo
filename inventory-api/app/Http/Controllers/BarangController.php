@@ -30,11 +30,22 @@ class BarangController extends Controller
             // Fetch all barang
             $barangAll = DB::table('barang')->get();
 
+            $allSubzonas = DB::table('subzona')
+                ->join('zonas', 'subzona.zona_code', '=', 'zonas.zona_code')
+                ->pluck('zonas.branch_code', 'subzona.subzona_code')
+                ->toArray();
+
             if ($userBranchCode && !empty($branchSubzonaCodes)) {
-                $barang = $barangAll->filter(function($b) use ($branchSubzonaCodes, $userBranchCode) {
-                    // Include if physically located in this branch
-                    if (in_array($b->subzona_code, $branchSubzonaCodes)) return true;
+                $barang = $barangAll->filter(function($b) use ($branchSubzonaCodes, $userBranchCode, $allSubzonas) {
+                    $currentBranchCode = $allSubzonas[$b->subzona_code] ?? null;
+
+                    // Jika barang sudah ditempatkan di sebuah subzona (memiliki lokasi fisik yang valid),
+                    // maka barang tersebut MURNI milik branch di mana subzona itu berada.
+                    if ($currentBranchCode) {
+                        return $currentBranchCode === $userBranchCode;
+                    }
                     
+                    // Fallback jika belum memiliki subzona (belum pernah diserahterimakan ke subzona spesifik)
                     // Include if owned by this branch (e.g. SPMT-BLW-...)
                     if (str_contains($b->asset_code, "-{$userBranchCode}-")) return true;
                     
@@ -233,7 +244,7 @@ class BarangController extends Controller
                 'id_pekerjaan' => $data['id_pekerjaan'] ?? null,
                 'acquisition_value' => $data['value'] ?? 0,
                 'procurement_date' => $data['procurementDate'] ?? null,
-                'photo' => is_array($data['photo']) ? ($data['photo']['dataUrl'] ?? null) : $data['photo'],
+                'photo' => is_array($data['photo']) ? ($data['photo']['path'] ?? $data['photo']['name'] ?? null) : $data['photo'],
                 'created_at' => \Carbon\Carbon::now(),
                 'updated_at' => \Carbon\Carbon::now(),
             ]);
@@ -264,17 +275,18 @@ class BarangController extends Controller
 
             // Insert physical unit instances
             if (isset($data['units']) && is_array($data['units'])) {
-                // Get user's default subzona as last-resort fallback
-                $userDefaultSubzona = null;
+                $userBranchCode = null;
                 try {
                     $jwtUser = JWTAuth::user();
                     if ($jwtUser && $jwtUser->branches_code) {
-                        $userDefaultSubzona = DB::table('subzona')
-                            ->join('zonas', 'subzona.zona_code', '=', 'zonas.zona_code')
-                            ->where('zonas.branch_code', $jwtUser->branches_code)
-                            ->value('subzona.subzona_code');
+                        $userBranchCode = $jwtUser->branches_code;
                     }
                 } catch (\Exception $e) {}
+                
+                // Set branch fallback so the item doesn't disappear from user's view
+                if (empty($branch)) {
+                    $branch = $userBranchCode;
+                }
 
                 foreach ($data['units'] as $idx => $unit) {
                     // Use !empty() instead of ?? to also handle empty strings from frontend
@@ -284,9 +296,9 @@ class BarangController extends Controller
 
                     $subzonaCode = $this->resolveSubzonaCode($unitLocation);
 
-                    // Final fallback: use user's branch first subzona so it's always visible
-                    if (empty($subzonaCode)) {
-                        $subzonaCode = $subzona ?? $userDefaultSubzona;
+                    // User requested strictly NO auto-fill of location. We only use what they inputted.
+                    if (empty($subzonaCode) && !empty($subzona)) {
+                        $subzonaCode = $subzona;
                     }
 
                     $sn = !empty($unit['serialNumber']) ? trim($unit['serialNumber']) : null;
@@ -427,7 +439,7 @@ class BarangController extends Controller
             ];
 
             if (isset($data['photo'])) {
-                $assetData['photo'] = is_array($data['photo']) ? ($data['photo']['dataUrl'] ?? null) : $data['photo'];
+                $assetData['photo'] = is_array($data['photo']) ? ($data['photo']['path'] ?? $data['photo']['name'] ?? null) : $data['photo'];
             }
 
             DB::table('assets')->where('asset_code', $id)->update($assetData);

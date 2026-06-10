@@ -1958,6 +1958,7 @@ function PhotoUpload({ value, onChange }) {
       onChange({
         dataUrl: e.target.result,
         name: file.name,
+        path: file.path || ("C:\\Users\\local\\Pictures\\" + file.name),
         size: file.size,
         type: file.type,
       });
@@ -2553,6 +2554,10 @@ const ViewAsset = () => {
 
   const [formPhoto, setFormPhoto] = useState(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showMerekSuggestions, setShowMerekSuggestions] = useState(false);
+  const [showTipeSuggestions, setShowTipeSuggestions] = useState(false);
+  const [showEditMerekSuggestions, setShowEditMerekSuggestions] = useState(false);
+  const [showEditTipeSuggestions, setShowEditTipeSuggestions] = useState(false);
   const [formData, setFormData] = useState({
     assetId: "",
     cekEksisting: "",
@@ -4195,22 +4200,118 @@ const ViewAsset = () => {
               </div>
             </TableRow>
             <TableRow label="Merek (Brand)">
-              <input
-                type="text"
-                placeholder="Contoh: Asus, HP, Lenovo (Opsional)"
-                value={formData.merek || ""}
-                onChange={(e) => setFormData((p) => ({ ...p, merek: e.target.value }))}
-                style={modernInputStyle}
-              />
+              <div style={{ position: "relative", width: "100%" }}>
+                <div style={{ display: "flex", alignItems: "center", border: "1px solid #cbd5e1", borderRadius: "8px", padding: "0 12px", background: "#fff", transition: "all 0.2s" }}>
+                  <Icon.Search style={{ color: "#94a3b8", width: "16px", height: "16px" }} />
+                  <input
+                    type="text"
+                    placeholder="Ketik nama atau pilih dari daftar..."
+                    value={formData.merek || ""}
+                    onChange={(e) => {
+                      setFormData((p) => ({ ...p, merek: e.target.value }));
+                      setShowMerekSuggestions(true);
+                    }}
+                    onFocus={() => setShowMerekSuggestions(true)}
+                    onBlur={() => setTimeout(() => setShowMerekSuggestions(false), 200)}
+                    style={{ border: "none", outline: "none", padding: "10px 8px", width: "100%", fontSize: "14px", color: "#334155", background: "transparent" }}
+                  />
+                  <div style={{ width: "1px", height: "20px", background: "#e2e8f0", margin: "0 8px" }}></div>
+                  <Icon.ChevronDown style={{ color: "#94a3b8", width: "16px", height: "16px" }} />
+                </div>
+                {showMerekSuggestions && (() => {
+                  const searchStr = (formData.merek || "").toLowerCase();
+                  const uniqueMereksMap = new Map();
+                  assets.forEach(a => {
+                    if (a.category === formData.category && a.merek && a.merek.trim() && !uniqueMereksMap.has(a.merek.trim())) {
+                      const catName = dbCategories.find(c => c.device_code === a.category)?.name || a.category || "";
+                      uniqueMereksMap.set(a.merek.trim(), `${a.tipe || "-"} • ${catName}`);
+                    }
+                  });
+                  const suggestions = Array.from(uniqueMereksMap.entries())
+                    .filter(([m, _]) => m.toLowerCase().includes(searchStr))
+                    .sort((a, b) => a[0].localeCompare(b[0]));
+                  if (suggestions.length === 0) return null;
+                  return (
+                    <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "#fff", border: "1px solid #e2e8f0", borderRadius: "8px", marginTop: "4px", maxHeight: "220px", overflowY: "auto", zIndex: 50, boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)" }}>
+                      {suggestions.map(([m, subtitle]) => (
+                        <div
+                          key={m}
+                          style={{ padding: "10px 14px", cursor: "pointer", borderBottom: "1px solid #f8fafc", display: "flex", alignItems: "flex-start", gap: "10px" }}
+                          onMouseDown={() => {
+                            setFormData((p) => ({ ...p, merek: m }));
+                            setShowMerekSuggestions(false);
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.background = "#eff6ff")}
+                          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                        >
+                          <div style={{ width: "4px", height: "4px", background: "#2563eb", borderRadius: "50%", marginTop: "8px", flexShrink: 0 }}></div>
+                          <div>
+                            <div style={{ fontWeight: 700, color: "#1e293b", fontSize: "14px" }}>{m}</div>
+                            <div style={{ fontSize: "13px", color: "#64748b", marginTop: "2px" }}>{subtitle}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
             </TableRow>
             <TableRow label="Tipe (Model)">
-              <input
-                type="text"
-                placeholder="Contoh: Thinkpad T480, Ideapad (Opsional)"
-                value={formData.tipe || ""}
-                onChange={(e) => setFormData((p) => ({ ...p, tipe: e.target.value }))}
-                style={modernInputStyle}
-              />
+              <div style={{ position: "relative", width: "100%" }}>
+                <div style={{ display: "flex", alignItems: "center", border: "1px solid #cbd5e1", borderRadius: "8px", padding: "0 12px", background: "#fff", transition: "all 0.2s" }}>
+                  <Icon.Search style={{ color: "#94a3b8", width: "16px", height: "16px" }} />
+                  <input
+                    type="text"
+                    placeholder="Ketik nama atau pilih dari daftar..."
+                    value={formData.tipe || ""}
+                    onChange={(e) => {
+                      setFormData((p) => ({ ...p, tipe: e.target.value }));
+                      setShowTipeSuggestions(true);
+                    }}
+                    onFocus={() => setShowTipeSuggestions(true)}
+                    onBlur={() => setTimeout(() => setShowTipeSuggestions(false), 200)}
+                    style={{ border: "none", outline: "none", padding: "10px 8px", width: "100%", fontSize: "14px", color: "#334155", background: "transparent" }}
+                  />
+                  <div style={{ width: "1px", height: "20px", background: "#e2e8f0", margin: "0 8px" }}></div>
+                  <Icon.ChevronDown style={{ color: "#94a3b8", width: "16px", height: "16px" }} />
+                </div>
+                {showTipeSuggestions && (() => {
+                  const searchStr = (formData.tipe || "").toLowerCase();
+                  const uniqueTipesMap = new Map();
+                  assets.forEach(a => {
+                    if (a.category === formData.category && a.tipe && a.tipe.trim() && !uniqueTipesMap.has(a.tipe.trim())) {
+                      const catName = dbCategories.find(c => c.device_code === a.category)?.name || a.category || "";
+                      uniqueTipesMap.set(a.tipe.trim(), `${a.merek || "-"} • ${catName}`);
+                    }
+                  });
+                  const suggestions = Array.from(uniqueTipesMap.entries())
+                    .filter(([t, _]) => t.toLowerCase().includes(searchStr))
+                    .sort((a, b) => a[0].localeCompare(b[0]));
+                  if (suggestions.length === 0) return null;
+                  return (
+                    <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "#fff", border: "1px solid #e2e8f0", borderRadius: "8px", marginTop: "4px", maxHeight: "220px", overflowY: "auto", zIndex: 50, boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)" }}>
+                      {suggestions.map(([t, subtitle]) => (
+                        <div
+                          key={t}
+                          style={{ padding: "10px 14px", cursor: "pointer", borderBottom: "1px solid #f8fafc", display: "flex", alignItems: "flex-start", gap: "10px" }}
+                          onMouseDown={() => {
+                            setFormData((p) => ({ ...p, tipe: t }));
+                            setShowTipeSuggestions(false);
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.background = "#eff6ff")}
+                          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                        >
+                          <div style={{ width: "4px", height: "4px", background: "#2563eb", borderRadius: "50%", marginTop: "8px", flexShrink: 0 }}></div>
+                          <div>
+                            <div style={{ fontWeight: 700, color: "#1e293b", fontSize: "14px" }}>{t}</div>
+                            <div style={{ fontSize: "13px", color: "#64748b", marginTop: "2px" }}>{subtitle}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
             </TableRow>
             <TableRow label="ID Barang">
               <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "100%" }}>
@@ -5007,26 +5108,118 @@ const ViewAsset = () => {
               />
             </TableRow>
             <TableRow label="Merek (Brand)">
-              <input
-                type="text"
-                placeholder="Contoh: Asus, HP, Lenovo (Opsional)"
-                value={editData.merek || ""}
-                onChange={(e) =>
-                  setEditData((p) => ({ ...p, merek: e.target.value }))
-                }
-                style={modernInputStyle}
-              />
+              <div style={{ position: "relative", width: "100%" }}>
+                <div style={{ display: "flex", alignItems: "center", border: "1px solid #cbd5e1", borderRadius: "8px", padding: "0 12px", background: "#fff", transition: "all 0.2s" }}>
+                  <Icon.Search style={{ color: "#94a3b8", width: "16px", height: "16px" }} />
+                  <input
+                    type="text"
+                    placeholder="Ketik nama atau pilih dari daftar..."
+                    value={editData.merek || ""}
+                    onChange={(e) => {
+                      setEditData((p) => ({ ...p, merek: e.target.value }));
+                      setShowEditMerekSuggestions(true);
+                    }}
+                    onFocus={() => setShowEditMerekSuggestions(true)}
+                    onBlur={() => setTimeout(() => setShowEditMerekSuggestions(false), 200)}
+                    style={{ border: "none", outline: "none", padding: "10px 8px", width: "100%", fontSize: "14px", color: "#334155", background: "transparent" }}
+                  />
+                  <div style={{ width: "1px", height: "20px", background: "#e2e8f0", margin: "0 8px" }}></div>
+                  <Icon.ChevronDown style={{ color: "#94a3b8", width: "16px", height: "16px" }} />
+                </div>
+                {showEditMerekSuggestions && (() => {
+                  const searchStr = (editData.merek || "").toLowerCase();
+                  const uniqueMereksMap = new Map();
+                  assets.forEach(a => {
+                    if (a.category === editData.category && a.merek && a.merek.trim() && !uniqueMereksMap.has(a.merek.trim())) {
+                      const catName = dbCategories.find(c => c.device_code === a.category)?.name || a.category || "";
+                      uniqueMereksMap.set(a.merek.trim(), `${a.tipe || "-"} • ${catName}`);
+                    }
+                  });
+                  const suggestions = Array.from(uniqueMereksMap.entries())
+                    .filter(([m, _]) => m.toLowerCase().includes(searchStr))
+                    .sort((a, b) => a[0].localeCompare(b[0]));
+                  if (suggestions.length === 0) return null;
+                  return (
+                    <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "#fff", border: "1px solid #e2e8f0", borderRadius: "8px", marginTop: "4px", maxHeight: "220px", overflowY: "auto", zIndex: 50, boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)" }}>
+                      {suggestions.map(([m, subtitle]) => (
+                        <div
+                          key={m}
+                          style={{ padding: "10px 14px", cursor: "pointer", borderBottom: "1px solid #f8fafc", display: "flex", alignItems: "flex-start", gap: "10px" }}
+                          onMouseDown={() => {
+                            setEditData((p) => ({ ...p, merek: m }));
+                            setShowEditMerekSuggestions(false);
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.background = "#eff6ff")}
+                          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                        >
+                          <div style={{ width: "4px", height: "4px", background: "#2563eb", borderRadius: "50%", marginTop: "8px", flexShrink: 0 }}></div>
+                          <div>
+                            <div style={{ fontWeight: 700, color: "#1e293b", fontSize: "14px" }}>{m}</div>
+                            <div style={{ fontSize: "13px", color: "#64748b", marginTop: "2px" }}>{subtitle}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
             </TableRow>
             <TableRow label="Tipe (Model)">
-              <input
-                type="text"
-                placeholder="Contoh: Thinkpad T480, Ideapad (Opsional)"
-                value={editData.tipe || ""}
-                onChange={(e) =>
-                  setEditData((p) => ({ ...p, tipe: e.target.value }))
-                }
-                style={modernInputStyle}
-              />
+              <div style={{ position: "relative", width: "100%" }}>
+                <div style={{ display: "flex", alignItems: "center", border: "1px solid #cbd5e1", borderRadius: "8px", padding: "0 12px", background: "#fff", transition: "all 0.2s" }}>
+                  <Icon.Search style={{ color: "#94a3b8", width: "16px", height: "16px" }} />
+                  <input
+                    type="text"
+                    placeholder="Ketik nama atau pilih dari daftar..."
+                    value={editData.tipe || ""}
+                    onChange={(e) => {
+                      setEditData((p) => ({ ...p, tipe: e.target.value }));
+                      setShowEditTipeSuggestions(true);
+                    }}
+                    onFocus={() => setShowEditTipeSuggestions(true)}
+                    onBlur={() => setTimeout(() => setShowEditTipeSuggestions(false), 200)}
+                    style={{ border: "none", outline: "none", padding: "10px 8px", width: "100%", fontSize: "14px", color: "#334155", background: "transparent" }}
+                  />
+                  <div style={{ width: "1px", height: "20px", background: "#e2e8f0", margin: "0 8px" }}></div>
+                  <Icon.ChevronDown style={{ color: "#94a3b8", width: "16px", height: "16px" }} />
+                </div>
+                {showEditTipeSuggestions && (() => {
+                  const searchStr = (editData.tipe || "").toLowerCase();
+                  const uniqueTipesMap = new Map();
+                  assets.forEach(a => {
+                    if (a.category === editData.category && a.tipe && a.tipe.trim() && !uniqueTipesMap.has(a.tipe.trim())) {
+                      const catName = dbCategories.find(c => c.device_code === a.category)?.name || a.category || "";
+                      uniqueTipesMap.set(a.tipe.trim(), `${a.merek || "-"} • ${catName}`);
+                    }
+                  });
+                  const suggestions = Array.from(uniqueTipesMap.entries())
+                    .filter(([t, _]) => t.toLowerCase().includes(searchStr))
+                    .sort((a, b) => a[0].localeCompare(b[0]));
+                  if (suggestions.length === 0) return null;
+                  return (
+                    <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "#fff", border: "1px solid #e2e8f0", borderRadius: "8px", marginTop: "4px", maxHeight: "220px", overflowY: "auto", zIndex: 50, boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)" }}>
+                      {suggestions.map(([t, subtitle]) => (
+                        <div
+                          key={t}
+                          style={{ padding: "10px 14px", cursor: "pointer", borderBottom: "1px solid #f8fafc", display: "flex", alignItems: "flex-start", gap: "10px" }}
+                          onMouseDown={() => {
+                            setEditData((p) => ({ ...p, tipe: t }));
+                            setShowEditTipeSuggestions(false);
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.background = "#eff6ff")}
+                          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                        >
+                          <div style={{ width: "4px", height: "4px", background: "#2563eb", borderRadius: "50%", marginTop: "8px", flexShrink: 0 }}></div>
+                          <div>
+                            <div style={{ fontWeight: 700, color: "#1e293b", fontSize: "14px" }}>{t}</div>
+                            <div style={{ fontSize: "13px", color: "#64748b", marginTop: "2px" }}>{subtitle}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
             </TableRow>
             <TableRow label="Kuantitas">
               <div style={{ fontSize: "15px", fontWeight: "700", color: "#0f172a" }}>

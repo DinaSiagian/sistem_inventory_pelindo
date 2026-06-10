@@ -3423,17 +3423,7 @@ function HistoryPage({ assetCode, assetName, borrows, returns, onBack }) {
           gap: 10,
           marginBottom: "1rem",
         }}
-
-        return (
-      <div>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            marginBottom: "1rem",
-          }}
-        >
+      >
           <button style={S.backBtn} onClick={onBack}>
             <Icon.ArrowLeft /> Kembali
           </button>
@@ -6284,7 +6274,4 @@ function HistoryPage({ assetCode, assetName, borrows, returns, onBack }) {
         </div>
       </div>
       );
-}
-    </div >
-  );
 }

@@ -254,6 +254,19 @@ class TransactionController extends Controller
                 ? Carbon::parse($request->input('transaction_date')) 
                 : Carbon::now();
 
+            $giverUser = DB::table('users')->where('id', $giverId)->first();
+            $receiverUser = DB::table('users')->where('id', $receiverId)->first();
+
+            if ($giverUser && $receiverUser && $giverUser->branches_code !== $receiverUser->branches_code) {
+                // Cross-branch BAST is only allowed if the receiver is an admin in their branch
+                if (!in_array($receiverUser->role_code, ['superadmin', 'admin'])) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Serah terima aset antar cabang (Branch) hanya dapat dilakukan kepada sesama Admin IT. Anda tidak dapat melakukan serah terima langsung ke User biasa di cabang lain.'
+                    ], 403);
+                }
+            }
+
             $insertedIds = [];
 
             foreach ($request->input('items') as $item) {

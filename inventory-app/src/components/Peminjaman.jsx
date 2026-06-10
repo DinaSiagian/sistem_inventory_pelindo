@@ -1150,6 +1150,7 @@ const S = {
     fontFamily: "'Inter','Plus Jakarta Sans',sans-serif",
     background: "#f8fafc",
     minHeight: "100vh",
+    boxSizing: "border-box",
   },
   header: {
     display: "flex",
@@ -1397,7 +1398,7 @@ const S = {
     background: "#fff",
     borderRadius: 12,
     border: "1px solid #e2e8f0",
-    overflow: "hidden",
+    overflow: "visible",
     boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
   },
   pageHeader: {
@@ -1803,9 +1804,9 @@ const S = {
     background: "#fff",
     border: "1.5px solid #e2e8f0",
     borderRadius: 9,
-    boxShadow: "0 8px 24px rgba(0,0,0,.1)",
-    zIndex: 200,
-    maxHeight: 220,
+    boxShadow: "0 8px 24px rgba(0,0,0,.12)",
+    zIndex: 9999,
+    maxHeight: 160,
     overflowY: "auto",
   },
   comboItem: {
@@ -3858,9 +3859,23 @@ function BorrowFormPage({ borrow, borrows, returns, assets, onBack, onSave, setN
     return resultAssets;
   }, [pihak1.id, assets, assetSearchQuery]);
 
+  // Deteksi BAST antar cabang ke user non-admin
+  const p2UserObj = pihak2.id ? mockUsers.find(u => u.id === Number(pihak2.id)) : null;
+  const p1UserObj = pihak1.id ? mockUsers.find(u => u.id === Number(pihak1.id)) : null;
+  const isP2AdminRole = p2UserObj && (
+    (p2UserObj.jabatan || "").toLowerCase().includes('admin') ||
+    (p2UserObj.jabatan || "").toLowerCase().includes('superadmin')
+  );
+  const isCrossBranch = p1UserObj && p2UserObj && p1UserObj.branch !== p2UserObj.branch;
+  const isCrossBranchToNonAdmin = isCrossBranch && !isP2AdminRole;
+
   const addToDraft = (item) => {
     if (!pihak1.id || !pihak2.id) {
       alert("Pilih Pemberi dan Penerima terlebih dahulu.");
+      return;
+    }
+    if (isCrossBranchToNonAdmin) {
+      alert("Akses Ditolak: Anda tidak memiliki akses untuk memberikan barang ke user di cabang lain. Serah terima antar cabang hanya dapat dilakukan ke sesama Admin IT.");
       return;
     }
     if (baDraft.find((d) => d.item.code === item.code)) {
@@ -4378,7 +4393,7 @@ function BorrowFormPage({ borrow, borrows, returns, assets, onBack, onSave, setN
                     </tr>
                   </thead>
                   <tbody>
-                    {assetResults.length === 0 ? (
+                    {assetResults.length === 0 || isCrossBranchToNonAdmin ? (
                       <tr>
                         <td
                           colSpan="6"
@@ -4389,7 +4404,9 @@ function BorrowFormPage({ borrow, borrows, returns, assets, onBack, onSave, setN
                             padding: "2rem",
                           }}
                         >
-                          {assetSearchQuery
+                          {isCrossBranchToNonAdmin
+                            ? `Akses Ditolak: Anda tidak memiliki akses untuk memberikan barang ke user di cabang lain. Serah terima antar cabang hanya dapat dilakukan ke sesama Admin IT.`
+                            : assetSearchQuery
                             ? "Tidak ada barang yang cocok dengan pencarian."
                             : (() => {
                               const p1 = mockUsers.find((u) => String(u.id) === String(pihak1.id));
@@ -5607,9 +5624,6 @@ function AvailableAssetListPage({ borrows, returns = [], assets, onBack }) {
                   CP/OP
                 </th>
                 <th style={S.th}>Referensi Pengadaan</th>
-                <th style={{ ...S.th, width: 80, textAlign: "center" }}>
-                  Tahun
-                </th>
               </tr>
             </thead>
             <tbody>
@@ -5668,7 +5682,7 @@ function AvailableAssetListPage({ borrows, returns = [], assets, onBack }) {
                                   : "#16a34a",
                             }}
                           >
-                            {item.pkj.jenis === "Capex" ? "CP" : "OP"}
+                            {item.pkj.jenis === "Capex" ? "CP" : "OP"} {thn}
                           </span>
                         ) : (
                           <span style={{ color: "#94a3b8" }}>—</span>
@@ -5688,16 +5702,6 @@ function AvailableAssetListPage({ borrows, returns = [], assets, onBack }) {
                         >
                           {item.pkj?.nama || "—"}
                         </div>
-                      </td>
-                      <td
-                        style={{
-                          ...S.td,
-                          textAlign: "center",
-                          fontWeight: 700,
-                          color: "#475569",
-                        }}
-                      >
-                        {thn}
                       </td>
                     </tr>
                   );
