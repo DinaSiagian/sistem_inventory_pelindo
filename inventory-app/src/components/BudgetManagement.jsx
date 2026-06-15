@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback } from "react";
-import { budgetAPI, barangAPI, transactionAPI, userAPI } from '../services/api';
-const CATEGORY_NAMES = {
+import { budgetAPI, barangAPI, transactionAPI, userAPI, masterDataAPI } from '../services/api';
+let CATEGORY_NAMES = {
   LPT: "LAPTOP",
   CTV: "CCTV CAMERA",
   RTR: "ROUTER / JARINGAN",
@@ -144,7 +144,16 @@ function useAssetDB(refreshKey = 0) {
   const [data, setData] = useState(() => ({ assetDb: { ...ASSET_DB }, snDb: { ...SN_DB }, snAllocatedMap: {} }));
 
   useEffect(() => {
-    barangAPI.getAll().then(res => {
+    Promise.all([barangAPI.getAll(), masterDataAPI.getDevices()]).then(([res, devRes]) => {
+      if (devRes.data?.success || devRes.data) {
+        const devices = devRes.data?.data || devRes.data || [];
+        if (devices.length > 0) {
+          CATEGORY_NAMES = {}; // Clear hardcoded items so we only use DB items
+          devices.forEach(d => {
+            if (d.device_code) CATEGORY_NAMES[d.device_code] = d.name;
+          });
+        }
+      }
       const aMap = { ...ASSET_DB };
       const sMap = { ...SN_DB };
       const snAllocatedMap = {};
@@ -1215,19 +1224,114 @@ function Pagination({ total, page, onPage, label }) {
     </div>
   );
 }
-function SmartLocationInput({ value, onChange, placeholder = "Pilih Branch / Zona / Subzona" }) {
+function SmartLocationInput({ value, onChange, placeholder = "Pilih Branch / Zona / Subzona", readOnly = false }) {
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef(null);
+  const [dbLocations, setDbLocations] = useState({ branches: [], zonas: [], subzonas: [] });
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const [bRes, zRes, sRes] = await Promise.all([
+          masterDataAPI.getBranches(),
+          masterDataAPI.getZonas(),
+          masterDataAPI.getSubzonas()
+        ]);
+        setDbLocations({
+          branches: bRes.data?.data || [],
+          zonas: zRes.data?.data || [],
+          subzonas: sRes.data?.data || []
+        });
+      } catch (err) {
+        console.error("Failed to fetch locations:", err);
+      }
+    };
+    fetchLocations();
+  }, []);
+
+  const { branches = [], zonas = [], subzonas = [] } = dbLocations;
 
   useEffect(() => {
     function handleClickOutside(e) {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
         setIsOpen(false);
+
+        // Validate and sanitize location string
+        const valStr = value || "";
+        const parts = valStr.split(" / ").map(p => p.trim()).filter(Boolean);
+        let validParts = [];
+
+        if (branches.length > 0) {
+          // Validate using database
+          const brObj = branches.find(b => b.name.toLowerCase() === parts[0]?.toLowerCase());
+          if (brObj) {
+            validParts.push(brObj.name);
+            if (parts[1]) {
+              const zoObj = zonas.find(z => z.name.toLowerCase() === parts[1].toLowerCase() && z.branch_code === brObj.branch_code);
+              if (zoObj) {
+                validParts.push(zoObj.name);
+                if (parts[2]) {
+                  const szObj = subzonas.find(s => s.name.toLowerCase() === parts[2].toLowerCase() && s.zona_code === zoObj.zona_code);
+                  if (szObj) {
+                    validParts.push(szObj.name);
+                  }
+                }
+              }
+            }
+          }
+        } else {
+          // Fallback to static maps
+          const allBranches = Object.values(BRANCH_BY_ENTITY).flat();
+          const brObj = allBranches.find(b => b.name.toLowerCase() === parts[0]?.toLowerCase());
+          if (brObj) {
+            validParts.push(brObj.name);
+            const branchName = brObj.name;
+            if (parts[1]) {
+              const zones = LOCATION_MAP[branchName] ? Object.keys(LOCATION_MAP[branchName]) : ZONA_LIST.map(z => z.name);
+              const matchedZone = zones.find(z => z.toLowerCase() === parts[1].toLowerCase());
+              if (matchedZone) {
+                validParts.push(matchedZone);
+                if (parts[2]) {
+                  const subzones = LOCATION_MAP[branchName]?.[matchedZone] || [];
+                  const matchedSub = subzones.find(s => s.toLowerCase() === parts[2].toLowerCase());
+                  if (matchedSub) {
+                    validParts.push(matchedSub);
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        const validatedVal = validParts.join(" / ") + (validParts.length > 0 && validParts.length < 3 ? " / " : "");
+        if (validatedVal !== valStr) {
+          onChange(validatedVal);
+        }
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [value, onChange, branches, zonas, subzonas]);
+
+  if (readOnly) {
+    if (!value) return null;
+    return (
+      <div style={{
+        fontSize: "13px",
+        color: "#64748b",
+        padding: "8px 12px",
+        background: "#f8fafc",
+        borderRadius: "6px",
+        border: "1px solid #e2e8f0",
+        minHeight: "36px",
+        display: "flex",
+        alignItems: "center",
+        cursor: "pointer"
+      }}>
+        {value}
+      </div>
+    );
+  }
 
   const valStr = value || "";
   const parts = valStr.split(" / ");
@@ -1240,18 +1344,30 @@ function SmartLocationInput({ value, onChange, placeholder = "Pilih Branch / Zon
   const branch = (parts[0] || "").trim();
   const zone = (parts[1] || "").trim();
 
+  const hasDbData = branches.length > 0;
+
   if (currentPartIdx === 0) {
-    options = Object.values(BRANCH_BY_ENTITY).flat().map(b => b.name);
+    if (hasDbData) {
+      options = branches.map(b => b.name);
+    } else {
+      options = Object.values(BRANCH_BY_ENTITY).flat().map(b => b.name);
+    }
     stepLabel = "Pilih Branch";
   } else if (currentPartIdx === 1) {
-    options = LOCATION_MAP[branch]
-      ? Object.keys(LOCATION_MAP[branch])
-      : ZONA_LIST.map(z => z.name);
+    if (hasDbData) {
+      const branchCode = branches.find(b => b.name === branch)?.branch_code;
+      options = zonas.filter(z => z.branch_code === branchCode).map(z => z.name);
+    } else {
+      options = LOCATION_MAP[branch] ? Object.keys(LOCATION_MAP[branch]) : ZONA_LIST.map(z => z.name);
+    }
     stepLabel = `Zona di ${branch || 'Branch'}`;
   } else if (currentPartIdx === 2) {
-    options = (LOCATION_MAP[branch] && LOCATION_MAP[branch][zone])
-      ? LOCATION_MAP[branch][zone]
-      : [];
+    if (hasDbData) {
+      const zonaCode = zonas.find(z => z.name === zone)?.zona_code;
+      options = subzonas.filter(s => s.zona_code === zonaCode).map(s => s.name);
+    } else {
+      options = (LOCATION_MAP[branch] && LOCATION_MAP[branch][zone]) ? LOCATION_MAP[branch][zone] : [];
+    }
     stepLabel = `Subzona di ${zone || 'Zona'}`;
   }
 
@@ -2533,7 +2649,9 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
               ) : (
                 <select value={form.category || ""} onChange={(e) => handleCat(e.target.value)}>
                   <option value="">— Pilih Jenis Barang —</option>
-                  {availCats.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
+                  {Object.entries(CATEGORY_NAMES).map(([cat, name]) => (
+                    <option key={cat} value={cat}>{name}</option>
+                  ))}
                 </select>
               )}
             </AEFld>
@@ -3311,16 +3429,9 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast, allAngga
                 }}
               >
                 <option value="">— Pilih Kategori —</option>
-                {Array.from(new Set(Object.values(ASSET_DB_DYN).map(x => x.category).filter(Boolean)))
-                  .filter(cat => {
-                    const assetsInCategory = Object.values(ASSET_DB_DYN).filter(x => x.category === cat);
-                    if (assetsInCategory.length === 0) return false;
-                    return assetsInCategory.some(x => !isAssetHiddenFromDropdown(x.asset_code));
-                  })
-                  .map(cat => (
-                    <option key={cat} value={cat}>{CATEGORY_NAMES[cat] || cat}</option>
-                  ))
-                }
+                {Object.entries(CATEGORY_NAMES).map(([cat, name]) => (
+                  <option key={cat} value={cat}>{name}</option>
+                ))}
               </select>
             </AEFld>
             {form.category && (
@@ -3831,12 +3942,12 @@ function AssetTablePage({
 
   useEffect(() => {
     userAPI.getAll().then(res => {
-      if(res.data && res.data.success) {
+      if (res.data && res.data.success) {
         setUsers(res.data.data);
       }
     });
     transactionAPI.getAll().then(res => {
-      if(res.data && res.data.success) {
+      if (res.data && res.data.success) {
         setBorrows(res.data.borrows || []);
       }
     });
@@ -4102,34 +4213,34 @@ function AssetTablePage({
                       <span className="td-value">{fmt(rowTotal)}</span>
                     </td>
                     <td style={{ textAlign: "center" }}>
-                       {(() => {
-                          if (!a.units || a.units.length === 0) return <span style={{ color: "#94a3b8", fontSize: "0.8rem", fontWeight: 600 }}>Admin/Gudang</span>;
-                          const owners = [];
-                          a.units.forEach(u => {
-                             const activeB = borrows.find(b => b.code === u.serialNumber && !b.is_returned);
-                             if (activeB) {
-                                const usr = users.find(user => String(user.id) === String(activeB.receiver_id));
-                                owners.push(usr ? usr.name : "User");
-                             } else {
-                                owners.push("Admin/Gudang");
-                             }
-                          });
-                          const uniqueOwners = [...new Set(owners)];
-                          if (uniqueOwners.length === 1 && uniqueOwners[0] === "Admin/Gudang") {
-                             return <span style={{ color: "#94a3b8", fontSize: "0.8rem", fontWeight: 600 }}>Admin/Gudang</span>;
-                          } else if (uniqueOwners.length === 1) {
-                             return <span style={{ color: "#2563eb", fontSize: "0.8rem", fontWeight: 600 }}>{uniqueOwners[0]}</span>;
+                      {(() => {
+                        if (!a.units || a.units.length === 0) return <span style={{ color: "#94a3b8", fontSize: "0.8rem", fontWeight: 600 }}>Admin/Gudang</span>;
+                        const owners = [];
+                        a.units.forEach(u => {
+                          const activeB = borrows.find(b => b.code === u.serialNumber && !b.is_returned);
+                          if (activeB) {
+                            const usr = users.find(user => String(user.id) === String(activeB.receiver_id));
+                            owners.push(usr ? usr.name : "User");
                           } else {
-                             const adminCount = owners.filter(o => o === "Admin/Gudang").length;
-                             const userCount = owners.length - adminCount;
-                             return (
-                               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
-                                 {userCount > 0 && <span style={{ color: "#2563eb", fontSize: "0.75rem", fontWeight: 600 }}>{userCount} User</span>}
-                                 {adminCount > 0 && <span style={{ color: "#94a3b8", fontSize: "0.75rem", fontWeight: 600 }}>{adminCount} Admin</span>}
-                               </div>
-                             );
+                            owners.push("Admin/Gudang");
                           }
-                       })()}
+                        });
+                        const uniqueOwners = [...new Set(owners)];
+                        if (uniqueOwners.length === 1 && uniqueOwners[0] === "Admin/Gudang") {
+                          return <span style={{ color: "#94a3b8", fontSize: "0.8rem", fontWeight: 600 }}>Admin/Gudang</span>;
+                        } else if (uniqueOwners.length === 1) {
+                          return <span style={{ color: "#2563eb", fontSize: "0.8rem", fontWeight: 600 }}>{uniqueOwners[0]}</span>;
+                        } else {
+                          const adminCount = owners.filter(o => o === "Admin/Gudang").length;
+                          const userCount = owners.length - adminCount;
+                          return (
+                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+                              {userCount > 0 && <span style={{ color: "#2563eb", fontSize: "0.75rem", fontWeight: 600 }}>{userCount} User</span>}
+                              {adminCount > 0 && <span style={{ color: "#94a3b8", fontSize: "0.75rem", fontWeight: 600 }}>{adminCount} Admin</span>}
+                            </div>
+                          );
+                        }
+                      })()}
                     </td>
                     <td className="td-actions">
                       <div className="td-act-row">

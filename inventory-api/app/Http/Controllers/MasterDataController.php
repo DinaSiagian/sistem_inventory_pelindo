@@ -621,53 +621,300 @@ class MasterDataController extends Controller
         }
     }
 
-    /* ==================== ZONAS & SUBZONAS ==================== */
+    /* ==================== ZONAS ==================== */
     
-    /**
-     * GET /api/master-data/zonas
-     */
     public function indexZonas(Request $request)
     {
         try {
-            $query = \Illuminate\Support\Facades\DB::table('zonas');
-            if ($request->has('branch_code')) {
-                $query->where('branch_code', $request->branch_code);
+            if ($request->get('used_only') === 'true') {
+                // Only return zonas that are referenced by subzonas that are actually used in barang
+                $usedSubzonaCodes = \Illuminate\Support\Facades\DB::table('barang')
+                    ->whereNotNull('subzona_code')
+                    ->distinct()
+                    ->pluck('subzona_code')
+                    ->toArray();
+
+                $usedZonaCodes = \Illuminate\Support\Facades\DB::table('subzona')
+                    ->whereIn('subzona_code', $usedSubzonaCodes)
+                    ->distinct()
+                    ->pluck('zona_code')
+                    ->toArray();
+
+                $zonas = \Illuminate\Support\Facades\DB::table('zonas')
+                    ->whereIn('zona_code', $usedZonaCodes)
+                    ->get();
+            } else {
+                $query = \Illuminate\Support\Facades\DB::table('zonas');
+                if ($request->has('branch_code')) {
+                    $query->where('branch_code', $request->branch_code);
+                }
+                $zonas = $query->get();
             }
-            $zonas = $query->get();
             return response()->json([
                 'success' => true,
                 'data' => $zonas
             ], 200);
         } catch (Exception $e) {
             Log::error('Get Zonas Error: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal mengambil data zona'
-            ], 500);
+            return response()->json(['success' => false, 'message' => 'Gagal mengambil data zona'], 500);
         }
     }
 
-    /**
-     * GET /api/master-data/subzonas
-     */
+    public function storeZona(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'zona_code' => 'required|string|max:50|unique:zonas,zona_code',
+                'branch_code' => 'nullable|exists:branches,branch_code',
+                'name' => 'required|string|max:255',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(['success' => false, 'message' => 'Validasi gagal', 'errors' => $validator->errors()], 422);
+            }
+
+            \Illuminate\Support\Facades\DB::table('zonas')->insert([
+                'zona_code' => strtoupper($request->zona_code),
+                'branch_code' => $request->branch_code ?: null,
+                'name' => $request->name,
+            ]);
+
+            $zona = \Illuminate\Support\Facades\DB::table('zonas')->where('zona_code', strtoupper($request->zona_code))->first();
+
+            return response()->json(['success' => true, 'message' => 'Zona berhasil ditambahkan', 'data' => $zona], 201);
+        } catch (Exception $e) {
+            Log::error('Store Zona Error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Gagal menambahkan zona: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function updateZona(Request $request, $code)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:255',
+                'branch_code' => 'nullable|exists:branches,branch_code',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(['success' => false, 'message' => 'Validasi gagal', 'errors' => $validator->errors()], 422);
+            }
+
+            \Illuminate\Support\Facades\DB::table('zonas')->where('zona_code', $code)->update([
+                'name' => $request->name,
+                'branch_code' => $request->branch_code ?: null,
+            ]);
+
+            $zona = \Illuminate\Support\Facades\DB::table('zonas')->where('zona_code', $code)->first();
+
+            return response()->json(['success' => true, 'message' => 'Zona berhasil diperbarui', 'data' => $zona], 200);
+        } catch (Exception $e) {
+            Log::error('Update Zona Error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Gagal memperbarui zona'], 500);
+        }
+    }
+
+    public function deleteZona($code)
+    {
+        try {
+            if (\Illuminate\Support\Facades\DB::table('subzona')->where('zona_code', $code)->count() > 0) {
+                return response()->json(['success' => false, 'message' => 'Tidak dapat menghapus zona yang memiliki subzona'], 400);
+            }
+
+            \Illuminate\Support\Facades\DB::table('zonas')->where('zona_code', $code)->delete();
+            return response()->json(['success' => true, 'message' => 'Zona berhasil dihapus'], 200);
+        } catch (Exception $e) {
+            Log::error('Delete Zona Error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Gagal menghapus zona'], 500);
+        }
+    }
+
+    /* ==================== SUBZONAS ==================== */
+    
     public function indexSubzonas(Request $request)
     {
         try {
-            $query = \Illuminate\Support\Facades\DB::table('subzona');
-            if ($request->has('zona_code')) {
-                $query->where('zona_code', $request->zona_code);
+            if ($request->get('used_only') === 'true') {
+                // Only return subzonas actually referenced in barang table
+                $usedSubzonaCodes = \Illuminate\Support\Facades\DB::table('barang')
+                    ->whereNotNull('subzona_code')
+                    ->distinct()
+                    ->pluck('subzona_code')
+                    ->toArray();
+
+                $subzonas = \Illuminate\Support\Facades\DB::table('subzona')
+                    ->whereIn('subzona_code', $usedSubzonaCodes)
+                    ->get();
+            } else {
+                $query = \Illuminate\Support\Facades\DB::table('subzona');
+                if ($request->has('zona_code')) {
+                    $query->where('zona_code', $request->zona_code);
+                }
+                $subzonas = $query->get();
             }
-            $subzonas = $query->get();
             return response()->json([
                 'success' => true,
                 'data' => $subzonas
             ], 200);
         } catch (Exception $e) {
             Log::error('Get Subzonas Error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Gagal mengambil data subzona'], 500);
+        }
+    }
+
+    public function storeSubzona(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'subzona_code' => 'required|string|max:50|unique:subzona,subzona_code',
+                'zona_code' => 'required|exists:zonas,zona_code',
+                'name' => 'required|string|max:255',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(['success' => false, 'message' => 'Validasi gagal', 'errors' => $validator->errors()], 422);
+            }
+
+            \Illuminate\Support\Facades\DB::table('subzona')->insert([
+                'subzona_code' => strtoupper($request->subzona_code),
+                'zona_code' => $request->zona_code,
+                'name' => $request->name,
+            ]);
+
+            $subzona = \Illuminate\Support\Facades\DB::table('subzona')->where('subzona_code', strtoupper($request->subzona_code))->first();
+
+            return response()->json(['success' => true, 'message' => 'Subzona berhasil ditambahkan', 'data' => $subzona], 201);
+        } catch (Exception $e) {
+            Log::error('Store Subzona Error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Gagal menambahkan subzona: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function updateSubzona(Request $request, $code)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:255',
+                'zona_code' => 'required|exists:zonas,zona_code',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(['success' => false, 'message' => 'Validasi gagal', 'errors' => $validator->errors()], 422);
+            }
+
+            \Illuminate\Support\Facades\DB::table('subzona')->where('subzona_code', $code)->update([
+                'name' => $request->name,
+                'zona_code' => $request->zona_code,
+            ]);
+
+            $subzona = \Illuminate\Support\Facades\DB::table('subzona')->where('subzona_code', $code)->first();
+
+            return response()->json(['success' => true, 'message' => 'Subzona berhasil diperbarui', 'data' => $subzona], 200);
+        } catch (Exception $e) {
+            Log::error('Update Subzona Error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Gagal memperbarui subzona'], 500);
+        }
+    }
+
+    public function deleteSubzona($code)
+    {
+        try {
+            if (\Illuminate\Support\Facades\DB::table('barang')->where('subzona_code', $code)->count() > 0) {
+                return response()->json(['success' => false, 'message' => 'Tidak dapat menghapus subzona karena masih digunakan oleh aset'], 400);
+            }
+
+            \Illuminate\Support\Facades\DB::table('subzona')->where('subzona_code', $code)->delete();
+            return response()->json(['success' => true, 'message' => 'Subzona berhasil dihapus'], 200);
+        } catch (Exception $e) {
+            Log::error('Delete Subzona Error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Gagal menghapus subzona'], 500);
+        }
+    }
+
+    /* ==================== DEVICES (KATEGORI) ==================== */
+
+    public function indexDevices()
+    {
+        try {
+            $devices = \Illuminate\Support\Facades\DB::table('device')->get();
             return response()->json([
-                'success' => false,
-                'message' => 'Gagal mengambil data subzona'
-            ], 500);
+                'success' => true,
+                'data' => $devices
+            ], 200);
+        } catch (Exception $e) {
+            Log::error('Get Devices Error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Gagal mengambil data perangkat'], 500);
+        }
+    }
+
+    public function storeDevice(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'device_code' => 'required|string|max:50|unique:device,device_code',
+                'name' => 'required|string|max:255',
+                'branch_code' => 'nullable|string|max:100',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(['success' => false, 'message' => 'Validasi gagal', 'errors' => $validator->errors()], 422);
+            }
+
+            \Illuminate\Support\Facades\DB::table('device')->insert([
+                'device_code' => strtoupper($request->device_code),
+                'name' => strtoupper($request->name),
+                'branch_code' => $request->branch_code,
+                'is_active' => true,
+                'created_at' => \Carbon\Carbon::now(),
+            ]);
+
+            $device = \Illuminate\Support\Facades\DB::table('device')->where('device_code', strtoupper($request->device_code))->first();
+
+            return response()->json(['success' => true, 'message' => 'Kategori perangkat berhasil ditambahkan', 'data' => $device], 201);
+        } catch (Exception $e) {
+            Log::error('Store Device Error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Gagal menambahkan kategori perangkat: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function updateDevice(Request $request, $code)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:255',
+                'branch_code' => 'nullable|string|max:100',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(['success' => false, 'message' => 'Validasi gagal', 'errors' => $validator->errors()], 422);
+            }
+
+            \Illuminate\Support\Facades\DB::table('device')->where('device_code', $code)->update([
+                'name' => strtoupper($request->name),
+                'branch_code' => $request->branch_code,
+            ]);
+
+            $device = \Illuminate\Support\Facades\DB::table('device')->where('device_code', $code)->first();
+
+            return response()->json(['success' => true, 'message' => 'Kategori perangkat berhasil diperbarui', 'data' => $device], 200);
+        } catch (Exception $e) {
+            Log::error('Update Device Error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Gagal memperbarui kategori perangkat'], 500);
+        }
+    }
+
+    public function deleteDevice($code)
+    {
+        try {
+            if (\Illuminate\Support\Facades\DB::table('assets')->where('device_code', $code)->count() > 0) {
+                return response()->json(['success' => false, 'message' => 'Tidak dapat menghapus kategori karena masih digunakan oleh aset'], 400);
+            }
+
+            \Illuminate\Support\Facades\DB::table('device')->where('device_code', $code)->delete();
+            return response()->json(['success' => true, 'message' => 'Kategori perangkat berhasil dihapus'], 200);
+        } catch (Exception $e) {
+            Log::error('Delete Device Error: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Gagal menghapus kategori perangkat'], 500);
         }
     }
 

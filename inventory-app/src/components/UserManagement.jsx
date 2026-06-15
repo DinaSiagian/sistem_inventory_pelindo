@@ -417,6 +417,28 @@ const SVG = {
       <polyline points="2 12 12 17 22 12" />
     </svg>
   ),
+  map: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
+      <line x1="8" y1="2" x2="8" y2="18"></line>
+      <line x1="16" y1="6" x2="16" y2="22"></line>
+    </svg>
+  ),
+  grid: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="7" height="7"></rect>
+      <rect x="14" y="3" width="7" height="7"></rect>
+      <rect x="14" y="14" width="7" height="7"></rect>
+      <rect x="3" y="14" width="7" height="7"></rect>
+    </svg>
+  ),
+  monitor: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+      <line x1="8" y1="21" x2="16" y2="21"></line>
+      <line x1="12" y1="17" x2="12" y2="21"></line>
+    </svg>
+  ),
   settings: (
     <svg
       viewBox="0 0 24 24"
@@ -432,9 +454,11 @@ const SVG = {
   ),
 };
 
-function Ico({ n, size = 14, style = {} }) {
+function Ico({ n, size = 16, style = {} }) {
+  if (!SVG[n]) return null;
   return (
     <span
+      className="um-ico"
       style={{
         display: "inline-flex",
         alignItems: "center",
@@ -942,6 +966,22 @@ const css = `
 .md-modal-err{font-size:.72rem;color:var(--red);}
 .md-del-confirm-icon{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto .75rem;}
 
+/* ── SEARCHABLE SELECT ── */
+.ss-wrap { position: relative; width: 100%; font-family: inherit; }
+.ss-disabled { opacity: 0.6; pointer-events: none; }
+.ss-header { display: flex; align-items: center; justify-content: space-between; padding: .55rem .85rem; border: 1.5px solid var(--border); border-radius: 8px; background: #fff; cursor: pointer; font-size: .84rem; color: var(--slate); transition: border-color .15s; }
+.ss-header:hover { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,.08); }
+.ss-error .ss-header { border-color: var(--red); }
+.ss-menu { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #fff; border: 1.5px solid var(--border); border-radius: 8px; box-shadow: var(--sh-md); z-index: 9999; overflow: hidden; display: flex; flex-direction: column; max-height: 250px; }
+.ss-search { padding: .4rem; border-bottom: 1px solid var(--border); background: #f8fafc; }
+.ss-search input { width: 100%; padding: .4rem .6rem; border: 1.5px solid var(--border); border-radius: 6px; outline: none; font-size: .78rem; font-family: inherit; }
+.ss-search input:focus { border-color: var(--blue); }
+.ss-options { overflow-y: auto; }
+.ss-option { padding: .55rem .75rem; font-size: .78rem; cursor: pointer; color: var(--slate); transition: background .1s; }
+.ss-option:hover { background: #f1f5f9; }
+.ss-selected { background: var(--blue-lt); color: var(--blue-dk); font-weight: 600; }
+.ss-empty { padding: .6rem; text-align: center; color: var(--slate-4); font-size: .75rem; font-style: italic; }
+
 /* ── PAGINATION ── */
 .al-pagination, .um-pagination, .md-pagination {
   display: flex; align-items: center; justify-content: space-between; padding: 1rem; flex-wrap: wrap; gap: .75rem;
@@ -1283,6 +1323,69 @@ function ActivityLogSection({ logs, users }) {
   );
 }
 
+// ─── SEARCHABLE SELECT COMPONENT ──────────────────────────────
+function SearchableSelect({ value, options, onChange, placeholder, disabled, error }) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (ref.current && !ref.current.contains(event.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const selectedOpt = options.find((o) => o.value === value);
+  const filtered = options.filter(o => o.label.toLowerCase().includes(search.toLowerCase()));
+
+  return (
+    <div className={`ss-wrap ${disabled ? "ss-disabled" : ""} ${error ? "ss-error" : ""}`} ref={ref}>
+      <div
+        className="ss-header"
+        onClick={() => !disabled && setOpen(!open)}
+      >
+        <span>{selectedOpt ? selectedOpt.label : placeholder || "-- Pilih --"}</span>
+        <Ico n={open ? "chevronUp" : "chevronDown"} size={12} style={{ color: "#94a3b8" }} />
+      </div>
+      {open && (
+        <div className="ss-menu">
+          <div className="ss-search">
+            <input
+              autoFocus
+              placeholder="Ketik untuk mencari..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </div>
+          <div className="ss-options">
+            {filtered.length === 0 ? (
+              <div className="ss-empty">Tidak ada hasil</div>
+            ) : (
+              filtered.map(o => (
+                <div
+                  key={o.value}
+                  className={`ss-option ${o.value === value ? "ss-selected" : ""}`}
+                  onClick={() => {
+                    onChange(o.value);
+                    setOpen(false);
+                    setSearch("");
+                  }}
+                >
+                  {o.label}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── MASTER DATA MODAL ────────────────────────────────────────
 function MdModal({ title, iconName, iconColor, fields, onClose, onSave }) {
   const [form, setForm] = useState(() => {
@@ -1348,6 +1451,77 @@ function MdModal({ title, iconName, iconColor, fields, onClose, onSave }) {
                     </option>
                   ))}
                 </select>
+              ) : f.type === "multi_select" ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px", maxHeight: "180px", overflowY: "auto", border: "1.5px solid var(--border)", borderRadius: "8px", padding: "10px", background: "#f8fafc" }}>
+                  {(f.options || []).map(opt => {
+                    const isSelected = form[f.key] ? form[f.key].split(",").includes(opt.value) : (!form[f.key] && opt.value === "");
+                    return (
+                      <label key={opt.value} style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", cursor: "pointer", color: "#334155", fontWeight: opt.value === "" ? 700 : 500 }}>
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={(e) => {
+                            if (opt.value === "") {
+                              // If Global is checked, clear everything
+                              setForm({ ...form, [f.key]: "" });
+                            } else {
+                              // If a specific branch is checked, remove Global ("") and add the branch
+                              let curr = form[f.key] ? form[f.key].split(",").filter(Boolean) : [];
+                              if (e.target.checked) {
+                                curr.push(opt.value);
+                              } else {
+                                curr = curr.filter(x => x !== opt.value);
+                              }
+                              setForm({ ...form, [f.key]: curr.join(",") });
+                            }
+                          }}
+                          style={{ cursor: "pointer", width: "16px", height: "16px", accentColor: "var(--blue)" }}
+                        />
+                        {opt.label}
+                      </label>
+                    );
+                  })}
+                </div>
+              ) : f.type === "searchable_select" ? (
+                <SearchableSelect
+                  value={form[f.key]}
+                  onChange={(val) => setForm({ ...form, [f.key]: val })}
+                  options={f.options || []}
+                  placeholder={f.placeholder}
+                  disabled={f.disabled}
+                  error={errors[f.key]}
+                />
+              ) : f.type === "prefixed_text" ? (
+                <div style={{ display: "flex", alignItems: "stretch" }}>
+                  <div
+                    style={{
+                      background: "#f1f5f9",
+                      border: "1.5px solid var(--border)",
+                      borderRight: "none",
+                      padding: "0 .75rem",
+                      borderRadius: "8px 0 0 8px",
+                      color: "#64748b",
+                      fontSize: ".8rem",
+                      fontWeight: 600,
+                      display: "flex",
+                      alignItems: "center",
+                      whiteSpace: "nowrap"
+                    }}
+                  >
+                    {form[f.prefixKey] ? `${form[f.prefixKey]}-` : "PILIH-"}
+                  </div>
+                  <input
+                    type="text"
+                    value={form[f.key]}
+                    onChange={(e) =>
+                      setForm({ ...form, [f.key]: e.target.value.toUpperCase() })
+                    }
+                    placeholder={f.placeholder}
+                    className={errors[f.key] ? "md-modal-field-error" : ""}
+                    style={{ borderRadius: "0 8px 8px 0", flex: 1 }}
+                    disabled={f.disabled}
+                  />
+                </div>
               ) : (
                 <input
                   type={f.type || "text"}
@@ -1438,7 +1612,7 @@ function MdDeleteModal({ itemName, onClose, onConfirm }) {
 }
 
 // ─── ENTITY MANAGEMENT SECTION ───────────────────────────────
-const MD_PER_PAGE = 5;
+const MD_PER_PAGE = 10;
 
 function EntitySection({ entityList, setEntityList }) {
   const [open, setOpen] = useState(false);
@@ -3435,6 +3609,868 @@ function ActionDropdown({ user, onDetail, onEdit, onReset, onDelete }) {
 }
 
 
+// ─── ZONA MANAGEMENT SECTION ─────────────────────────────
+function ZonaSection({
+  zonaList,
+  setZonaList,
+  branchList,
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [modal, setModal] = useState(null);
+
+  const filtered = zonaList.filter((z) => {
+    const q = search.toLowerCase();
+    const matchQ =
+      z.name.toLowerCase().includes(q) ||
+      z.zona_code.toLowerCase().includes(q);
+    return matchQ;
+  });
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / MD_PER_PAGE));
+  const paginated = filtered.slice(
+    (page - 1) * MD_PER_PAGE,
+    page * MD_PER_PAGE,
+  );
+
+  React.useEffect(() => {
+    setPage(1);
+  }, [search]);
+
+  const getBranchName = (code) =>
+    branchList.find((b) => b.branch_code === code)?.name || code;
+
+  const handleAdd = async (form) => {
+    try {
+      const manualCode = form.zona_code.trim().toUpperCase();
+      const code = manualCode;
+      const res = await masterDataAPI.addZona({
+        zona_code: code,
+        branch_code: null,
+        name: form.name.trim(),
+      });
+      if (res.data?.success) {
+        setZonaList((prev) => {
+          const updated = [...prev, res.data.data];
+          localStorage.setItem("um_cache_zonas", JSON.stringify(updated));
+          return updated;
+        });
+        setModal(null);
+      }
+    } catch (err) {
+      alert("Gagal menambahkan zona: " + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const handleEdit = async (form) => {
+    try {
+      const res = await masterDataAPI.updateZona(modal.item.zona_code, {
+        name: form.name.trim(),
+        branch_code: null,
+      });
+      if (res.data?.success) {
+        setZonaList((prev) => {
+          const updated = prev.map((z) =>
+            z.zona_code === modal.item.zona_code ? res.data.data : z
+          );
+          localStorage.setItem("um_cache_zonas", JSON.stringify(updated));
+          return updated;
+        });
+        setModal(null);
+      }
+    } catch (err) {
+      alert("Gagal memperbarui zona: " + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const handleDelete = async (code) => {
+    try {
+      const res = await masterDataAPI.deleteZona(code);
+      if (res.data?.success) {
+        setZonaList((prev) => {
+          const updated = prev.filter((z) => z.zona_code !== code);
+          localStorage.setItem("um_cache_zonas", JSON.stringify(updated));
+          return updated;
+        });
+        setModal(null);
+      }
+    } catch (err) {
+      alert("Gagal menghapus zona: " + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const branchOptions = branchList.map((b) => ({
+    value: b.branch_code,
+    label: `${b.branch_code} — ${b.name}`,
+  }));
+
+  return (
+    <div className="md-section md-section--division">
+      <div
+        className="md-header md-header--division"
+        onClick={() => setOpen((o) => !o)}
+      >
+        <div className="md-header-left">
+          <Ico n="mapPin" size={15} style={{ color: "#0ea5e9" }} />
+          <span className="md-header-title--division" style={{ color: "#0284c7" }}>Manajemen Zona</span>
+          <span className="md-header-count--division">
+            {zonaList.length} zona
+          </span>
+        </div>
+        <Ico
+          n={open ? "chevronUp" : "chevronDown"}
+          size={14}
+          style={{ color: "#0284c7" }}
+        />
+      </div>
+      {open && (
+        <div className="md-body">
+          <div
+            className={`md-toolbar md-toolbar--division`}
+            style={{ flexWrap: "wrap", gap: ".4rem" }}
+          >
+            <div className="md-search-wrap">
+              <Ico n="search" size={12} style={{ color: "#94a3b8" }} />
+              <input
+                placeholder="Cari kode atau nama zona…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                autoComplete="off"
+              />
+            </div>
+            <span style={{ fontSize: ".72rem", color: "#64748b" }}>
+              {filtered.length} ditemukan
+            </span>
+            <button
+              className="md-add-btn md-add-btn--division"
+              style={{ background: "#0ea5e9", color: "#fff" }}
+              onClick={() => setModal({ type: "add" })}
+            >
+              <Ico n="plus" size={12} /> Tambah Zona
+            </button>
+          </div>
+          <div className="md-table-wrap">
+            <table className="md-table md-table--division">
+              <thead>
+                <tr>
+                  <th>Kode Zona</th>
+                  <th>Nama Zona</th>
+                  <th style={{ width: 70, textAlign: "center" }}>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginated.length === 0 ? (
+                  <tr>
+                    <td colSpan={3} className="md-empty">
+                      Tidak ada zona ditemukan
+                    </td>
+                  </tr>
+                ) : (
+                  paginated.map((z) => (
+                    <tr key={z.zona_code}>
+                      <td data-label="Kode Zona">
+                        <span className="md-code-badge md-code-badge--division" style={{ background: "#e0f2fe", color: "#0369a1" }}>
+                          {z.zona_code.split("-").pop()}
+                        </span>
+                      </td>
+                      <td data-label="Nama Zona">
+                        <span className="md-name-text">{z.name}</span>
+                      </td>
+                      <td data-label="Aksi">
+                        <div
+                          className="md-action-row"
+                          style={{ justifyContent: "center" }}
+                        >
+                          <button
+                            className="md-icon-btn md-icon-btn--edit"
+                            title="Edit"
+                            onClick={() => setModal({ type: "edit", item: z })}
+                          >
+                            <Ico n="edit" size={11} />
+                          </button>
+                          <button
+                            className="md-icon-btn md-icon-btn--del"
+                            title="Hapus"
+                            onClick={() =>
+                              setModal({ type: "delete", item: z })
+                            }
+                          >
+                            <Ico n="trash" size={11} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              total={filtered.length}
+              perPage={MD_PER_PAGE}
+              onPageChange={setPage}
+              accentColor="#0ea5e9"
+              accentBg="#e0f2fe"
+              className="md-pagination"
+            />
+          </div>
+        </div>
+      )}
+
+      {modal?.type === "add" && (
+        <MdModal
+          title="Tambah Zona Baru"
+          iconName="mapPin"
+          iconColor="#0ea5e9"
+          fields={[
+            {
+              key: "zona_code",
+              label: "Kode Zona",
+              icon: "idCard",
+              type: "text",
+              placeholder: "Contoh: GDG",
+              required: true,
+            },
+            {
+              key: "name",
+              label: "Nama Zona",
+              icon: "map",
+              placeholder: "Contoh: Gedung A",
+              required: true,
+            },
+          ]}
+          onClose={() => setModal(null)}
+          onSave={handleAdd}
+        />
+      )}
+      {modal?.type === "edit" && (
+        <MdModal
+          title={`Edit Zona — ${modal.item.zona_code}`}
+          iconName="mapPin"
+          iconColor="#0ea5e9"
+          fields={[
+            {
+              key: "zona_code",
+              label: "Kode Zona",
+              icon: "idCard",
+              defaultValue: modal.item.zona_code,
+              required: false,
+              disabled: true,
+              hint: "Kode zona tidak dapat diubah",
+            },
+            {
+              key: "name",
+              label: "Nama Zona",
+              icon: "map",
+              defaultValue: modal.item.name,
+              placeholder: "Nama zona",
+              required: true,
+            },
+          ]}
+          onClose={() => setModal(null)}
+          onSave={handleEdit}
+        />
+      )}
+      {modal?.type === "delete" && (
+        <MdDeleteModal
+          itemName={`${modal.item.zona_code} — ${modal.item.name}`}
+          onClose={() => setModal(null)}
+          onConfirm={() => handleDelete(modal.item.zona_code)}
+        />
+      )}
+    </div>
+  );
+}
+
+// ─── SUBZONA MANAGEMENT SECTION ─────────────────────────────
+function SubzonaSection({
+  subzonaList,
+  setSubzonaList,
+  zonaList,
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [filterZona, setFilterZona] = useState("semua");
+  const [page, setPage] = useState(1);
+  const [modal, setModal] = useState(null);
+
+  const filtered = subzonaList.filter((s) => {
+    const q = search.toLowerCase();
+    const matchQ =
+      s.name.toLowerCase().includes(q) ||
+      s.subzona_code.toLowerCase().includes(q);
+
+    const matchZ = filterZona === "semua" || s.zona_code === filterZona;
+    return matchQ && matchZ;
+  });
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / MD_PER_PAGE));
+  const paginated = filtered.slice(
+    (page - 1) * MD_PER_PAGE,
+    page * MD_PER_PAGE,
+  );
+
+  React.useEffect(() => {
+    setPage(1);
+  }, [search, filterZona]);
+
+  const getZonaName = (code) =>
+    zonaList.find((z) => z.zona_code === code)?.name || code;
+
+  const handleAdd = async (form) => {
+    try {
+      const manualCode = form.subzona_code.trim().toUpperCase();
+      const code = form.zona_code ? `${form.zona_code}-${manualCode}` : manualCode;
+      const res = await masterDataAPI.addSubzona({
+        subzona_code: code,
+        zona_code: form.zona_code,
+        name: form.name.trim(),
+      });
+      if (res.data?.success) {
+        setSubzonaList((prev) => {
+          const updated = [...prev, res.data.data];
+          localStorage.setItem("um_cache_subzonas", JSON.stringify(updated));
+          return updated;
+        });
+        setModal(null);
+      }
+    } catch (err) {
+      alert("Gagal menambahkan subzona: " + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const handleEdit = async (form) => {
+    try {
+      const res = await masterDataAPI.updateSubzona(modal.item.subzona_code, {
+        name: form.name.trim(),
+        zona_code: form.zona_code,
+      });
+      if (res.data?.success) {
+        setSubzonaList((prev) => {
+          const updated = prev.map((s) =>
+            s.subzona_code === modal.item.subzona_code ? res.data.data : s
+          );
+          localStorage.setItem("um_cache_subzonas", JSON.stringify(updated));
+          return updated;
+        });
+        setModal(null);
+      }
+    } catch (err) {
+      alert("Gagal memperbarui subzona: " + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const handleDelete = async (code) => {
+    try {
+      const res = await masterDataAPI.deleteSubzona(code);
+      if (res.data?.success) {
+        setSubzonaList((prev) => {
+          const updated = prev.filter((s) => s.subzona_code !== code);
+          localStorage.setItem("um_cache_subzonas", JSON.stringify(updated));
+          return updated;
+        });
+        setModal(null);
+      }
+    } catch (err) {
+      alert("Gagal menghapus subzona: " + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const zonaOptions = zonaList.map((z) => ({
+    value: z.zona_code,
+    label: `${z.zona_code} — ${z.name}`,
+  }));
+
+  return (
+    <div className="md-section md-section--division">
+      <div
+        className="md-header md-header--division"
+        onClick={() => setOpen((o) => !o)}
+      >
+        <div className="md-header-left">
+          <Ico n="grid" size={15} style={{ color: "#d946ef" }} />
+          <span className="md-header-title--division" style={{ color: "#c026d3" }}>Manajemen Subzona</span>
+          <span className="md-header-count--division">
+            {subzonaList.length} subzona
+          </span>
+        </div>
+        <Ico
+          n={open ? "chevronUp" : "chevronDown"}
+          size={14}
+          style={{ color: "#c026d3" }}
+        />
+      </div>
+      {open && (
+        <div className="md-body">
+          <div
+            className={`md-toolbar md-toolbar--division`}
+            style={{ flexWrap: "wrap", gap: ".4rem" }}
+          >
+            <div className="md-search-wrap">
+              <Ico n="search" size={12} style={{ color: "#94a3b8" }} />
+              <input
+                placeholder="Cari kode atau nama subzona…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                autoComplete="off"
+              />
+            </div>
+            <div className="md-filter-wrap">
+              <Ico n="map" size={11} style={{ color: "#94a3b8" }} />
+              <select
+                value={filterZona}
+                onChange={(e) => setFilterZona(e.target.value)}
+              >
+                <option value="semua">Semua Zona</option>
+                {zonaList.map((z) => (
+                  <option key={z.zona_code} value={z.zona_code}>
+                    {z.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <span style={{ fontSize: ".72rem", color: "#64748b" }}>
+              {filtered.length} ditemukan
+            </span>
+            <button
+              className="md-add-btn md-add-btn--division"
+              style={{ background: "#d946ef", color: "#fff" }}
+              onClick={() => setModal({ type: "add" })}
+            >
+              <Ico n="plus" size={12} /> Tambah Subzona
+            </button>
+          </div>
+          <div className="md-table-wrap">
+            <table className="md-table md-table--division">
+              <thead>
+                <tr>
+                  <th>Kode Subzona</th>
+                  <th>Nama Subzona</th>
+                  <th>Zona</th>
+                  <th style={{ width: 70, textAlign: "center" }}>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginated.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="md-empty">
+                      Tidak ada subzona ditemukan
+                    </td>
+                  </tr>
+                ) : (
+                  paginated.map((s) => (
+                    <tr key={s.subzona_code}>
+                      <td data-label="Kode Subzona">
+                        <span className="md-code-badge md-code-badge--division" style={{ background: "#fae8ff", color: "#a21caf" }}>
+                          {s.subzona_code.includes('-') ? s.subzona_code.split('-').pop() : s.subzona_code}
+                        </span>
+                      </td>
+                      <td data-label="Nama Subzona">
+                        <span className="md-name-text">{s.name}</span>
+                      </td>
+                      <td data-label="Zona">
+                        <span
+                          style={{ fontSize: ".75rem", color: "#334155" }}
+                        >
+                          {s.zona_code} — {getZonaName(s.zona_code)}
+                        </span>
+                      </td>
+                      <td data-label="Aksi">
+                        <div
+                          className="md-action-row"
+                          style={{ justifyContent: "center" }}
+                        >
+                          <button
+                            className="md-icon-btn md-icon-btn--edit"
+                            title="Edit"
+                            onClick={() => setModal({ type: "edit", item: s })}
+                          >
+                            <Ico n="edit" size={11} />
+                          </button>
+                          <button
+                            className="md-icon-btn md-icon-btn--del"
+                            title="Hapus"
+                            onClick={() =>
+                              setModal({ type: "delete", item: s })
+                            }
+                          >
+                            <Ico n="trash" size={11} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              total={filtered.length}
+              perPage={MD_PER_PAGE}
+              onPageChange={setPage}
+              accentColor="#d946ef"
+              accentBg="#fae8ff"
+              className="md-pagination"
+            />
+          </div>
+        </div>
+      )}
+
+      {modal?.type === "add" && (
+        <MdModal
+          title="Tambah Subzona Baru"
+          iconName="grid"
+          iconColor="#d946ef"
+          fields={[
+            {
+              key: "zona_code",
+              label: "Zona",
+              icon: "map",
+              type: "searchable_select",
+              options: zonaOptions,
+              placeholder: "-- Pilih Zona --",
+              required: true,
+            },
+            {
+              key: "subzona_code",
+              label: "Kode Subzona",
+              icon: "idCard",
+              type: "prefixed_text",
+              prefixKey: "zona_code",
+              placeholder: "Contoh: LT1",
+              required: true,
+            },
+            {
+              key: "name",
+              label: "Nama Subzona",
+              icon: "grid",
+              placeholder: "Contoh: Lantai 1",
+              required: true,
+            },
+          ]}
+          onClose={() => setModal(null)}
+          onSave={handleAdd}
+        />
+      )}
+      {modal?.type === "edit" && (
+        <MdModal
+          title={`Edit Subzona — ${modal.item.subzona_code}`}
+          iconName="grid"
+          iconColor="#d946ef"
+          fields={[
+            {
+              key: "zona_code",
+              label: "Zona",
+              icon: "map",
+              type: "select",
+              options: zonaOptions,
+              defaultValue: modal.item.zona_code,
+              required: true,
+            },
+            {
+              key: "subzona_code",
+              label: "Kode Subzona",
+              icon: "idCard",
+              defaultValue: modal.item.subzona_code,
+              required: false,
+              disabled: true,
+              hint: "Kode subzona tidak dapat diubah",
+            },
+            {
+              key: "name",
+              label: "Nama Subzona",
+              icon: "grid",
+              defaultValue: modal.item.name,
+              placeholder: "Nama subzona",
+              required: true,
+            },
+          ]}
+          onClose={() => setModal(null)}
+          onSave={handleEdit}
+        />
+      )}
+      {modal?.type === "delete" && (
+        <MdDeleteModal
+          itemName={`${modal.item.subzona_code} — ${modal.item.name}`}
+          onClose={() => setModal(null)}
+          onConfirm={() => handleDelete(modal.item.subzona_code)}
+        />
+      )}
+    </div>
+  );
+}
+
+// ─── DEVICE MANAGEMENT SECTION ─────────────────────────────
+function DeviceSection({
+  deviceList,
+  setDeviceList,
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [filterCategory, setFilterCategory] = useState("semua");
+  const [page, setPage] = useState(1);
+  const [modal, setModal] = useState(null);
+
+  const filtered = deviceList.filter((d) => {
+    const q = search.toLowerCase();
+    const matchQ = d.name.toLowerCase().includes(q) ||
+      d.device_code.toLowerCase().includes(q);
+    return matchQ;
+  });
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / MD_PER_PAGE));
+  const paginated = filtered.slice(
+    (page - 1) * MD_PER_PAGE,
+    page * MD_PER_PAGE,
+  );
+
+  React.useEffect(() => {
+    setPage(1);
+  }, [search]);
+
+  const getBranchName = (code) =>
+    branchList.find((b) => b.branch_code === code)?.name || code;
+
+  const handleAdd = async (form) => {
+    try {
+      const code = form.device_code.trim().toUpperCase();
+      const res = await masterDataAPI.addDevice({
+        device_code: code,
+        name: form.name.trim().toUpperCase(),
+        branch_code: form.branch_code || null,
+      });
+      if (res.data?.success) {
+        setDeviceList((prev) => {
+          const updated = [...prev, res.data.data];
+          localStorage.setItem("um_cache_devices", JSON.stringify(updated));
+          return updated;
+        });
+        setModal(null);
+      }
+    } catch (err) {
+      alert("Gagal menambahkan kategori perangkat: " + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const handleEdit = async (form) => {
+    try {
+      const res = await masterDataAPI.updateDevice(modal.item.device_code, {
+        name: form.name.trim().toUpperCase(),
+        branch_code: form.branch_code || null,
+      });
+      if (res.data?.success) {
+        setDeviceList((prev) => {
+          const updated = prev.map((d) =>
+            d.device_code === modal.item.device_code ? res.data.data : d
+          );
+          localStorage.setItem("um_cache_devices", JSON.stringify(updated));
+          return updated;
+        });
+        setModal(null);
+      }
+    } catch (err) {
+      alert("Gagal memperbarui kategori perangkat: " + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const handleDelete = async (code) => {
+    try {
+      const res = await masterDataAPI.deleteDevice(code);
+      if (res.data?.success) {
+        setDeviceList((prev) => {
+          const updated = prev.filter((d) => d.device_code !== code);
+          localStorage.setItem("um_cache_devices", JSON.stringify(updated));
+          return updated;
+        });
+        setModal(null);
+      }
+    } catch (err) {
+      alert("Gagal menghapus kategori perangkat: " + (err.response?.data?.message || err.message));
+    }
+  };
+
+  return (
+    <div className="md-section md-section--division">
+      <div
+        className="md-header md-header--division"
+        onClick={() => setOpen((o) => !o)}
+      >
+        <div className="md-header-left">
+          <Ico n="monitor" size={15} style={{ color: "#f59e0b" }} />
+          <span className="md-header-title--division" style={{ color: "#d97706" }}>Manajemen Kategori (Device)</span>
+          <span className="md-header-count--division">
+            {deviceList.length} kategori
+          </span>
+        </div>
+        <Ico
+          n={open ? "chevronUp" : "chevronDown"}
+          size={14}
+          style={{ color: "#d97706" }}
+        />
+      </div>
+      {open && (
+        <div className="md-body">
+          <div
+            className={`md-toolbar md-toolbar--division`}
+            style={{ flexWrap: "wrap", gap: ".4rem" }}
+          >
+            <div className="md-search-wrap">
+              <Ico n="search" size={12} style={{ color: "#94a3b8" }} />
+              <input
+                placeholder="Cari kode atau nama kategori…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                autoComplete="off"
+              />
+            </div>
+            <span style={{ fontSize: ".72rem", color: "#64748b" }}>
+              {filtered.length} ditemukan
+            </span>
+            <button
+              className="md-add-btn md-add-btn--division"
+              style={{ background: "#f59e0b", color: "#fff" }}
+              onClick={() => setModal({ type: "add" })}
+            >
+              <Ico n="plus" size={12} /> Tambah Kategori
+            </button>
+          </div>
+          <div className="md-table-wrap">
+            <table className="md-table md-table--division">
+              <thead>
+                <tr>
+                  <th>Kode Kategori</th>
+                  <th>Nama Kategori</th>
+                  <th style={{ width: 70, textAlign: "center" }}>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginated.length === 0 ? (
+                  <tr>
+                    <td colSpan={3} className="md-empty">
+                      Tidak ada kategori ditemukan
+                    </td>
+                  </tr>
+                ) : (
+                  paginated.map((d) => (
+                    <tr key={d.device_code}>
+                      <td data-label="Kode Kategori">
+                        <span className="md-code-badge md-code-badge--division" style={{ background: "#fef3c7", color: "#b45309" }}>
+                          {d.device_code}
+                        </span>
+                      </td>
+                      <td data-label="Nama Kategori">
+                        <span className="md-name-text">{d.name}</span>
+                      </td>
+                      <td data-label="Aksi">
+                        <div
+                          className="md-action-row"
+                          style={{ justifyContent: "center" }}
+                        >
+                          <button
+                            className="md-icon-btn md-icon-btn--edit"
+                            title="Edit"
+                            onClick={() => setModal({ type: "edit", item: d })}
+                          >
+                            <Ico n="edit" size={11} />
+                          </button>
+                          <button
+                            className="md-icon-btn md-icon-btn--del"
+                            title="Hapus"
+                            onClick={() =>
+                              setModal({ type: "delete", item: d })
+                            }
+                          >
+                            <Ico n="trash" size={11} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              total={filtered.length}
+              perPage={MD_PER_PAGE}
+              onPageChange={setPage}
+              accentColor="#f59e0b"
+              accentBg="#fef3c7"
+              className="md-pagination"
+            />
+          </div>
+        </div>
+      )}
+
+      {modal?.type === "add" && (
+        <MdModal
+          title="Tambah Kategori Baru"
+          iconName="monitor"
+          iconColor="#f59e0b"
+          fields={[
+            {
+              key: "device_code",
+              label: "Kode Kategori",
+              icon: "idCard",
+              placeholder: "Contoh: LPT",
+              required: true,
+              hint: "Singkatan jenis perangkat (akan diubah ke UPPERCASE)",
+            },
+            {
+              key: "name",
+              label: "Nama Kategori",
+              icon: "monitor",
+              placeholder: "Contoh: LAPTOP",
+              required: true,
+            },
+          ]}
+          onClose={() => setModal(null)}
+          onSave={handleAdd}
+        />
+      )}
+      {modal?.type === "edit" && (
+        <MdModal
+          title={`Edit Kategori — ${modal.item.device_code}`}
+          iconName="monitor"
+          iconColor="#f59e0b"
+          fields={[
+            {
+              key: "device_code",
+              label: "Kode Kategori",
+              icon: "idCard",
+              defaultValue: modal.item.device_code,
+              required: false,
+              disabled: true,
+              hint: "Kode kategori tidak dapat diubah",
+            },
+            {
+              key: "name",
+              label: "Nama Kategori",
+              icon: "monitor",
+              defaultValue: modal.item.name,
+              placeholder: "Nama kategori",
+              required: true,
+            },
+          ]}
+          onClose={() => setModal(null)}
+          onSave={handleEdit}
+        />
+      )}
+      {modal?.type === "delete" && (
+        <MdDeleteModal
+          itemName={`${modal.item.device_code} — ${modal.item.name}`}
+          onClose={() => setModal(null)}
+          onConfirm={() => handleDelete(modal.item.device_code)}
+        />
+      )}
+    </div>
+  );
+}
+
 // --- MAIN COMPONENT ---
 const USERS_PER_PAGE = 5;
 
@@ -3447,14 +4483,22 @@ const UserManagement = () => {
   const [branchList, setBranchList] = useState([]);
   const [divisionList, setDivisionList] = useState([]);
   const [roleList, setRoleList] = useState([]);
+  const [zonaList, setZonaList] = useState([]);
+  const [subzonaList, setSubzonaList] = useState([]);
+  const [deviceList, setDeviceList] = useState([]);
 
   useEffect(() => {
+    // Clear old zona/subzona caches so "used_only" filter applies on fresh load
+    localStorage.removeItem("um_cache_zonas");
+    localStorage.removeItem("um_cache_subzonas");
+
     // 1. Ambil data dari Cache (localStorage) agar muncul INSTAN
     const cachedUsers = localStorage.getItem("um_cache_users");
     const cachedEntities = localStorage.getItem("um_cache_entities");
     const cachedBranches = localStorage.getItem("um_cache_branches");
     const cachedDivisions = localStorage.getItem("um_cache_divisions");
     const cachedRoles = localStorage.getItem("um_cache_roles");
+    const cachedDevices = localStorage.getItem("um_cache_devices");
     const cachedMeta = localStorage.getItem("um_cache_meta");
 
     if (cachedUsers) setUsers(JSON.parse(cachedUsers));
@@ -3462,6 +4506,7 @@ const UserManagement = () => {
     if (cachedBranches) setBranchList(JSON.parse(cachedBranches));
     if (cachedDivisions) setDivisionList(JSON.parse(cachedDivisions));
     if (cachedRoles) setRoleList(JSON.parse(cachedRoles));
+    if (cachedDevices) setDeviceList(JSON.parse(cachedDevices));
     if (cachedMeta) setMeta(JSON.parse(cachedMeta));
 
     const fetchData = async () => {
@@ -3489,6 +4534,24 @@ const UserManagement = () => {
           if (res.data?.success) {
             setRoleList(res.data.data);
             localStorage.setItem("um_cache_roles", JSON.stringify(res.data.data));
+          }
+        });
+        masterDataAPI.getZonas({ used_only: 'true' }).then(res => {
+          if (res.data?.success) {
+            setZonaList(res.data.data);
+            localStorage.setItem("um_cache_zonas", JSON.stringify(res.data.data));
+          }
+        });
+        masterDataAPI.getSubzonas({ used_only: 'true' }).then(res => {
+          if (res.data?.success) {
+            setSubzonaList(res.data.data);
+            localStorage.setItem("um_cache_subzonas", JSON.stringify(res.data.data));
+          }
+        });
+        masterDataAPI.getDevices().then(res => {
+          if (res.data?.success) {
+            setDeviceList(res.data.data);
+            localStorage.setItem("um_cache_devices", JSON.stringify(res.data.data));
           }
         });
 
@@ -4033,6 +5096,28 @@ const UserManagement = () => {
             divisionList={divisionList}
             setDivisionList={setDivisionList}
             entityList={entityList}
+            branchList={branchList}
+          />
+        </div>
+        <div style={{ marginTop: ".6rem" }}>
+          <ZonaSection
+            zonaList={zonaList}
+            setZonaList={setZonaList}
+            branchList={branchList}
+          />
+        </div>
+        <div style={{ marginTop: ".6rem" }}>
+          <SubzonaSection
+            subzonaList={subzonaList}
+            setSubzonaList={setSubzonaList}
+            zonaList={zonaList}
+            branchList={branchList}
+          />
+        </div>
+        <div style={{ marginTop: ".6rem" }}>
+          <DeviceSection
+            deviceList={deviceList}
+            setDeviceList={setDeviceList}
             branchList={branchList}
           />
         </div>

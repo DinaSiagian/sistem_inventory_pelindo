@@ -271,126 +271,6 @@ const getProjectName = (id) => {
   return p ? p.nm_pekerjaan : "—";
 };
 
-const MOCK_ALL_BORROWS = [
-  {
-    id: 1,
-    code: "CCTV-24BLW-001",
-    serial_number: "SN-CCTV-001",
-    name: "CCTV Hikvision PTZ",
-    borrow_date: "2026-01-10T09:00:00",
-    due_date: "2026-02-10",
-    performed_by_id: 3,
-    performed_by_name: "Andi Pratama",
-    performed_by_branch: "Belawan",
-    from_zone: "Gudang Utama",
-    to_zone: "Area Dermaga - Tiang 1",
-    reason: "Instalasi Baru",
-    condition: "GOOD",
-    is_returned: true,
-    return_date: "2026-02-08T14:00:00",
-    return_condition: "GOOD",
-    return_notes: "Kondisi baik, ditarik untuk maintenance rutin.",
-    returned_by_name: "Budi Santoso",
-  },
-  {
-    id: 2,
-    code: "CCTV-24BLW-001",
-    serial_number: "SN-CCTV-001",
-    name: "CCTV Hikvision PTZ",
-    borrow_date: "2026-02-20T10:00:00",
-    due_date: "2026-03-20",
-    performed_by_id: 1,
-    performed_by_name: "Joy Valeda Silalahi",
-    performed_by_branch: "Belawan",
-    from_zone: "Gudang Utama",
-    to_zone: "Area Parkir Timur",
-    reason: "Penggantian unit rusak sementara",
-    condition: "GOOD",
-    is_returned: false,
-    return_date: null,
-    return_condition: null,
-    return_notes: null,
-  },
-  {
-    id: 3,
-    code: "CCTV-24BLW-001",
-    serial_number: "SN-CCTV-002",
-    name: "CCTV Hikvision PTZ",
-    borrow_date: "2026-01-15T08:00:00",
-    due_date: "2026-02-15",
-    performed_by_id: 2,
-    performed_by_name: "Dina Marlina Siagian",
-    performed_by_branch: "Belawan",
-    from_zone: "Gudang Utama",
-    to_zone: "Pintu Masuk Utama",
-    reason: "Instalasi Baru",
-    condition: "GOOD",
-    is_returned: true,
-    return_date: "2026-02-10T16:00:00",
-    return_condition: "MINOR_DAMAGE",
-    return_notes: "Lensa sedikit berembun setelah hujan lebat.",
-    returned_by_name: "Andi Pratama",
-  },
-  {
-    id: 4,
-    code: "KND-24BLW-001",
-    serial_number: "BK 1234 ZZ",
-    name: "Toyota Hilux Pickup",
-    borrow_date: "2026-01-05T07:00:00",
-    due_date: "2026-01-20",
-    performed_by_id: 5,
-    performed_by_name: "Rini Handayani",
-    performed_by_branch: "Belawan",
-    from_zone: "Pool Kendaraan",
-    to_zone: "Luar Kota (Medan)",
-    reason: "Dinas operasional",
-    condition: "GOOD",
-    is_returned: true,
-    return_date: "2026-01-19T17:00:00",
-    return_condition: "GOOD",
-    return_notes: "Kondisi sangat baik, BBM full.",
-    returned_by_name: "Rini Handayani",
-  },
-  {
-    id: 5,
-    code: "KND-24BLW-001",
-    serial_number: "BK 1234 ZZ",
-    name: "Toyota Hilux Pickup",
-    borrow_date: "2026-02-15T08:00:00",
-    due_date: "2026-03-01",
-    performed_by_id: 4,
-    performed_by_name: "Sari Dewi",
-    performed_by_branch: "Belawan",
-    from_zone: "Pool Kendaraan",
-    to_zone: "Terminal Peti Kemas",
-    reason: "Patroli rutin",
-    condition: "GOOD",
-    is_returned: false,
-    return_date: null,
-    return_condition: null,
-    return_notes: null,
-  },
-  {
-    id: 6,
-    code: "KND-24BLW-001",
-    serial_number: "BK 5678 AA",
-    name: "Toyota Hilux Pickup",
-    borrow_date: "2026-02-10T09:00:00",
-    due_date: "2026-02-12",
-    performed_by_id: 3,
-    performed_by_name: "Andi Pratama",
-    performed_by_branch: "Belawan",
-    from_zone: "Pool Kendaraan",
-    to_zone: "Workshop",
-    reason: "Service rutin 10.000km",
-    condition: "GOOD",
-    is_returned: true,
-    return_date: "2026-02-12T15:00:00",
-    return_condition: "GOOD",
-    return_notes: "Ganti oli dan filter, kondisi prima.",
-    returned_by_name: "Andi Pratama",
-  }
-];
 
 const CATEGORY_IMAGES = {
   Laptop:
@@ -2615,22 +2495,31 @@ const Inventaris = () => {
   }, [isEditingUnit]);
 
   // Pemetaan Nama Lengkap Kategori berdasarkan Device Code
-  const CATEGORY_NAMES = {
-    LPT: "LAPTOP",
-    CTV: "CCTV CAMERA",
-    RTR: "ROUTER / JARINGAN",
-    PC: "PC DESKTOP",
-    SRV: "SERVER",
-    SWT: "SWITCH",
-    PRN: "PRINTER",
-    KND: "KENDARAAN",
-    AB: "ALAT BERAT",
-    FRN: "FURNITURE",
-    MAT: "MATERIAL",
-    SFT: "SOFTWARE LICENSE",
-    HDW: "HARDWARE",
-    OTH: "IT LAINNYA"
-  };
+  // Pemetaan Nama Lengkap Kategori berdasarkan Device Code (Dinamis dari database + base fallback)
+  const CATEGORY_NAMES = useMemo(() => {
+    const base = {
+      LPT: "LAPTOP",
+      CTV: "CCTV CAMERA",
+      RTR: "ROUTER / JARINGAN",
+      PC: "PC DESKTOP",
+      SRV: "SERVER",
+      SWT: "SWITCH",
+      PRN: "PRINTER",
+      KND: "KENDARAAN",
+      AB: "ALAT BERAT",
+      FRN: "FURNITURE",
+      MAT: "MATERIAL",
+      SFT: "SOFTWARE LICENSE",
+      HDW: "HARDWARE",
+      OTH: "IT LAINNYA"
+    };
+    if (dbCategories && dbCategories.length > 0) {
+      dbCategories.forEach(c => {
+        base[c.device_code] = c.name;
+      });
+    }
+    return base;
+  }, [dbCategories]);
 
   // Pemetaan Prefix berdasarkan Kategori
   const CATEGORY_PREFIX = {
@@ -2668,7 +2557,7 @@ const Inventaris = () => {
   useEffect(() => {
     if (currentView === "add") {
       if (formData.category && formData.tipeAset) {
-        const prefix = `${CATEGORY_PREFIX[formData.category] || "BRG"}-`;
+        const prefix = `${CATEGORY_PREFIX[formData.category] || formData.category || "BRG"}-`;
 
         // Cari angka terbesar khusus untuk prefix kategori ini
         const maxId = assets.reduce((max, a) => {
@@ -2845,21 +2734,21 @@ const Inventaris = () => {
     }));
   };
   const handleZonaChange = (e) => {
-    const f = ZONA_LIST.find((z) => z.code === e.target.value);
+    const f = dbLocations.zonas?.find((z) => z.zona_code === e.target.value);
     setFormData((p) => ({
       ...p,
       zona: f?.name || "",
-      zonaCode: f?.code || "",
+      zonaCode: f?.zona_code || "",
       nomorAset: "",
       assetId: "",
     }));
   };
   const handleSubzonaChange = (e) => {
-    const f = SUBZONA_LIST.find((s) => s.code === e.target.value);
+    const f = dbLocations.subzonas?.find((s) => s.subzona_code === e.target.value);
     setFormData((p) => ({
       ...p,
       subzona: f?.name || "",
-      subzonaCode: f?.code || "",
+      subzonaCode: f?.subzona_code || "",
       nomorAset: "",
       assetId: "",
     }));
@@ -4286,7 +4175,9 @@ const Inventaris = () => {
                       style={{ ...modernSelectStyle, background: "#fff", border: "1px solid #e2e8f0" }}
                     >
                       <option value="">— Zona —</option>
-                      {ZONA_LIST.map((z) => <option key={z.code} value={z.code}>{z.name}</option>)}
+                      {(dbLocations.zonas || [])
+                        .filter(z => !formData.branchCode || z.branch_code === formData.branchCode)
+                        .map((z) => <option key={z.zona_code} value={z.zona_code}>{z.name}</option>)}
                     </select>
                     <select
                       value={formData.subzonaCode}
@@ -4294,7 +4185,9 @@ const Inventaris = () => {
                       style={{ ...modernSelectStyle, background: "#fff", border: "1px solid #e2e8f0" }}
                     >
                       <option value="">— Subzona —</option>
-                      {SUBZONA_LIST.map((s) => <option key={s.code} value={s.code}>{s.name}</option>)}
+                      {(dbLocations.subzonas || [])
+                        .filter(s => !formData.zonaCode || s.zona_code === formData.zonaCode)
+                        .map((s) => <option key={s.subzona_code} value={s.subzona_code}>{s.name}</option>)}
                     </select>
                     <button
                       type="button"

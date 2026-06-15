@@ -60,7 +60,20 @@ export const masterDataAPI = {
 
   // Zonas & Subzonas
   getZonas: (params) => api.get("/master-data/zonas", { params }),
+  addZona: (data) => api.post("/master-data/zonas", data),
+  updateZona: (code, data) => api.put(`/master-data/zonas/${code}`, data),
+  deleteZona: (code) => api.delete(`/master-data/zonas/${code}`),
+
   getSubzonas: (params) => api.get("/master-data/subzonas", { params }),
+  addSubzona: (data) => api.post("/master-data/subzonas", data),
+  updateSubzona: (code, data) => api.put(`/master-data/subzonas/${code}`, data),
+  deleteSubzona: (code) => api.delete(`/master-data/subzonas/${code}`),
+
+  // Devices
+  getDevices: () => api.get("/master-data/devices"),
+  addDevice: (data) => api.post("/master-data/devices", data),
+  updateDevice: (code, data) => api.put(`/master-data/devices/${code}`, data),
+  deleteDevice: (code) => api.delete(`/master-data/devices/${code}`),
 
   // Divisions
   getDivisions: () => api.get("/master-data/divisions"),

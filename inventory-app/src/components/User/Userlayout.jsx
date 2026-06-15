@@ -19,9 +19,6 @@ import "./Shared.css";
 import logoPelindo from "../../pictures/pelindo2.png";
 import batikImg from "../../pictures/batik.png";
 
-import { transactionsMock, assetsMock, fmt } from "./Data";
-import { useLoanNotifications } from "./useLoanNotifications";
-import LoanAlertPopup from "./LoanAlertPopup";
 import { authAPI } from "../../services/api";
 
 // ─────────────────────────────────────────

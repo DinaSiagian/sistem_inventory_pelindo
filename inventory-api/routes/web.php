@@ -62,7 +62,20 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
         // ── MASTER DATA: ZONAS & SUBZONAS ──────────
         $router->get('/master-data/zonas',            'MasterDataController@indexZonas');
+        $router->post('/master-data/zonas',           'MasterDataController@storeZona');
+        $router->put('/master-data/zonas/{code}',     'MasterDataController@updateZona');
+        $router->delete('/master-data/zonas/{code}',  'MasterDataController@deleteZona');
+
         $router->get('/master-data/subzonas',         'MasterDataController@indexSubzonas');
+        $router->post('/master-data/subzonas',        'MasterDataController@storeSubzona');
+        $router->put('/master-data/subzonas/{code}',  'MasterDataController@updateSubzona');
+        $router->delete('/master-data/subzonas/{code}','MasterDataController@deleteSubzona');
+
+        // ── MASTER DATA: DEVICES (KATEGORI) ────────
+        $router->get('/master-data/devices',          'MasterDataController@indexDevices');
+        $router->post('/master-data/devices',         'MasterDataController@storeDevice');
+        $router->put('/master-data/devices/{code}',   'MasterDataController@updateDevice');
+        $router->delete('/master-data/devices/{code}','MasterDataController@deleteDevice');
 
         // ── MASTER DATA: DIVISIONS ─────────────────
         $router->get('/master-data/divisions',         'MasterDataController@indexDivisions');

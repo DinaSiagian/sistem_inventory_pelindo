@@ -271,126 +271,6 @@ const getProjectName = (id) => {
   return p ? p.nm_pekerjaan : "—";
 };
 
-const MOCK_ALL_BORROWS = [
-  {
-    id: 1,
-    code: "CCTV-24BLW-001",
-    serial_number: "SN-CCTV-001",
-    name: "CCTV Hikvision PTZ",
-    borrow_date: "2026-01-10T09:00:00",
-    due_date: "2026-02-10",
-    performed_by_id: 3,
-    performed_by_name: "Andi Pratama",
-    performed_by_branch: "Belawan",
-    from_zone: "Gudang Utama",
-    to_zone: "Area Dermaga - Tiang 1",
-    reason: "Instalasi Baru",
-    condition: "GOOD",
-    is_returned: true,
-    return_date: "2026-02-08T14:00:00",
-    return_condition: "GOOD",
-    return_notes: "Kondisi baik, ditarik untuk maintenance rutin.",
-    returned_by_name: "Budi Santoso",
-  },
-  {
-    id: 2,
-    code: "CCTV-24BLW-001",
-    serial_number: "SN-CCTV-001",
-    name: "CCTV Hikvision PTZ",
-    borrow_date: "2026-02-20T10:00:00",
-    due_date: "2026-03-20",
-    performed_by_id: 1,
-    performed_by_name: "Joy Valeda Silalahi",
-    performed_by_branch: "Belawan",
-    from_zone: "Gudang Utama",
-    to_zone: "Area Parkir Timur",
-    reason: "Penggantian unit rusak sementara",
-    condition: "GOOD",
-    is_returned: false,
-    return_date: null,
-    return_condition: null,
-    return_notes: null,
-  },
-  {
-    id: 3,
-    code: "CCTV-24BLW-001",
-    serial_number: "SN-CCTV-002",
-    name: "CCTV Hikvision PTZ",
-    borrow_date: "2026-01-15T08:00:00",
-    due_date: "2026-02-15",
-    performed_by_id: 2,
-    performed_by_name: "Dina Marlina Siagian",
-    performed_by_branch: "Belawan",
-    from_zone: "Gudang Utama",
-    to_zone: "Pintu Masuk Utama",
-    reason: "Instalasi Baru",
-    condition: "GOOD",
-    is_returned: true,
-    return_date: "2026-02-10T16:00:00",
-    return_condition: "MINOR_DAMAGE",
-    return_notes: "Lensa sedikit berembun setelah hujan lebat.",
-    returned_by_name: "Andi Pratama",
-  },
-  {
-    id: 4,
-    code: "KND-24BLW-001",
-    serial_number: "BK 1234 ZZ",
-    name: "Toyota Hilux Pickup",
-    borrow_date: "2026-01-05T07:00:00",
-    due_date: "2026-01-20",
-    performed_by_id: 5,
-    performed_by_name: "Rini Handayani",
-    performed_by_branch: "Belawan",
-    from_zone: "Pool Kendaraan",
-    to_zone: "Luar Kota (Medan)",
-    reason: "Dinas operasional",
-    condition: "GOOD",
-    is_returned: true,
-    return_date: "2026-01-19T17:00:00",
-    return_condition: "GOOD",
-    return_notes: "Kondisi sangat baik, BBM full.",
-    returned_by_name: "Rini Handayani",
-  },
-  {
-    id: 5,
-    code: "KND-24BLW-001",
-    serial_number: "BK 1234 ZZ",
-    name: "Toyota Hilux Pickup",
-    borrow_date: "2026-02-15T08:00:00",
-    due_date: "2026-03-01",
-    performed_by_id: 4,
-    performed_by_name: "Sari Dewi",
-    performed_by_branch: "Belawan",
-    from_zone: "Pool Kendaraan",
-    to_zone: "Terminal Peti Kemas",
-    reason: "Patroli rutin",
-    condition: "GOOD",
-    is_returned: false,
-    return_date: null,
-    return_condition: null,
-    return_notes: null,
-  },
-  {
-    id: 6,
-    code: "KND-24BLW-001",
-    serial_number: "BK 5678 AA",
-    name: "Toyota Hilux Pickup",
-    borrow_date: "2026-02-10T09:00:00",
-    due_date: "2026-02-12",
-    performed_by_id: 3,
-    performed_by_name: "Andi Pratama",
-    performed_by_branch: "Belawan",
-    from_zone: "Pool Kendaraan",
-    to_zone: "Workshop",
-    reason: "Service rutin 10.000km",
-    condition: "GOOD",
-    is_returned: true,
-    return_date: "2026-02-12T15:00:00",
-    return_condition: "GOOD",
-    return_notes: "Ganti oli dan filter, kondisi prima.",
-    returned_by_name: "Andi Pratama",
-  }
-];
 
 const CATEGORY_IMAGES = {
   Laptop:
@@ -2407,6 +2287,7 @@ const SmartLocationInput = ({ value, onChange, placeholder = "Pilih Branch / Zon
 
 // ── MAIN COMPONENT ────────────────────────────────────────────────
 const ViewAsset = () => {
+  const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
   const [assets, setAssets] = useState(() => JSON.parse(sessionStorage.getItem('SWR_assets')) || []);
   const [dbCategories, setDbCategories] = useState(() => JSON.parse(sessionStorage.getItem('SWR_dbCategories')) || []);
   const [dbLocations, setDbLocations] = useState(() => JSON.parse(sessionStorage.getItem('SWR_dbLocations')) || { branches: [], zonas: [], subzonas: [] });
@@ -2415,7 +2296,7 @@ const ViewAsset = () => {
     try {
       const [resAssets, resDevices, resCapex, resOpex, resB, resZ, resS] = await Promise.all([
         barangAPI.getAll(),
-        barangAPI.getDevices(),
+        masterDataAPI.getDevices(),
         budgetAPI.getCapex(),
         budgetAPI.getOpex(),
         masterDataAPI.getBranches(),
@@ -2424,8 +2305,9 @@ const ViewAsset = () => {
       ]);
       setAssets(resAssets.data);
       sessionStorage.setItem('SWR_assets', JSON.stringify(resAssets.data));
-      setDbCategories(resDevices.data || []);
-      sessionStorage.setItem('SWR_dbCategories', JSON.stringify(resDevices.data || []));
+      const newCategories = resDevices.data?.data || resDevices.data || [];
+      setDbCategories(newCategories);
+      sessionStorage.setItem('SWR_dbCategories', JSON.stringify(newCategories));
 
       if (resB.data?.success && resZ.data?.success && resS.data?.success) {
         const locs = {
@@ -2623,22 +2505,31 @@ const ViewAsset = () => {
   }, [isEditingUnit]);
 
   // Pemetaan Nama Lengkap Kategori berdasarkan Device Code
-  const CATEGORY_NAMES = {
-    LPT: "LAPTOP",
-    CTV: "CCTV CAMERA",
-    RTR: "ROUTER / JARINGAN",
-    PC: "PC DESKTOP",
-    SRV: "SERVER",
-    SWT: "SWITCH",
-    PRN: "PRINTER",
-    KND: "KENDARAAN",
-    AB: "ALAT BERAT",
-    FRN: "FURNITURE",
-    MAT: "MATERIAL",
-    SFT: "SOFTWARE LICENSE",
-    HDW: "HARDWARE",
-    OTH: "IT LAINNYA"
-  };
+  // Pemetaan Nama Lengkap Kategori berdasarkan Device Code (Dinamis dari database + base fallback)
+  const CATEGORY_NAMES = useMemo(() => {
+    const base = {
+      LPT: "LAPTOP",
+      CTV: "CCTV CAMERA",
+      RTR: "ROUTER / JARINGAN",
+      PC: "PC DESKTOP",
+      SRV: "SERVER",
+      SWT: "SWITCH",
+      PRN: "PRINTER",
+      KND: "KENDARAAN",
+      AB: "ALAT BERAT",
+      FRN: "FURNITURE",
+      MAT: "MATERIAL",
+      SFT: "SOFTWARE LICENSE",
+      HDW: "HARDWARE",
+      OTH: "IT LAINNYA"
+    };
+    if (dbCategories && dbCategories.length > 0) {
+      dbCategories.forEach(c => {
+        base[c.device_code] = c.name;
+      });
+    }
+    return base;
+  }, [dbCategories]);
 
   // Pemetaan Prefix berdasarkan Kategori
   const CATEGORY_PREFIX = {
@@ -2676,7 +2567,7 @@ const ViewAsset = () => {
   useEffect(() => {
     if (currentView === "add") {
       if (formData.category && formData.tipeAset) {
-        const prefix = `${CATEGORY_PREFIX[formData.category] || "BRG"}-`;
+        const prefix = `${CATEGORY_PREFIX[formData.category] || formData.category || "BRG"}-`;
 
         // Cari angka terbesar khusus untuk prefix kategori ini
         const maxId = assets.reduce((max, a) => {
@@ -2853,21 +2744,21 @@ const ViewAsset = () => {
     }));
   };
   const handleZonaChange = (e) => {
-    const f = ZONA_LIST.find((z) => z.code === e.target.value);
+    const f = dbLocations.zonas.find((z) => z.zona_code === e.target.value);
     setFormData((p) => ({
       ...p,
       zona: f?.name || "",
-      zonaCode: f?.code || "",
+      zonaCode: f?.zona_code || "",
       nomorAset: "",
       assetId: "",
     }));
   };
   const handleSubzonaChange = (e) => {
-    const f = SUBZONA_LIST.find((s) => s.code === e.target.value);
+    const f = dbLocations.subzonas.find((s) => s.subzona_code === e.target.value);
     setFormData((p) => ({
       ...p,
       subzona: f?.name || "",
-      subzonaCode: f?.code || "",
+      subzonaCode: f?.subzona_code || "",
       nomorAset: "",
       assetId: "",
     }));
@@ -2960,7 +2851,7 @@ const ViewAsset = () => {
   const handleSave = async (goToBarcode = false) => {
     if (isSaving) return;
     setIsSaving(true);
-    
+
     try {
       // ID akan di-generate otomatis jika masih kosong
       let startId = formData.assetId;
@@ -3311,7 +3202,16 @@ const ViewAsset = () => {
 
   // ── RENDER LIST VIEW (TAMPILAN AWAL - TIDAK DIUBAH) ─────────────
   const renderListView = () => {
-    const uniqueCategories = [...new Set(assets.map(a => a.category).filter(Boolean))].sort();
+    // Combine assets categories with dbCategories
+    const assetCats = assets.map((a) => a.category).filter(Boolean);
+    const userBranch = currentUser?.branches_code || currentUser?.branch_code;
+    const dbCats = dbCategories
+      .filter((c) => {
+        const matchUserBranch = userBranch ? (c.branch_code && c.branch_code.split(",").includes(userBranch)) : true;
+        return !c.branch_code || matchUserBranch;
+      })
+      .map((c) => c.device_code);
+    const uniqueCategories = [...new Set([...assetCats, ...dbCats])].sort();
     const autoNomor = canGenerate
       ? getNextNomor(
         formData.entitasCode,
@@ -3447,12 +3347,12 @@ const ViewAsset = () => {
                 <Icon.Grid /> Grid
               </button>
             </div>
-            
+
             <div style={{ position: "relative" }}>
-              <button 
-                className="control-btn" 
+              <button
+                className="control-btn"
                 onClick={() => setShowFilterSidebar(true)}
-                style={{ 
+                style={{
                   background: (activeFiltersCount > 0) ? "#eff6ff" : "#fff",
                   color: (activeFiltersCount > 0) ? "#2563eb" : "#475569",
                   borderColor: (activeFiltersCount > 0) ? "#bfdbfe" : "#e2e8f0"
@@ -3467,11 +3367,11 @@ const ViewAsset = () => {
             </button>
           </div>
         </div>
-        
+
         {/* SIDEBAR FILTER */}
         {showFilterSidebar && (
           <>
-            <div 
+            <div
               style={{
                 position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
                 background: "rgba(0,0,0,0.4)", zIndex: 9998,
@@ -3479,7 +3379,7 @@ const ViewAsset = () => {
               }}
               onClick={() => setShowFilterSidebar(false)}
             />
-            <div 
+            <div
               style={{
                 position: "fixed", top: 0, right: 0, bottom: 0,
                 width: "320px", background: "#fff", zIndex: 9999,
@@ -3504,12 +3404,12 @@ const ViewAsset = () => {
                   margin-bottom: 12px;
                 }
               `}</style>
-              
+
               <div style={{ padding: "20px", borderBottom: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#f8fafc" }}>
                 <h3 style={{ margin: 0, fontSize: "16px", fontWeight: "800", display: "flex", alignItems: "center", gap: "8px" }}>
                   <Icon.Filter /> FILTER
                 </h3>
-                <button 
+                <button
                   onClick={() => setShowFilterSidebar(false)}
                   style={{ background: "transparent", border: "none", cursor: "pointer", color: "#64748b", padding: "4px" }}
                 >
@@ -3528,7 +3428,7 @@ const ViewAsset = () => {
                       setSelectedTipes([]); // reset tipes when category changes
                       setCurrentPage(1);
                     }}
-                    style={{...modernSelectStyle, width: "100%", background: "#f8fafc", padding: "10px 12px"}}
+                    style={{ ...modernSelectStyle, width: "100%", background: "#f8fafc", padding: "10px 12px" }}
                   >
                     <option value="">Semua Kategori</option>
                     {uniqueCategories.map(cat => (
@@ -3547,8 +3447,8 @@ const ViewAsset = () => {
                     <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                       {availableBrands.map(brand => (
                         <label key={brand} style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontSize: "13.5px", color: "#334155" }}>
-                          <input 
-                            type="checkbox" 
+                          <input
+                            type="checkbox"
                             checked={selectedBrands.includes(brand)}
                             onChange={(e) => {
                               if (e.target.checked) {
@@ -3579,8 +3479,8 @@ const ViewAsset = () => {
                     <div style={{ display: "flex", flexDirection: "column", gap: "10px", maxHeight: "240px", overflowY: "auto" }}>
                       {availableTipes.map(tipe => (
                         <label key={tipe} style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontSize: "13.5px", color: "#334155" }}>
-                          <input 
-                            type="checkbox" 
+                          <input
+                            type="checkbox"
                             checked={selectedTipes.includes(tipe)}
                             onChange={(e) => {
                               if (e.target.checked) {
@@ -3604,11 +3504,11 @@ const ViewAsset = () => {
                   <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                     {["Tersedia", "Dipinjam", "Maintenance"].map(status => (
                       <label key={status} style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontSize: "13.5px", color: "#334155" }}>
-                        <input 
-                          type="radio" name="statusFilter" 
-                          checked={filterStatus === status} 
-                          onChange={() => { setFilterStatus(status); setCurrentPage(1); }} 
-                          style={{ width: "16px", height: "16px", accentColor: "#2563eb" }} 
+                        <input
+                          type="radio" name="statusFilter"
+                          checked={filterStatus === status}
+                          onChange={() => { setFilterStatus(status); setCurrentPage(1); }}
+                          style={{ width: "16px", height: "16px", accentColor: "#2563eb" }}
                         /> {status}
                       </label>
                     ))}
@@ -3617,13 +3517,13 @@ const ViewAsset = () => {
               </div>
 
               <div style={{ padding: "20px", borderTop: "1px solid #e2e8f0", display: "flex", gap: "12px", background: "#f8fafc" }}>
-                <button 
+                <button
                   onClick={() => { resetFilters(); setShowFilterSidebar(false); }}
                   style={{ flex: 1, padding: "10px", background: "#fff", border: "1px solid #cbd5e1", borderRadius: "8px", fontWeight: "600", color: "#64748b", cursor: "pointer" }}
                 >
                   Reset
                 </button>
-                <button 
+                <button
                   onClick={() => setShowFilterSidebar(false)}
                   style={{ flex: 1, padding: "10px", background: "#2563eb", border: "none", borderRadius: "8px", fontWeight: "600", color: "#fff", cursor: "pointer" }}
                 >
@@ -4058,7 +3958,6 @@ const ViewAsset = () => {
             <Icon.Tag /> Informasi Utama
           </h3>
           <ModernTable>
-
             <TableRow label="Kategori" required>
               <select
                 value={formData.category}
@@ -4066,8 +3965,13 @@ const ViewAsset = () => {
                 style={modernSelectStyle}
               >
                 <option value="">— Pilih Kategori —</option>
-                {Object.entries(CATEGORY_NAMES).map(([code, name]) => (
-                  <option key={code} value={code}>{name}</option>
+                {(dbCategories.length > 0
+                  ? dbCategories
+                  : Object.entries(CATEGORY_NAMES).map(([code, name]) => ({ device_code: code, name }))
+                ).map((cat) => (
+                  <option key={cat.device_code} value={cat.device_code}>
+                    {cat.name}
+                  </option>
                 ))}
               </select>
             </TableRow>
@@ -4330,13 +4234,13 @@ const ViewAsset = () => {
                     <Icon.Cogs />
                   </button>
                 </div>
-                
+
                 {showLocationBuilder && (
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", width: "100%", padding: "12px", background: "#f1f5f9", border: "1px dashed #cbd5e1", borderRadius: "8px" }}>
                     <select
                       value={formData.entitasCode}
                       onChange={handleEntitasChange}
-                      style={{...modernSelectStyle, background: "#fff", border: "1px solid #e2e8f0"}}
+                      style={{ ...modernSelectStyle, background: "#fff", border: "1px solid #e2e8f0" }}
                     >
                       <option value="">— Entitas —</option>
                       {ENTITAS_LIST.map((e) => <option key={e.code} value={e.code}>{e.name}</option>)}
@@ -4345,7 +4249,7 @@ const ViewAsset = () => {
                       value={formData.branchCode}
                       onChange={handleBranchChange}
                       disabled={!formData.entitasCode}
-                      style={{...modernSelectStyle, background: "#fff", border: "1px solid #e2e8f0"}}
+                      style={{ ...modernSelectStyle, background: "#fff", border: "1px solid #e2e8f0" }}
                     >
                       <option value="">— Cabang —</option>
                       {availableBranches.map((b) => <option key={b.code} value={b.code}>{b.name}</option>)}
@@ -4353,18 +4257,22 @@ const ViewAsset = () => {
                     <select
                       value={formData.zonaCode}
                       onChange={handleZonaChange}
-                      style={{...modernSelectStyle, background: "#fff", border: "1px solid #e2e8f0"}}
+                      style={{ ...modernSelectStyle, background: "#fff", border: "1px solid #e2e8f0" }}
                     >
                       <option value="">— Zona —</option>
-                      {ZONA_LIST.map((z) => <option key={z.code} value={z.code}>{z.name}</option>)}
+                      {dbLocations.zonas
+                        .filter(z => !formData.branchCode || z.branch_code === formData.branchCode)
+                        .map((z) => <option key={z.zona_code} value={z.zona_code}>{z.name}</option>)}
                     </select>
                     <select
                       value={formData.subzonaCode}
                       onChange={handleSubzonaChange}
-                      style={{...modernSelectStyle, background: "#fff", border: "1px solid #e2e8f0"}}
+                      style={{ ...modernSelectStyle, background: "#fff", border: "1px solid #e2e8f0" }}
                     >
                       <option value="">— Subzona —</option>
-                      {SUBZONA_LIST.map((s) => <option key={s.code} value={s.code}>{s.name}</option>)}
+                      {dbLocations.subzonas
+                        .filter(s => !formData.zonaCode || s.zona_code === formData.zonaCode)
+                        .map((s) => <option key={s.subzona_code} value={s.subzona_code}>{s.name}</option>)}
                     </select>
                     <button
                       type="button"
@@ -5207,9 +5115,17 @@ const ViewAsset = () => {
                 style={modernSelectStyle}
               >
                 <option value="">— Pilih Kategori —</option>
-                {Object.entries(CATEGORY_NAMES).map(([code, name]) => (
-                  <option key={code} value={code}>{name}</option>
-                ))}
+                {Object.entries(CATEGORY_NAMES)
+                  .filter(([code]) => {
+                    const cat = dbCategories.find(c => c.device_code === code);
+                    const userBranch = currentUser?.branches_code || currentUser?.branch_code;
+                    const matchUserBranch = userBranch ? (cat?.branch_code && cat.branch_code.split(",").includes(userBranch)) : true;
+                    const matchEditBranch = editData.branch ? (cat?.branch_code && cat.branch_code.split(",").includes(editData.branch)) : false;
+                    return !cat || !cat.branch_code || matchEditBranch || matchUserBranch;
+                  })
+                  .map(([code, name]) => (
+                    <option key={code} value={code}>{name}</option>
+                  ))}
               </select>
             </TableRow>
 
