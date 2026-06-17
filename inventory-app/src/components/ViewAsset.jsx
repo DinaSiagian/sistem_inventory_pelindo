@@ -2073,7 +2073,7 @@ const SmartLocationInput = ({ value, onChange, placeholder = "Pilih Branch / Zon
           if (brObj) {
             validParts.push(brObj.name);
             if (parts[1]) {
-              const zoObj = zonas.find(z => z.name.toLowerCase() === parts[1].toLowerCase() && z.branch_code === brObj.branch_code);
+              const zoObj = zonas.find(z => z.name.toLowerCase() === parts[1].toLowerCase());
               if (zoObj) {
                 validParts.push(zoObj.name);
                 if (parts[2]) {
@@ -2161,26 +2161,20 @@ const SmartLocationInput = ({ value, onChange, placeholder = "Pilih Branch / Zon
     stepLabel = "Pilih Branch";
   } else if (currentPartIdx === 1) {
     if (hasDbData) {
-      const branchObj = branches.find(b => b.name.toLowerCase() === branch.toLowerCase());
-      if (branchObj) {
-        options = zonas.filter(z => z.branch_code === branchObj.branch_code).map(z => z.name);
-      } else {
-        options = [];
-      }
+      options = zonas.map(z => z.name);
     } else {
       options = LOCATION_MAP[branch]
         ? Object.keys(LOCATION_MAP[branch])
         : ZONA_LIST.map(z => z.name);
     }
-    stepLabel = `Zona di ${branch || 'Branch'}`;
+    stepLabel = `Pilih Zona`;
   } else if (currentPartIdx === 2) {
     if (hasDbData) {
-      const branchObj = branches.find(b => b.name.toLowerCase() === branch.toLowerCase());
-      const zoneObj = branchObj ? zonas.find(z => z.name.toLowerCase() === zone.toLowerCase() && z.branch_code === branchObj.branch_code) : null;
+      const zoneObj = zonas.find(z => z.name.toLowerCase() === zone.toLowerCase());
       if (zoneObj) {
         options = subzonas.filter(s => s.zona_code === zoneObj.zona_code).map(s => s.name);
       } else {
-        options = [];
+        options = subzonas.map(s => s.name);
       }
     } else {
       options = (LOCATION_MAP[branch] && LOCATION_MAP[branch][zone])
@@ -4261,7 +4255,6 @@ const ViewAsset = () => {
                     >
                       <option value="">— Zona —</option>
                       {dbLocations.zonas
-                        .filter(z => !formData.branchCode || z.branch_code === formData.branchCode)
                         .map((z) => <option key={z.zona_code} value={z.zona_code}>{z.name}</option>)}
                     </select>
                     <select

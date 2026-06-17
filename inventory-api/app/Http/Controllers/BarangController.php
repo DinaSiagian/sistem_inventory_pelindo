@@ -46,10 +46,7 @@ class BarangController extends Controller
                     }
                     
                     // Fallback jika belum memiliki subzona (belum pernah diserahterimakan ke subzona spesifik)
-                    // Include if owned by this branch (e.g. SPMT-BLW-...)
-                    if (str_contains($b->asset_code, "-{$userBranchCode}-")) return true;
-                    
-                    // Include if branch column exists and matches
+                    // Include ONLY if branch column exists and matches the creator's branch
                     if (isset($b->branch) && $b->branch === $userBranchCode) return true;
                     
                     return false;
@@ -107,7 +104,7 @@ class BarangController extends Controller
                     $locMatch = $locations->where('subzona_code', $u->subzona_code)->first();
                     $fullLocationStr = $locMatch 
                         ? $locMatch->branch_name . ' / ' . $locMatch->zona_name . ' / ' . $locMatch->subzona_name 
-                        : $u->subzona_code;
+                        : ($u->subzona_code ?: '-');
 
                     return [
                         'serialNumber' => $u->serial_number,
@@ -128,10 +125,10 @@ class BarangController extends Controller
                     'tipe' => $item->tipe ?? '',
                     'category' => $item->device_code,
                     'tipeAset' => $item->tipe ?? $item->name, // Map tipe to tipeAset if available
-                    'entitas' => $loc ? $loc->entity_code : null,
-                    'branch' => $loc ? $loc->branch_code : null,
-                    'zona' => $loc ? $loc->zona_code : null,
-                    'subzona' => $loc ? $loc->subzona_code : null,
+                    'entitas' => $loc ? $loc->entity_code : '-',
+                    'branch' => $loc ? $loc->branch_code : '-',
+                    'zona' => $loc ? $loc->zona_code : '-',
+                    'subzona' => $loc ? $loc->subzona_code : '-',
                     'value' => (float)$item->acquisition_value,
                     'procurement_date' => $item->procurement_date,
                     'tahun_pengadaan' => $item->procurement_date ? date('Y', strtotime($item->procurement_date)) : null,
@@ -267,18 +264,12 @@ class BarangController extends Controller
                 ]);
             }
 
-            // Parse custom ID if it follows Entitas-Branch-Zona-Subzona-Kategori-Nomor
-            $entitas = null;
-            $branch = null;
-            $zona = null;
-            $subzona = null;
-            $idParts = explode('-', $data['id']);
-            if (count($idParts) >= 6) {
-                $entitas = $idParts[0];
-                $branch = $idParts[1];
-                $zona = $idParts[2];
-                $subzona = $idParts[3];
-            }
+            // Use data from frontend payload instead of parsing the ID string
+            // Parsing the ID string breaks if zona/subzona codes contain hyphens
+            $entitas = $data['entitas'] ?? null;
+            $branch = $data['branch'] ?? null;
+            $zona = $data['zona'] ?? null;
+            $subzona = $data['subzona'] ?? null;
 
             // Insert physical unit instances
             if (isset($data['units']) && is_array($data['units'])) {
@@ -290,23 +281,17 @@ class BarangController extends Controller
                     }
                 } catch (\Exception $e) {}
                 
-                // Set branch fallback so the item doesn't disappear from user's view
-                if (empty($branch)) {
-                    $branch = $userBranchCode;
-                }
+                // Set branch strictly to the creator's branch so it doesn't disappear from user's view,
+                // regardless of what branch code was placed in the ID format.
+                $ownerBranchCode = $userBranchCode ?: $branch;
 
                 foreach ($data['units'] as $idx => $unit) {
                     // Use !empty() instead of ?? to also handle empty strings from frontend
                     $unitLocation = !empty($unit['location'])
                         ? $unit['location']
-                        : (!empty($data['subzona']) ? $data['subzona'] : null);
+                        : null;
 
                     $subzonaCode = $this->resolveSubzonaCode($unitLocation);
-
-                    // User requested strictly NO auto-fill of location. We only use what they inputted.
-                    if (empty($subzonaCode) && !empty($subzona)) {
-                        $subzonaCode = $subzona;
-                    }
 
                     $sn = !empty($unit['serialNumber']) ? trim($unit['serialNumber']) : null;
                     if (empty($sn)) {
@@ -334,7 +319,7 @@ class BarangController extends Controller
                         $insertData['entitas'] = $entitas;
                     }
                     if (Schema::hasColumn('barang', 'branch')) {
-                        $insertData['branch'] = $branch;
+                        $insertData['branch'] = $ownerBranchCode;
                     }
                     if (Schema::hasColumn('barang', 'zona')) {
                         $insertData['zona'] = $zona;
@@ -464,18 +449,35 @@ class BarangController extends Controller
                     }
                     $newSns[] = $sn;
 
-                    $unitLocation = $unit['location'] ?? $data['subzona'] ?? null;
+                    $unitLocation = !empty($unit['location']) ? $unit['location'] : null;
                     $subzonaCode = $this->resolveSubzonaCode($unitLocation);
 
                     $exists = DB::table('barang')->where('serial_number', $sn)->exists();
                     if (!$exists) {
-                        DB::table('barang')->insert([
+                        $insertData = [
                             'asset_code' => $id,
                             'serial_number' => $sn,
                             'subzona_code' => $subzonaCode,
                             'id_pekerjaan' => $unit['id_pekerjaan'] ?? $data['id_pekerjaan'] ?? null,
                             'created_at' => \Carbon\Carbon::now(),
-                        ]);
+                        ];
+
+                        // Set ownership branch for new unit
+                        if (Schema::hasColumn('barang', 'branch')) {
+                            $existingUnit = DB::table('barang')->where('asset_code', $id)->first();
+                            if ($existingUnit && $existingUnit->branch) {
+                                $insertData['branch'] = $existingUnit->branch;
+                            } else {
+                                try {
+                                    $jwtUser = JWTAuth::user();
+                                    if ($jwtUser && $jwtUser->branches_code) {
+                                        $insertData['branch'] = $jwtUser->branches_code;
+                                    }
+                                } catch (\Exception $e) {}
+                            }
+                        }
+
+                        DB::table('barang')->insert($insertData);
                     } else {
                         // Update location/subzona and id_pekerjaan if changed
                         DB::table('barang')->where('serial_number', $sn)->update([

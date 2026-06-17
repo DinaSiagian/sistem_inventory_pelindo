@@ -4536,13 +4536,13 @@ const UserManagement = () => {
             localStorage.setItem("um_cache_roles", JSON.stringify(res.data.data));
           }
         });
-        masterDataAPI.getZonas({ used_only: 'true' }).then(res => {
+        masterDataAPI.getZonas().then(res => {
           if (res.data?.success) {
             setZonaList(res.data.data);
             localStorage.setItem("um_cache_zonas", JSON.stringify(res.data.data));
           }
         });
-        masterDataAPI.getSubzonas({ used_only: 'true' }).then(res => {
+        masterDataAPI.getSubzonas().then(res => {
           if (res.data?.success) {
             setSubzonaList(res.data.data);
             localStorage.setItem("um_cache_subzonas", JSON.stringify(res.data.data));
@@ -5123,7 +5123,13 @@ const UserManagement = () => {
         </div>
       </div>
 
-      <ActivityLogSection logs={logs} users={users} />
+      <div className="md-sections-wrapper" style={{ marginTop: "1rem" }}>
+        <div className="md-sections-header">
+          <Ico n="activity" size={13} style={{ color: "#94a3b8" }} />
+          <span className="md-sections-title">Log Aktivitas Pengguna</span>
+        </div>
+        <ActivityLogSection logs={logs} users={users} />
+      </div>
     </div>
   );
 };

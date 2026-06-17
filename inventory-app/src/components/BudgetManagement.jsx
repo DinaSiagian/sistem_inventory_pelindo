@@ -1267,7 +1267,7 @@ function SmartLocationInput({ value, onChange, placeholder = "Pilih Branch / Zon
           if (brObj) {
             validParts.push(brObj.name);
             if (parts[1]) {
-              const zoObj = zonas.find(z => z.name.toLowerCase() === parts[1].toLowerCase() && z.branch_code === brObj.branch_code);
+              const zoObj = zonas.find(z => z.name.toLowerCase() === parts[1].toLowerCase());
               if (zoObj) {
                 validParts.push(zoObj.name);
                 if (parts[2]) {
@@ -1355,16 +1355,15 @@ function SmartLocationInput({ value, onChange, placeholder = "Pilih Branch / Zon
     stepLabel = "Pilih Branch";
   } else if (currentPartIdx === 1) {
     if (hasDbData) {
-      const branchCode = branches.find(b => b.name === branch)?.branch_code;
-      options = zonas.filter(z => z.branch_code === branchCode).map(z => z.name);
+      options = zonas.map(z => z.name);
     } else {
       options = LOCATION_MAP[branch] ? Object.keys(LOCATION_MAP[branch]) : ZONA_LIST.map(z => z.name);
     }
-    stepLabel = `Zona di ${branch || 'Branch'}`;
+    stepLabel = `Pilih Zona`;
   } else if (currentPartIdx === 2) {
     if (hasDbData) {
       const zonaCode = zonas.find(z => z.name === zone)?.zona_code;
-      options = subzonas.filter(s => s.zona_code === zonaCode).map(s => s.name);
+      options = zonaCode ? subzonas.filter(s => s.zona_code === zonaCode).map(s => s.name) : subzonas.map(s => s.name);
     } else {
       options = (LOCATION_MAP[branch] && LOCATION_MAP[branch][zone]) ? LOCATION_MAP[branch][zone] : [];
     }
