@@ -3432,9 +3432,25 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast, allAngga
                 }}
               >
                 <option value="">— Pilih Kategori —</option>
-                {Object.entries(CATEGORY_NAMES).map(([cat, name]) => (
-                  <option key={cat} value={cat}>{name}</option>
-                ))}
+                {Object.entries(CATEGORY_NAMES)
+                  .map(([cat, name]) => {
+                    const isAvailable = Object.values(ASSET_DB_DYN).filter(x => x.category === cat && !isAssetHiddenFromDropdown(x.asset_code)).length > 0;
+                    return { cat, name, isAvailable };
+                  })
+                  .sort((a, b) => {
+                    if (a.isAvailable === b.isAvailable) return a.name.localeCompare(b.name);
+                    return a.isAvailable ? -1 : 1;
+                  })
+                  .map(({ cat, name, isAvailable }) => (
+                    <option 
+                      key={cat} 
+                      value={cat} 
+                      disabled={!isAvailable}
+                      style={{ color: !isAvailable ? "#ef4444" : "inherit" }}
+                    >
+                      {name} {!isAvailable ? "- (Barang pd kategori ini tidak tersedia)" : ""}
+                    </option>
+                  ))}
               </select>
             </AEFld>
             {form.category && (
@@ -3541,14 +3557,11 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast, allAngga
                     background: "var(--blue-lt)"
                   }}
                   onClick={() => {
-                    const ac = form.items[0]?.asset_code || "";
-                    // Count how many free (unallocated) SNs remain for this asset
-                    const usedInForm = form.items.map(it => it.serial_number).filter(Boolean);
-                    const freeSNsLeft = availSNs.filter(sn => !usedInForm.includes(sn));
-                    if (freeSNsLeft.length === 0) {
-                      showToast("Semua unit barang ini sudah dialokasikan, tidak bisa menambah unit lagi.");
+                    if (form.items.length >= availSNs.length) {
+                      showToast(`Maksimal kuantitas yang tersedia hanya ${availSNs.length} unit.`);
                       return;
                     }
+                    const ac = form.items[0]?.asset_code || "";
                     upd("items", [...form.items, { id: `new-${Date.now()}`, serial_number: "", location: "", asset_code: ac }]);
                   }}
                 >
