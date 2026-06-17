@@ -2843,11 +2843,14 @@ const Inventaris = () => {
     setIsSaving(true);
 
     try {
-      // ID akan di-generate otomatis jika masih kosong
       let startId = formData.assetId;
       const prefix = `${CATEGORY_PREFIX[formData.category] || "BRG"}-`;
 
-      if (!startId) {
+      let masterAssetCode = startId;
+      let isLocationBased = false;
+
+      if (!masterAssetCode || !masterAssetCode.startsWith(prefix)) {
+        if (masterAssetCode) isLocationBased = true;
         const maxId = assets.reduce((max, a) => {
           if (a.id.startsWith(prefix)) {
             const part = a.id.split("-").pop();
@@ -2856,11 +2859,12 @@ const Inventaris = () => {
           }
           return max;
         }, 0);
-        startId = `${prefix}${String(maxId + 1).padStart(4, "0")}`;
+        masterAssetCode = `${prefix}${String(maxId + 1).padStart(4, "0")}`;
       }
 
       const groupedAsset = {
-        id: startId,
+        id: masterAssetCode,
+        custom_kd_barang: isLocationBased ? startId : null,
         name: formData.name || formData.tipeAset || "-",
         category: formData.category,
         tipeAset: formData.tipeAset || formData.name || "-",
@@ -2880,7 +2884,7 @@ const Inventaris = () => {
             : null),
         quantity: formData.quantity,
         units: (formData.units || []).map((unit, index) => ({
-          serialNumber: unit.serialNumber?.trim() || `${startId}-SN-${String(index + 1).padStart(3, "0")}`,
+          serialNumber: unit.serialNumber?.trim() || null,
           location: unit.location || "",
           id_pekerjaan: unit.id_pekerjaan || null,
         })),
@@ -3048,7 +3052,7 @@ const Inventaris = () => {
           newCond = "BAIK";
         }
         return {
-          serialNumber: unit.serialNumber?.trim() || `${selectedAsset.id}-SN-${String(index + 1).padStart(3, "0")}`,
+          serialNumber: unit.serialNumber?.trim() || null,
           location: unit.location,
           id_pekerjaan: unit.id_pekerjaan || null,
           status: unit.status,

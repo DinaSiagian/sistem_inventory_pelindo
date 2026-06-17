@@ -209,13 +209,14 @@ function useAssetDB(refreshKey = 0) {
           // Sinkronisasi Serial Numbers (Units)
           if (b.units && Array.isArray(b.units)) {
             b.units.forEach(u => {
-              if (u.serialNumber) {
-                sMap[u.serialNumber] = b.id;
+              const unitId = u.kd_barang || u.serialNumber;
+              if (unitId) {
+                sMap[unitId] = b.id;
                 // Use the UNIT-LEVEL id_pekerjaan, not the asset master's id_pekerjaan.
                 // Each unit may belong to a different project — only mark it allocated
                 // if that specific unit has been assigned to a project.
                 if (u.id_pekerjaan) {
-                  snAllocatedMap[u.serialNumber] = u.id_pekerjaan;
+                  snAllocatedMap[unitId] = u.id_pekerjaan;
                 }
               }
 
@@ -2523,7 +2524,7 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
         model: editData.model || dbInfo.model || "",
         items: [{
           id: editData.id,
-          serial_number: editData.serial_number || "",
+          serial_number: editData.kd_barang || editData.serial_number || "",
           location: editData.location || [editData.branch, editData.zona, editData.subzona].filter(Boolean).join(" / "),
           asset_code: code
         }],
@@ -3152,14 +3153,16 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast, allAngga
       (ang.assets || []).forEach(a => {
         if (a.units) {
           a.units.forEach(u => {
-            if (u.serialNumber) {
-              snMap[u.serialNumber] = a.id_pekerjaan;
+            const code = u.kd_barang || u.serialNumber;
+            if (code) {
+              snMap[code] = a.id_pekerjaan;
             }
           });
         }
-        // Also handle assets without units array but with serial_number field
-        if (!a.units && a.serial_number && a.id_pekerjaan) {
-          snMap[a.serial_number] = a.id_pekerjaan;
+        // Also handle assets without units array but with kd_barang/serial_number field
+        const aCode = a.kd_barang || a.serial_number;
+        if (!a.units && aCode && a.id_pekerjaan) {
+          snMap[aCode] = a.id_pekerjaan;
         }
       });
     });
@@ -3349,6 +3352,7 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast, allAngga
       procurement_date: form.procurement_date || new Date().toISOString().split('T')[0],
       id_pekerjaan: project.id,
       units: form.items.map(it => ({
+        kd_barang: it.serial_number,
         serialNumber: it.serial_number,
         location: it.location
       })),
@@ -3599,8 +3603,9 @@ function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) 
     (anggaran.assets || []).forEach(a => {
       if (a.id !== asset.id && a.units) {
         a.units.forEach(u => {
-          if (u.serialNumber) {
-            snMap[u.serialNumber] = a.id_pekerjaan;
+          const code = u.kd_barang || u.serialNumber;
+          if (code) {
+            snMap[code] = a.id_pekerjaan;
           }
         });
       }
@@ -3625,7 +3630,7 @@ function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) 
 
     // Case 1: has unit records → fully allocated when ALL units belong to OTHER projects
     if (units.length > 0) {
-      return units.every(u => isSNAllocatedToOther(u.serialNumber, currentProjId));
+      return units.every(u => isSNAllocatedToOther(u.kd_barang || u.serialNumber, currentProjId));
     }
 
     // Case 2: no unit records, but asset-level id_pekerjaan points to a DIFFERENT project
@@ -3649,12 +3654,12 @@ function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) 
     const dbInfo = ASSET_DB_DYN[code] || {};
     const items = asset.units ? asset.units.map((u, i) => ({
       id: i === 0 ? asset.id : `unit-${i}`,
-      serial_number: u.serialNumber || "",
+      serial_number: u.kd_barang || u.serialNumber || "",
       location: u.location || "",
       asset_code: code
     })) : [{
       id: asset.id,
-      serial_number: asset.serial_number || "",
+      serial_number: asset.kd_barang || asset.serial_number || "",
       location: asset.location || [asset.branch, asset.zona, asset.subzona].filter(Boolean).join(" / "),
       asset_code: code
     }];
@@ -3736,6 +3741,7 @@ function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) 
       acquisition_value: amount,
       procurement_date: form.procurement_date,
       units: form.items.map(it => ({
+        kd_barang: it.serial_number,
         serialNumber: it.serial_number,
         location: it.location
       })),
@@ -3964,7 +3970,7 @@ function AssetTablePage({
         merged[idx].jumlah = (merged[idx].jumlah || 1) + (a.jumlah || 1);
         const existingUnits = merged[idx].units || [];
         (a.units || []).forEach(nu => {
-          if (!existingUnits.some(eu => eu.serialNumber === nu.serialNumber)) {
+          if (!existingUnits.some(eu => (eu.kd_barang || eu.serialNumber) === (nu.kd_barang || nu.serialNumber))) {
             existingUnits.push(nu);
           }
         });
@@ -4216,7 +4222,7 @@ function AssetTablePage({
                         if (!a.units || a.units.length === 0) return <span style={{ color: "#94a3b8", fontSize: "0.8rem", fontWeight: 600 }}>Admin/Gudang</span>;
                         const owners = [];
                         a.units.forEach(u => {
-                          const activeB = borrows.find(b => b.code === u.serialNumber && !b.is_returned);
+                          const activeB = borrows.find(b => b.code === (u.kd_barang || u.serialNumber) && !b.is_returned);
                           if (activeB) {
                             const usr = users.find(user => String(user.id) === String(activeB.receiver_id));
                             owners.push(usr ? usr.name : "User");
@@ -5115,7 +5121,7 @@ export default function BudgetManagement({ forcedType }) {
           const existingUnits = merged[idx].units || [];
           const incomingUnits = a.units || [];
           incomingUnits.forEach(nu => {
-            if (!existingUnits.some(eu => eu.serialNumber === nu.serialNumber)) {
+            if (!existingUnits.some(eu => (eu.kd_barang || eu.serialNumber) === (nu.kd_barang || nu.serialNumber))) {
               existingUnits.push(nu);
             }
           });

@@ -80,13 +80,13 @@ class BarangController extends Controller
                 )->get();
 
             // OPTIMIZATION: Fetch all current transactions at once (Prevent N+1 Query)
-            $allSerialNumbers = $barang->pluck('serial_number')->unique()->toArray();
-            $activeTransactions = !empty($allSerialNumbers)
+            $allKdBarang = $barang->pluck('kd_barang')->unique()->toArray();
+            $activeTransactions = !empty($allKdBarang)
                 ? DB::table('asset_transactions')
-                    ->whereIn('serial_number', $allSerialNumbers)
+                    ->whereIn('kd_barang', $allKdBarang)
                     ->where('is_current', true)
                     ->get()
-                    ->keyBy('serial_number')
+                    ->keyBy('kd_barang')
                 : collect();
 
             $grouped = $assets->map(function ($item) use ($barang, $specs, $locations, $activeTransactions) {
@@ -99,7 +99,7 @@ class BarangController extends Controller
 
                 $unitsArray = $itemUnits->map(function ($u) use ($locations, $activeTransactions) {
                     // Get active BAST transaction from memory instead of DB
-                    $tx = $activeTransactions->get($u->serial_number);
+                    $tx = $activeTransactions->get($u->kd_barang);
 
                     $locMatch = $locations->where('subzona_code', $u->subzona_code)->first();
                     $fullLocationStr = $locMatch 
@@ -107,6 +107,7 @@ class BarangController extends Controller
                         : ($u->subzona_code ?: '-');
 
                     return [
+                        'kd_barang' => $u->kd_barang,
                         'serialNumber' => $u->serial_number,
                         'location' => $fullLocationStr,
                         'id_pekerjaan' => $u->id_pekerjaan,
@@ -125,10 +126,10 @@ class BarangController extends Controller
                     'tipe' => $item->tipe ?? '',
                     'category' => $item->device_code,
                     'tipeAset' => $item->tipe ?? $item->name, // Map tipe to tipeAset if available
-                    'entitas' => $loc ? $loc->entity_code : '-',
-                    'branch' => $loc ? $loc->branch_code : '-',
-                    'zona' => $loc ? $loc->zona_code : '-',
-                    'subzona' => $loc ? $loc->subzona_code : '-',
+                    'entitas' => $loc ? $loc->entity_code : ($firstUnit->entitas ?? '-'),
+                    'branch' => $loc ? $loc->branch_code : ($firstUnit->branch ?? '-'),
+                    'zona' => $loc ? $loc->zona_code : ($firstUnit->zona ?? '-'),
+                    'subzona' => $loc ? $loc->subzona_code : ($firstUnit->subzona_code ?? '-'),
                     'value' => (float)$item->acquisition_value,
                     'procurement_date' => $item->procurement_date,
                     'tahun_pengadaan' => $item->procurement_date ? date('Y', strtotime($item->procurement_date)) : null,
@@ -213,28 +214,34 @@ class BarangController extends Controller
                 ]);
             }
 
-            // Resolve a globally unique asset_code (server-side)
-            // Frontend may generate a code based on filtered (branch-scoped) data,
-            // which could conflict with codes from other branches.
             $proposedId = $data['id'] ?? null;
-            if (empty($proposedId)) {
-                $prefix = strtoupper($deviceCode) . '-';
-                $maxNum = DB::table('assets')
-                    ->where('asset_code', 'like', $prefix . '%')
-                    ->get()
-                    ->reduce(function ($carry, $a) use ($prefix) {
-                        $num = intval(substr($a->asset_code, strlen($prefix)));
-                        return max($carry, $num);
-                    }, 0);
-                $proposedId = $prefix . str_pad($maxNum + 1, 4, '0', STR_PAD_LEFT);
-            }
-
-            // If the proposed ID already exists, append suffix until unique
-            $finalId = $proposedId;
-            $suffix = 2;
-            while (DB::table('assets')->where('asset_code', $finalId)->exists()) {
-                $finalId = $proposedId . '-' . $suffix;
-                $suffix++;
+            $prefix = strtoupper($deviceCode) . '-';
+            
+            // Fix: Check if proposedId is already in auto-generated format (prefix + digits)
+            if (!empty($proposedId) && strpos($proposedId, $prefix) === 0) {
+                $finalId = $proposedId;
+                while (DB::table('assets')->where('asset_code', $finalId)->exists()) {
+                    $num = intval(substr($finalId, strlen($prefix)));
+                    $finalId = $prefix . str_pad($num + 1, 4, '0', STR_PAD_LEFT);
+                }
+            } else {
+                if (empty($proposedId)) {
+                    $maxNum = DB::table('assets')
+                        ->where('asset_code', 'like', $prefix . '%')
+                        ->get()
+                        ->reduce(function ($carry, $a) use ($prefix) {
+                            $num = intval(substr($a->asset_code, strlen($prefix)));
+                            return max($carry, $num);
+                        }, 0);
+                    $finalId = $prefix . str_pad($maxNum + 1, 4, '0', STR_PAD_LEFT);
+                } else {
+                    $finalId = $proposedId;
+                    $suffix = 2;
+                    while (DB::table('assets')->where('asset_code', $finalId)->exists()) {
+                        $finalId = $proposedId . '-' . $suffix;
+                        $suffix++;
+                    }
+                }
             }
             $data['id'] = $finalId;
 
@@ -285,6 +292,47 @@ class BarangController extends Controller
                 // regardless of what branch code was placed in the ID format.
                 $ownerBranchCode = $userBranchCode ?: $branch;
 
+                $customKdBase = $data['custom_kd_barang'] ?? null;
+                
+                if ($customKdBase) {
+                    $parts = explode('-', $customKdBase);
+                    
+                    // 1. Sync branch
+                    if ($ownerBranchCode && count($parts) >= 3) {
+                        $parts[1] = $ownerBranchCode;
+                    }
+                    
+                    // 2. Sync asset_code
+                    $finalParts = explode('-', $finalId);
+                    if (count($finalParts) >= 2) {
+                        $lastPart = $parts[count($parts) - 1];
+                        if (is_numeric($lastPart)) {
+                            $parts[count($parts) - 1] = str_pad((int)$finalParts[1], 3, '0', STR_PAD_LEFT);
+                            if (count($parts) >= 2) {
+                                $parts[count($parts) - 2] = $finalParts[0];
+                            }
+                            $customKdBase = implode('-', $parts);
+                        } else {
+                            $customKdBase = implode('-', $parts) . '-' . $finalParts[0] . '-' . str_pad((int)$finalParts[1], 3, '0', STR_PAD_LEFT);
+                        }
+                    } else {
+                        $customKdBase = implode('-', $parts);
+                    }
+                }
+
+                $customKdSuffix = 0;
+                if ($customKdBase) {
+                    $existingKds = DB::table('barang')->where('kd_barang', 'like', $customKdBase . '-KB-%')->pluck('kd_barang')->toArray();
+                    foreach ($existingKds as $ekd) {
+                        $parts = explode('-KB-', $ekd);
+                        if (count($parts) == 2) {
+                            $customKdSuffix = max($customKdSuffix, (int)$parts[1]);
+                        }
+                    }
+                }
+
+                $numericKdCounter = null;
+
                 foreach ($data['units'] as $idx => $unit) {
                     // Use !empty() instead of ?? to also handle empty strings from frontend
                     $unitLocation = !empty($unit['location'])
@@ -294,19 +342,31 @@ class BarangController extends Controller
                     $subzonaCode = $this->resolveSubzonaCode($unitLocation);
 
                     $sn = !empty($unit['serialNumber']) ? trim($unit['serialNumber']) : null;
-                    if (empty($sn)) {
-                        $sn = $data['id'] . '-SN-' . str_pad($idx + 1, 3, '0', STR_PAD_LEFT);
+
+                    // Ensure serial_number is globally unique if it is not null
+                    $finalSn = $sn;
+                    if ($finalSn !== null) {
+                        $snSuffix = 2;
+                        while (DB::table('barang')->where('serial_number', $finalSn)->exists()) {
+                            $finalSn = $sn . '-' . $snSuffix;
+                            $snSuffix++;
+                        }
                     }
 
-                    // Ensure serial_number is globally unique (handle duplicate from failed retries)
-                    $finalSn = $sn;
-                    $snSuffix = 2;
-                    while (DB::table('barang')->where('serial_number', $finalSn)->exists()) {
-                        $finalSn = $sn . '-' . $snSuffix;
-                        $snSuffix++;
+                    if ($customKdBase) {
+                        $customKdSuffix++;
+                        $kd_barang = $customKdBase . '-KB-' . str_pad($customKdSuffix, 3, '0', STR_PAD_LEFT);
+                    } else {
+                        if ($numericKdCounter === null) {
+                            $numericKdCounter = DB::table('barang')->whereRaw("kd_barang ~ '^[0-9]+$'")->max(DB::raw("CAST(kd_barang AS BIGINT)"));
+                            $numericKdCounter = $numericKdCounter ? (int)$numericKdCounter : 0;
+                        }
+                        $numericKdCounter++;
+                        $kd_barang = (string)$numericKdCounter;
                     }
 
                     $insertData = [
+                        'kd_barang' => $kd_barang,
                         'asset_code' => $data['id'],
                         'serial_number' => $finalSn,
                         'subzona_code' => $subzonaCode,
@@ -442,25 +502,86 @@ class BarangController extends Controller
             $newSns = [];
 
             if (isset($data['units']) && is_array($data['units'])) {
+                $existingNullUnits = DB::table('barang')->where('asset_code', $id)->whereNull('serial_number')->orderBy('kd_barang')->get();
+                $nullIndex = 0;
+
+                $numericKdCounter = DB::table('barang')->whereRaw("kd_barang ~ '^[0-9]+$'")->max(DB::raw("CAST(kd_barang AS BIGINT)"));
+                $numericKdCounter = $numericKdCounter ? (int)$numericKdCounter : 0;
+                
+                $customKdBase = $data['custom_kd_barang'] ?? null;
+                
+                if ($customKdBase) {
+                    $parts = explode('-', $customKdBase);
+                    
+                    $branch = $data['branch'] ?? null;
+                    if ($branch && count($parts) >= 3) {
+                        $parts[1] = $branch;
+                    }
+                    
+                    $finalParts = explode('-', $id);
+                    if (count($finalParts) >= 2) {
+                        $lastPart = $parts[count($parts) - 1];
+                        if (is_numeric($lastPart)) {
+                            $parts[count($parts) - 1] = str_pad((int)$finalParts[1], 3, '0', STR_PAD_LEFT);
+                            if (count($parts) >= 2) {
+                                $parts[count($parts) - 2] = $finalParts[0];
+                            }
+                            $customKdBase = implode('-', $parts);
+                        } else {
+                            $customKdBase = implode('-', $parts) . '-' . $finalParts[0] . '-' . str_pad((int)$finalParts[1], 3, '0', STR_PAD_LEFT);
+                        }
+                    } else {
+                        $customKdBase = implode('-', $parts);
+                    }
+                }
+                
+                if (!$customKdBase) {
+                    $existingKd = DB::table('barang')->where('asset_code', $id)->where('kd_barang', 'like', '%-KB-%')->value('kd_barang');
+                    if ($existingKd) {
+                        $parts = explode('-KB-', $existingKd);
+                        $customKdBase = $parts[0];
+                    }
+                }
+                
+                $customKdSuffix = 0;
+                if ($customKdBase) {
+                    $existingKds = DB::table('barang')->where('kd_barang', 'like', $customKdBase . '-KB-%')->pluck('kd_barang')->toArray();
+                    foreach ($existingKds as $ekd) {
+                        $parts = explode('-KB-', $ekd);
+                        if (count($parts) == 2) {
+                            $customKdSuffix = max($customKdSuffix, (int)$parts[1]);
+                        }
+                    }
+                }
+
                 foreach ($data['units'] as $idx => $unit) {
                     $sn = !empty($unit['serialNumber']) ? trim($unit['serialNumber']) : null;
-                    if (empty($sn)) {
-                        $sn = $id . '-SN-' . str_pad($idx + 1, 3, '0', STR_PAD_LEFT);
+                    if ($sn !== null) {
+                        $newSns[] = $sn;
                     }
-                    $newSns[] = $sn;
 
                     $unitLocation = !empty($unit['location']) ? $unit['location'] : null;
                     $subzonaCode = $this->resolveSubzonaCode($unitLocation);
 
-                    $exists = DB::table('barang')->where('serial_number', $sn)->exists();
-                    if (!$exists) {
-                        $insertData = [
-                            'asset_code' => $id,
-                            'serial_number' => $sn,
-                            'subzona_code' => $subzonaCode,
-                            'id_pekerjaan' => $unit['id_pekerjaan'] ?? $data['id_pekerjaan'] ?? null,
-                            'created_at' => \Carbon\Carbon::now(),
-                        ];
+                    if ($sn !== null) {
+                        $exists = DB::table('barang')->where('serial_number', $sn)->exists();
+                        if (!$exists) {
+                            if ($customKdBase) {
+                                $customKdSuffix++;
+                                $kd_barang = $customKdBase . '-KB-' . str_pad($customKdSuffix, 3, '0', STR_PAD_LEFT);
+                            } else {
+                                $numericKdCounter++;
+                                $kd_barang = (string)$numericKdCounter;
+                            }
+
+                            $insertData = [
+                                'kd_barang' => $kd_barang,
+                                'asset_code' => $id,
+                                'serial_number' => $sn,
+                                'subzona_code' => $subzonaCode,
+                                'id_pekerjaan' => $unit['id_pekerjaan'] ?? $data['id_pekerjaan'] ?? null,
+                                'created_at' => \Carbon\Carbon::now(),
+                            ];
 
                         // Set ownership branch for new unit
                         if (Schema::hasColumn('barang', 'branch')) {
@@ -485,12 +606,61 @@ class BarangController extends Controller
                             'id_pekerjaan' => $unit['id_pekerjaan'] ?? $data['id_pekerjaan'] ?? null,
                         ]);
                     }
+                    } else {
+                        if ($nullIndex < $existingNullUnits->count()) {
+                            $targetKd = $existingNullUnits[$nullIndex]->kd_barang;
+                            DB::table('barang')->where('kd_barang', $targetKd)->update([
+                                'subzona_code' => $subzonaCode,
+                                'id_pekerjaan' => $unit['id_pekerjaan'] ?? $data['id_pekerjaan'] ?? null,
+                            ]);
+                            $nullIndex++;
+                        } else {
+                            if ($customKdBase) {
+                                $customKdSuffix++;
+                                $kd_barang = $customKdBase . '-KB-' . str_pad($customKdSuffix, 3, '0', STR_PAD_LEFT);
+                            } else {
+                                $numericKdCounter++;
+                                $kd_barang = (string)$numericKdCounter;
+                            }
+
+                            $insertData = [
+                                'kd_barang' => $kd_barang,
+                                'asset_code' => $id,
+                                'serial_number' => null,
+                                'subzona_code' => $subzonaCode,
+                                'id_pekerjaan' => $unit['id_pekerjaan'] ?? $data['id_pekerjaan'] ?? null,
+                                'created_at' => \Carbon\Carbon::now(),
+                            ];
+                            if (Schema::hasColumn('barang', 'branch')) {
+                                $existingUnit = DB::table('barang')->where('asset_code', $id)->first();
+                                if ($existingUnit && $existingUnit->branch) {
+                                    $insertData['branch'] = $existingUnit->branch;
+                                } else {
+                                    try {
+                                        $jwtUser = JWTAuth::user();
+                                        if ($jwtUser && $jwtUser->branches_code) {
+                                            $insertData['branch'] = $jwtUser->branches_code;
+                                        }
+                                    } catch (\Exception $e) {}
+                                }
+                            }
+                            DB::table('barang')->insert($insertData);
+                        }
+                    }
+                }
+
+                while ($nullIndex < $existingNullUnits->count()) {
+                    $targetKd = $existingNullUnits[$nullIndex]->kd_barang;
+                    DB::table('barang')->where('kd_barang', $targetKd)->delete();
+                    $nullIndex++;
                 }
 
                 // Safely delete units that are no longer present, but only if they have no transactions
-                $toDelete = array_diff($existingSns, $newSns);
+                $existingSnsFiltered = array_filter($existingSns, function($val) { return $val !== null; });
+                $toDelete = array_diff($existingSnsFiltered, $newSns);
                 foreach ($toDelete as $snToDelete) {
-                    $hasTx = DB::table('asset_transactions')->where('serial_number', $snToDelete)->exists();
+                    $kd = DB::table('barang')->where('serial_number', $snToDelete)->value('kd_barang');
+                    $hasTx = $kd ? DB::table('asset_transactions')->where('kd_barang', $kd)->exists() : false;
                     if (!$hasTx) {
                         DB::table('barang')->where('serial_number', $snToDelete)->delete();
                     }

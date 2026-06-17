@@ -483,19 +483,41 @@ class BudgetController extends Controller
                 if (!empty($ast['units']) && is_array($ast['units'])) {
                     foreach ($ast['units'] as $idx => $u) {
                         $sn = !empty($u['serialNumber']) ? trim($u['serialNumber']) : null;
-                        if (empty($sn)) {
+                        $kd = !empty($u['kd_barang']) ? trim($u['kd_barang']) : null;
+
+                        // Auto-detect kd_barang coming from serialNumber field
+                        if (!$kd && $sn && strpos($sn, '-KB-') !== false) {
+                            $kd = $sn;
+                            $sn = null;
+                        }
+
+                        if (empty($sn) && empty($kd)) {
                             $sn = $assetCode . '-SN-' . str_pad($idx + 1, 3, '0', STR_PAD_LEFT);
                         }
-                        $incomingSns[] = $sn;
+                        $incomingSns[] = $kd ?: $sn;
 
                         $subzonaCode = $this->resolveSubzonaCode($u['location'] ?? null);
-                        Log::info("Syncing unit: $sn", ['location_in' => $u['location'] ?? null, 'resolved' => $subzonaCode]);
+                        Log::info("Syncing unit: $kd / $sn", ['location_in' => $u['location'] ?? null, 'resolved' => $subzonaCode]);
 
                         // Check if this unit already exists in the DB
-                        $exists = DB::table('barang')->where('serial_number', $sn)->first();
+                        $exists = null;
+                        if ($kd) {
+                            $exists = DB::table('barang')->where('kd_barang', $kd)->first();
+                        }
+                        if (!$exists && $sn) {
+                            $exists = DB::table('barang')->where('serial_number', $sn)->first();
+                        }
+
                         if (!$exists) {
+                            $kd_barang = $kd;
+                            if (!$kd_barang) {
+                                // Generate temporary kd_barang, BarangController logic can fix it later if needed
+                                $kd_barang = 'TMP-' . strtoupper(uniqid());
+                            }
+
                             DB::table('barang')->insert([
                                 'asset_code' => $assetCode,
+                                'kd_barang' => $kd_barang,
                                 'serial_number' => $sn,
                                 'subzona_code' => $subzonaCode,
                                 'id_pekerjaan' => $projId,
@@ -504,7 +526,9 @@ class BudgetController extends Controller
                         } else {
                             // Update it only if it is unassigned or already belongs to this project
                             if (empty($exists->id_pekerjaan) || $exists->id_pekerjaan == $projId) {
-                                DB::table('barang')->where('serial_number', $sn)->update([
+                                $lookupCol = !empty($exists->kd_barang) ? 'kd_barang' : 'serial_number';
+                                $lookupVal = !empty($exists->kd_barang) ? $exists->kd_barang : $exists->serial_number;
+                                DB::table('barang')->where($lookupCol, $lookupVal)->update([
                                     'subzona_code' => $subzonaCode,
                                     'id_pekerjaan' => $projId,
                                 ]);
@@ -895,10 +919,11 @@ class BudgetController extends Controller
             self::$barangCache = collect(DB::table('barang')->get())->groupBy('asset_code');
         }
         $units = $assetCode ? (self::$barangCache->get($assetCode) ?? collect()) : collect();
-        $units = collect($units)->where('id_pekerjaan', $i->id_pekerjaan);
+        $units = collect($units)->where('id_pekerjaan', $i->id_pekerjaan)->values();
 
         $unitsArray = $units->map(function ($u) {
             return [
+                'kd_barang' => $u->kd_barang,
                 'serialNumber' => $u->serial_number,
                 'location' => $this->getFullLocationString($u->subzona_code),
                 'id_pekerjaan' => $u->id_pekerjaan

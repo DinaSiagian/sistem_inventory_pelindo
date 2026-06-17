@@ -34,7 +34,7 @@ class TransactionController extends Controller
 
             // 1. Fetch Borrows — filtered to user's branch
             $borrowQuery = DB::table('asset_transactions AS t')
-                ->join('barang AS b', 't.serial_number', '=', 'b.serial_number')
+                ->join('barang AS b', 't.kd_barang', '=', 'b.kd_barang')
                 ->join('assets AS a', 'b.asset_code', '=', 'a.asset_code')
                 ->leftJoin('users AS op', 't.performed_by_id', '=', 'op.id')
                 ->leftJoin('users AS gv', 't.giver_id', '=', 'gv.id')
@@ -59,7 +59,7 @@ class TransactionController extends Controller
             $borrowRows = $borrowQuery->select([
                     't.transaction_id',
                     't.bast_number',
-                    't.serial_number',
+                    't.kd_barang',
                     't.created_at AS transaction_date',
                     't.giver_id',
                     't.receiver_id',
@@ -81,19 +81,19 @@ class TransactionController extends Controller
                 ->unique('transaction_id');
 
             // OPTIMIZATION: Prevent N+1 Query by fetching max transaction_id for all returned serials
-            $borrowSerialNumbers = $borrowRows->pluck('serial_number')->unique()->toArray();
+            $borrowSerialNumbers = $borrowRows->pluck('kd_barang')->unique()->toArray();
             $newerTransactions = !empty($borrowSerialNumbers)
                 ? DB::table('asset_transactions')
-                    ->select('serial_number', DB::raw('MAX(transaction_id) as max_id'))
-                    ->whereIn('serial_number', $borrowSerialNumbers)
-                    ->groupBy('serial_number')
-                    ->pluck('max_id', 'serial_number')
+                    ->select('kd_barang', DB::raw('MAX(transaction_id) as max_id'))
+                    ->whereIn('kd_barang', $borrowSerialNumbers)
+                    ->groupBy('kd_barang')
+                    ->pluck('max_id', 'kd_barang')
                 : collect();
 
             $borrows = [];
             foreach ($borrowRows as $row) {
                 // A BORROW is "completed/returned" if any newer transaction exists for this serial number.
-                $maxId = $newerTransactions->get($row->serial_number);
+                $maxId = $newerTransactions->get($row->kd_barang);
                 $isReturned = $maxId && $maxId > $row->transaction_id;
 
                 $borrows[] = [
@@ -108,7 +108,7 @@ class TransactionController extends Controller
                         'tahun_pengadaan' => $row->procurement_date ? date('Y', strtotime($row->procurement_date)) : null,
                     ],
                     'asset_code' => $row->asset_code,
-                    'code' => $row->serial_number,
+                    'code' => $row->kd_barang,
                     'name' => $row->asset_name,
                     'price' => (float) $row->price,
                     'tahun_pengadaan' => $row->procurement_date ? date('Y', strtotime($row->procurement_date)) : null,
@@ -129,7 +129,7 @@ class TransactionController extends Controller
 
             // 2. Fetch Returns — filtered to user's branch
             $returnQuery = DB::table('asset_transactions AS t')
-                ->join('barang AS b', 't.serial_number', '=', 'b.serial_number')
+                ->join('barang AS b', 't.kd_barang', '=', 'b.kd_barang')
                 ->join('assets AS a', 'b.asset_code', '=', 'a.asset_code')
                 ->leftJoin('users AS op', 't.performed_by_id', '=', 'op.id')
                 ->leftJoin('users AS gv', 't.giver_id', '=', 'gv.id')
@@ -153,7 +153,7 @@ class TransactionController extends Controller
             $returnRows = $returnQuery->select([
                     't.transaction_id',
                     't.bast_number',
-                    't.serial_number',
+                    't.kd_barang',
                     't.created_at AS transaction_date',
                     't.giver_id',
                     't.receiver_id',
@@ -175,22 +175,22 @@ class TransactionController extends Controller
                 ->unique('transaction_id');
 
             // OPTIMIZATION: Fetch all related BORROW transactions at once
-            $returnSerialNumbers = $returnRows->pluck('serial_number')->unique()->toArray();
+            $returnSerialNumbers = $returnRows->pluck('kd_barang')->unique()->toArray();
             $allBorrows = !empty($returnSerialNumbers)
                 ? DB::table('asset_transactions')
-                    ->whereIn('serial_number', $returnSerialNumbers)
+                    ->whereIn('kd_barang', $returnSerialNumbers)
                     ->where('transaction_type', 'BORROW')
                     ->orderBy('created_at', 'desc')
                     ->get()
-                    ->groupBy('serial_number')
+                    ->groupBy('kd_barang')
                 : collect();
 
             $returns = [];
             foreach ($returnRows as $row) {
                 // Find matching borrow transaction from memory
                 $matchingBorrow = null;
-                if ($allBorrows->has($row->serial_number)) {
-                    $matchingBorrow = $allBorrows->get($row->serial_number)->first(function($b) use ($row) {
+                if ($allBorrows->has($row->kd_barang)) {
+                    $matchingBorrow = $allBorrows->get($row->kd_barang)->first(function($b) use ($row) {
                         return $b->created_at < $row->transaction_date;
                     });
                 }
@@ -208,7 +208,7 @@ class TransactionController extends Controller
                         'tahun_pengadaan' => $row->procurement_date ? date('Y', strtotime($row->procurement_date)) : null,
                     ],
                     'asset_code' => $row->asset_code,
-                    'code' => $row->serial_number,
+                    'code' => $row->kd_barang,
                     'name' => $row->asset_name,
                     'price' => (float) $row->price,
                     'tahun_pengadaan' => $row->procurement_date ? date('Y', strtotime($row->procurement_date)) : null,
@@ -252,7 +252,7 @@ class TransactionController extends Controller
                 'receiver_id' => 'required|integer',
                 'transaction_date' => 'nullable|string',
                 'items' => 'required|array',
-                'items.*.serial_number' => 'required|string',
+                'items.*.kd_barang' => 'required|string',
                 'items.*.notes' => 'nullable|string',
                 'items.*.condition' => 'nullable|string',
             ]);
@@ -287,28 +287,28 @@ class TransactionController extends Controller
             $insertedIds = [];
 
             foreach ($request->input('items') as $item) {
-                $sn = $item['serial_number'];
+                $sn = $item['kd_barang'];
                 $notes = $item['notes'] ?? null;
                 $condition = $item['condition'] ?? 'BAIK';
 
                 // Fetch id_pekerjaan from barang/assets
                 $barangInfo = DB::table('barang AS b')
                     ->join('assets AS a', 'b.asset_code', '=', 'a.asset_code')
-                    ->where('b.serial_number', $sn)
+                    ->where('b.kd_barang', $sn)
                     ->select(DB::raw('COALESCE(b.id_pekerjaan, a.id_pekerjaan) AS id_pekerjaan'))
                     ->first();
                 $idPekerjaan = $barangInfo ? $barangInfo->id_pekerjaan : null;
 
                 // Set all previous transactions for this serial number as not current
                 DB::table('asset_transactions')
-                    ->where('serial_number', $sn)
+                    ->where('kd_barang', $sn)
                     ->update(['is_current' => false]);
 
 
 
                 // Insert BORROW transaction
                 $txId = DB::table('asset_transactions')->insertGetId([
-                    'serial_number' => $sn,
+                    'kd_barang' => $sn,
                     'transaction_type' => 'BORROW',
                     'performed_by_id' => $operatorId,
                     'condition' => $condition,
@@ -334,7 +334,7 @@ class TransactionController extends Controller
                         ->first();
                     if ($receiverSubzona) {
                         DB::table('barang')
-                            ->where('serial_number', $sn)
+                            ->where('kd_barang', $sn)
                             ->update(['subzona_code' => $receiverSubzona->subzona_code]);
                     }
                 }
@@ -395,21 +395,21 @@ class TransactionController extends Controller
             // Fetch id_pekerjaan from barang/assets
             $barangInfo = DB::table('barang AS b')
                 ->join('assets AS a', 'b.asset_code', '=', 'a.asset_code')
-                ->where('b.serial_number', $sn)
+                ->where('b.kd_barang', $sn)
                 ->select(DB::raw('COALESCE(b.id_pekerjaan, a.id_pekerjaan) AS id_pekerjaan'))
                 ->first();
             $idPekerjaan = $barangInfo ? $barangInfo->id_pekerjaan : null;
 
             // Set all previous transactions for this serial number as not current
             DB::table('asset_transactions')
-                ->where('serial_number', $sn)
+                ->where('kd_barang', $sn)
                 ->update(['is_current' => false]);
 
 
 
             // Insert RETURN transaction
             $txId = DB::table('asset_transactions')->insertGetId([
-                'serial_number' => $sn,
+                'kd_barang' => $sn,
                 'transaction_type' => 'RETURN',
                 'performed_by_id' => $operatorId,
                 'condition' => $condition,
@@ -435,7 +435,7 @@ class TransactionController extends Controller
                     ->first();
                 if ($receiverSubzona) {
                     DB::table('barang')
-                        ->where('serial_number', $sn)
+                        ->where('kd_barang', $sn)
                         ->update(['subzona_code' => $receiverSubzona->subzona_code]);
                 }
             }
@@ -464,7 +464,7 @@ class TransactionController extends Controller
             // Restore is_current to previous transaction if this was a BORROW
             if ($transaction->transaction_type === 'BORROW') {
                 $previousTransaction = DB::table('asset_transactions')
-                    ->where('serial_number', $transaction->serial_number)
+                    ->where('kd_barang', $transaction->kd_barang)
                     ->where('transaction_id', '<', $id)
                     ->orderBy('transaction_id', 'desc')
                     ->first();

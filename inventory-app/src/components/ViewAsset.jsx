@@ -2847,11 +2847,14 @@ const ViewAsset = () => {
     setIsSaving(true);
 
     try {
-      // ID akan di-generate otomatis jika masih kosong
       let startId = formData.assetId;
       const prefix = `${CATEGORY_PREFIX[formData.category] || "BRG"}-`;
 
-      if (!startId) {
+      let masterAssetCode = startId;
+      let isLocationBased = false;
+
+      if (!masterAssetCode || !masterAssetCode.startsWith(prefix)) {
+        if (masterAssetCode) isLocationBased = true;
         const maxId = assets.reduce((max, a) => {
           if (a.id.startsWith(prefix)) {
             const part = a.id.split("-").pop();
@@ -2860,11 +2863,12 @@ const ViewAsset = () => {
           }
           return max;
         }, 0);
-        startId = `${prefix}${String(maxId + 1).padStart(4, "0")}`;
+        masterAssetCode = `${prefix}${String(maxId + 1).padStart(4, "0")}`;
       }
 
       const groupedAsset = {
-        id: startId,
+        id: masterAssetCode,
+        custom_kd_barang: isLocationBased ? startId : null,
         name: formData.name || formData.tipeAset || "-",
         category: formData.category,
         tipeAset: formData.tipeAset || formData.name || "-",
@@ -2884,7 +2888,7 @@ const ViewAsset = () => {
             : null),
         quantity: formData.quantity,
         units: (formData.units || []).map((unit, index) => ({
-          serialNumber: unit.serialNumber?.trim() || `${startId}-SN-${String(index + 1).padStart(3, "0")}`,
+          serialNumber: unit.serialNumber?.trim() || null,
           location: unit.location || "",
           id_pekerjaan: unit.id_pekerjaan || null,
         })),
@@ -3052,7 +3056,7 @@ const ViewAsset = () => {
           newCond = "BAIK";
         }
         return {
-          serialNumber: unit.serialNumber?.trim() || `${selectedAsset.id}-SN-${String(index + 1).padStart(3, "0")}`,
+          serialNumber: unit.serialNumber?.trim() || null,
           location: unit.location,
           id_pekerjaan: unit.id_pekerjaan || null,
           status: unit.status,
@@ -3092,7 +3096,7 @@ const ViewAsset = () => {
 
   const handleExport = () => {
     const headers = [
-      "ID Barang",
+      "Kode Aset",
       "Nama",
       "Kategori",
       "Entitas",
@@ -3318,7 +3322,7 @@ const ViewAsset = () => {
             </span>
             <input
               type="text"
-              placeholder="Cari ID barang, nama, atau branch..."
+              placeholder="Cari kode aset, nama, atau branch..."
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
@@ -3668,7 +3672,7 @@ const ViewAsset = () => {
               <thead>
                 <tr>
                   <th style={{ width: "60px" }}>GAMBAR</th>
-                  <th>ID BARANG</th>
+                  <th>KODE ASET</th>
                   <th>NAMA BARANG</th>
                   <th style={{ minWidth: "150px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
@@ -4178,7 +4182,7 @@ const ViewAsset = () => {
                 })()}
               </div>
             </TableRow>
-            <TableRow label="ID Barang">
+            <TableRow label="Kode Lokasi Unit (Opsional)">
               <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "100%" }}>
                 <div style={{ position: "relative", width: "100%" }}>
                   <input
@@ -4942,7 +4946,7 @@ const ViewAsset = () => {
             <Icon.Tag /> Informasi Utama
           </h3>
           <ModernTable>
-            <TableRow label="ID Barang">
+            <TableRow label="Kode Aset">
               <span
                 style={{
                   padding: "4px 10px",
@@ -5904,7 +5908,7 @@ const ViewAsset = () => {
               <Icon.Tag /> Identitas & Status
             </h3>
             <ModernTable>
-              <TableRow label="ID Barang">
+              <TableRow label="Kode Aset">
                 <span
                   style={{
                     fontSize: "14px",
@@ -6264,7 +6268,7 @@ const ViewAsset = () => {
           </p>
 
           <ModernTable>
-            <TableRow label="ID Barang">
+            <TableRow label="Kode Aset">
               <code style={{ fontWeight: "bold" }}>{selectedAsset.id}</code>
             </TableRow>
             <TableRow label="Nama Barang">

@@ -3961,7 +3961,7 @@ function BorrowFormPage({ borrow, borrows, returns, assets, onBack, onSave, setN
           );
         } else {
           borrowItems.push({
-            serial_number: d.item.code,
+            kd_barang: d.item.code,
             condition: d.condition,
             notes: d.notes || "",
           });
@@ -4447,7 +4447,7 @@ function BorrowFormPage({ borrow, borrows, returns, assets, onBack, onSave, setN
                               {idx + 1}
                             </td>
                             <td style={S.td}>
-                              <code style={S.code}>{item.asset_code || item.code}</code>
+                              <code style={S.code}>{item.code}</code>
                             </td>
                             <td
                               style={{
@@ -5870,9 +5870,9 @@ export default function Peminjaman() {
         barangRes.data.forEach((item) => {
           if (item.units && Array.isArray(item.units)) {
             item.units.forEach((u) => {
-              const activeBorrow = activeBorrowsMap.get(u.serialNumber);
+              const activeBorrow = activeBorrowsMap.get(u.kd_barang || u.serialNumber);
               flattened.push({
-                code: u.serialNumber,
+                code: u.kd_barang || u.serialNumber,
                 asset_code: item.id,
                 name: item.name || "-",
                 zone: u.location || "Gudang",
