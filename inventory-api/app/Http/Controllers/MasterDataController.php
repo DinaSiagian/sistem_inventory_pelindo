@@ -819,6 +819,13 @@ class MasterDataController extends Controller
     public function deleteSubzona($code)
     {
         try {
+            $code = urldecode($code);
+
+            $exists = \Illuminate\Support\Facades\DB::table('subzona')->where('subzona_code', $code)->exists();
+            if (!$exists) {
+                return response()->json(['success' => false, 'message' => 'Subzona tidak ditemukan di database'], 404);
+            }
+
             if (\Illuminate\Support\Facades\DB::table('barang')->where('subzona_code', $code)->count() > 0) {
                 return response()->json(['success' => false, 'message' => 'Tidak dapat menghapus subzona karena masih digunakan oleh aset'], 400);
             }

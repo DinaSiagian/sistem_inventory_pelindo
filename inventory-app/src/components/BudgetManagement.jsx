@@ -4439,7 +4439,7 @@ function RkapDetailPage({ anggaran, onBack }) {
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         <Icon d={I.calendar} size={13} style={{ color: "var(--blue)" }} />
-                        <span style={{ fontWeight: 600 }}>Tahun Anggaran {h.tahun}</span>
+                        <span style={{ fontWeight: 600 }}>Tahun Anggaran {h.tahun || h.thn || h.thn_anggaran || h.thn_rkap_awal || ""}</span>
                       </div>
                     </td>
                     <td style={{ textAlign: 'right', fontWeight: 800, color: 'var(--blue)', fontFamily: 'var(--mono)' }}>
@@ -4580,9 +4580,9 @@ function PekerjaanListPage({
                 "Nilai RKAP Per Tahun",
                 (
                   <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                    {(anggaran?.history_anggaran || []).map((h) => (
-                      <div key={h.id || h.tahun} style={{ fontSize: "0.72rem", whiteSpace: "nowrap", color: "var(--ink2)" }}>
-                        RKAP {h.tahun}: <span style={{ fontWeight: 800, color: "var(--blue)" }}>{fmt(parseIDRNum(h.nilai_rkap))}</span>
+                    {(anggaran?.history_anggaran || []).map((h, i) => (
+                      <div key={h.id || h.tahun || h.thn || h.thn_anggaran || i} style={{ fontSize: "0.72rem", whiteSpace: "nowrap", color: "var(--ink2)" }}>
+                        RKAP {h.tahun || h.thn || h.thn_anggaran || h.thn_rkap_awal || ""}: <span style={{ fontWeight: 800, color: "var(--blue)" }}>{fmt(parseIDRNum(h.nilai_rkap))}</span>
                       </div>
                     ))}
                   </div>
