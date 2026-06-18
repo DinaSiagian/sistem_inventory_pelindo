@@ -1971,14 +1971,56 @@ function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
             </div>
           </TFld>
           <TFld label="Nilai Kontrak (IDR)" req>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
               <input
                 type="number"
                 placeholder="0"
                 value={form.nilai_kontrak}
                 onChange={(e) => up("nilai_kontrak", e.target.value)}
-                style={{ flex: 1 }}
+                style={{ flex: 1, minWidth: "150px" }}
               />
+              {form.nilai_rab > 0 && (
+                <button
+                  type="button"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "4px",
+                    background: "transparent",
+                    color: "#3b82f6",
+                    border: "none",
+                    padding: "4px 6px",
+                    borderRadius: "4px",
+                    fontSize: "0.75rem",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    whiteSpace: "nowrap",
+                    transition: "all 0.15s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = "#1d4ed8";
+                    e.currentTarget.style.background = "#eff6ff";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = "#3b82f6";
+                    e.currentTarget.style.background = "transparent";
+                  }}
+                  onMouseDown={(e) => {
+                    e.currentTarget.style.transform = "scale(0.96)";
+                  }}
+                  onMouseUp={(e) => {
+                    e.currentTarget.style.transform = "scale(1)";
+                  }}
+                  onClick={() => up("nilai_kontrak", form.nilai_rab)}
+                  title="Salin nominal otomatis dari RAB"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                  </svg>
+                  Sama dengan RAB?
+                </button>
+              )}
               {form.nilai_kontrak > 0 && (
                 <span
                   style={{
@@ -2788,13 +2830,16 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
   );
 }
 // ══════ OPEX CARD ══════
-function OpexCard({ ang, onSelect, onDelete }) {
+function OpexCard({ ang, onSelect, onDelete, searchQ, onDirectProject }) {
   const assetTotal = (ang.assets || []).reduce(
     (s, a) => s + ((a.jumlah || 1) * (a.acquisition_value || 0)),
     0,
   );
   const serapan = ang.nilai_kad > 0 ? Math.round((assetTotal / ang.nilai_kad) * 100) : 0;
   const meta = pctMeta(serapan);
+  const matchedProjects = searchQ 
+    ? (ang.projects || []).filter(p => p.nm_pekerjaan?.toLowerCase().includes(searchQ.toLowerCase()))
+    : [];
 
   return (
     <div className="ang-card" onClick={() => onSelect(ang)}>
@@ -2854,6 +2899,42 @@ function OpexCard({ ang, onSelect, onDelete }) {
           </div>
         </div>
       </div>
+
+      {matchedProjects.length > 0 && (
+        <div style={{ padding: "0 18px 18px", background: "var(--bg)", borderTop: "1px solid var(--border)", borderBottomLeftRadius: "8px", borderBottomRightRadius: "8px" }} onClick={e => e.stopPropagation()}>
+          <div style={{ fontSize: "0.7rem", fontWeight: 600, color: "var(--ink3)", textTransform: "uppercase", marginBottom: "8px", marginTop: "12px" }}>
+            Pekerjaan yang Cocok:
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            {matchedProjects.map(p => (
+              <button 
+                key={p.id}
+                onClick={(e) => { e.stopPropagation(); onDirectProject(p); }}
+                style={{
+                  textAlign: "left",
+                  background: "white",
+                  border: "1px dashed var(--border)",
+                  padding: "8px 10px",
+                  borderRadius: "6px",
+                  fontSize: "0.75rem",
+                  fontWeight: 600,
+                  color: "var(--blue)",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  transition: "all 0.15s ease",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = "var(--green-light)"; e.currentTarget.style.borderColor = "var(--green)"; e.currentTarget.style.color = "var(--green-dark)"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "white"; e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.color = "var(--blue)"; }}
+              >
+                <Icon d={I.briefcase} size={12} />
+                {p.nm_pekerjaan}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -3065,13 +3146,55 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
             </div>
           </HFld>
           <HFld label="Nilai Kontrak (IDR)" req>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
               <input
                 type="number"
                 value={form.nilai_kontrak || ""}
                 onChange={(e) => up("nilai_kontrak", e.target.value)}
-                style={{ flex: 1 }}
+                style={{ flex: 1, minWidth: "150px" }}
               />
+              {form.nilai_rab > 0 && (
+                <button
+                  type="button"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "4px",
+                    background: "transparent",
+                    color: "#3b82f6",
+                    border: "none",
+                    padding: "4px 6px",
+                    borderRadius: "4px",
+                    fontSize: "0.75rem",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    whiteSpace: "nowrap",
+                    transition: "all 0.15s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = "#1d4ed8";
+                    e.currentTarget.style.background = "#eff6ff";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = "#3b82f6";
+                    e.currentTarget.style.background = "transparent";
+                  }}
+                  onMouseDown={(e) => {
+                    e.currentTarget.style.transform = "scale(0.96)";
+                  }}
+                  onMouseUp={(e) => {
+                    e.currentTarget.style.transform = "scale(1)";
+                  }}
+                  onClick={() => up("nilai_kontrak", form.nilai_rab)}
+                  title="Salin nominal otomatis dari RAB"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                  </svg>
+                  Sama dengan RAB?
+                </button>
+              )}
               {form.nilai_kontrak > 0 && (
                 <span
                   className="hfld-hint"
@@ -3442,9 +3565,9 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast, allAngga
                     return a.isAvailable ? -1 : 1;
                   })
                   .map(({ cat, name, isAvailable }) => (
-                    <option 
-                      key={cat} 
-                      value={cat} 
+                    <option
+                      key={cat}
+                      value={cat}
                       disabled={!isAvailable}
                       style={{ color: !isAvailable ? "#ef4444" : "inherit" }}
                     >
@@ -4314,7 +4437,7 @@ function AssetTablePage({
   );
 }
 // ══════ LEVEL 1: ANGGARAN CARD ══════
-function AnggaranCard({ ang, onSelect, onShowRkap, onDelete }) {
+function AnggaranCard({ ang, onSelect, onShowRkap, onDelete, searchQ, onDirectProject }) {
   const assetTotal = (ang.assets || []).reduce(
     (s, a) => s + ((a.jumlah || 1) * (a.acquisition_value || 0)),
     0,
@@ -4323,6 +4446,9 @@ function AnggaranCard({ ang, onSelect, onShowRkap, onDelete }) {
   const serapan = ang.nilai_kad > 0 ? Math.round((assetTotal / ang.nilai_kad) * 100) : 0;
   const meta = pctMeta(serapan);
   const isMulti = ang.thn_rkap_awal !== ang.thn_rkap_akhir;
+  const matchedProjects = searchQ 
+    ? (ang.projects || []).filter(p => p.nm_pekerjaan?.toLowerCase().includes(searchQ.toLowerCase()))
+    : [];
 
   return (
     <div className="ang-card" onClick={() => onSelect(ang)}>
@@ -4389,6 +4515,42 @@ function AnggaranCard({ ang, onSelect, onShowRkap, onDelete }) {
           </div>
         </div>
       </div>
+
+      {matchedProjects.length > 0 && (
+        <div style={{ padding: "0 18px 18px", background: "var(--bg)", borderTop: "1px solid var(--border)", borderBottomLeftRadius: "8px", borderBottomRightRadius: "8px" }} onClick={e => e.stopPropagation()}>
+          <div style={{ fontSize: "0.7rem", fontWeight: 600, color: "var(--ink3)", textTransform: "uppercase", marginBottom: "8px", marginTop: "12px" }}>
+            Pekerjaan yang Cocok:
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            {matchedProjects.map(p => (
+              <button 
+                key={p.id}
+                onClick={(e) => { e.stopPropagation(); onDirectProject(p); }}
+                style={{
+                  textAlign: "left",
+                  background: "white",
+                  border: "1px dashed var(--border)",
+                  padding: "8px 10px",
+                  borderRadius: "6px",
+                  fontSize: "0.75rem",
+                  fontWeight: 600,
+                  color: "var(--blue)",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  transition: "all 0.15s ease",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = "#eff6ff"; e.currentTarget.style.borderColor = "#93c5fd"; e.currentTarget.style.color = "#1d4ed8"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "white"; e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.color = "var(--blue)"; }}
+              >
+                <Icon d={I.briefcase} size={12} />
+                {p.nm_pekerjaan}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -4483,6 +4645,8 @@ function PekerjaanListPage({
   onDeleteProject,
   showToast,
   setBudgetData,
+  highlightedProject,
+  setHighlightedProject,
 }) {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -4522,6 +4686,29 @@ function PekerjaanListPage({
     () => filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
     [filtered, page],
   );
+
+  useEffect(() => {
+    if (highlightedProject) {
+      const idx = filtered.findIndex((p) => p.id === highlightedProject);
+      if (idx !== -1) {
+        const targetPage = Math.floor(idx / PAGE_SIZE) + 1;
+        if (page !== targetPage) {
+          setPage(targetPage);
+        }
+        setTimeout(() => {
+          const el = document.getElementById(`proj-row-${highlightedProject}`);
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth", block: "center" });
+            setTimeout(() => {
+              if (setHighlightedProject) setHighlightedProject(null);
+            }, 3000);
+          }
+        }, 300);
+      } else if (search) {
+        setSearch("");
+      }
+    }
+  }, [highlightedProject, filtered, page, search, setHighlightedProject]);
   const assetCount = (anggaran.assets || []).length;
   const assetTotal = (anggaran.assets || []).reduce(
     (s, a) => s + (a.acquisition_value || 0),
@@ -4687,7 +4874,19 @@ function PekerjaanListPage({
               paginated.map((proj, i) => {
                 const percent = proj.nilai_rab > 0 ? (proj.nilai_kontrak / proj.nilai_rab) * 100 : 0;
                 return (
-                  <tr key={proj.id}>
+                  <tr 
+                    key={proj.id}
+                    id={`proj-row-${proj.id}`}
+                    style={{
+                      backgroundColor: highlightedProject === proj.id ? "var(--blue-lt)" : undefined,
+                      outline: highlightedProject === proj.id ? "1.5px solid #60a5fa" : undefined,
+                      boxShadow: highlightedProject === proj.id ? "0 0 8px rgba(96, 165, 250, 0.25)" : undefined,
+                      outlineOffset: "-1.5px",
+                      position: highlightedProject === proj.id ? "relative" : undefined,
+                      zIndex: highlightedProject === proj.id ? 10 : undefined,
+                      transition: "all 0.4s ease-in-out"
+                    }}
+                  >
                     <td className="td-no">
                       {(page - 1) * PAGE_SIZE + i + 1}
                     </td>
@@ -4811,6 +5010,7 @@ export default function BudgetManagement({ forcedType }) {
   const [opexLevel, setOpexLevel] = useState("list");
   const [selectedAnggaran, setSelectedAnggaran] = useState(null);
   const [selectedOpex, setSelectedOpex] = useState(null);
+  const [highlightedProject, setHighlightedProject] = useState(null);
   const [capexAngPage, setCapexAngPage] = useState(1);
   const [capexAngSearch, setCapexAngSearch] = useState("");
   // REVISI: Mengganti single year filter dengan range filter (Dari - s/d)
@@ -4897,9 +5097,8 @@ export default function BudgetManagement({ forcedType }) {
         if (
           opexSearch &&
           !ang.nama?.toLowerCase().includes(opexSearch.toLowerCase()) &&
-          !ang.kode
-            ?.toLowerCase()
-            .includes(opexSearch.toLowerCase())
+          !ang.kode?.toLowerCase().includes(opexSearch.toLowerCase()) &&
+          !(ang.projects || []).some(p => p.nm_pekerjaan?.toLowerCase().includes(opexSearch.toLowerCase()))
         )
           return false;
         return true;
@@ -4924,7 +5123,8 @@ export default function BudgetManagement({ forcedType }) {
         if (
           capexAngSearch &&
           !a.nama?.toLowerCase().includes(capexAngSearch.toLowerCase()) &&
-          !a.kode?.toLowerCase().includes(capexAngSearch.toLowerCase())
+          !a.kode?.toLowerCase().includes(capexAngSearch.toLowerCase()) &&
+          !(a.projects || []).some(p => p.nm_pekerjaan?.toLowerCase().includes(capexAngSearch.toLowerCase()))
         )
           return false;
         const hasAssets = (a.assets || []).length > 0;
@@ -5364,6 +5564,8 @@ export default function BudgetManagement({ forcedType }) {
         <PekerjaanListPage
           anggaran={latestAng}
           capexData={capexData}
+          highlightedProject={highlightedProject}
+          setHighlightedProject={setHighlightedProject}
           onBack={() => {
             setCapexLevel("list");
             setSelectedAnggaran(null);
@@ -5403,6 +5605,8 @@ export default function BudgetManagement({ forcedType }) {
       <PekerjaanListPage
         anggaran={latestOpex}
         budgetData={opexData}
+        highlightedProject={highlightedProject}
+        setHighlightedProject={setHighlightedProject}
         onBack={() => {
           setOpexLevel("list");
           setSelectedOpex(null);
@@ -5593,7 +5797,7 @@ export default function BudgetManagement({ forcedType }) {
                   </div>
                   <div className="srch">
                     <Icon d={I.search} size={14} />
-                    <input placeholder="Cari nama atau kode anggaran..." value={capexAngSearch} onChange={(e) => { setCapexAngSearch(e.target.value); setCapexAngPage(1); }} />
+                    <input placeholder="Cari nama/kode anggaran atau nama pekerjaan..." value={capexAngSearch} onChange={(e) => { setCapexAngSearch(e.target.value); setCapexAngPage(1); }} />
                   </div>
                 </div>
                 {filteredAnggaran.length === 0 ? (
@@ -5607,6 +5811,12 @@ export default function BudgetManagement({ forcedType }) {
                         <AnggaranCard
                           key={ang.id}
                           ang={ang}
+                          searchQ={capexAngSearch}
+                          onDirectProject={(p) => {
+                            setSelectedAnggaran(ang);
+                            setCapexLevel("pekerjaan");
+                            setHighlightedProject(p.id);
+                          }}
                           onSelect={(a) => {
                             setSelectedAnggaran(a);
                             setCapexLevel("pekerjaan");
@@ -5722,7 +5932,7 @@ export default function BudgetManagement({ forcedType }) {
               <div className="opex-srch">
                 <Icon d={I.search} size={14} />
                 <input
-                  placeholder="Cari nama pos anggaran..."
+                  placeholder="Cari nama pos anggaran atau nama pekerjaan..."
                   value={opexSearch}
                   onChange={(e) => {
                     setOpexSearch(e.target.value);
@@ -5766,6 +5976,12 @@ export default function BudgetManagement({ forcedType }) {
                     <OpexCard
                       key={ang.id}
                       ang={ang}
+                      searchQ={opexSearch}
+                      onDirectProject={(p) => {
+                        setSelectedOpex(ang);
+                        setOpexLevel("pekerjaan");
+                        setHighlightedProject(p.id);
+                      }}
                       onSelect={(a) => {
                         setSelectedOpex(a);
                         setOpexLevel("pekerjaan");
