@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { barangAPI, transactionAPI, budgetAPI } from "../services/api";
+import { barangAPI, transactionAPI, budgetAPI, masterDataAPI } from "../services/api";
 import { useEffect } from "react";
 import {
   FaBox,
@@ -21,6 +21,8 @@ import {
 import {
   LineChart,
   Line,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -265,29 +267,9 @@ body, .db-wrap { font-family: 'DM Sans', system-ui, sans-serif; }
 /* ─────────────────────────────────────────────────────────────────
    MOCK DATA 100% LENGKAP
 ───────────────────────────────────────────────────────────────── */
-const dataPeminjamanHarian = [
-  { name: "Sen", Laptop: 8, Proyektor: 3, Kamera: 2, Kendaraan: 1 },
-  { name: "Sel", Laptop: 12, Proyektor: 5, Kamera: 4, Kendaraan: 2 },
-  { name: "Rab", Laptop: 10, Proyektor: 7, Kamera: 3, Kendaraan: 3 },
-  { name: "Kam", Laptop: 15, Proyektor: 4, Kamera: 6, Kendaraan: 2 },
-  { name: "Jum", Laptop: 9, Proyektor: 6, Kamera: 5, Kendaraan: 4 },
-  { name: "Sab", Laptop: 5, Proyektor: 2, Kamera: 2, Kendaraan: 1 },
-  { name: "Min", Laptop: 3, Proyektor: 1, Kamera: 1, Kendaraan: 0 },
-];
-const dataPeminjamanBulanan = [
-  { name: "Jan", Laptop: 40, Proyektor: 20, Kamera: 15, Kendaraan: 10 },
-  { name: "Feb", Laptop: 30, Proyektor: 18, Kamera: 12, Kendaraan: 8 },
-  { name: "Mar", Laptop: 65, Proyektor: 30, Kamera: 20, Kendaraan: 12 },
-  { name: "Apr", Laptop: 50, Proyektor: 25, Kamera: 18, Kendaraan: 9 },
-  { name: "Mei", Laptop: 85, Proyektor: 35, Kamera: 28, Kendaraan: 15 },
-  { name: "Jun", Laptop: 120, Proyektor: 45, Kamera: 35, Kendaraan: 20 },
-];
-const kategoriLines = [
-  { key: "Laptop", color: "#1a56db" },
-  { key: "Proyektor", color: "#16a34a" },
-  { key: "Kamera", color: "#d97706" },
-  { key: "Kendaraan", color: "#7c3aed" },
-];
+const dataPeminjamanHarian = []; // Removed mock data, now dynamically generated
+const dataPeminjamanBulanan = []; // Removed mock data, now dynamically generated
+const kategoriLines = []; // Removed mock data, now dynamically generated
 
 const dataKondisi = [
   { name: "Baik", value: 850, color: "#22c55e" },
@@ -928,30 +910,36 @@ const Dashboard = () => {
   const [dbAssets, setDbAssets] = useState(() => JSON.parse(sessionStorage.getItem('SWR_DashAssets')) || []);
   const [dbCapex, setDbCapex] = useState(() => JSON.parse(sessionStorage.getItem('SWR_DashCapex')) || []);
   const [dbOpex, setDbOpex] = useState(() => JSON.parse(sessionStorage.getItem('SWR_DashOpex')) || {});
+  const [dbDevices, setDbDevices] = useState(() => JSON.parse(sessionStorage.getItem('SWR_DashDevices')) || []);
   const [loading, setLoading] = useState(false);
+  const [trendTimeframe, setTrendTimeframe] = useState("bulan");
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
-        const [astRes, txRes, cpxRes, opxRes] = await Promise.all([
+        const [astRes, txRes, cpxRes, opxRes, devRes] = await Promise.all([
           barangAPI.getAll().catch(e => ({ data: [] })),
           transactionAPI.getAll().catch(e => ({ data: { borrows: [] } })),
           budgetAPI.getCapex().catch(e => ({ data: { data: [] } })),
-          budgetAPI.getOpex().catch(e => ({ data: { data: [] } }))
+          budgetAPI.getOpex().catch(e => ({ data: { data: [] } })),
+          masterDataAPI.getDevices().catch(e => ({ data: { data: [] } }))
         ]);
 
         const assets = Array.isArray(astRes.data) ? astRes.data : [];
         const borrows = txRes.data?.borrows || [];
         const capex = Array.isArray(cpxRes.data?.data) ? cpxRes.data.data : [];
         const opexRaw = Array.isArray(opxRes.data?.data) ? opxRes.data.data : [];
+        const devices = Array.isArray(devRes.data?.data) ? devRes.data.data : [];
 
         setDbAssets(assets);
         setDbBorrows(borrows);
         setDbReturns(txRes.data?.returns || []);
+        setDbDevices(devices);
         sessionStorage.setItem('SWR_DashAssets', JSON.stringify(assets));
         sessionStorage.setItem('SWR_DashBorrows', JSON.stringify(borrows));
         sessionStorage.setItem('SWR_DashReturns', JSON.stringify(txRes.data?.returns || []));
+        sessionStorage.setItem('SWR_DashDevices', JSON.stringify(devices));
 
         // Format Capex
         const fmtCapex = capex.map(c => {
@@ -1008,6 +996,62 @@ const Dashboard = () => {
     fetchDashboardData();
   }, []);
 
+  const activeDevices = useMemo(() => {
+    if (!dbDevices || !dbAssets) return [];
+    const usedCategories = new Set();
+    dbAssets.forEach(a => {
+      if (a.category) usedCategories.add(a.category);
+    });
+    return dbDevices.filter(d => usedCategories.has(d.device_code));
+  }, [dbDevices, dbAssets]);
+
+  const trendData = useMemo(() => {
+    if (!activeDevices || !dbAssets) return [];
+
+    if (trendTimeframe === "hari") {
+      const days = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
+      const base = days.map((day) => {
+        const obj = { name: day };
+        activeDevices.forEach(d => { obj[d.device_code] = 0; });
+        return obj;
+      });
+
+      dbAssets.forEach(asset => {
+        if (!asset.category) return;
+        const device = activeDevices.find(d => d.device_code === asset.category);
+        if (!device) return;
+        
+        const qty = asset.units && Array.isArray(asset.units) ? asset.units.length : 1;
+        
+        const date = asset.created_at ? new Date(asset.created_at) : new Date();
+        let dayIdx = date.getDay() - 1;
+        if (dayIdx === -1) dayIdx = 6;
+        base[dayIdx][device.device_code] += qty;
+      });
+      return base;
+    } else {
+      const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"];
+      const base = months.map((m) => {
+        const obj = { name: m };
+        activeDevices.forEach(d => { obj[d.device_code] = 0; });
+        return obj;
+      });
+
+      dbAssets.forEach(asset => {
+        if (!asset.category) return;
+        const device = activeDevices.find(d => d.device_code === asset.category);
+        if (!device) return;
+        
+        const qty = asset.units && Array.isArray(asset.units) ? asset.units.length : 1;
+        
+        const date = asset.created_at ? new Date(asset.created_at) : new Date();
+        const monthIdx = date.getMonth();
+        base[monthIdx][device.device_code] += qty;
+      });
+      return base;
+    }
+  }, [activeDevices, dbAssets, trendTimeframe]);
+
   // Compute dynamic stats
   const dynamicStats = useMemo(() => {
     let tAset = 0;
@@ -1047,31 +1091,30 @@ const Dashboard = () => {
     return { totalAset: tAset, totalAvailable: tAvail, totalMaint: tMaint, dataKondisi: dKondisi, totalKondisiVal: tAset };
   }, [dbAssets, dbBorrows]);
 
-  const dynamicTrend = useMemo(() => {
-    // Basic mock generation for trend based on real borrows length
-    // We group borrows by month for 'bulanan'
-    const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
-    const bulanan = months.map(m => ({ name: m, Laptop: 0, Proyektor: 0, Kamera: 0, Kendaraan: 0 }));
-
-    dbBorrows.forEach(b => {
-      if (b.borrow_date) {
-        const d = new Date(b.borrow_date);
-        const mIdx = d.getMonth();
-        if (bulanan[mIdx]) {
-          const n = (b.name || "").toLowerCase();
-          if (n.includes("laptop") || n.includes("pc")) bulanan[mIdx].Laptop++;
-          else if (n.includes("proyektor") || n.includes("projector")) bulanan[mIdx].Proyektor++;
-          else if (n.includes("kamera") || n.includes("cctv")) bulanan[mIdx].Kamera++;
-          else bulanan[mIdx].Kendaraan++;
-        }
+  const totalAsetData = useMemo(() => {
+    const categoryTotals = {};
+    const validDevices = dbDevices.filter(d => d && d.name);
+    validDevices.forEach(d => { categoryTotals[d.name] = 0; });
+    
+    dbAssets.forEach(item => {
+      const device = validDevices.find(d => d.device_code === item.category);
+      const devName = device ? device.name : null;
+      if (devName && categoryTotals[devName] !== undefined) {
+         const qty = parseInt(item.quantity, 10);
+         categoryTotals[devName] += (isNaN(qty) ? 1 : qty);
       }
     });
 
-    // For harian, just mock latest week
-    const days = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
-    const harian = days.map(d => ({ name: d, Laptop: 0, Proyektor: 0, Kamera: 0, Kendaraan: 0 }));
-    return { bulanan, harian };
-  }, [dbBorrows]);
+    const colors = ["#1a56db", "#16a34a", "#d97706", "#7c3aed", "#e11d48", "#0891b2", "#84cc16", "#f59e0b", "#6366f1", "#14b8a6"];
+    
+    return validDevices
+      .map((d, i) => ({
+        name: String(d.name),
+        Total: Number(categoryTotals[d.name]) || 0,
+        fill: colors[i % colors.length]
+      }))
+      .filter(d => d.Total > 0); // Jika belum ada data (0), tidak dimunculkan
+  }, [dbDevices, dbAssets]);
 
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("aset"); // "aset" | "anggaran"
@@ -1079,7 +1122,7 @@ const Dashboard = () => {
   const [tahunAnggaran, setTahunAnggaran] = useState("2026");
   const [modal, setModal] = useState(null);
 
-  const dataTren = filterTren === "harian" ? dynamicTrend.harian : dynamicTrend.bulanan;
+
   const opexTahunIni = dbOpex[tahunAnggaran] ?? [];
   const allAlerts = useMemo(() => calculateAlerts(opexTahunIni, dbBorrows), [tahunAnggaran, dbBorrows, opexTahunIni]);
 
@@ -1152,7 +1195,7 @@ const Dashboard = () => {
               </div>
 
               <div className="bento-grid">
-                {/* Tren Peminjaman (Span Kiri) */}
+                {/* Tren Peminjaman per Kategori (Dynamic Line Chart) */}
                 <div className="card">
                   <div className="card-header-row">
                     <div>
@@ -1160,25 +1203,37 @@ const Dashboard = () => {
                       <div className="card-subtitle">Volume peminjaman berdasarkan tipe aset</div>
                     </div>
                     <div className="toggle-pill">
-                      {["harian", "bulanan"].map((f) => (
-                        <button key={f} className={`toggle-btn${filterTren === f ? " active" : ""}`} onClick={() => setFilterTren(f)}>
-                          {f === "harian" ? "Per Hari" : "Per Bulan"}
-                        </button>
-                      ))}
+                      <button className={`toggle-btn ${trendTimeframe === 'hari' ? 'active' : ''}`} onClick={() => setTrendTimeframe('hari')}>Per Hari</button>
+                      <button className={`toggle-btn ${trendTimeframe === 'bulan' ? 'active' : ''}`} onClick={() => setTrendTimeframe('bulan')}>Per Bulan</button>
                     </div>
                   </div>
-                  <div style={{ height: 300 }}>
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={dataTren}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                        <XAxis dataKey="name" tick={{ fontSize: 12, fill: "#94a3b8" }} axisLine={false} tickLine={false} dy={10} />
-                        <YAxis tick={{ fontSize: 12, fill: "#94a3b8" }} axisLine={false} tickLine={false} dx={-10} />
-                        <Tooltip contentStyle={{ borderRadius: 16, border: "none", boxShadow: "0 8px 32px rgba(0,0,0,0.08)", padding: "16px" }} />
-                        {kategoriLines.map((k) => (
-                          <Line key={k.key} type="monotone" dataKey={k.key} stroke={k.color} strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
-                        ))}
-                      </LineChart>
-                    </ResponsiveContainer>
+                  <div style={{ height: 300, width: "100%", position: "relative" }}>
+                    <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={trendData} margin={{ top: 20, right: 20, left: 0, bottom: 30 }}>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                          <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
+                          <YAxis tick={{ fontSize: 12, fill: "#94a3b8" }} axisLine={false} tickLine={false} allowDecimals={false} />
+                          <Tooltip cursor={{ stroke: '#e2e8f0', strokeWidth: 2 }} contentStyle={{ borderRadius: 16, border: "none", boxShadow: "0 8px 32px rgba(0,0,0,0.08)", padding: "16px" }} />
+                          {activeDevices && activeDevices.map((device, index) => {
+                             const colors = ["#22c55e", "#3b82f6", "#f59e0b", "#ec4899", "#8b5cf6", "#6366f1", "#14b8a6", "#f43f5e", "#0ea5e9", "#10b981"];
+                             const color = colors[index % colors.length];
+                             return (
+                               <Line 
+                                 key={device.device_code}
+                                 type="monotone" 
+                                 dataKey={device.device_code} 
+                                 name={device.name || device.device_name || device.device_code}
+                                 stroke={color} 
+                                 strokeWidth={2} 
+                                 dot={{ r: 4, strokeWidth: 2, fill: "#fff", stroke: color }} 
+                                 activeDot={{ r: 6, strokeWidth: 0, fill: color }} 
+                               />
+                             );
+                          })}
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
                   </div>
                 </div>
 
