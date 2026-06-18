@@ -4133,6 +4133,7 @@ function OpexModule({ masterList, setMasterList }) {
             (s, r) => s + (r.realisasi_murni || 0) + (r.realisasi_bymhd || 0),
             0,
           );
+          const hasRevisionLocal = (latest.realisasi_tahunan || []).some(r => (r.history || []).some(h => !h.is_initial));
           const pct =
             latest.nilai_anggaran > 0
               ? Math.round((totalR / latest.nilai_anggaran) * 100)
@@ -4255,7 +4256,7 @@ function OpexModule({ masterList, setMasterList }) {
                             fontWeight: 600,
                           }}
                         >
-                          Anggaran Total: {fmt(totalR)}
+                          Perubahan Anggaran: {fmt(hasRevisionLocal ? totalR : 0)}
                         </span>
                         <span
                           style={{
@@ -4728,7 +4729,7 @@ function OpexModule({ masterList, setMasterList }) {
                           "KODE",
                           "TAHUN",
                           "NILAI ANGGARAN",
-                          "ANGGARAN TOTAL",
+                          "PERUBAHAN ANGGARAN",
                           "AKSI",
                         ].map((h, i) => (
                           <th
@@ -4787,6 +4788,7 @@ function OpexModule({ masterList, setMasterList }) {
                             (r.realisasi_bymhd || 0),
                           0,
                         );
+                        const hasRevision = (m.realisasi_tahunan || []).some(r => (r.history || []).some(h => !h.is_initial));
                         const pct =
                           m.nilai_anggaran > 0
                             ? Math.round((totalR / m.nilai_anggaran) * 100)
@@ -4860,7 +4862,7 @@ function OpexModule({ masterList, setMasterList }) {
                                   color: pctColor(pct),
                                 }}
                               >
-                                {fmt(totalR)}
+                                {fmt(hasRevision ? totalR : 0)}
                               </span>
                             </td>
                             <td style={{ ...S.td, textAlign: "center" }}>
@@ -5922,9 +5924,9 @@ function CapexModule({ capexList, setCapexList }) {
                 capexList.reduce((sum, c) => {
                   const validAnggaran = (c.anggaran_tahunan || []).filter(
                     (a) => {
-                      const hasValue = (a.nilai_anggaran !== undefined && parseIDRNum(a.nilai_anggaran) > 0) || 
-                                       (a.nilai_rkap !== undefined && parseIDRNum(a.nilai_rkap) > 0) ||
-                                       (a.nilai !== undefined && parseIDRNum(a.nilai) > 0);
+                      const hasValue = (a.nilai_anggaran !== undefined && parseIDRNum(a.nilai_anggaran) > 0) ||
+                        (a.nilai_rkap !== undefined && parseIDRNum(a.nilai_rkap) > 0) ||
+                        (a.nilai !== undefined && parseIDRNum(a.nilai) > 0);
                       return hasValue;
                     }
                   );
@@ -6169,9 +6171,9 @@ function CapexModule({ capexList, setCapexList }) {
                     const isLebih = c.thn_rkap_awal != c.thn_rkap_akhir;
                     const validAnggaran = (c.anggaran_tahunan || []).filter(
                       (a) => {
-                        const hasValue = (a.nilai_anggaran !== undefined && parseIDRNum(a.nilai_anggaran) > 0) || 
-                                         (a.nilai_rkap !== undefined && parseIDRNum(a.nilai_rkap) > 0) ||
-                                         (a.nilai !== undefined && parseIDRNum(a.nilai) > 0);
+                        const hasValue = (a.nilai_anggaran !== undefined && parseIDRNum(a.nilai_anggaran) > 0) ||
+                          (a.nilai_rkap !== undefined && parseIDRNum(a.nilai_rkap) > 0) ||
+                          (a.nilai !== undefined && parseIDRNum(a.nilai) > 0);
                         return hasValue;
                       }
                     );
@@ -6396,161 +6398,161 @@ function CapexModule({ capexList, setCapexList }) {
                           // Support both DB raw keys (tahun, nilai) and frontend state keys (thn, nilai_anggaran)
                           const year = a.thn || a.tahun || a.thn_anggaran;
                           const rkapValue = parseIDRNum(a.nilai_anggaran || a.nilai_rkap || a.nilai);
-                          
+
                           return (
-                          <tr
-                            key={`${c.id}-${a.id || idx}`}
-                            style={{
-                              background: "#fafafa",
-                              borderTop: "1px solid #f1f5f9",
-                            }}
-                          >
-                            <td style={{ ...S.td, textAlign: "center" }}></td>
-                            <td
+                            <tr
+                              key={`${c.id}-${a.id || idx}`}
                               style={{
-                                ...S.td,
-                                paddingLeft: 32,
-                                fontSize: "0.8rem",
-                                color: "#94a3b8",
+                                background: "#fafafa",
+                                borderTop: "1px solid #f1f5f9",
                               }}
                             >
-                              └─ Entri {year}
-                            </td>
-                            <td style={{ ...S.td }}></td>
-                            <td
-                              style={{
-                                ...S.td,
-                                textAlign: "center",
-                                color: "#64748b",
-                                fontWeight: 600,
-                                fontSize: "0.78rem",
-                              }}
-                            >
-                              {a.thn_rkap_awal || c.thn_rkap_awal}
-                            </td>
-                            <td
-                              style={{
-                                ...S.td,
-                                textAlign: "center",
-                                fontSize: "0.78rem",
-                              }}
-                            >
-                              <span
+                              <td style={{ ...S.td, textAlign: "center" }}></td>
+                              <td
                                 style={{
-                                  background: "#f1f5f9",
+                                  ...S.td,
+                                  paddingLeft: 32,
+                                  fontSize: "0.8rem",
+                                  color: "#94a3b8",
+                                }}
+                              >
+                                └─ Entri {year}
+                              </td>
+                              <td style={{ ...S.td }}></td>
+                              <td
+                                style={{
+                                  ...S.td,
+                                  textAlign: "center",
                                   color: "#64748b",
-                                  border: "1px solid #e2e8f0",
-                                  padding: "2px 8px",
-                                  borderRadius: 99,
-                                  fontWeight: 700,
+                                  fontWeight: 600,
+                                  fontSize: "0.78rem",
                                 }}
                               >
-                                {a.thn_rkap_akhir || c.thn_rkap_akhir}
-                              </span>
-                            </td>
-                            <td
-                              style={{
-                                ...S.td,
-                                textAlign: "right",
-                                fontSize: "0.78rem",
-                              }}
-                            >
-                              <span style={{ color: "#cbd5e1" }}>—</span>
-                            </td>
-                            <td style={{ ...S.td, textAlign: "center" }}>
-                              <span
+                                {a.thn_rkap_awal || c.thn_rkap_awal}
+                              </td>
+                              <td
                                 style={{
-                                  background: "#dbeafe",
-                                  color: "#1d4ed8",
-                                  border: "1px solid #bfdbfe",
-                                  padding: "2px 8px",
-                                  borderRadius: 99,
-                                  fontWeight: 700,
-                                  fontSize: "0.75rem",
+                                  ...S.td,
+                                  textAlign: "center",
+                                  fontSize: "0.78rem",
                                 }}
                               >
-                                {year}
-                              </span>
-                            </td>
-                            <td
-                              style={{
-                                ...S.td,
-                                textAlign: "right",
-                                fontSize: "0.78rem",
-                              }}
-                            >
-                              {rkapValue > 0 ? (
                                 <span
-                                  style={{ fontWeight: 700, color: "#16a34a" }}
+                                  style={{
+                                    background: "#f1f5f9",
+                                    color: "#64748b",
+                                    border: "1px solid #e2e8f0",
+                                    padding: "2px 8px",
+                                    borderRadius: 99,
+                                    fontWeight: 700,
+                                  }}
                                 >
-                                  {fmt(rkapValue)}
+                                  {a.thn_rkap_akhir || c.thn_rkap_akhir}
                                 </span>
-                              ) : (
-                                <span style={{ color: "#cbd5e1" }}>—</span>
-                              )}
-                            </td>
-                            <td style={{ ...S.td, textAlign: "center" }}>
-                              <div
+                              </td>
+                              <td
                                 style={{
-                                  display: "flex",
-                                  gap: 5,
-                                  justifyContent: "center",
+                                  ...S.td,
+                                  textAlign: "right",
+                                  fontSize: "0.78rem",
                                 }}
                               >
-                                <button
+                                <span style={{ color: "#cbd5e1" }}>—</span>
+                              </td>
+                              <td style={{ ...S.td, textAlign: "center" }}>
+                                <span
                                   style={{
-                                    ...S.abtn,
-                                    padding: "4px 6px",
-                                    background: "#fffbeb",
-                                    borderColor: "#fde68a",
+                                    background: "#dbeafe",
+                                    color: "#1d4ed8",
+                                    border: "1px solid #bfdbfe",
+                                    padding: "2px 8px",
+                                    borderRadius: 99,
+                                    fontWeight: 700,
+                                    fontSize: "0.75rem",
                                   }}
-                                  title="Edit"
-                                  onClick={() =>
-                                    setEditAnggaran({
-                                      capexId: c.id,
-                                      anggaran: a,
-                                    })
-                                  }
                                 >
-                                  <Edit
-                                    size={12}
-                                    style={{ color: "#d97706" }}
-                                  />
-                                </button>
-                                <button
+                                  {year}
+                                </span>
+                              </td>
+                              <td
+                                style={{
+                                  ...S.td,
+                                  textAlign: "right",
+                                  fontSize: "0.78rem",
+                                }}
+                              >
+                                {rkapValue > 0 ? (
+                                  <span
+                                    style={{ fontWeight: 700, color: "#16a34a" }}
+                                  >
+                                    {fmt(rkapValue)}
+                                  </span>
+                                ) : (
+                                  <span style={{ color: "#cbd5e1" }}>—</span>
+                                )}
+                              </td>
+                              <td style={{ ...S.td, textAlign: "center" }}>
+                                <div
                                   style={{
-                                    ...S.abtn,
-                                    padding: "4px 6px",
-                                    background: "#fef2f2",
-                                    borderColor: "#fecaca",
+                                    display: "flex",
+                                    gap: 5,
+                                    justifyContent: "center",
                                   }}
-                                  title="Hapus"
-                                  onClick={() =>
-                                    setCapexList((p) =>
-                                      p.map((pc) =>
-                                        pc.id === c.id
-                                          ? {
-                                            ...pc,
-                                            anggaran_tahunan: (
-                                              pc.anggaran_tahunan || []
-                                            ).filter((r) => r.id !== a.id),
-                                            history_anggaran: (
-                                              pc.history_anggaran || []
-                                            ).filter((h) => h.id !== a.id),
-                                          }
-                                          : pc,
-                                      ),
-                                    )
-                                  }
                                 >
-                                  <Trash2
-                                    size={12}
-                                    style={{ color: "#ef4444" }}
-                                  />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
+                                  <button
+                                    style={{
+                                      ...S.abtn,
+                                      padding: "4px 6px",
+                                      background: "#fffbeb",
+                                      borderColor: "#fde68a",
+                                    }}
+                                    title="Edit"
+                                    onClick={() =>
+                                      setEditAnggaran({
+                                        capexId: c.id,
+                                        anggaran: a,
+                                      })
+                                    }
+                                  >
+                                    <Edit
+                                      size={12}
+                                      style={{ color: "#d97706" }}
+                                    />
+                                  </button>
+                                  <button
+                                    style={{
+                                      ...S.abtn,
+                                      padding: "4px 6px",
+                                      background: "#fef2f2",
+                                      borderColor: "#fecaca",
+                                    }}
+                                    title="Hapus"
+                                    onClick={() =>
+                                      setCapexList((p) =>
+                                        p.map((pc) =>
+                                          pc.id === c.id
+                                            ? {
+                                              ...pc,
+                                              anggaran_tahunan: (
+                                                pc.anggaran_tahunan || []
+                                              ).filter((r) => r.id !== a.id),
+                                              history_anggaran: (
+                                                pc.history_anggaran || []
+                                              ).filter((h) => h.id !== a.id),
+                                            }
+                                            : pc,
+                                        ),
+                                      )
+                                    }
+                                  >
+                                    <Trash2
+                                      size={12}
+                                      style={{ color: "#ef4444" }}
+                                    />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
                           );
                         }),
                       );
