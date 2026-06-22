@@ -1841,7 +1841,58 @@ function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
     tgl_sp3: "",
     tgl_bamk: "",
   });
+  const [patokanWaktu, setPatokanWaktu] = useState("sp3"); // "sp3" atau "bamk"
+
   const up = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+
+  // Hitung mundur sisa hari kontrak (HARI KERJA)
+  const sisaHariInfo = useMemo(() => {
+    const durasi = parseInt(form.durasi_kontrak);
+    if (!durasi || durasi <= 0) return null;
+
+    const tglMulaiStr = patokanWaktu === "bamk" ? form.tgl_bamk : form.tgl_sp3;
+    if (!tglMulaiStr) return null;
+
+    const tglMulai = new Date(tglMulaiStr);
+    if (isNaN(tglMulai.getTime())) return null;
+
+    tglMulai.setHours(0, 0, 0, 0);
+    const hariIni = new Date();
+    hariIni.setHours(0, 0, 0, 0);
+
+    // Hitung Estimasi Selesai (tambah durasi HARI KERJA ke tglMulai)
+    let tglSelesai = new Date(tglMulai);
+    let hariDitambah = 0;
+    while (hariDitambah < durasi) {
+      tglSelesai.setDate(tglSelesai.getDate() + 1);
+      const day = tglSelesai.getDay();
+      if (day !== 0 && day !== 6) { // Bukan Minggu (0) dan bukan Sabtu (6)
+        hariDitambah++;
+      }
+    }
+
+    // Hitung sisa hari (HARI KERJA dari Hari Ini ke Tgl Selesai, tanpa mengecek apakah sudah mulai atau belum)
+    let sisa = 0;
+    let cur = new Date(hariIni);
+    if (cur <= tglSelesai) {
+      while (cur < tglSelesai) {
+        cur.setDate(cur.getDate() + 1);
+        const day = cur.getDay();
+        if (day !== 0 && day !== 6) sisa++;
+      }
+    } else {
+      while (tglSelesai < cur) {
+        tglSelesai.setDate(tglSelesai.getDate() + 1);
+        const day = tglSelesai.getDay();
+        if (day !== 0 && day !== 6) sisa--;
+      }
+    }
+
+    return {
+      tglSelesai: tglSelesai.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }),
+      sisa: sisa
+    };
+  }, [form.durasi_kontrak, form.tgl_bamk, form.tgl_sp3, patokanWaktu]);
   const totalKontrak = (anggaran.projects || []).reduce(
     (s, p) => s + (p.nilai_kontrak || 0),
     0,
@@ -2036,23 +2087,70 @@ function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
             </div>
           </TFld>
           <TFld label="Durasi Kontrak">
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <input
-                type="number"
-                placeholder="Jumlah hari"
-                value={form.durasi_kontrak}
-                onChange={(e) => up("durasi_kontrak", e.target.value)}
-                style={{ flex: 1 }}
-              />
-              <span
-                style={{
-                  fontSize: "0.75rem",
-                  color: "var(--ink3)",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                hari kerja
-              </span>
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <input
+                  type="number"
+                  placeholder="Jumlah hari"
+                  value={form.durasi_kontrak}
+                  onChange={(e) => up("durasi_kontrak", e.target.value)}
+                  style={{ flex: 1 }}
+                />
+                <span
+                  style={{
+                    fontSize: "0.75rem",
+                    color: "var(--ink3)",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  hari kerja
+                </span>
+              </div>
+              
+              {/* Opsi Pemilihan Patokan Waktu */}
+              <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "4px" }}>
+                <span style={{ fontSize: "0.75rem", color: "var(--ink2)", fontWeight: 600 }}>Hitung dari:</span>
+                <label style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "0.75rem", cursor: "pointer" }}>
+                  <input 
+                    type="radio" 
+                    name="patokan" 
+                    value="sp3" 
+                    checked={patokanWaktu === "sp3"} 
+                    onChange={() => setPatokanWaktu("sp3")} 
+                  /> SP3
+                </label>
+                <label style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "0.75rem", cursor: "pointer" }}>
+                  <input 
+                    type="radio" 
+                    name="patokan" 
+                    value="bamk" 
+                    checked={patokanWaktu === "bamk"} 
+                    onChange={() => setPatokanWaktu("bamk")} 
+                  /> BAMK
+                </label>
+              </div>
+
+              {/* Teks Hitung Mundur (Countdown) */}
+              {sisaHariInfo && (
+                <div style={{
+                  marginTop: "4px",
+                  padding: "8px 12px",
+                  background: sisaHariInfo.sisa < 0 ? "#fee2e2" : "#eff6ff",
+                  borderLeft: `3px solid ${sisaHariInfo.sisa < 0 ? "#ef4444" : "#3b82f6"}`,
+                  borderRadius: "6px",
+                  fontSize: "0.75rem"
+                }}>
+                  Estimasi Selesai: <strong>{sisaHariInfo.tglSelesai}</strong>
+                  <br />
+                  <span style={{ color: sisaHariInfo.sisa < 0 ? "#dc2626" : "#1d4ed8", fontWeight: 600 }}>
+                    {sisaHariInfo.sisa < 0 
+                      ? `Terlewat ${Math.abs(sisaHariInfo.sisa)} hari` 
+                      : sisaHariInfo.sisa === 0 
+                        ? "Hari ini batas akhir!" 
+                        : `Sisa ${sisaHariInfo.sisa} hari`}
+                  </span>
+                </div>
+              )}
             </div>
           </TFld>
         </div>
@@ -2069,7 +2167,6 @@ function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
             ["No. PO", "no_po", "cth. 6440000839"],
             ["No. SP3", "no_sp3", "Nomor SP3"],
             ["Tanggal SP3", "tgl_sp3", "", true],
-            ["Tanggal BAMK", "tgl_bamk", "", true],
           ].map(([lbl, key, ph, isDate]) => (
             <TFld key={key} label={lbl}>
               <input
@@ -2077,9 +2174,47 @@ function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
                 placeholder={ph}
                 value={form[key]}
                 onChange={(e) => up(key, e.target.value)}
+                style={isDate ? { width: "160px", ...(key === "tgl_sp3" && patokanWaktu === "sp3" ? { border: "1px solid #3b82f6", background: "#f8fafc" } : {}) } : {}}
               />
             </TFld>
           ))}
+          
+          <TFld label="Tanggal BAMK">
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+              <input
+                type="date"
+                value={form.tgl_bamk}
+                onChange={(e) => up("tgl_bamk", e.target.value)}
+                style={{ width: "160px", ...(patokanWaktu === "bamk" ? { border: "1px solid #3b82f6", background: "#f8fafc" } : {}) }}
+              />
+              {patokanWaktu === "bamk" && (
+                <button
+                  type="button"
+                  style={{
+                    padding: "6px 10px",
+                    background: "#f0fdf4",
+                    color: "#16a34a",
+                    border: "1px solid #bbf7d0",
+                    borderRadius: "6px",
+                    fontSize: "0.7rem",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    whiteSpace: "nowrap",
+                    transition: "all 0.2s"
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "#dcfce7"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = "#f0fdf4"; }}
+                  onClick={() => {
+                    const today = new Date().toISOString().split('T')[0];
+                    up("tgl_bamk", today);
+                  }}
+                >
+                  <Icon d={I.calendar} size={10} style={{ marginRight: 4 }} />
+                  Set Hari Ini
+                </button>
+              )}
+            </div>
+          </TFld>
         </div>
       </div>
       <div className="edit-footer">
@@ -3058,7 +3193,53 @@ function EditOpexInline({ ang, onSave, onCancel }) {
 // ══════ EDIT PROJECT PAGE ══════
 function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
   const [form, setForm] = useState({ ...project });
+  const [patokanWaktu, setPatokanWaktu] = useState("sp3");
   const up = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+
+  // Hitung mundur sisa hari kontrak (HARI KERJA)
+  const sisaHariInfo = useMemo(() => {
+    const durasi = parseInt(form.durasi_kontrak);
+    if (!durasi || durasi <= 0) return null;
+
+    const tglMulaiStr = patokanWaktu === "bamk" ? form.tgl_bamk : form.tgl_sp3;
+    if (!tglMulaiStr) return null;
+
+    const tglMulai = new Date(tglMulaiStr);
+    if (isNaN(tglMulai.getTime())) return null;
+
+    tglMulai.setHours(0, 0, 0, 0);
+    const hariIni = new Date();
+    hariIni.setHours(0, 0, 0, 0);
+
+    let tglSelesai = new Date(tglMulai);
+    let hariDitambah = 0;
+    while (hariDitambah < durasi) {
+      tglSelesai.setDate(tglSelesai.getDate() + 1);
+      const day = tglSelesai.getDay();
+      if (day !== 0 && day !== 6) hariDitambah++;
+    }
+
+    let sisa = 0;
+    let cur = new Date(hariIni);
+    if (cur <= tglSelesai) {
+      while (cur < tglSelesai) {
+        cur.setDate(cur.getDate() + 1);
+        const day = cur.getDay();
+        if (day !== 0 && day !== 6) sisa++;
+      }
+    } else {
+      while (tglSelesai < cur) {
+        tglSelesai.setDate(tglSelesai.getDate() + 1);
+        const day = tglSelesai.getDay();
+        if (day !== 0 && day !== 6) sisa--;
+      }
+    }
+
+    return {
+      tglSelesai: tglSelesai.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }),
+      sisa: sisa
+    };
+  }, [form.durasi_kontrak, form.tgl_bamk, form.tgl_sp3, patokanWaktu]);
   const handleSave = () => {
     const nilaiKontrak = parseFloat(form.nilai_kontrak) || 0;
     const nilaiRab = parseFloat(form.nilai_rab) || 0;
@@ -3206,13 +3387,61 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
             </div>
           </HFld>
           <HFld label="Durasi Kontrak">
-            <input
-              type="number"
-              value={form.durasi_kontrak || ""}
-              onChange={(e) => up("durasi_kontrak", e.target.value)}
-              placeholder="Jumlah hari"
-            />
-            <div className="hfld-hint">hari kerja</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <input
+                  type="number"
+                  value={form.durasi_kontrak || ""}
+                  onChange={(e) => up("durasi_kontrak", e.target.value)}
+                  placeholder="Jumlah hari"
+                  style={{ flex: 1 }}
+                />
+                <span className="hfld-hint">hari kerja</span>
+              </div>
+              
+              <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "4px" }}>
+                <span style={{ fontSize: "0.75rem", color: "var(--ink2)", fontWeight: 600 }}>Hitung dari:</span>
+                <label style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "0.75rem", cursor: "pointer" }}>
+                  <input 
+                    type="radio" 
+                    name="edit_patokan" 
+                    value="sp3" 
+                    checked={patokanWaktu === "sp3"} 
+                    onChange={() => setPatokanWaktu("sp3")} 
+                  /> SP3
+                </label>
+                <label style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "0.75rem", cursor: "pointer" }}>
+                  <input 
+                    type="radio" 
+                    name="edit_patokan" 
+                    value="bamk" 
+                    checked={patokanWaktu === "bamk"} 
+                    onChange={() => setPatokanWaktu("bamk")} 
+                  /> BAMK
+                </label>
+              </div>
+
+              {sisaHariInfo && (
+                <div style={{
+                  marginTop: "4px",
+                  padding: "8px 12px",
+                  background: sisaHariInfo.sisa < 0 ? "#fee2e2" : "#eff6ff",
+                  borderLeft: `3px solid ${sisaHariInfo.sisa < 0 ? "#ef4444" : "#3b82f6"}`,
+                  borderRadius: "6px",
+                  fontSize: "0.75rem"
+                }}>
+                  Estimasi Selesai: <strong>{sisaHariInfo.tglSelesai}</strong>
+                  <br />
+                  <span style={{ color: sisaHariInfo.sisa < 0 ? "#dc2626" : "#1d4ed8", fontWeight: 600 }}>
+                    {sisaHariInfo.sisa < 0 
+                      ? `Terlewat ${Math.abs(sisaHariInfo.sisa)} hari` 
+                      : sisaHariInfo.sisa === 0 
+                        ? "Hari ini batas akhir!" 
+                        : `Sisa ${sisaHariInfo.sisa} hari`}
+                  </span>
+                </div>
+              )}
+            </div>
           </HFld>
         </div>
       </div>
@@ -3228,16 +3457,53 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
             ["No. PO", "no_po"],
             ["No. SP3", "no_sp3"],
             ["Tgl. SP3", "tgl_sp3", true],
-            ["Tgl. BAMK", "tgl_bamk", true],
           ].map(([lbl, key, isDate]) => (
             <HFld key={key} label={lbl}>
               <input
                 type={isDate ? "date" : "text"}
                 value={form[key] || ""}
                 onChange={(e) => up(key, e.target.value)}
+                style={isDate ? { width: "160px", ...(key === "tgl_sp3" && patokanWaktu === "sp3" ? { border: "1px solid #3b82f6", background: "#f8fafc" } : {}) } : {}}
               />
             </HFld>
           ))}
+          
+          <HFld label="Tgl. BAMK">
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+              <input
+                type="date"
+                value={form.tgl_bamk || ""}
+                onChange={(e) => up("tgl_bamk", e.target.value)}
+                style={{ width: "160px", ...(patokanWaktu === "bamk" ? { border: "1px solid #3b82f6", background: "#f8fafc" } : {}) }}
+              />
+              {patokanWaktu === "bamk" && (
+                <button
+                  type="button"
+                  style={{
+                    padding: "6px 10px",
+                    background: "#f0fdf4",
+                    color: "#16a34a",
+                    border: "1px solid #bbf7d0",
+                    borderRadius: "6px",
+                    fontSize: "0.7rem",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    whiteSpace: "nowrap",
+                    transition: "all 0.2s"
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "#dcfce7"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = "#f0fdf4"; }}
+                  onClick={() => {
+                    const today = new Date().toISOString().split('T')[0];
+                    up("tgl_bamk", today);
+                  }}
+                >
+                  <Icon d={I.calendar} size={10} style={{ marginRight: 4 }} />
+                  Set Hari Ini
+                </button>
+              )}
+            </div>
+          </HFld>
         </div>
       </div>
       <div className="edit-footer">
