@@ -30,6 +30,10 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     // Master Data untuk Auth (dropdown registrasi) - PUBLIC
     $router->get('/master-data', 'MasterDataController@getMasterData');
 
+    // ── PUBLIC ASSET SCAN (Tanpa JWT) ───────────────
+    $router->get('/public/barang/{kode}', 'BarangController@publicShow');
+
+
     // ── PROTECTED ROUTES (Butuh JWT Token) ──────────
     $router->group(['middleware' => 'auth.jwt'], function () use ($router) {
 
@@ -119,8 +123,13 @@ $router->group(['prefix' => 'api'], function () use ($router) {
         $router->delete('/budget/projects/{id}', 'BudgetController@destroyProject');
 
         // ══════════════════════════════════════════════
-        // INVENTORY: BARANG (ASET)
+        // INVENTORY: BARANG (ASET) & KATALOG
         // ══════════════════════════════════════════════
+        $router->get('/katalog',   'BarangController@getKatalog');
+        $router->post('/katalog',  'BarangController@storeKatalog');
+        $router->put('/katalog/{id}', 'BarangController@updateKatalog');
+        $router->delete('/katalog/{id}', 'BarangController@deleteKatalog');
+
         $router->get('/barang',    'BarangController@index');
         $router->get('/devices',   'BarangController@indexDevices');
         $router->post('/barang',   'BarangController@store');

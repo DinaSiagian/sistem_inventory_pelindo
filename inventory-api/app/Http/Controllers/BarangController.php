@@ -9,6 +9,87 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Schema;
 class BarangController extends Controller
 {
+    public function publicShow($kode)
+    {
+        try {
+            // Find the unit in 'barang' table matching kd_barang, serial_number, or asset_code
+            $unit = DB::table('barang')
+                ->where('kd_barang', $kode)
+                ->orWhere('serial_number', $kode)
+                ->orWhere('asset_code', $kode)
+                ->first();
+            if (!$unit) {
+                return response()->json(['success' => false, 'message' => 'Unit aset tidak ditemukan'], 404);
+            }
+
+            // Get the main asset in 'assets' table
+            $asset = DB::table('assets')->where('asset_code', $unit->asset_code)->first();
+            if (!$asset) {
+                return response()->json(['success' => false, 'message' => 'Data induk aset tidak ditemukan'], 404);
+            }
+
+            // Get active transaction for status
+            $tx = DB::table('asset_transactions')
+                    ->where('kd_barang', $unit->kd_barang)
+                    ->where('is_current', true)
+                    ->first();
+            $status = ($tx && strtoupper($tx->transaction_type) === 'BORROW') ? 'Dipinjam' : 'Tersedia';
+
+            // Get location hierarchy
+            $locMatch = DB::table('subzona')
+                ->join('zonas', 'subzona.zona_code', '=', 'zonas.zona_code')
+                ->join('branches', 'zonas.branch_code', '=', 'branches.branch_code')
+                ->select('subzona.name as subzona_name', 'zonas.name as zona_name', 'branches.name as branch_name')
+                ->where('subzona.subzona_code', $unit->subzona_code)
+                ->first();
+            
+            $fullLocationStr = $locMatch 
+                ? $locMatch->branch_name . ' / ' . $locMatch->zona_name . ' / ' . $locMatch->subzona_name 
+                : ($unit->subzona_code ?: 'Belum dialokasikan / Gudang');
+
+            // Get specs
+            $specs = DB::table('asset_specifications')->where('asset_code', $asset->asset_code)->get();
+            $formattedSpecs = $specs->map(function ($s) {
+                return [
+                    'name' => $s->spec_label,
+                    'value' => $s->spec_value . ' ' . $s->spec_unit
+                ];
+            });
+
+            // Get project name if assigned
+            $pekerjaanName = null;
+            if (!empty($unit->id_pekerjaan)) {
+                $proj = DB::table('budget_projects')->where('id_pekerjaan', $unit->id_pekerjaan)->first();
+                if ($proj) {
+                    $pekerjaanName = $proj->nm_pekerjaan;
+                }
+            }
+
+            // Return safe public details
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'asset_id' => $asset->asset_code,
+                    'unit_id' => $unit->kd_barang,
+                    'id_pekerjaan' => $unit->id_pekerjaan,
+                    'nm_pekerjaan' => $pekerjaanName,
+                    'name' => $asset->name,
+                    'merek' => $asset->merek ?? '-',
+                    'tipe' => $asset->tipe ?? '-',
+                    'category' => $asset->device_code,
+                    'status' => $status,
+                    'location' => $fullLocationStr,
+                    'photo' => $asset->photo,
+                    'specs' => $formattedSpecs,
+                    'custom_specs' => []
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Public Show Error: ' . $e->getMessage() . ' Line: ' . $e->getLine());
+            return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage() . ' di baris ' . $e->getLine()], 500);
+        }
+    }
+
     public function index()
     {
         try {
@@ -190,7 +271,7 @@ class BarangController extends Controller
             if (!$deviceExists) {
                 $categoryNames = [
                     'LPT' => 'LAPTOP',
-                    'CTV' => 'CCTV CAMERA',
+                    'CCTV' => 'CCTV CAMERA',
                     'RTR' => 'ROUTER / JARINGAN',
                     'PC' => 'PC DESKTOP',
                     'SRV' => 'SERVER',
@@ -201,7 +282,7 @@ class BarangController extends Controller
                     'FRN' => 'FURNITURE',
                     'MAT' => 'MATERIAL',
                     'SFT' => 'SOFTWARE LICENSE',
-                    'HDW' => 'HARDWARE',
+                    'HW' => 'HARDWARE',
                     'OTH' => 'IT LAINNYA',
                 ];
                 $deviceName = $categoryNames[$deviceCode] ?? strtoupper($deviceCode);
@@ -217,48 +298,78 @@ class BarangController extends Controller
             $proposedId = $data['id'] ?? null;
             $prefix = strtoupper($deviceCode) . '-';
             
-            // Fix: Check if proposedId is already in auto-generated format (prefix + digits)
-            if (!empty($proposedId) && strpos($proposedId, $prefix) === 0) {
+            $useExisting = isset($data['use_existing_catalog']) && $data['use_existing_catalog'] == true;
+
+            if ($useExisting && !empty($proposedId) && DB::table('assets')->where('asset_code', $proposedId)->exists()) {
+                // Gunakan katalog yang sudah ada, JANGAN buat aset baru
                 $finalId = $proposedId;
-                while (DB::table('assets')->where('asset_code', $finalId)->exists()) {
-                    $num = intval(substr($finalId, strlen($prefix)));
-                    $finalId = $prefix . str_pad($num + 1, 4, '0', STR_PAD_LEFT);
-                }
             } else {
-                if (empty($proposedId)) {
-                    $maxNum = DB::table('assets')
-                        ->where('asset_code', 'like', $prefix . '%')
-                        ->get()
-                        ->reduce(function ($carry, $a) use ($prefix) {
-                            $num = intval(substr($a->asset_code, strlen($prefix)));
-                            return max($carry, $num);
-                        }, 0);
-                    $finalId = $prefix . str_pad($maxNum + 1, 4, '0', STR_PAD_LEFT);
-                } else {
+                if (!empty($proposedId) && strpos($proposedId, $prefix) === 0) {
                     $finalId = $proposedId;
-                    $suffix = 2;
                     while (DB::table('assets')->where('asset_code', $finalId)->exists()) {
-                        $finalId = $proposedId . '-' . $suffix;
-                        $suffix++;
+                        $num = intval(substr($finalId, strlen($prefix)));
+                        $finalId = $prefix . str_pad($num + 1, 4, '0', STR_PAD_LEFT);
+                    }
+                } else {
+                    if (empty($proposedId)) {
+                        $catPrefix = strtoupper($deviceCode);
+                        $allAssets = DB::table('assets')->pluck('asset_code')->toArray();
+                        
+                        $maxKategori = 0;
+                        $maxGlobal = 0;
+                        
+                        foreach ($allAssets as $ac) {
+                            if (preg_match('/^([A-Z]+)(\d{2})-(\d{3})$/', $ac, $matches)) {
+                                $cat = $matches[1];
+                                $catUrut = intval($matches[2]);
+                                $globUrut = intval($matches[3]);
+                                
+                                if ($cat === $catPrefix && $catUrut > $maxKategori) {
+                                    $maxKategori = $catUrut;
+                                }
+                                if ($globUrut > $maxGlobal) {
+                                    $maxGlobal = $globUrut;
+                                }
+                            } else {
+                                // Fallback for old data or other formats to calculate max global
+                                $globalCount = DB::table('assets')->count();
+                                if ($globalCount > $maxGlobal) {
+                                    $maxGlobal = $globalCount;
+                                }
+                            }
+                        }
+                        
+                        $kategoriUrut = str_pad($maxKategori + 1, 2, '0', STR_PAD_LEFT);
+                        $globalUrut = str_pad($maxGlobal + 1, 3, '0', STR_PAD_LEFT);
+                        $finalId = $catPrefix . $kategoriUrut . '-' . $globalUrut;
+                    } else {
+                        $finalId = $proposedId;
+                        $suffix = 2;
+                        while (DB::table('assets')->where('asset_code', $finalId)->exists()) {
+                            $finalId = $proposedId . '-' . $suffix;
+                            $suffix++;
+                        }
                     }
                 }
-            }
-            $data['id'] = $finalId;
+                $data['id'] = $finalId;
 
-            // Insert to assets master
-            DB::table('assets')->insert([
-                'asset_code' => $finalId,
-                'name' => $data['name'] ?? '-',
-                'merek' => $data['merek'] ?? null,
-                'tipe' => $data['tipe'] ?? null,
-                'device_code' => $deviceCode,
-                'id_pekerjaan' => $data['id_pekerjaan'] ?? null,
-                'acquisition_value' => $data['value'] ?? 0,
-                'procurement_date' => $data['procurementDate'] ?? null,
-                'photo' => is_array($data['photo']) ? ($data['photo']['path'] ?? $data['photo']['name'] ?? null) : $data['photo'],
-                'created_at' => \Carbon\Carbon::now(),
-                'updated_at' => \Carbon\Carbon::now(),
-            ]);
+                // Insert to assets master
+                DB::table('assets')->insert([
+                    'asset_code' => $finalId,
+                    'name' => $data['name'] ?? '-',
+                    'merek' => $data['merek'] ?? null,
+                    'tipe' => $data['tipe'] ?? null,
+                    'device_code' => $deviceCode,
+                    'id_pekerjaan' => $data['id_pekerjaan'] ?? null,
+                    'acquisition_value' => $data['value'] ?? 0,
+                    'procurement_date' => $data['procurementDate'] ?? null,
+                    'photo' => is_array($data['photo']) ? ($data['photo']['path'] ?? $data['photo']['name'] ?? null) : $data['photo'],
+                    'created_at' => \Carbon\Carbon::now(),
+                    'updated_at' => \Carbon\Carbon::now(),
+                ]);
+            }
+            
+            $data['id'] = $finalId;
 
             // Sync to budget_items if id_pekerjaan is provided
             if (!empty($data['id_pekerjaan'])) {
@@ -297,36 +408,31 @@ class BarangController extends Controller
                 if ($customKdBase) {
                     $parts = explode('-', $customKdBase);
                     
-                    // 1. Sync branch
-                    if ($ownerBranchCode && count($parts) >= 3) {
-                        $parts[1] = $ownerBranchCode;
-                    }
+                    // Branch sync removed to respect frontend's exact ID format
                     
-                    // 2. Sync asset_code
-                    $finalParts = explode('-', $finalId);
-                    if (count($finalParts) >= 2) {
-                        $lastPart = $parts[count($parts) - 1];
-                        if (is_numeric($lastPart)) {
-                            $parts[count($parts) - 1] = str_pad((int)$finalParts[1], 3, '0', STR_PAD_LEFT);
-                            if (count($parts) >= 2) {
-                                $parts[count($parts) - 2] = $finalParts[0];
-                            }
-                            $customKdBase = implode('-', $parts);
-                        } else {
-                            $customKdBase = implode('-', $parts) . '-' . $finalParts[0] . '-' . str_pad((int)$finalParts[1], 3, '0', STR_PAD_LEFT);
-                        }
-                    } else {
-                        $customKdBase = implode('-', $parts);
-                    }
+                    // Removed Sync asset_code logic to respect frontend's exact format
+                    $customKdBase = implode('-', $parts);
                 }
 
                 $customKdSuffix = 0;
+                $customKdPrefix = $customKdBase;
                 if ($customKdBase) {
-                    $existingKds = DB::table('barang')->where('kd_barang', 'like', $customKdBase . '-KB-%')->pluck('kd_barang')->toArray();
+                    // Check if customKdBase ends with a numeric sequence (e.g. -001)
+                    $parts = explode('-', $customKdBase);
+                    $lastPart = end($parts);
+                    if (is_numeric($lastPart)) {
+                        $customKdSuffix = (int)$lastPart - 1; // start from the one before
+                        array_pop($parts);
+                        $customKdPrefix = implode('-', $parts);
+                    }
+
+                    // Check existing IDs to find the max suffix
+                    $existingKds = DB::table('barang')->where('kd_barang', 'like', $customKdPrefix . '-%')->pluck('kd_barang')->toArray();
                     foreach ($existingKds as $ekd) {
-                        $parts = explode('-KB-', $ekd);
-                        if (count($parts) == 2) {
-                            $customKdSuffix = max($customKdSuffix, (int)$parts[1]);
+                        $eparts = explode('-', $ekd);
+                        $elast = end($eparts);
+                        if (is_numeric($elast)) {
+                            $customKdSuffix = max($customKdSuffix, (int)$elast);
                         }
                     }
                 }
@@ -355,7 +461,7 @@ class BarangController extends Controller
 
                     if ($customKdBase) {
                         $customKdSuffix++;
-                        $kd_barang = $customKdBase . '-KB-' . str_pad($customKdSuffix, 3, '0', STR_PAD_LEFT);
+                        $kd_barang = $customKdPrefix . '-' . str_pad($customKdSuffix, 3, '0', STR_PAD_LEFT);
                     } else {
                         if ($numericKdCounter === null) {
                             $numericKdCounter = DB::table('barang')->whereRaw("kd_barang ~ '^[0-9]+$'")->max(DB::raw("CAST(kd_barang AS BIGINT)"));
@@ -801,8 +907,15 @@ class BarangController extends Controller
             // Delete from budget_items so that it removes the asset from any projects
             DB::table('budget_items')->where('asset_code', $id)->delete();
 
-            // Deleting from the master assets table will automatically trigger cascaded deletes
-            // on barang, asset_specifications, etc.
+            // Retrieve all kd_barang for this asset to delete their transactions
+            $kdBarangs = DB::table('barang')->where('asset_code', $id)->pluck('kd_barang');
+            if ($kdBarangs->isNotEmpty()) {
+                DB::table('asset_transactions')->whereIn('kd_barang', $kdBarangs)->delete();
+            }
+
+            // Delete child records explicitly to avoid constraint errors if ON DELETE CASCADE is missing
+            DB::table('asset_specifications')->where('asset_code', $id)->delete();
+            DB::table('barang')->where('asset_code', $id)->delete();
             DB::table('assets')->where('asset_code', $id)->delete();
 
             DB::commit();
@@ -1000,6 +1113,149 @@ class BarangController extends Controller
             return response()->json($devices);
         } catch (\Exception $e) {
             Log::error('Error loading devices: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    /* =======================================================
+       KATALOG (MASTER ASSETS TABLE) ENDPOINTS
+       ======================================================= */
+       
+    public function getKatalog()
+    {
+        try {
+            $assets = DB::table('assets')
+                ->leftJoin('device', 'assets.device_code', '=', 'device.device_code')
+                ->select('assets.*', 'device.name as category_name')
+                ->orderBy('assets.created_at', 'desc')
+                ->get();
+
+            $unitCounts = DB::table('barang')
+                ->select('asset_code', DB::raw('count(*) as total_units'))
+                ->groupBy('asset_code')
+                ->pluck('total_units', 'asset_code');
+
+            $data = $assets->map(function($a) use ($unitCounts) {
+                $a->total_units = $unitCounts->get($a->asset_code) ?? 0;
+                return $a;
+            });
+
+            return response()->json(['success' => true, 'data' => $data]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function storeKatalog(Request $request)
+    {
+        DB::beginTransaction();
+        try {
+            $deviceCode = $request->input('category');
+            if (empty($deviceCode)) {
+                return response()->json(['success' => false, 'message' => 'Kategori wajib diisi'], 400);
+            }
+            
+            // Auto-insert device category if it doesn't exist
+            $deviceExists = DB::table('device')->where('device_code', $deviceCode)->exists();
+            if (!$deviceExists) {
+                DB::table('device')->insert([
+                    'device_code' => $deviceCode,
+                    'name' => $deviceCode,
+                    'is_active' => true,
+                    'created_at' => \Carbon\Carbon::now(),
+                ]);
+            }
+
+            $catPrefix = strtoupper($deviceCode);
+            $allAssets = DB::table('assets')->pluck('asset_code')->toArray();
+            
+            $maxKategori = 0;
+            $maxGlobal = 0;
+            
+            foreach ($allAssets as $ac) {
+                if (preg_match('/^([A-Z]+)(\d{2})-(\d{3})$/', $ac, $matches)) {
+                    $cat = $matches[1];
+                    $catUrut = intval($matches[2]);
+                    $globUrut = intval($matches[3]);
+                    
+                    if ($cat === $catPrefix && $catUrut > $maxKategori) {
+                        $maxKategori = $catUrut;
+                    }
+                    if ($globUrut > $maxGlobal) {
+                        $maxGlobal = $globUrut;
+                    }
+                } else {
+                    $globalCount = DB::table('assets')->count();
+                    if ($globalCount > $maxGlobal) {
+                        $maxGlobal = $globalCount;
+                    }
+                }
+            }
+            
+            $kategoriUrut = str_pad($maxKategori + 1, 2, '0', STR_PAD_LEFT);
+            $globalUrut = str_pad($maxGlobal + 1, 3, '0', STR_PAD_LEFT);
+            $finalId = $catPrefix . $kategoriUrut . '-' . $globalUrut;
+
+            DB::table('assets')->insert([
+                'asset_code' => $finalId,
+                'name' => $request->input('name') ?? '-',
+                'merek' => $request->input('merek') ?? null,
+                'tipe' => $request->input('tipe') ?? null,
+                'device_code' => $deviceCode,
+                'created_at' => \Carbon\Carbon::now(),
+                'updated_at' => \Carbon\Carbon::now(),
+            ]);
+
+            DB::commit();
+            return response()->json([
+                'success' => true, 
+                'message' => 'Katalog berhasil dibuat',
+                'data' => DB::table('assets')->where('asset_code', $finalId)->first()
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function updateKatalog(Request $request, $id)
+    {
+        try {
+            DB::table('assets')->where('asset_code', $id)->update([
+                'name' => $request->input('name') ?? '-',
+                'merek' => $request->input('merek') ?? null,
+                'tipe' => $request->input('tipe') ?? null,
+                'updated_at' => \Carbon\Carbon::now(),
+            ]);
+            return response()->json(['success' => true, 'message' => 'Katalog diupdate']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function deleteKatalog($id)
+    {
+        DB::beginTransaction();
+        try {
+            // Delete from budget_items so that it removes the asset from any projects
+            DB::table('budget_items')->where('asset_code', $id)->delete();
+
+            // Retrieve all kd_barang for this asset to delete their transactions
+            $kdBarangs = DB::table('barang')->where('asset_code', $id)->pluck('kd_barang');
+            if ($kdBarangs->isNotEmpty()) {
+                DB::table('asset_transactions')->whereIn('kd_barang', $kdBarangs)->delete();
+            }
+
+            // Delete child records explicitly to avoid constraint errors
+            DB::table('asset_specifications')->where('asset_code', $id)->delete();
+            DB::table('barang')->where('asset_code', $id)->delete();
+            DB::table('assets')->where('asset_code', $id)->delete();
+
+            DB::commit();
+            return response()->json(['success' => true, 'message' => 'Katalog beserta unit fisiknya berhasil dihapus']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error deleting katalog: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }

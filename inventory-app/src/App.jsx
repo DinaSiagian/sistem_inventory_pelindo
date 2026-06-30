@@ -11,6 +11,7 @@ import Auth from "./components/Auth";
 // === Admin pages (lazy) ===
 const Dashboard = lazy(() => import("./components/Dashboard"));
 const ViewAsset = lazy(() => import("./components/ViewAsset"));
+const MasterBarang = lazy(() => import("./components/MasterBarang"));
 const BudgetManagement = lazy(() => import("./components/BudgetManagement"));
 const Budgetinput = lazy(() => import("./components/Budgetinput"));
 const Peminjaman = lazy(() => import("./components/Peminjaman"));
@@ -23,6 +24,7 @@ const Inventaris = lazy(() => import("./components/User/Inventaris"));
 const UserPeminjaman = lazy(() => import("./components/User/Peminjaman"));
 
 const Profil = lazy(() => import("./components/User/Profil"));
+const ScanAsset = lazy(() => import("./components/ScanAsset"));
 
 const Loader = () => <div style={{ padding: "2rem" }}>Loading...</div>;
 
@@ -32,11 +34,19 @@ function App() {
       <Routes>
         <Route path="/" element={<Auth />} />
         <Route path="/login" element={<Auth />} />
+        
+        {/* Public Scan Route */}
+        <Route path="/scan/:id" element={<Suspense fallback={<Loader />}><ScanAsset /></Suspense>} />
 
         {/* Admin */}
         <Route element={<Layout />}>
           <Route path="/dashboard" element={<Suspense fallback={<Loader />}><Dashboard /></Suspense>} />
-          <Route path="/assets" element={<Suspense fallback={<Loader />}><ViewAsset /></Suspense>} />
+          
+          {/* Inventory Management Routes */}
+          <Route path="/assets" element={<Navigate to="/assets/list" replace />} />
+          <Route path="/assets/list" element={<Suspense fallback={<Loader />}><ViewAsset /></Suspense>} />
+          <Route path="/assets/master" element={<Suspense fallback={<Loader />}><MasterBarang /></Suspense>} />
+
           {/* BAST Aset routes */}
           <Route
             path="/peminjaman"

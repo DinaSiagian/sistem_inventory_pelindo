@@ -679,16 +679,7 @@ const Auth = () => {
                   </button>
                 </form>
 
-                {/* Demo Credentials */}
-                {isLogin && (
-                  <div className="demo-credentials">
-                    <strong>🔐 Demo Akun:</strong>
-                    <br />
-                    🔴 Admin: joy@pelindo.co.id / admin123
-                    <br />
-                    🟢 User: budi@pelindo.co.id / user123
-                  </div>
-                )}
+
 
                 <div className="auth-footer">
                   <p>

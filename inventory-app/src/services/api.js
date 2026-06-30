@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:8000/api";
+const API_URL = "/api";
 
 const api = axios.create({
   baseURL: API_URL,
@@ -130,6 +130,13 @@ export const barangAPI = {
   create: (data) => api.post('/barang', data),
   update: (id, data) => api.put(`/barang/${id}`, data),
   delete: (id) => api.delete(`/barang/${id}`),
+};
+
+export const katalogAPI = {
+  getAll: () => api.get('/katalog'),
+  create: (data) => api.post('/katalog', data),
+  update: (id, data) => api.put(`/katalog/${id}`, data),
+  delete: (id) => api.delete(`/katalog/${id}`),
 };
 
 export const transactionAPI = {

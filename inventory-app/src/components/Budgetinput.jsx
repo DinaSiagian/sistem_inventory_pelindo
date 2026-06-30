@@ -667,6 +667,7 @@ function InlineEditField({ label, value, onSave, type = "text" }) {
           <div>
             {isYear ? (
               <select
+                aria-label="Tahun"
                 style={{ ...S.inp, width: "100%", maxWidth: 160 }}
                 value={val}
                 onChange={(e) => setVal(e.target.value)}
@@ -1135,6 +1136,7 @@ function EditSection({
             required: true,
             content: (
               <select
+                aria-label="Jenis Perubahan"
                 style={{
                   ...S.inp,
                   width: "auto",
@@ -1548,6 +1550,7 @@ function RealisasiSection({ master, setMasters, toast_ }) {
             >
               <ModalFormRow label="Tahun Anggaran" required>
                 <select
+                  aria-label="Tahun Anggaran"
                   style={S.inp}
                   value={form.thn}
                   onChange={(e) =>
@@ -2186,6 +2189,7 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               <Fld label="Tahun Anggaran" required>
                 <select
+                  aria-label="Tahun Anggaran"
                   style={S.inp}
                   value={form.thn}
                   onChange={(e) =>
@@ -2939,6 +2943,7 @@ function CapexInputAnggaranPage({ capex, onBack, onSave }) {
         </ModalFormRow>
         <ModalFormRow label="Tahun Anggaran" required>
           <select
+            aria-label="Tahun Anggaran"
             style={{ ...S.inp, maxWidth: 280, fontWeight: 700 }}
             value={thnAnggaran}
             onChange={(e) => setThnAnggaran(e.target.value)}
@@ -4549,6 +4554,7 @@ function OpexModule({ masterList, setMasterList }) {
                         </span>
                       )}
                       <select
+                        aria-label={`Filter Tahun ${f.label}`}
                         style={{
                           ...S.inp,
                           width: 110,
@@ -4606,6 +4612,7 @@ function OpexModule({ masterList, setMasterList }) {
                   </span>
                   <div style={{ position: "relative", flex: 1, maxWidth: 280 }}>
                     <select
+                      aria-label="Filter Nama Pos Anggaran"
                       style={{
                         ...S.inp,
                         padding: "6px 32px 6px 10px",
@@ -4632,6 +4639,7 @@ function OpexModule({ masterList, setMasterList }) {
                     </select>
                     {filterNama && (
                       <button
+                        aria-label="Hapus Filter Nama"
                         style={{
                           position: "absolute",
                           right: 6,
@@ -4869,6 +4877,7 @@ function OpexModule({ masterList, setMasterList }) {
                               <div className="mobile-action-dropdown" style={{ display: "flex", gap: 5, justifyContent: "center", flexWrap: "nowrap" }}>
                                 <button
                                   className="mobile-action-trigger"
+                                  aria-label="Opsi Aksi Mobile"
                                   style={{ display: "none" }}
                                   onClick={(e) => {
                                     e.stopPropagation();
@@ -5007,6 +5016,7 @@ function OpexModule({ masterList, setMasterList }) {
                     style={{ display: "flex", alignItems: "center", gap: 6 }}
                   >
                     <button
+                      aria-label="Halaman Sebelumnya"
                       style={{
                         ...S.abtn,
                         padding: "6px 12px",
@@ -5027,6 +5037,7 @@ function OpexModule({ masterList, setMasterList }) {
                       (pg) => (
                         <button
                           key={pg}
+                          aria-label={`Halaman ${pg}`}
                           onClick={() => setCurrentPage(pg)}
                           style={{
                             width: 32,
@@ -5052,6 +5063,7 @@ function OpexModule({ masterList, setMasterList }) {
                       ),
                     )}
                     <button
+                      aria-label="Halaman Berikutnya"
                       style={{
                         ...S.abtn,
                         padding: "6px 12px",
@@ -5147,6 +5159,7 @@ const CapexFormModal = React.memo(function CapexFormModal({
         ].map((f) => (
           <ModalFormRow key={f.key} label={f.label}>
             <select
+              aria-label="Kode Master Anggaran"
               style={{ ...S.inp, maxWidth: 160 }}
               value={data[f.key]}
               onChange={(e) =>
@@ -6095,6 +6108,7 @@ function CapexModule({ capexList, setCapexList }) {
                         >
                           <span style={{ fontWeight: 600 }}>{h}</span>
                           <select
+                            aria-label="Pilih Tahun CAPEX"
                             style={{
                               position: "absolute",
                               right: 2,
@@ -6315,6 +6329,7 @@ function CapexModule({ capexList, setCapexList }) {
                           <div className="mobile-action-dropdown" style={{ display: "flex", gap: 5, justifyContent: "center", flexWrap: "nowrap" }}>
                             <button
                               className="mobile-action-trigger"
+                              aria-label="Opsi Aksi Mobile"
                               style={{ display: "none" }}
                               onClick={(e) => {
                                 e.stopPropagation();

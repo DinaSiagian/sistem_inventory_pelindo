@@ -1,221 +1,12 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
-import { barangAPI, budgetAPI, masterDataAPI, transactionAPI } from "../services/api";
+import { barangAPI, budgetAPI, masterDataAPI, transactionAPI, katalogAPI } from "../services/api";
+import { QRCodeSVG } from "qrcode.react";
 import "./ViewAsset.css";
 // ── CAPEX ANGGARAN MASTER (thn_anggaran → nm_anggaran → pekerjaan) ─────
-let CAPEX_ANGGARAN = [
-  {
-    kd_anggaran: "2440015",
-    nm_anggaran: "Implementasi dan Standarisasi IT Infrastruktur",
-    thn_anggaran: 2024,
-    pekerjaan: [
-      {
-        id_pekerjaan: "PKJ-2440015-001",
-        nm_pekerjaan: "Pekerjaan Implementasi CCTV",
-      },
-      {
-        id_pekerjaan: 2,
-        nm_pekerjaan:
-          "Pekerjaan Implementasi dan Standarisasi IT Infrastruktur (Gate System Branch Malahayati, Lhokseumawe, Lembar, ParePare dan Garongkong) PT Pelindo Multi Terminal",
-      },
-      {
-        id_pekerjaan: 3,
-        nm_pekerjaan:
-          "Pekerjaan Implementasi dan Standarisasi IT Infrastruktur (Gate System dan Planning & Control Branch Balikpapan dan Bagendang) PT Pelindo Multi Terminal",
-      },
-      {
-        id_pekerjaan: 4,
-        nm_pekerjaan:
-          "Pekerjaan Implementasi dan Standarisasi IT Infrastruktur (Gate System Branch Makassar) PT Pelindo Multi Terminal",
-      },
-    ],
-  },
-  {
-    kd_anggaran: "2440014",
-    nm_anggaran: "Penyediaan Network di Branch SPMT",
-    thn_anggaran: 2024,
-    pekerjaan: [
-      {
-        id_pekerjaan: 5,
-        nm_pekerjaan:
-          "Penyediaan Network di Branch SPMT (Malahayati, Lhokseumawe, Lembar, Parepare dan Garongkong)",
-      },
-    ],
-  },
-  {
-    kd_anggaran: "2440013",
-    nm_anggaran: "Penyiapan Infrastruktur IT",
-    thn_anggaran: 2024,
-    pekerjaan: [
-      {
-        id_pekerjaan: "PKJ-2440013-001",
-        nm_pekerjaan: "Pengadaan Server dan Network",
-      },
-    ],
-  },
-  {
-    kd_anggaran: "2440020",
-    nm_anggaran:
-      "Revisi Capex (Pemenuhan Kebutuhan Gate dan PNC Transformasi pada Branch SPMT)",
-    thn_anggaran: 2025,
-    pekerjaan: [
-      {
-        id_pekerjaan: 7,
-        nm_pekerjaan:
-          "Pemenuhan Kebutuhan Gate System Transformasi pada Branch (Jamrud Nilam Mirah, Tanjung Wangi, Trisakti, Dumai, Belawan) PT Pelindo Multi Terminal",
-      },
-      {
-        id_pekerjaan: 8,
-        nm_pekerjaan:
-          "Pemenuhan Kebutuhan Planning and Control Transformasi pada Branch (Jamrud Nilam Mirah, Tanjung Wangi, Trisakti, Dumai, Belawan dan Kantor Pusat) PT Pelindo Multi Terminal",
-      },
-      {
-        id_pekerjaan: 9,
-        nm_pekerjaan:
-          "Pemenuhan Kebutuhan Gate System, Planning and Control dan Perangkat Pendukung Transformasi PT Pelindo Multi Terminal",
-      },
-      {
-        id_pekerjaan: 10,
-        nm_pekerjaan:
-          "Pemenuhan Kebutuhan Gate System dan Planning and Control (Public Announcer, Kelengkapan Gate dan Radio Point To Point) PT Pelindo Multi Terminal",
-      },
-    ],
-  },
-  {
-    kd_anggaran: "2540011",
-    nm_anggaran: "Transformasi dan Digitalisasi PT Pelindo Multi Terminal",
-    thn_anggaran: 2025,
-    pekerjaan: [
-      {
-        id_pekerjaan: "PKJ-2540011-001",
-        nm_pekerjaan: "Penyediaan Alat Berat Excavator",
-      },
-      {
-        id_pekerjaan: 12,
-        nm_pekerjaan:
-          "Penyediaan Kebutuhan Public Announcer Pendukung Transformasi dan Digitalisasi Branch (Balikpapan, Belawan, Dumai, Trisakti, Makassar, Parepare, Garongkong, Sibolga, Tanjung Emas, Tanjung Intan dan Gresik) PT Pelindo Multi Terminal",
-      },
-      {
-        id_pekerjaan: 13,
-        nm_pekerjaan:
-          "Penyediaan Kebutuhan Perangkat Jaringan, Security Information and Management (SIEM) dan Perangkat Pendukung Gate System PT Pelindo Multi Terminal",
-      },
-      {
-        id_pekerjaan: 14,
-        nm_pekerjaan:
-          "Penyediaan Kebutuhan Transformasi dan Digitalisasi (CCTV dan Public Announcer Traffic Monitoring pada Gate) Branch Belawan, Dumai, Malahayati, Lhokseumawe, Lembar, Jamrud Nilam Mirah, Makassar, Balikpapan, Bumiharjo Bagendang, Tanjung Pinang, Sibolga, Tanjung Emas, Parepare, Trisakti dan Gresik PT Pelindo Multi Terminal",
-      },
-    ],
-  },
-  {
-    kd_anggaran: "2540012",
-    nm_anggaran:
-      "Standarisasi Perangkat Jaringan di Lingkungan PT Pelindo Multi Terminal",
-    thn_anggaran: 2025,
-    pekerjaan: [
-      {
-        id_pekerjaan: 15,
-        nm_pekerjaan:
-          "Pemenuhan Kebutuhan Perangkat Network Branch Tanjung Balai Karimun Terminal Selat Panjang PT Pelindo Multi Terminal",
-      },
-    ],
-  },
-  {
-    kd_anggaran: "2540010",
-    nm_anggaran: "Penyiapan Infrastruktur IT pada Kegiatan Roro",
-    thn_anggaran: 2025,
-    pekerjaan: [
-      {
-        id_pekerjaan: 16,
-        nm_pekerjaan:
-          "Penyiapan Infrastruktur Gate System Pendukung Kegiatan RoRo pada Branch Tanjung Emas PT Pelindo Multi Terminal",
-      },
-    ],
-  },
-];
+let CAPEX_ANGGARAN = [];
 
 // ── OPEX ANGGARAN (thn_anggaran → nm_anggaran, tanpa pekerjaan) ───
-let OPEX_ANGGARAN = [
-  {
-    kd_anggaran: "OPEX-5030",
-    nm_anggaran: "Beban Pemeliharaan Software",
-    kd_akun: "5030905000",
-    thn_anggaran: 2024,
-    id_pekerjaan: 101,
-    nm_pekerjaan: "Pemeliharaan Lisensi Perangkat Lunak",
-  },
-  {
-    kd_anggaran: "OPEX-5021A",
-    nm_anggaran: "Beban Jaringan dan Koneksi Data",
-    kd_akun: "5021300000",
-    thn_anggaran: 2024,
-    id_pekerjaan: 102,
-    nm_pekerjaan: "Pemeliharaan Jaringan Dan Internet Branch",
-  },
-  {
-    kd_anggaran: "OPEX-5021B",
-    nm_anggaran: "Beban Perlengkapan Kantor",
-    kd_akun: "5021200000",
-    thn_anggaran: 2024,
-    id_pekerjaan: 103,
-    nm_pekerjaan: "Pengadaan Suku Cadang Dan Hardware Branch",
-  },
-  {
-    kd_anggaran: "OPEX-5081",
-    nm_anggaran: "Beban Jasa Konsultan",
-    kd_akun: "5081500000",
-    thn_anggaran: 2024,
-    id_pekerjaan: 104,
-    nm_pekerjaan: "Penyusunan IT Masterplan Dan Blueprint",
-  },
-  {
-    kd_anggaran: "OPEX-5060",
-    nm_anggaran: "Beban Sumber Daya Pihak Ketiga Peralatan",
-    kd_akun: "5060700000",
-    thn_anggaran: 2024,
-    id_pekerjaan: 105,
-    nm_pekerjaan: "Perbaikan Dan Kalibrasi UPS Power Branch",
-  },
-  {
-    kd_anggaran: "OPEX-5030B",
-    nm_anggaran: "Beban Pemeliharaan Software",
-    kd_akun: "5030905000",
-    thn_anggaran: 2025,
-    id_pekerjaan: 101,
-    nm_pekerjaan: "Pemeliharaan Lisensi Perangkat Lunak",
-  },
-  {
-    kd_anggaran: "OPEX-5021C",
-    nm_anggaran: "Beban Jaringan dan Koneksi Data",
-    kd_akun: "5021300000",
-    thn_anggaran: 2025,
-    id_pekerjaan: 102,
-    nm_pekerjaan: "Pemeliharaan Jaringan Dan Internet Branch",
-  },
-  {
-    kd_anggaran: "OPEX-5021D",
-    nm_anggaran: "Beban Perlengkapan Kantor",
-    kd_akun: "5021200000",
-    thn_anggaran: 2025,
-    id_pekerjaan: 103,
-    nm_pekerjaan: "Pengadaan Suku Cadang Dan Hardware Branch",
-  },
-  {
-    kd_anggaran: "OPEX-5081B",
-    nm_anggaran: "Beban Jasa Konsultan",
-    kd_akun: "5081500000",
-    thn_anggaran: 2025,
-    id_pekerjaan: 104,
-    nm_pekerjaan: "Penyusunan IT Masterplan Dan Blueprint",
-  },
-  {
-    kd_anggaran: "OPEX-5060B",
-    nm_anggaran: "Beban Sumber Daya Pihak Ketiga Peralatan",
-    kd_akun: "5060700000",
-    thn_anggaran: 2025,
-    id_pekerjaan: 105,
-    nm_pekerjaan: "Perbaikan Dan Kalibrasi UPS Power Branch",
-  },
-];
+let OPEX_ANGGARAN = [];
 
 // ── DERIVED FLAT LIST (for lookup/table/export) ───────────────────
 let ALL_PROJECTS = [
@@ -358,7 +149,7 @@ const SUBZONA_LIST = [
   { name: "Jalan", code: "JLN" },
   { name: "Taman", code: "TPK" },
 ];
-const ITEMS_PER_PAGE = 8;
+const ITEMS_PER_PAGE = 5;
 
 const SPEC_UNIT_OPTIONS = [
   { group: "Penyimpanan", units: ["B", "KB", "MB", "GB", "TB"] },
@@ -2284,24 +2075,30 @@ const ViewAsset = () => {
   const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
   const [assets, setAssets] = useState(() => JSON.parse(sessionStorage.getItem('SWR_assets')) || []);
   const [dbCategories, setDbCategories] = useState(() => JSON.parse(sessionStorage.getItem('SWR_dbCategories')) || []);
+  const [masterKatalog, setMasterKatalog] = useState(() => JSON.parse(sessionStorage.getItem('SWR_masterKatalog')) || []);
   const [dbLocations, setDbLocations] = useState(() => JSON.parse(sessionStorage.getItem('SWR_dbLocations')) || { branches: [], zonas: [], subzonas: [] });
 
   const fetchAssets = async () => {
     try {
-      const [resAssets, resDevices, resCapex, resOpex, resB, resZ, resS] = await Promise.all([
+      const [resAssets, resDevices, resCapex, resOpex, resB, resZ, resS, resKatalog] = await Promise.all([
         barangAPI.getAll(),
         masterDataAPI.getDevices(),
         budgetAPI.getCapex(),
         budgetAPI.getOpex(),
         masterDataAPI.getBranches(),
         masterDataAPI.getZonas(),
-        masterDataAPI.getSubzonas()
+        masterDataAPI.getSubzonas(),
+        katalogAPI.getAll()
       ]);
       setAssets(resAssets.data);
       sessionStorage.setItem('SWR_assets', JSON.stringify(resAssets.data));
       const newCategories = resDevices.data?.data || resDevices.data || [];
       setDbCategories(newCategories);
       sessionStorage.setItem('SWR_dbCategories', JSON.stringify(newCategories));
+
+      const newKatalog = resKatalog.data?.data || [];
+      setMasterKatalog(newKatalog);
+      sessionStorage.setItem('SWR_masterKatalog', JSON.stringify(newKatalog));
 
       if (resB.data?.success && resZ.data?.success && resS.data?.success) {
         const locs = {
@@ -2437,6 +2234,8 @@ const ViewAsset = () => {
   const [showEditMerekSuggestions, setShowEditMerekSuggestions] = useState(false);
   const [showEditTipeSuggestions, setShowEditTipeSuggestions] = useState(false);
   const [formData, setFormData] = useState({
+    katalogId: "",
+    katalogSearch: "",
     assetId: "",
     cekEksisting: "",
     name: "",
@@ -2498,12 +2297,11 @@ const ViewAsset = () => {
     return () => document.removeEventListener("mousedown", handleOutsideEdit);
   }, [isEditingUnit]);
 
-  // Pemetaan Nama Lengkap Kategori berdasarkan Device Code
   // Pemetaan Nama Lengkap Kategori berdasarkan Device Code (Dinamis dari database + base fallback)
   const CATEGORY_NAMES = useMemo(() => {
     const base = {
       LPT: "LAPTOP",
-      CTV: "CCTV CAMERA",
+      CCTV: "CCTV CAMERA",
       RTR: "ROUTER / JARINGAN",
       PC: "PC DESKTOP",
       SRV: "SERVER",
@@ -2514,7 +2312,7 @@ const ViewAsset = () => {
       FRN: "FURNITURE",
       MAT: "MATERIAL",
       SFT: "SOFTWARE LICENSE",
-      HDW: "HARDWARE",
+      HW: "HARDWARE",
       OTH: "IT LAINNYA"
     };
     if (dbCategories && dbCategories.length > 0) {
@@ -2525,43 +2323,11 @@ const ViewAsset = () => {
     return base;
   }, [dbCategories]);
 
-  // Pemetaan Prefix berdasarkan Kategori
-  const CATEGORY_PREFIX = {
-    "LPT": "LAP",
-    "CTV": "CCTV",
-    "RTR": "RTR",
-    "PC": "PC",
-    "SRV": "SRV",
-    "SWT": "SWT",
-    "PRN": "PRN",
-    "KND": "KND",
-    "AB": "ALAT",
-    "FRN": "FURN",
-    "MAT": "MAT",
-    "SFT": "SFT",
-    "HDW": "HW",
-    "OTH": "BRG",
-    "Laptop": "LAP",
-    "CCTV": "CCTV",
-    "Router": "RTR",
-    "PC Desktop": "PC",
-    "Server": "SRV",
-    "Switch": "SWT",
-    "Printer": "PRN",
-    "Kendaraan": "KND",
-    "Alat Berat": "ALAT",
-    "Furniture": "FURN",
-    "Material": "MAT",
-    "Software": "SFT",
-    "Hardware": "HW",
-    "Lainnya": "BRG"
-  };
-
   // Otomatis generate ID saat Kategori dan Nama Barang sudah diisi
   useEffect(() => {
     if (currentView === "add") {
       if (formData.category && formData.tipeAset) {
-        const prefix = `${CATEGORY_PREFIX[formData.category] || formData.category || "BRG"}-`;
+        const prefix = `${formData.category || "BRG"}-`;
 
         // Cari angka terbesar khusus untuk prefix kategori ini
         const maxId = assets.reduce((max, a) => {
@@ -2575,8 +2341,8 @@ const ViewAsset = () => {
 
         const nextId = `${prefix}${String(maxId + 1).padStart(4, "0")}`;
 
-        // Check if current ID is auto-generated (matches any category prefix)
-        const isAutoGenerated = Object.values(CATEGORY_PREFIX).some(p => formData.assetId.startsWith(`${p}-`)) || formData.assetId.startsWith("BRG-");
+        // Check if current ID is auto-generated (matches category prefix)
+        const isAutoGenerated = formData.assetId.startsWith(`${formData.category}-`) || formData.assetId.startsWith("BRG-");
 
         // Hanya update jika ID belum ada atau masih menggunakan format auto-generate
         if (!formData.assetId || isAutoGenerated) {
@@ -2590,11 +2356,11 @@ const ViewAsset = () => {
 
   const kpi = useMemo(
     () => ({
-      total: assets.length,
-      tersedia: assets.filter((a) => a.status === "Tersedia").length,
-      maintenance: assets.filter((a) => a.status === "Maintenance").length,
-      dipinjam: assets.filter((a) => a.status === "Dipinjam").length,
-      totalNilai: assets.reduce((s, a) => s + ((a.value || 0) * (a.quantity || 1)), 0),
+      total: assets.reduce((s, a) => s + (a.quantity || (a.units ? a.units.length : 1)), 0),
+      tersedia: assets.filter((a) => a.status === "Tersedia").reduce((s, a) => s + (a.quantity || (a.units ? a.units.length : 1)), 0),
+      maintenance: assets.filter((a) => a.status === "Maintenance").reduce((s, a) => s + (a.quantity || (a.units ? a.units.length : 1)), 0),
+      dipinjam: assets.filter((a) => a.status === "Dipinjam").reduce((s, a) => s + (a.quantity || (a.units ? a.units.length : 1)), 0),
+      totalNilai: assets.reduce((s, a) => s + ((a.value || 0) * (a.quantity || (a.units ? a.units.length : 1))), 0),
     }),
     [assets],
   );
@@ -2685,25 +2451,53 @@ const ViewAsset = () => {
     return asset.photo?.dataUrl || CATEGORY_IMAGES[asset.category] || null;
   };
 
-  const getNextNomor = (eCode, bCode, zCode, szCode) => {
-    const prefix = `${eCode}-${bCode}-${zCode}-${szCode}-`;
-    const nums = assets
-      .filter((a) => a.id.startsWith(prefix))
-      .map((a) => {
-        const parts = a.id.split("-");
-        const n = parseInt(parts[parts.length - 1], 10);
-        return isNaN(n) ? 0 : n;
-      });
-    return String((nums.length > 0 ? Math.max(...nums) : 0) + 1).padStart(
-      3,
-      "0",
-    );
+  const getNextNomor = (eCode, bCode, zCode, szCode, catPrefix = "") => {
+    // Kumpulkan SEMUA ID dari seluruh aset (benar-benar global, tidak difilter per lokasi)
+    const allSystemIds = assets.flatMap(a => {
+       const ids = [];
+       // Pastikan ID mengikuti format panjang (minimal 6 segmen: Entitas-Branch-Zona-Subzona-Cat-Num)
+       if (a.id && a.id.includes("-") && a.id.split("-").length >= 6) ids.push(a.id);
+       if (a.custom_kd_barang && a.custom_kd_barang.includes("-") && a.custom_kd_barang.split("-").length >= 6) ids.push(a.custom_kd_barang);
+       if (a.units) {
+           a.units.forEach(u => {
+               if (u.kd_barang && u.kd_barang.includes("-") && u.kd_barang.split("-").length >= 6) ids.push(u.kd_barang);
+           });
+       }
+       return ids;
+    });
+    
+    // Nomor urut GLOBAL (3 digit terakhir): ambil dari SELURUH aset tanpa memandang lokasi
+    const globalNums = allSystemIds.map((id) => {
+      const parts = id.split("-");
+      const n = parseInt(parts[parts.length - 1], 10);
+      return isNaN(n) ? 0 : n;
+    });
+    const nextGlobalNum = String((globalNums.length > 0 ? Math.max(...globalNums) : 0) + 1).padStart(3, "0");
+
+    if (catPrefix) {
+      // Nomor urut KATEGORI: hitung berdasarkan jumlah kategori ini di SELURUH sistem
+      const existingCatNums = allSystemIds
+        .filter(id => {
+          const parts = id.split("-");
+          return parts.length >= 5 && parts[4].startsWith(catPrefix);
+        })
+        .map((id) => {
+          const catPart = id.split("-")[4]; // contoh: "KND01"
+          const n = parseInt(catPart.replace(catPrefix, ""), 10);
+          return isNaN(n) ? 0 : n;
+        });
+      // nextCatNum = max yang sudah ada + 1 (global, tidak reset per lokasi/kategori)
+      const nextCatNum = String((existingCatNums.length > 0 ? Math.max(...existingCatNums) : 0) + 1).padStart(2, "0");
+      return { global: nextGlobalNum, category: nextCatNum };
+    }
+
+    return nextGlobalNum;
   };
 
   const canGenerate = true;
 
   const handleGenerateCode = () => {
-    const prefix = "BRG-";
+    const prefix = `${formData.category || "BRG"}-`;
     const nums = assets
       .filter((a) => a.id.startsWith(prefix))
       .map((a) => {
@@ -2759,10 +2553,28 @@ const ViewAsset = () => {
   };
   const handleCategoryChange = (e) => {
     const category = e.target.value;
-    setFormData((p) => ({ ...p, category }));
+    setFormData((p) => ({ ...p, category, assetId: "" }));
     const tpl = SPEC_TEMPLATES_BY_CATEGORY[category] || [];
     setTemplateSpecs(tpl.map((t) => ({ ...t, value: "", _unitMode: "pick" })));
+    setCustomSpecs([]);
+    setShowSuggestions(false);
   };
+
+  useEffect(() => {
+    if (formData.use_existing_catalog && formData.katalogId) {
+      const parts = [
+        formData.entitasCode,
+        formData.branchCode,
+        formData.zonaCode,
+        formData.subzonaCode,
+        formData.katalogId
+      ].filter(Boolean);
+      const autoId = parts.join("-");
+      if (formData.assetId !== autoId) {
+        setFormData(p => ({ ...p, assetId: autoId }));
+      }
+    }
+  }, [formData.entitasCode, formData.branchCode, formData.zonaCode, formData.subzonaCode, formData.katalogId, formData.use_existing_catalog]);
 
   const resetForm = () => {
     setFormData({
@@ -2853,22 +2665,33 @@ const ViewAsset = () => {
       let masterAssetCode = startId;
       let isLocationBased = false;
 
-      if (!masterAssetCode || !masterAssetCode.startsWith(prefix)) {
-        if (masterAssetCode) isLocationBased = true;
-        const maxId = assets.reduce((max, a) => {
-          if (a.id.startsWith(prefix)) {
-            const part = a.id.split("-").pop();
-            const num = parseInt(part, 10);
-            return isNaN(num) ? max : Math.max(max, num);
-          }
-          return max;
-        }, 0);
-        masterAssetCode = `${prefix}${String(maxId + 1).padStart(4, "0")}`;
+      let currentKdSuffix = 0;
+      let customKdPrefix = "";
+      
+      if (startId) {
+         isLocationBased = true;
+         const parts = startId.split("-");
+         if (parts.length >= 2) {
+             const lastPart = parts[parts.length - 1];
+             const secondLastPart = parts[parts.length - 2];
+             
+             if (!isNaN(parseInt(lastPart, 10))) {
+                 // Set the master asset code to exactly the last two parts (e.g. KND01-001)
+                 masterAssetCode = `${secondLastPart}-${lastPart}`;
+                 
+                 currentKdSuffix = parseInt(lastPart, 10) - 1;
+                 parts.pop();
+                 customKdPrefix = parts.join("-");
+             }
+         }
       }
 
+      // Removed the duplicate currentKdSuffix calculation since it's done above
+
       const groupedAsset = {
-        id: masterAssetCode,
-        custom_kd_barang: isLocationBased ? startId : null,
+        id: formData.use_existing_catalog ? formData.katalogId : masterAssetCode,
+        use_existing_catalog: formData.use_existing_catalog,
+        custom_kd_barang: formData.assetId || null,
         name: formData.name || formData.tipeAset || "-",
         category: formData.category,
         tipeAset: formData.tipeAset || formData.name || "-",
@@ -2887,11 +2710,18 @@ const ViewAsset = () => {
               ?.id_pekerjaan || null
             : null),
         quantity: formData.quantity,
-        units: (formData.units || []).map((unit, index) => ({
-          serialNumber: unit.serialNumber?.trim() || null,
-          location: unit.location || "",
-          id_pekerjaan: unit.id_pekerjaan || null,
-        })),
+        units: (formData.units || []).map((unit, index) => {
+          let unitKdBarang = null;
+          if (isLocationBased && customKdPrefix) {
+             unitKdBarang = `${customKdPrefix}-${String(currentKdSuffix + index + 1).padStart(3, "0")}`;
+          }
+          return {
+            kd_barang: unitKdBarang,
+            serialNumber: unit.serialNumber?.trim() || null,
+            location: unit.location || "",
+            id_pekerjaan: unit.id_pekerjaan || null,
+          };
+        }),
         photo: formPhoto,
         specs: (templateSpecs || []).map(({ _unitMode, ...s }) => s),
         customSpecs: (customSpecs || []).map(({ _unitMode, ...s }) => s),
@@ -3139,7 +2969,7 @@ const ViewAsset = () => {
     const units = asset.units && asset.units.length > 0 ? asset.units : [{ serialNumber: asset.id }];
 
     const w = window.open("", "_blank", "width=800,height=800");
-    let html = `<!DOCTYPE html><html><head><title>Print Barcodes — ${asset.name}</title>
+    let html = `<!DOCTYPE html><html><head><title>Print QR Codes — ${asset.name}</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:'Courier New',monospace;background:#fff;padding:20px}
@@ -3151,7 +2981,7 @@ const ViewAsset = () => {
   .lstatus{border:1.5px solid #000;border-radius:4px;padding:3px 8px;font-size:8px;font-weight:900;letter-spacing:1px;text-transform:uppercase}
   .lname{font-size:14px;font-weight:800;margin:8px 0 3px;color:#000;font-family:sans-serif}
   .lid{font-size:10px;font-weight:700;color:#444;letter-spacing:.5px;margin-bottom:10px}
-  .lbar{text-align:center;border-top:1px dashed #ddd;border-bottom:1px dashed #ddd;padding:6px 0;margin:8px 0}
+  .lbar{text-align:center;padding:12px 0;margin:12px 0}
   .lmeta{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px;border-top:1px solid #eee;padding-top:8px}
   .mi label{display:block;font-size:7.5px;color:#888;text-transform:uppercase;letter-spacing:.4px;margin-bottom:1px}
   .mi span{font-size:9.5px;font-weight:700;color:#111}
@@ -3160,40 +2990,27 @@ const ViewAsset = () => {
 </style></head><body><div class="label-container">`;
 
     units.forEach((u) => {
-      const barcodeVal = u.serialNumber || asset.id;
-      const canvas = document.createElement("canvas");
-      const bars = C128.encode(barcodeVal);
-      const width = 340;
-      const height = 64;
-      const bw = Math.max(1, Math.floor(width / bars.length));
-      canvas.width = bw * bars.length;
-      canvas.height = height;
-      const ctx = canvas.getContext("2d");
-      ctx.fillStyle = "#fff";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = "#000";
-      for (let i = 0; i < bars.length; i++) {
-        if (bars[i] === "1") ctx.fillRect(i * bw, 0, bw, height);
-      }
-      const base64Barcode = canvas.toDataURL("image/png");
+      const barcodeVal = u.kd_barang || asset.id;
+      const scanUrl = `${window.location.origin}/scan/${barcodeVal}`;
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(scanUrl)}`;
 
       html += `
 <div class="label">
   <div class="lh"><div><div class="lbrand">PELINDO</div><div class="lsub">ASSET MANAGEMENT SYSTEM</div></div><span class="lstatus">${asset.status}</span></div>
   <div class="lname">${asset.name}</div>
   <div class="lid">${barcodeVal}</div>
-  <div class="lbar"><img src="${base64Barcode}" style="width:100%;height:auto;image-rendering:pixelated;" /></div>
+  <div class="lbar"><img src="${qrUrl}" style="width:140px;height:140px;margin:0 auto;display:block;" alt="QR Code" /></div>
   <div class="lmeta">
     <div class="mi"><label>Entitas</label><span>${asset.entitas || "—"}</span></div>
     <div class="mi"><label>Cabang</label><span>${asset.branch}</span></div>
-    <div class="mi"><label>Zona · Subz</label><span>${asset.zona}/${asset.subzona}</span></div>
+    <div class="mi"><label>Zona / Subz</label><span>${asset.zona}/${asset.subzona}</span></div>
     <div class="mi"><label>Aset ID</label><span>${asset.id}</span></div>
   </div>
-  <div class="lfoot">SCAN UNTUK PEMINJAMAN · ${new Date().getFullYear()}</div>
+  <div class="lfoot">SCAN UNTUK DETAIL ASET — ${new Date().getFullYear()}</div>
 </div>`;
     });
 
-    html += `</div><script>setTimeout(()=>{window.print();window.close();},600);</script></body></html>`;
+    html += `</div><script>setTimeout(()=>{window.print();window.close();}, 1500);</script></body></html>`;
     w.document.write(html);
     w.document.close();
   };
@@ -3259,7 +3076,7 @@ const ViewAsset = () => {
             className="add-asset-btn"
             onClick={() => setCurrentView("add")}
           >
-            <Icon.Plus /> Tambah Barang Baru
+            <Icon.Plus /> Registrasi Unit Fisik
           </button>
         </div>
 
@@ -3535,17 +3352,13 @@ const ViewAsset = () => {
 
 
         <div className="table-container" style={{ position: "relative" }}>
-          <div className="table-info-bar">
-            <span>
-              Menampilkan <strong>{paginated.length}</strong> dari{" "}
-              <strong>{filtered.length}</strong> aset
-            </span>
-            {activeFiltersCount > 0 && (
+          {activeFiltersCount > 0 && (
+            <div className="table-info-bar" style={{ justifyContent: "flex-end" }}>
               <span className="filter-active-note">
                 <Icon.WarnSm /> Filter aktif
               </span>
-            )}
-          </div>
+            </div>
+          )}
 
           {viewMode === "grid" ? (
             <>
@@ -3612,8 +3425,24 @@ const ViewAsset = () => {
                           </div>
                         </div>
                         <div className="asset-card-body">
-                          <code className="asset-card-id">{asset.id}</code>
+                          <code className="asset-card-id" title={`Katalog ID: ${asset.id}`}>
+                            {asset.units && asset.units.length > 0 
+                              ? asset.units[0].kd_barang
+                              : asset.id}
+                          </code>
                           <div className="asset-card-name">{asset.name}</div>
+                          <div style={{ 
+                            fontSize: "11px", 
+                            color: (asset.units?.[0]?.location || asset.id_pekerjaan) ? "var(--blue)" : "#94a3b8",
+                            fontWeight: (asset.units?.[0]?.location || asset.id_pekerjaan) ? "600" : "400",
+                            marginBottom: "8px",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis"
+                          }} title={asset.units?.[0]?.location || (asset.id_pekerjaan ? getProjectName(asset.id_pekerjaan) : "Belum ada lokasi")}>
+                            <Icon.MapPin style={{ width: "10px", height: "10px", display: "inline", marginRight: "4px" }} />
+                            {asset.units?.[0]?.location || (asset.id_pekerjaan ? getProjectName(asset.id_pekerjaan) : "—")}
+                          </div>
                           <div className="asset-card-meta">
                             <span className="cat-badge">{CATEGORY_NAMES[asset.category] || asset.category}</span>
                             <span
@@ -3626,7 +3455,7 @@ const ViewAsset = () => {
                                 borderRadius: "4px",
                               }}
                             >
-                              {asset.quantity || (asset.units ? asset.units.length : 1)} Unit
+                              {asset.quantity || (asset.units ? asset.units.length : 1)}
                             </span>
                           </div>
                         </div>
@@ -3672,7 +3501,7 @@ const ViewAsset = () => {
               <thead>
                 <tr>
                   <th style={{ width: "60px" }}>GAMBAR</th>
-                  <th>KODE ASET</th>
+                  <th>KODE FISIK / KATALOG</th>
                   <th>NAMA BARANG</th>
                   <th style={{ minWidth: "150px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
@@ -3680,6 +3509,7 @@ const ViewAsset = () => {
                         Kategori
                       </span>
                       <select
+                        aria-label="Filter Kategori"
                         value={filterCategory}
                         onChange={(e) => setFilterCategory(e.target.value)}
                         style={{
@@ -3728,7 +3558,7 @@ const ViewAsset = () => {
                         <div className="empty-state-sub">
                           {activeFiltersCount > 0 || search
                             ? "Coba ubah kata kunci atau reset filter."
-                            : 'Belum ada barang. Klik "Tambah Barang Baru" untuk mulai.'}
+                            : 'Belum ada barang fisik. Klik "Registrasi Unit Fisik" untuk mulai.'}
                         </div>
                         {(activeFiltersCount > 0 || search) && (
                           <button
@@ -3775,7 +3605,11 @@ const ViewAsset = () => {
                           )}
                         </td>
                         <td>
-                          <code className="asset-id-code">{asset.id}</code>
+                          <code className="asset-id-code" title={`Katalog ID: ${asset.id}`}>
+                            {asset.units && asset.units.length > 0 
+                              ? asset.units[0].kd_barang
+                              : asset.id}
+                          </code>
                         </td>
                         <td>
                           <div className="fw-bold">{asset.name}</div>
@@ -3790,10 +3624,10 @@ const ViewAsset = () => {
                             overflow: "hidden",
                             textOverflow: "ellipsis",
                             whiteSpace: "nowrap",
-                            fontWeight: asset.units?.[0]?.location ? "700" : "400",
-                            color: asset.units?.[0]?.location ? "var(--blue)" : "#475569"
-                          }} title={asset.units?.[0]?.location || ""}>
-                            {asset.units?.[0]?.location || [asset.branch, asset.zona].filter(Boolean).join(" / ") || "—"}
+                            fontWeight: (asset.units?.[0]?.location || asset.id_pekerjaan) ? "700" : "400",
+                            color: (asset.units?.[0]?.location || asset.id_pekerjaan) ? "var(--blue)" : "#94a3b8"
+                          }} title={asset.units?.[0]?.location || (asset.id_pekerjaan ? getProjectName(asset.id_pekerjaan) : "Belum ada lokasi")}>
+                            {asset.units?.[0]?.location || (asset.id_pekerjaan ? getProjectName(asset.id_pekerjaan) : "—")}
                           </div>
                         </td>
                         <td>
@@ -3824,6 +3658,7 @@ const ViewAsset = () => {
                             }
                           >
                             <button
+                              aria-label="More options"
                               className="action-dot-btn"
                               onClick={() =>
                                 setActiveDropdown(
@@ -3898,6 +3733,7 @@ const ViewAsset = () => {
           {totalPages > 1 && (
             <div className="pagination">
               <button
+                aria-label="Previous page"
                 className="pg-btn"
                 disabled={currentPage === 1}
                 onClick={() => setCurrentPage((p) => p - 1)}
@@ -3907,6 +3743,7 @@ const ViewAsset = () => {
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
                 <button
                   key={p}
+                  aria-label={`Page ${p}`}
                   className={`pg-btn ${p === currentPage ? "pg-active" : ""}`}
                   onClick={() => setCurrentPage(p)}
                 >
@@ -3914,6 +3751,7 @@ const ViewAsset = () => {
                 </button>
               ))}
               <button
+                aria-label="Next page"
                 className="pg-btn"
                 disabled={currentPage === totalPages}
                 onClick={() => setCurrentPage((p) => p + 1)}
@@ -3939,7 +3777,7 @@ const ViewAsset = () => {
 
     return (
       <PageWrapper
-        title="Input Data Barang Baru"
+        title="Registrasi Unit Fisik"
         onBack={() => setCurrentView("list")}
       >
         <div style={{ maxWidth: "900px", margin: "0 auto" }}>
@@ -3956,233 +3794,179 @@ const ViewAsset = () => {
             <Icon.Tag /> Informasi Utama
           </h3>
           <ModernTable>
-            <TableRow label="Kategori" required>
-              <select
-                value={formData.category}
-                onChange={handleCategoryChange}
-                style={modernSelectStyle}
-              >
-                <option value="">— Pilih Kategori —</option>
-                {(dbCategories.length > 0
-                  ? dbCategories
-                  : Object.entries(CATEGORY_NAMES).map(([code, name]) => ({ device_code: code, name }))
-                ).map((cat) => (
-                  <option key={cat.device_code} value={cat.device_code}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
-            </TableRow>
-            <TableRow label="Nama Barang" required>
-              <div style={{ position: "relative", width: "100%" }}>
-                <input
-                  type="text"
-                  placeholder={formData.category ? "Ketik nama barang — pilih dari saran jika sudah ada..." : "Pilih kategori terlebih dahulu"}
-                  value={formData.tipeAset}
-                  disabled={!formData.category}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setFormData((p) => ({ ...p, tipeAset: val, name: val }));
-                    setShowSuggestions(val.trim().length > 0);
-                  }}
-                  onFocus={() => {
-                    if (formData.tipeAset.trim().length > 0) {
-                      setShowSuggestions(true);
-                    }
-                  }}
-                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                  style={{
-                    ...modernInputStyle,
-                    background: !formData.category ? "#f8fafc" : "#fff",
-                    cursor: !formData.category ? "not-allowed" : "text",
-                  }}
-                />
-                {/* Smart autocomplete: tampil hanya jika sudah ada huruf yang diketik dan kategori dipilih */}
-                {showSuggestions && formData.category && formData.tipeAset.trim().length > 0 && (() => {
-                  const searchStr = formData.tipeAset.toLowerCase();
-                  const suggestions = assets
-                    .filter((a, index, self) =>
-                      a.category === formData.category &&
-                      (a.name || a.tipeAset || "").toLowerCase().includes(searchStr) &&
-                      self.findIndex(t => (t.tipeAset || t.name) === (a.tipeAset || a.name)) === index
-                    );
+            <TableRow label="Pilih Master Katalog" required>
+              {(() => {
+                const searchVal = formData.katalogSearch || "";
+                const selectedKatalog = masterKatalog.find(x => x.asset_code === formData.katalogId);
 
-                  if (suggestions.length === 0) return null;
+                // All katalog, search across all (registered shown dimmed)
+                const registeredIds = new Set(assets.map(a => a.id));
+                const filteredKatalog = searchVal.length > 0
+                  ? masterKatalog.filter(k => {
+                      const haystack = `${k.category_name || k.device_code} ${k.name} ${k.merek || ""} ${k.tipe || ""}`.toLowerCase();
+                      return haystack.includes(searchVal.toLowerCase());
+                    })
+                  : [];
 
-                  return (
-                    <div
-                      style={{
-                        position: "absolute",
-                        top: "100%",
-                        left: 0,
-                        right: 0,
-                        background: "#fff",
-                        border: "1px solid #3b82f6",
-                        borderRadius: "8px",
-                        marginTop: "4px",
-                        maxHeight: "220px",
-                        overflowY: "auto",
-                        zIndex: 50,
-                        boxShadow: "0 8px 24px -4px rgb(59 130 246 / 0.15)",
-                      }}
-                    >
-                      {suggestions.map((a) => (
-                        <div
-                          key={a.id}
-                          style={{ padding: "9px 12px", cursor: "pointer", borderBottom: "1px solid #f1f5f9", fontSize: "14px", color: "#334155" }}
-                          onMouseDown={() => {
-                            setFormData((p) => ({
-                              ...p,
-                              tipeAset: a.tipeAset || a.name || "",
-                              name: a.tipeAset || a.name || "",
-                              assetId: "",
-                              value: "",
-                              id_pekerjaan: "",
-                              kd_anggaran: "",
-                              units: [{ serialNumber: "", location: "" }],
-                              quantity: 1,
-                            }));
-                            const tpl = a.specs
-                              ? a.specs.map((t) => ({ ...t, value: "", _unitMode: "pick" }))
-                              : (SPEC_TEMPLATES_BY_CATEGORY[a.category] || []).map(
-                                (t) => ({ ...t, value: "", _unitMode: "pick" })
-                              );
-                            setTemplateSpecs(tpl);
-                            setCustomSpecs(a.customSpecs ? a.customSpecs.map((c) => ({ ...c, value: "", _unitMode: "pick" })) : []);
-                            setFormPhoto(null);
-                            setShowSuggestions(false);
-                          }}
-                          onMouseEnter={(e) => (e.currentTarget.style.background = "#eff6ff")}
-                          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                        >
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                            <span style={{ fontWeight: 500 }}>{a.tipeAset || a.name}</span>
-                            <span style={{ fontSize: "11px", color: "#3b82f6", background: "#eff6ff", padding: "2px 8px", borderRadius: "4px", fontWeight: 600 }}>
-                              {a.quantity || 0} unit terdaftar
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                // Sort: unregistered first, registered last
+                const sortedKatalog = [...filteredKatalog].sort((a, b) => {
+                  const aReg = registeredIds.has(a.asset_code);
+                  const bReg = registeredIds.has(b.asset_code);
+                  return aReg === bReg ? 0 : aReg ? 1 : -1;
+                });
+
+                const selectKatalog = (k) => {
+                  setFormData(p => ({
+                    ...p,
+                    katalogId: k.asset_code,
+                    assetId: k.asset_code,
+                    katalogSearch: `[${k.category_name || k.device_code}] ${k.name}${k.merek ? ` - ${k.merek}` : ""}${k.tipe ? ` ${k.tipe}` : ""}`,
+                    use_existing_catalog: true,
+                    category: k.device_code,
+                    name: k.name,
+                    tipeAset: k.name,
+                    merek: k.merek,
+                    tipe: k.tipe
+                  }));
+                  const tpl = (SPEC_TEMPLATES_BY_CATEGORY[k.device_code] || []).map(
+                    (t) => ({ ...t, value: "", _unitMode: "pick" })
                   );
-                })()}
-              </div>
-            </TableRow>
-            <TableRow label="Merek (Brand)">
-              <div style={{ position: "relative", width: "100%" }}>
-                <div style={{ display: "flex", alignItems: "center", border: "1px solid #cbd5e1", borderRadius: "8px", padding: "0 12px", background: "#fff", transition: "all 0.2s" }}>
-                  <Icon.Search style={{ color: "#94a3b8", width: "16px", height: "16px" }} />
-                  <input
-                    type="text"
-                    placeholder="Ketik nama atau pilih dari daftar..."
-                    value={formData.merek || ""}
-                    onChange={(e) => {
-                      setFormData((p) => ({ ...p, merek: e.target.value }));
-                      setShowMerekSuggestions(true);
-                    }}
-                    onFocus={() => setShowMerekSuggestions(true)}
-                    onBlur={() => setTimeout(() => setShowMerekSuggestions(false), 200)}
-                    style={{ border: "none", outline: "none", padding: "10px 8px", width: "100%", fontSize: "14px", color: "#334155", background: "transparent" }}
-                  />
-                  <div style={{ width: "1px", height: "20px", background: "#e2e8f0", margin: "0 8px" }}></div>
-                  <Icon.ChevronDown style={{ color: "#94a3b8", width: "16px", height: "16px" }} />
-                </div>
-                {showMerekSuggestions && (() => {
-                  const searchStr = (formData.merek || "").toLowerCase();
-                  const uniqueMereksMap = new Map();
-                  assets.forEach(a => {
-                    if (a.category === formData.category && a.merek && a.merek.trim() && !uniqueMereksMap.has(a.merek.trim())) {
-                      const catName = dbCategories.find(c => c.device_code === a.category)?.name || a.category || "";
-                      uniqueMereksMap.set(a.merek.trim(), `${a.tipe || "-"} • ${catName}`);
-                    }
-                  });
-                  const suggestions = Array.from(uniqueMereksMap.entries())
-                    .filter(([m, _]) => m.toLowerCase().includes(searchStr))
-                    .sort((a, b) => a[0].localeCompare(b[0]));
-                  if (suggestions.length === 0) return null;
-                  return (
-                    <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "#fff", border: "1px solid #e2e8f0", borderRadius: "8px", marginTop: "4px", maxHeight: "220px", overflowY: "auto", zIndex: 50, boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)" }}>
-                      {suggestions.map(([m, subtitle]) => (
-                        <div
-                          key={m}
-                          style={{ padding: "10px 14px", cursor: "pointer", borderBottom: "1px solid #f8fafc", display: "flex", alignItems: "flex-start", gap: "10px" }}
-                          onMouseDown={() => {
-                            setFormData((p) => ({ ...p, merek: m }));
-                            setShowMerekSuggestions(false);
+                  setTemplateSpecs(tpl);
+                  setCustomSpecs([]);
+                  setFormPhoto(null);
+                };
+
+                return (
+                  <div style={{ position: "relative", width: "100%" }}>
+                    <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                      <input
+                        type="text"
+                        placeholder="Ketik nama barang, merek, atau kategori..."
+                        value={searchVal}
+                        onChange={e => {
+                          const v = e.target.value;
+                          setFormData(p => ({
+                            ...p,
+                            katalogSearch: v,
+                            katalogId: "",
+                            use_existing_catalog: false,
+                            category: "", name: "", tipeAset: "", merek: "", tipe: ""
+                          }));
+                        }}
+                        style={{
+                          ...modernSelectStyle,
+                          paddingRight: searchVal ? "36px" : undefined
+                        }}
+                      />
+                      {searchVal && (
+                        <button
+                          type="button"
+                          onClick={() => setFormData(p => ({
+                            ...p,
+                            katalogSearch: "",
+                            katalogId: "",
+                            use_existing_catalog: false,
+                            category: "", name: "", tipeAset: "", merek: "", tipe: ""
+                          }))}
+                          style={{
+                            position: "absolute", right: "10px",
+                            background: "none", border: "none", cursor: "pointer",
+                            color: "#94a3b8", fontSize: "16px", lineHeight: 1, padding: 0
                           }}
-                          onMouseEnter={(e) => (e.currentTarget.style.background = "#eff6ff")}
-                          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                        >
-                          <div style={{ width: "4px", height: "4px", background: "#2563eb", borderRadius: "50%", marginTop: "8px", flexShrink: 0 }}></div>
-                          <div>
-                            <div style={{ fontWeight: 700, color: "#1e293b", fontSize: "14px" }}>{m}</div>
-                            <div style={{ fontSize: "13px", color: "#64748b", marginTop: "2px" }}>{subtitle}</div>
-                          </div>
-                        </div>
-                      ))}
+                          title="Bersihkan"
+                        >✕</button>
+                      )}
                     </div>
-                  );
-                })()}
-              </div>
+
+                    {/* Suggestion dropdown */}
+                    {sortedKatalog.length > 0 && (
+                      <div style={{
+                        position: "absolute", top: "100%", left: 0, right: 0, zIndex: 9999,
+                        background: "#fff", border: "1px solid #e2e8f0",
+                        borderRadius: "10px", boxShadow: "0 8px 30px rgba(0,0,0,0.12)",
+                        maxHeight: "280px", overflowY: "auto", marginTop: "4px"
+                      }}>
+                        {sortedKatalog.map((k, i) => {
+                          const isRegistered = registeredIds.has(k.asset_code);
+                          const registeredAsset = isRegistered ? assets.find(a => a.id === k.asset_code) : null;
+                          const unitCount = registeredAsset?.quantity || (registeredAsset?.units?.length ?? 0);
+                          return (
+                            <div
+                              key={k.asset_code}
+                              onMouseDown={() => selectKatalog(k)}
+                              style={{
+                                padding: "10px 14px",
+                                cursor: "pointer",
+                                borderBottom: i < sortedKatalog.length - 1 ? "1px solid #f1f5f9" : "none",
+                                display: "flex", flexDirection: "column", gap: "3px",
+                                transition: "background 0.15s",
+                                background: isRegistered ? "#f8fafc" : "transparent",
+                                opacity: isRegistered ? 0.75 : 1,
+                              }}
+                              onMouseEnter={e => e.currentTarget.style.background = isRegistered ? "#f1f5f9" : "#f0f9ff"}
+                              onMouseLeave={e => e.currentTarget.style.background = isRegistered ? "#f8fafc" : "transparent"}
+                            >
+                              <div style={{ display: "flex", alignItems: "center", gap: "8px", justifyContent: "space-between" }}>
+                                <span style={{ fontWeight: 600, color: isRegistered ? "#64748b" : "#0f172a", fontSize: "0.88rem" }}>
+                                  {k.name}{k.merek ? ` — ${k.merek}` : ""}{k.tipe ? ` ${k.tipe}` : ""}
+                                </span>
+                                {isRegistered && (
+                                  <span style={{
+                                    fontSize: "0.65rem", fontWeight: 700, padding: "2px 7px",
+                                    borderRadius: "20px", background: "#e2e8f0", color: "#64748b",
+                                    whiteSpace: "nowrap", flexShrink: 0
+                                  }}>
+                                    ✓ Terdaftar{unitCount > 0 ? ` · ${unitCount} unit` : ""}
+                                  </span>
+                                )}
+                              </div>
+                              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                                <span style={{ fontSize: "0.75rem", color: "#94a3b8" }}>
+                                  [{k.category_name || k.device_code}] · {k.asset_code}
+                                </span>
+                                {isRegistered && (
+                                  <span style={{ fontSize: "0.7rem", color: "#f59e0b", fontStyle: "italic" }}>
+                                    — unit baru akan ditambahkan ke katalog ini
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* No results hint */}
+                    {searchVal.length > 1 && filteredKatalog.length === 0 && !formData.katalogId && (
+                      <div style={{
+                        position: "absolute", top: "100%", left: 0, right: 0, zIndex: 9999,
+                        background: "#fff", border: "1px solid #e2e8f0",
+                        borderRadius: "10px", boxShadow: "0 8px 30px rgba(0,0,0,0.08)",
+                        padding: "14px", marginTop: "4px",
+                        fontSize: "0.83rem", color: "#94a3b8", textAlign: "center"
+                      }}>
+                        Tidak ada barang ditemukan. Tambahkan di halaman <b style={{ color: "#334155" }}>Master Barang</b> terlebih dahulu.
+                      </div>
+                    )}
+
+                    {/* Selected badge */}
+                    {formData.katalogId && selectedKatalog && (
+                      <div style={{
+                        marginTop: "8px", padding: "8px 12px",
+                        background: "#eff6ff", border: "1px solid #bfdbfe",
+                        borderRadius: "8px", fontSize: "0.8rem", color: "#1e40af",
+                        display: "flex", alignItems: "center", gap: "6px"
+                      }}>
+                        <span>✔</span>
+                        <span><b>{selectedKatalog.name}</b>{selectedKatalog.merek ? ` · ${selectedKatalog.merek}` : ""} — <code style={{ fontSize: "0.75rem" }}>{selectedKatalog.asset_code}</code></span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
             </TableRow>
-            <TableRow label="Tipe (Model)">
-              <div style={{ position: "relative", width: "100%" }}>
-                <div style={{ display: "flex", alignItems: "center", border: "1px solid #cbd5e1", borderRadius: "8px", padding: "0 12px", background: "#fff", transition: "all 0.2s" }}>
-                  <Icon.Search style={{ color: "#94a3b8", width: "16px", height: "16px" }} />
-                  <input
-                    type="text"
-                    placeholder="Ketik nama atau pilih dari daftar..."
-                    value={formData.tipe || ""}
-                    onChange={(e) => {
-                      setFormData((p) => ({ ...p, tipe: e.target.value }));
-                      setShowTipeSuggestions(true);
-                    }}
-                    onFocus={() => setShowTipeSuggestions(true)}
-                    onBlur={() => setTimeout(() => setShowTipeSuggestions(false), 200)}
-                    style={{ border: "none", outline: "none", padding: "10px 8px", width: "100%", fontSize: "14px", color: "#334155", background: "transparent" }}
-                  />
-                  <div style={{ width: "1px", height: "20px", background: "#e2e8f0", margin: "0 8px" }}></div>
-                  <Icon.ChevronDown style={{ color: "#94a3b8", width: "16px", height: "16px" }} />
-                </div>
-                {showTipeSuggestions && (() => {
-                  const searchStr = (formData.tipe || "").toLowerCase();
-                  const uniqueTipesMap = new Map();
-                  assets.forEach(a => {
-                    if (a.category === formData.category && a.tipe && a.tipe.trim() && !uniqueTipesMap.has(a.tipe.trim())) {
-                      const catName = dbCategories.find(c => c.device_code === a.category)?.name || a.category || "";
-                      uniqueTipesMap.set(a.tipe.trim(), `${a.merek || "-"} • ${catName}`);
-                    }
-                  });
-                  const suggestions = Array.from(uniqueTipesMap.entries())
-                    .filter(([t, _]) => t.toLowerCase().includes(searchStr))
-                    .sort((a, b) => a[0].localeCompare(b[0]));
-                  if (suggestions.length === 0) return null;
-                  return (
-                    <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "#fff", border: "1px solid #e2e8f0", borderRadius: "8px", marginTop: "4px", maxHeight: "220px", overflowY: "auto", zIndex: 50, boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)" }}>
-                      {suggestions.map(([t, subtitle]) => (
-                        <div
-                          key={t}
-                          style={{ padding: "10px 14px", cursor: "pointer", borderBottom: "1px solid #f8fafc", display: "flex", alignItems: "flex-start", gap: "10px" }}
-                          onMouseDown={() => {
-                            setFormData((p) => ({ ...p, tipe: t }));
-                            setShowTipeSuggestions(false);
-                          }}
-                          onMouseEnter={(e) => (e.currentTarget.style.background = "#eff6ff")}
-                          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                        >
-                          <div style={{ width: "4px", height: "4px", background: "#2563eb", borderRadius: "50%", marginTop: "8px", flexShrink: 0 }}></div>
-                          <div>
-                            <div style={{ fontWeight: 700, color: "#1e293b", fontSize: "14px" }}>{t}</div>
-                            <div style={{ fontSize: "13px", color: "#64748b", marginTop: "2px" }}>{subtitle}</div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  );
-                })()}
-              </div>
-            </TableRow>
-            <TableRow label="Kode Lokasi Unit (Opsional)">
+            {/* Nama Barang, Merek, dan Tipe sudah dihandle oleh Master Katalog dropdown */}
+            <TableRow label="ID Barang">
               <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "100%" }}>
                 <div style={{ position: "relative", width: "100%" }}>
                   <input
@@ -4196,7 +3980,7 @@ const ViewAsset = () => {
                       paddingRight: "36px",
                       background: "#f8fafc",
                       color: "#64748b",
-                      fontFamily: formData.assetId ? "monospace" : "inherit",
+                      fontFamily: "monospace",
                     }}
                   />
                   <button
@@ -4278,9 +4062,15 @@ const ViewAsset = () => {
                           alert("Lengkapi Entitas, Cabang, Zona, Subzona, dan Kategori terlebih dahulu!");
                           return;
                         }
-                        const catPrefix = CATEGORY_PREFIX[formData.category] || "BRG";
-                        const nextNum = getNextNomor(formData.entitasCode, formData.branchCode, formData.zonaCode, formData.subzonaCode);
-                        setFormData(p => ({ ...p, assetId: `${formData.entitasCode}-${formData.branchCode}-${formData.zonaCode}-${formData.subzonaCode}-${catPrefix}-${nextNum}` }));
+                        if (formData.katalogId) {
+                           setFormData(p => ({ ...p, assetId: `${formData.entitasCode}-${formData.branchCode}-${formData.zonaCode}-${formData.subzonaCode}-${formData.katalogId}` }));
+                        } else {
+                           const catPrefix = formData.category || "BRG";
+                           const nums = getNextNomor(formData.entitasCode, formData.branchCode, formData.zonaCode, formData.subzonaCode, catPrefix);
+                           const nextGlobalNum = typeof nums === 'object' ? nums.global : nums;
+                           let nextCatNum = typeof nums === 'object' ? nums.category : "";
+                           setFormData(p => ({ ...p, assetId: `${formData.entitasCode}-${formData.branchCode}-${formData.zonaCode}-${formData.subzonaCode}-${catPrefix}${nextCatNum}-${nextGlobalNum}` }));
+                        }
                         setShowLocationBuilder(false);
                       }}
                       style={{
@@ -4915,7 +4705,7 @@ const ViewAsset = () => {
                 </>
               ) : (
                 <>
-                  <Icon.Save /> Simpan Barang Baru
+                  <Icon.Save /> Simpan Unit Fisik
                 </>
               )}
             </button>
@@ -6063,7 +5853,7 @@ const ViewAsset = () => {
                 <thead style={{ background: "#f8fafc" }}>
                   <tr>
                     <th style={{ padding: "12px 16px", textAlign: "left", fontSize: "12px", color: "#64748b", borderBottom: "1px solid #e2e8f0", width: "50px" }}>NO</th>
-                    <th style={{ padding: "12px 16px", textAlign: "left", fontSize: "12px", color: "#64748b", borderBottom: "1px solid #e2e8f0" }}>KODE BARANG</th>
+                    <th style={{ padding: "12px 16px", textAlign: "left", fontSize: "12px", color: "#64748b", borderBottom: "1px solid #e2e8f0" }}>ID BARANG</th>
                     <th style={{ padding: "12px 16px", textAlign: "left", fontSize: "12px", color: "#64748b", borderBottom: "1px solid #e2e8f0" }}>HARGA SATUAN</th>
                     <th style={{ padding: "12px 16px", textAlign: "left", fontSize: "12px", color: "#64748b", borderBottom: "1px solid #e2e8f0" }}>STATUS</th>
                     <th style={{ padding: "12px 16px", textAlign: "left", fontSize: "12px", color: "#64748b", borderBottom: "1px solid #e2e8f0" }}>LOKASI SAAT INI</th>
@@ -6076,7 +5866,7 @@ const ViewAsset = () => {
                     return (
                       <tr key={idx}>
                         <td style={{ padding: "12px 16px", fontSize: "14px", borderBottom: "1px solid #f1f5f9", color: "#94a3b8", fontWeight: "bold" }}>{idx + 1}</td>
-                        <td style={{ padding: "12px 16px", fontSize: "14px", borderBottom: "1px solid #f1f5f9", color: "#0f172a", fontWeight: "600" }}>{u.serialNumber}</td>
+                        <td style={{ padding: "12px 16px", fontSize: "14px", borderBottom: "1px solid #f1f5f9", color: "#0f172a", fontWeight: "600" }}>{u.kd_barang || u.serialNumber || "-"}</td>
                         <td style={{ padding: "12px 16px", fontSize: "14px", borderBottom: "1px solid #f1f5f9", color: "#475569" }}>{fmt(a.value)}</td>
                         <td style={{ padding: "12px 16px", fontSize: "14px", borderBottom: "1px solid #f1f5f9" }}>
                           <span style={{
@@ -6097,7 +5887,7 @@ const ViewAsset = () => {
                             </div>
                           ) : (
                             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                              <Icon.MapPin /> {u.location || [a.branch, a.zona, a.subzona].filter(Boolean).join(" / ")}
+                              <Icon.MapPin /> {u.location || "—"}
                             </div>
                           )}
                         </td>
@@ -6420,8 +6210,8 @@ const ViewAsset = () => {
                   <div style={{ fontSize: "13px", fontWeight: "800", margin: "6px 0 2px", color: "#000" }}>{asset.name}</div>
                   <div style={{ fontSize: "10px", fontWeight: "700", color: "#444", marginBottom: "8px" }}>{barcodeVal}</div>
 
-                  <div style={{ textAlign: "center", borderTop: "1px dashed #ddd", borderBottom: "1px dashed #ddd", padding: "8px 0", margin: "8px 0" }}>
-                    <BarcodeCanvas value={barcodeVal} width={300} height={50} />
+                  <div style={{ textAlign: "center", padding: "16px 0", margin: "8px 0" }}>
+                    <QRCodeSVG value={`${window.location.origin}/scan/${barcodeVal}`} size={140} />
                   </div>
 
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginTop: "10px" }}>

@@ -438,41 +438,7 @@ const statusCfg = {
   belum: { color: "#94a3b8", bg: "#f1f5f9", label: "Belum Mulai" },
 };
 
-const calculateAlerts = (opexData, currentBorrows) => {
-  const alerts = [];
-  const today = new Date();
 
-  // 1. Cek Peminjaman Lewat Jatuh Tempo (Ditandai untuk tab 'aset')
-  const overdue = currentBorrows.filter((b) => !b.is_returned && new Date(b.due_date) < today);
-  if (overdue.length > 0) {
-    alerts.push({
-      id: "overdue", type: "OVERDUE_BORROW", priority: "high", tab: "aset",
-      title: "Peminjaman Lewat Jatuh Tempo",
-      message: `${overdue.length} aset belum dikembalikan melewati batas waktu. Segera lakukan tindak lanjut.`,
-      action_label: "Cek Peminjaman", action_path: "/peminjaman",
-    });
-  }
-
-  // 2. Cek Anggaran OPEX Kritis (Ditandai untuk tab 'anggaran')
-  opexData.forEach((opex) => {
-    const pct = opex.rkap > 0 ? (opex.realisasi / opex.rkap) * 100 : 0;
-    if (pct >= 80) {
-      alerts.push({
-        id: `opex-${opex.id}`, type: "OPEX_CRITICAL", priority: pct >= 100 ? "high" : "medium", tab: "anggaran",
-        title: "Anggaran OPEX Kritis",
-        message: `Anggaran ${opex.nama} telah terserap ${Number(pct.toFixed(2))}%. Sisa: ${formatRupiah(opex.rkap - opex.realisasi)}.`,
-        action_label: "Lihat Anggaran", action_path: "/budget",
-      });
-    }
-  });
-
-  return alerts.sort((a, b) => ({ high: 0, medium: 1, low: 2 })[a.priority] - ({ high: 0, medium: 1, low: 2 })[b.priority]);
-};
-
-const ALERT_STYLE = {
-  OVERDUE_BORROW: { icon: <FaClipboardList />, bg: "#fee2e2", color: "#ef4444" },
-  OPEX_CRITICAL: { icon: <FaFileInvoiceDollar />, bg: "#fffbeb", color: "#d97706" },
-};
 
 /* ─────────────────────────────────────────────────────────────────
    SLIDE PAGER component
@@ -1123,12 +1089,7 @@ const Dashboard = () => {
   const [modal, setModal] = useState(null);
 
 
-  const opexTahunIni = dbOpex[tahunAnggaran] ?? [];
-  const allAlerts = useMemo(() => calculateAlerts(opexTahunIni, dbBorrows), [tahunAnggaran, dbBorrows, opexTahunIni]);
 
-  // Filter alerts based on active tab
-  const tabAlerts = allAlerts.filter(a => a.tab === activeTab);
-  const highCount = tabAlerts.filter((a) => a.priority === "high").length;
 
   return (
     <>
@@ -1283,40 +1244,6 @@ const Dashboard = () => {
             </div>
           )}
 
-          {/* ── 4. ALERTS (Dinamis sesuai Tab) ── */}
-          <div className="card">
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-              <div>
-                <div className="card-title">⚠️ Notifikasi Perhatian</div>
-                <div className="card-subtitle">Deteksi otomatis terkait {activeTab}</div>
-              </div>
-              <span style={{ fontSize: "0.85rem", fontWeight: 700, padding: "8px 16px", borderRadius: 99, background: tabAlerts.length === 0 ? "#dcfce7" : highCount > 0 ? "#fee2e2" : "#fef3c7", color: tabAlerts.length === 0 ? "#16a34a" : highCount > 0 ? "#ef4444" : "#f59e0b" }}>
-                {tabAlerts.length === 0 ? "Semua Normal ✓" : `${tabAlerts.length} Perlu Tindakan`}
-              </span>
-            </div>
-
-            {tabAlerts.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "30px 0", color: "#94a3b8", fontSize: "0.95rem", fontWeight: 500 }}>
-                Tidak ada alert. Semua kondisi normal.
-              </div>
-            ) : (
-              <div className="alert-list">
-                {tabAlerts.map((alert) => {
-                  const s = ALERT_STYLE[alert.type] ?? { icon: <FaTools />, bg: "#fee2e2", color: "#ef4444" };
-                  return (
-                    <div key={alert.id} className="alert-item">
-                      <div className="alert-icon" style={{ background: s.bg, color: s.color }}>{s.icon}</div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div className="alert-title">{alert.title}</div>
-                        <div className="alert-text">{alert.message}</div>
-                      </div>
-                      <button className="alert-btn" onClick={() => navigate(alert.action_path)}>{alert.action_label}</button>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
 
         </div>
       </div>

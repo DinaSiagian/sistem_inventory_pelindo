@@ -1947,8 +1947,9 @@ function SearchCombobox({
     document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
   }, []);
+  // Gunakan o.label (selalu string) untuk filter — renderLabel bisa mengembalikan JSX
   const filtered = options.filter((o) =>
-    renderLabel(o).toLowerCase().includes(query.toLowerCase()),
+    String(o.label || "").toLowerCase().includes(query.toLowerCase()),
   );
   const selected = options.find((o) => String(o.value) === String(value));
   return (
@@ -2987,7 +2988,7 @@ function BorrowDetailPage({ data, onBack, onEdit, onReturn }) {
                     </td>
                     <td style={S.td}>
                       <code style={{ ...S.code, fontSize: ".7rem" }}>
-                        {it.asset_code || it.code}
+                        {it.code || it.asset_code}
                       </code>
                     </td>
                     <td style={S.td}>
@@ -3807,13 +3808,59 @@ function BorrowFormPage({ borrow, borrows, returns, assets, onBack, onSave, setN
   const [assetSearchQuery, setAssetSearchQuery] = useState("");
   const [baDraft, setBaDraft] = useState([]);
 
-  const userOptions1 = mockUsers
-    .filter((u) => String(u.id) !== String(pihak2.id))
-    .map((u) => ({ value: u.id, label: u.name, sub: u.branch }));
+  // Ambil branch admin yang sedang login dari localStorage
+  // Login response menyimpan data user langsung dari model (branches_code)
+  // sementara userAPI.getAll() via formatUser() mengembalikan branch_code
+  const loggedInUser = useMemo(() => {
+    try { return JSON.parse(localStorage.getItem("user") || "{}"); } catch { return {}; }
+  }, []);
+  // Handle semua kemungkinan field name untuk branch
+  const loggedInBranch = useMemo(() =>
+    loggedInUser.branches_code ||
+    loggedInUser.branch_code ||
+    loggedInUser.branch ||
+    null
+  , [loggedInUser]);
 
-  const userOptions2 = mockUsers
-    .filter((u) => String(u.id) !== String(pihak1.id))
-    .map((u) => ({ value: u.id, label: u.name, sub: u.branch }));
+  // Helper: apakah seorang user adalah admin/superadmin?
+  const isAdmin = (u) => {
+    const role = (u.jabatan || u.role_code || "").toLowerCase();
+    return role.includes("admin") || role.includes("superadmin");
+  };
+
+  // Helper: ambil branch dari object user mockUsers (bisa field 'branch' atau 'branch_code')
+  const getUserBranch = (u) => u.branch || u.branch_code || u.branches_code || "";
+
+  // Pihak 1 (Pemberi): hanya user dari branch yang sama dengan admin login
+  const userOptions1 = useMemo(() => mockUsers
+    .filter((u) => {
+      if (String(u.id) === String(pihak2.id)) return false;
+      // Jika tidak ada info branch login, tampilkan semua (fallback untuk superadmin)
+      if (!loggedInBranch) return true;
+      return getUserBranch(u) === loggedInBranch;
+    })
+    .map((u) => ({ value: u.id, label: u.name, sub: getUserBranch(u) }))
+  , [pihak2.id, loggedInBranch]);
+
+  // Pihak 2 (Penerima):
+  //   ✅ User dari branch yang sama
+  //   ✅ Admin/Superadmin dari branch lain (untuk serah terima antar cabang resmi)
+  //   ❌ User biasa dari branch lain (tidak ditampilkan)
+  const userOptions2 = useMemo(() => mockUsers
+    .filter((u) => {
+      if (String(u.id) === String(pihak1.id)) return false;
+      if (!loggedInBranch) return true;
+      const uBranch = getUserBranch(u);
+      const sameBranch = uBranch === loggedInBranch;
+      const crossBranchAdmin = uBranch !== loggedInBranch && isAdmin(u);
+      return sameBranch || crossBranchAdmin;
+    })
+    .map((u) => ({
+      value: u.id,
+      label: u.name,
+      sub: getUserBranch(u),
+    }))
+  , [pihak1.id, loggedInBranch]);
 
   const assetResults = useMemo(() => {
     if (!pihak1.id) return [];
@@ -4068,8 +4115,9 @@ function BorrowFormPage({ borrow, borrows, returns, assets, onBack, onSave, setN
                       setBaDraft([]);
                     }}
                     disabled={pihak1.locked}
-                    placeholder="Pilih pemberi aset..."
+                    placeholder="Pilih pemberi aset (branch Anda)..."
                     renderLabel={(o) => o.label}
+                    renderSub={(o) => o.sub}
                   />
                 </div>
                 <button
@@ -4123,7 +4171,22 @@ function BorrowFormPage({ borrow, borrows, returns, assets, onBack, onSave, setN
                     }}
                     disabled={pihak2.locked}
                     placeholder="Pilih penerima aset..."
-                    renderLabel={(o) => o.label}
+                    renderLabel={(o) => (
+                      <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        {o.label}
+                        {o.isCross && (
+                          <span style={{
+                            fontSize: ".6rem", fontWeight: 800,
+                            background: "#fef3c7", color: "#d97706",
+                            border: "1px solid #fcd34d", borderRadius: 4,
+                            padding: "1px 5px", whiteSpace: "nowrap", flexShrink: 0,
+                          }}>
+                            Cross-Branch
+                          </span>
+                        )}
+                      </span>
+                    )}
+                    renderSub={(o) => o.sub}
                   />
                 </div>
                 <button

@@ -2586,11 +2586,11 @@ const Inventaris = () => {
 
   const kpi = useMemo(
     () => ({
-      total: assets.length,
-      tersedia: assets.filter((a) => a.status === "Tersedia").length,
-      maintenance: assets.filter((a) => a.status === "Maintenance").length,
-      dipinjam: assets.filter((a) => a.status === "Dipinjam").length,
-      totalNilai: assets.reduce((s, a) => s + ((a.value || 0) * (a.quantity || 1)), 0),
+      total: assets.reduce((s, a) => s + (a.quantity || (a.units ? a.units.length : 1)), 0),
+      tersedia: assets.filter((a) => a.status === "Tersedia").reduce((s, a) => s + (a.quantity || (a.units ? a.units.length : 1)), 0),
+      maintenance: assets.filter((a) => a.status === "Maintenance").reduce((s, a) => s + (a.quantity || (a.units ? a.units.length : 1)), 0),
+      dipinjam: assets.filter((a) => a.status === "Dipinjam").reduce((s, a) => s + (a.quantity || (a.units ? a.units.length : 1)), 0),
+      totalNilai: assets.reduce((s, a) => s + ((a.value || 0) * (a.quantity || (a.units ? a.units.length : 1))), 0),
     }),
     [assets],
   );
@@ -3556,17 +3556,13 @@ const Inventaris = () => {
               <span style={{ fontSize: "12px", fontWeight: "700", color: "#475569", letterSpacing: "0.5px" }}>MEMUAT DATA...</span>
             </div>
           )}
-          <div className="table-info-bar">
-            <span>
-              Menampilkan <strong>{paginated.length}</strong> dari{" "}
-              <strong>{filtered.length}</strong> aset
-            </span>
-            {activeFiltersCount > 0 && (
+          {activeFiltersCount > 0 && (
+            <div className="table-info-bar" style={{ justifyContent: "flex-end" }}>
               <span className="filter-active-note">
                 <Icon.WarnSm /> Filter aktif
               </span>
-            )}
-          </div>
+            </div>
+          )}
 
           {viewMode === "grid" ? (
             <>
@@ -3812,9 +3808,9 @@ const Inventaris = () => {
                             textOverflow: "ellipsis",
                             whiteSpace: "nowrap",
                             fontWeight: asset.units?.[0]?.location ? "700" : "400",
-                            color: asset.units?.[0]?.location ? "var(--blue)" : "#475569"
-                          }} title={asset.units?.[0]?.location || ""}>
-                            {asset.units?.[0]?.location || [asset.branch, asset.zona].filter(Boolean).join(" / ") || "—"}
+                            color: asset.units?.[0]?.location ? "var(--blue)" : "#94a3b8"
+                          }} title={asset.units?.[0]?.location || "Belum ada lokasi"}>
+                            {asset.units?.[0]?.location || "—"}
                           </div>
                         </td>
                         <td>
@@ -5919,7 +5915,7 @@ const Inventaris = () => {
                             </div>
                           ) : (
                             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                              <Icon.MapPin /> {u.location || [a.branch, a.zona, a.subzona].filter(Boolean).join(" / ")}
+                              <Icon.MapPin /> {u.location || "—"}
                             </div>
                           )}
                         </td>

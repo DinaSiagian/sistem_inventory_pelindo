@@ -1,57 +1,18 @@
 <?php
-$pdo = new PDO('pgsql:host=127.0.0.1;port=5432;dbname=sisfor_inventory', 'postgres', '123456');
+require __DIR__ . '/vendor/autoload.php';
+$app = require_once __DIR__ . '/bootstrap/app.php';
+$app->make('Illuminate\Contracts\Console\Kernel')->bootstrap();
 
-$stmt = $pdo->query("SELECT kd_barang, asset_code FROM barang WHERE kd_barang LIKE '%-KB-%' ORDER BY asset_code, kd_barang");
-$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+use Illuminate\Support\Facades\DB;
 
-$baseSuffixes = [];
-$updates = [];
+DB::table('device')->where('device_code', 'CTV')->update(['device_code' => 'CCTV']);
+DB::table('device')->where('device_code', 'HDW')->update(['device_code' => 'HW']);
 
-foreach ($rows as $row) {
-    $kd = $row['kd_barang'];
-    $assetCode = $row['asset_code'];
-    
-    $assetParts = explode('-', $assetCode);
-    if (count($assetParts) != 2) continue;
-    $assetCat = $assetParts[0];
-    $assetNumStr = str_pad((int)$assetParts[1], 3, '0', STR_PAD_LEFT);
-    
-    $parts = explode('-', $kd);
-    $kbIndex = array_search('KB', $parts);
-    
-    if ($kbIndex !== false && $kbIndex >= 2) {
-        $parts[$kbIndex - 1] = $assetNumStr;
-        $parts[$kbIndex - 2] = $assetCat;
-        
-        $baseParts = array_slice($parts, 0, $kbIndex);
-        $base = implode('-', $baseParts);
-        
-        if (!isset($baseSuffixes[$base])) {
-            $baseSuffixes[$base] = 1;
-        } else {
-            $baseSuffixes[$base]++;
-        }
-        
-        $suffix = $baseSuffixes[$base];
-        $newKd = $base . '-KB-' . str_pad($suffix, 3, '0', STR_PAD_LEFT);
-        
-        if ($newKd !== $kd) {
-            $updates[] = ['old' => $kd, 'new' => $newKd, 'temp' => 'TEMP-' . uniqid() . '-KB-' . str_pad($suffix, 3, '0', STR_PAD_LEFT)];
-        }
-    }
-}
+DB::table('assets')->where('device_code', 'CTV')->update(['device_code' => 'CCTV']);
+DB::table('assets')->where('device_code', 'HDW')->update(['device_code' => 'HW']);
 
-// 1. Rename to temp
-foreach ($updates as $up) {
-    $stmt = $pdo->prepare("UPDATE barang SET kd_barang = :temp WHERE kd_barang = :old");
-    $stmt->execute([':temp' => $up['temp'], ':old' => $up['old']]);
-}
+// Hapus tes yang menggunakan CTV
+DB::table('assets')->where('asset_code', 'like', 'CTV0%')->delete();
+DB::table('assets')->where('asset_code', 'like', 'CTV-%')->delete();
 
-// 2. Rename to final
-foreach ($updates as $up) {
-    $stmt = $pdo->prepare("UPDATE barang SET kd_barang = :new WHERE kd_barang = :temp");
-    $stmt->execute([':new' => $up['new'], ':temp' => $up['temp']]);
-    echo "Updated {$up['old']} to {$up['new']}\n";
-}
-
-echo "Done fixing DB.\n";
+echo "Database updated successfully!\n";

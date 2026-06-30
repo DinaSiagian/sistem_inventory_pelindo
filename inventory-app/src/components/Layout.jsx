@@ -29,8 +29,16 @@ const Layout = () => {
 
   const menuItems = [
     { path: "/dashboard", label: "Dashboard Utama", icon: <FaHome /> },
-    { category: "Manajemen Aset" },
-    { path: "/assets", label: "List Barang", icon: <FaBox /> },
+    { category: "Manajemen Inventaris" },
+    {
+      path: "/assets",
+      label: "Inventaris & Master",
+      icon: <FaBox />,
+      submenu: [
+        { path: "/assets/master", label: "Master Barang" },
+        { path: "/assets/list", label: "Data Aset / Fisik" },
+      ],
+    },
     { path: "/peminjaman", label: "BAST Aset", icon: <FaHandHolding /> },
     { category: "Keuangan & Proyek" },
     {

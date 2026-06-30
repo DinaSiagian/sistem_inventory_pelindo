@@ -852,7 +852,7 @@ const CSS = `
 --green:#15803d;--green-lt:#f0fdf4;--green-mid:#dcfce7;
 --amber:#b45309;--amber-lt:#fffbeb;
 --red:#b91c1c;--red-lt:#fef2f2;
---ink:#111827;--ink2:#374151;--ink3:#4b5563;--ink4:#6b7280;
+--ink:#111827;--ink2:#374151;--ink3:#4b5563;--ink4:#4b5563;
 --border:#e5e7eb;--border-lt:#f3f4f6;
 --surf:#ffffff;--bg:#f9fafb;
 --mono:"JetBrains Mono","Courier New",monospace;
@@ -1407,7 +1407,7 @@ function SmartLocationInput({ value, onChange, placeholder = "Pilih Branch / Zon
             width: "100%",
             padding: "8px 12px",
             paddingRight: "30px",
-            border: "1px solid #cbd5e1",
+            border: "1px solid #94a3b8",
             borderRadius: 8,
             fontSize: "0.8rem",
             background: "#fcfdfe",
@@ -1417,18 +1417,19 @@ function SmartLocationInput({ value, onChange, placeholder = "Pilih Branch / Zon
             transition: "all 0.2s"
           }}
           onFocusCapture={(e) => {
-            e.target.style.borderColor = "var(--blue)";
+            e.target.style.borderColor = "#2563eb";
             e.target.style.boxShadow = "0 0 0 3px rgba(37,99,235,0.1)";
           }}
           onBlurCapture={(e) => {
-            e.target.style.borderColor = "#cbd5e1";
+            e.target.style.borderColor = "#94a3b8";
             e.target.style.boxShadow = "none";
           }}
         />
         {valStr && (
           <button
+            aria-label="Clear search"
             onClick={() => { onChange(""); setIsOpen(false); }}
-            style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: 4 }}
+            style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: "#475569", cursor: 'pointer', padding: 4 }}
           >
             <Icon d={I.x} size={12} />
           </button>
@@ -1442,7 +1443,7 @@ function SmartLocationInput({ value, onChange, placeholder = "Pilih Branch / Zon
           left: 0,
           right: 0,
           background: "white",
-          border: "1px solid #e2e8f0",
+          border: "1px solid #cbd5e1",
           borderRadius: 12,
           marginTop: 6,
           zIndex: 100,
@@ -1451,7 +1452,7 @@ function SmartLocationInput({ value, onChange, placeholder = "Pilih Branch / Zon
           overflowY: "auto",
           animation: "slideDown 0.2s ease-out"
         }}>
-          <div style={{ padding: "8px 12px", fontSize: "0.65rem", fontWeight: 800, color: "#64748b", background: "#f8fafc", borderBottom: "1px solid #e2e8f0", textTransform: "uppercase", position: "sticky", top: 0, zIndex: 2 }}>
+          <div style={{ padding: "8px 12px", fontSize: "0.65rem", fontWeight: 800, color: "#475569", background: "#f8fafc", borderBottom: "1px solid #e2e8f0", textTransform: "uppercase", position: "sticky", top: 0, zIndex: 2 }}>
             {stepLabel}
           </div>
 
@@ -1473,7 +1474,7 @@ function SmartLocationInput({ value, onChange, placeholder = "Pilih Branch / Zon
               onMouseEnter={(e) => e.target.style.background = "#eff6ff"}
               onMouseLeave={(e) => e.target.style.background = "white"}
             >
-              <Icon d={I.layers} size={12} style={{ color: 'var(--blue)' }} />
+              <Icon d={I.layers} size={12} style={{ color: "#2563eb" }} />
               {opt}
             </div>
           ))}
@@ -1486,7 +1487,7 @@ function SmartLocationInput({ value, onChange, placeholder = "Pilih Branch / Zon
                 fontSize: "0.82rem",
                 cursor: "pointer",
                 background: "#f0fdf4",
-                color: "#16a34a",
+                color: "#15803d",
                 fontWeight: 600,
                 display: 'flex',
                 alignItems: 'center',
@@ -1502,7 +1503,7 @@ function SmartLocationInput({ value, onChange, placeholder = "Pilih Branch / Zon
           )}
 
           {filteredOptions.length === 0 && !currentText && (
-            <div style={{ padding: "20px", textAlign: "center", color: "#94a3b8", fontSize: "0.75rem" }}>
+            <div style={{ padding: "20px", textAlign: "center", color: "#64748b", fontSize: "0.75rem" }}>
               <Icon d={I.search} size={24} style={{ opacity: 0.3, marginBottom: 8 }} />
               <p>Ketik untuk mencari atau menambah lokasi baru</p>
             </div>
@@ -1536,7 +1537,7 @@ function SmartAssetInput({ value, onChange, options, placeholder = "Ketik/Pilih 
   return (
     <div ref={wrapperRef} style={{ position: "relative", width: "100%" }}>
       <div style={{ position: 'relative' }}>
-        <div style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', pointerEvents: 'none' }}>
+        <div style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#64748b', pointerEvents: 'none' }}>
           <Icon d={I.search} size={13} />
         </div>
         <input
@@ -1550,7 +1551,7 @@ function SmartAssetInput({ value, onChange, options, placeholder = "Ketik/Pilih 
           style={{
             width: "100%",
             padding: "10px 65px 10px 35px",
-            border: "1px solid #cbd5e1",
+            border: "1px solid #94a3b8",
             borderRadius: 10,
             fontSize: "0.82rem",
             background: "#fcfdfe",
@@ -1564,14 +1565,15 @@ function SmartAssetInput({ value, onChange, options, placeholder = "Ketik/Pilih 
         <div style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', gap: 6 }}>
           {valStr && (
             <button
+              aria-label="Clear search"
               onClick={(e) => { e.stopPropagation(); onChange(""); setIsOpen(false); }}
-              style={{ background: '#f1f5f9', border: 'none', color: '#64748b', cursor: 'pointer', padding: 4, borderRadius: 6, display: 'flex' }}
+              style={{ background: '#f1f5f9', border: 'none', color: '#475569', cursor: 'pointer', padding: 4, borderRadius: 6, display: 'flex' }}
               title="Clear"
             >
               <Icon d={I.x} size={10} />
             </button>
           )}
-          <div style={{ color: '#94a3b8', padding: "0 4px", borderLeft: "1px solid #e2e8f0", display: "flex", alignItems: "center" }}>
+          <div style={{ color: '#64748b', padding: "0 4px", borderLeft: "1px solid #cbd5e1", display: "flex", alignItems: "center" }}>
             <Icon d={I.chevDown} size={14} />
           </div>
         </div>
@@ -1583,7 +1585,7 @@ function SmartAssetInput({ value, onChange, options, placeholder = "Ketik/Pilih 
           left: 0,
           right: 0,
           background: "white",
-          border: "1px solid #e2e8f0",
+          border: "1px solid #cbd5e1",
           borderRadius: 12,
           marginTop: 6,
           zIndex: 100,
@@ -1611,7 +1613,7 @@ function SmartAssetInput({ value, onChange, options, placeholder = "Ketik/Pilih 
               onMouseEnter={(e) => e.target.style.background = "#eff6ff"}
               onMouseLeave={(e) => e.target.style.background = "white"}
             >
-              <div style={{ width: 4, height: 4, borderRadius: "50%", background: "var(--blue)" }} />
+              <div style={{ width: 4, height: 4, borderRadius: "50%", background: "#2563eb" }} />
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <span style={{ fontWeight: 700, color: '#1e293b' }}>{opt.name}</span>
                 <span style={{ fontSize: '0.7rem', color: '#64748b' }}>{opt.model} • {CATEGORY_NAMES[opt.category] || opt.category}</span>
@@ -1645,8 +1647,8 @@ function Confirm({ msg, onConfirm, onCancel }) {
             width: 48,
             height: 48,
             borderRadius: 12,
-            background: "var(--red-lt)",
-            color: "var(--red)",
+            background: "#fee2e2",
+            color: "#dc2626",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -1655,7 +1657,7 @@ function Confirm({ msg, onConfirm, onCancel }) {
         >
           <Icon d={I.warning} size={24} />
         </div>
-        <p style={{ fontWeight: 700, color: "var(--ink)", textAlign: 'center' }}>{msg}</p>
+        <p style={{ fontWeight: 700, color: "#111827", textAlign: 'center' }}>{msg}</p>
         <div style={{ display: "flex", gap: 10, width: "100%" }}>
           <button className="btn btn-outline" onClick={onCancel} style={{ flex: 1, justifyContent: 'center' }}>
             Batal
@@ -1778,7 +1780,7 @@ function Breadcrumb({ items }) {
             <Icon
               d={I.chevRight}
               size={12}
-              style={{ color: "var(--ink4)", flexShrink: 0 }}
+              style={{ color: "#94a3b8", flexShrink: 0 }}
             />
           )}
           {item.onClick ? (
@@ -1790,7 +1792,7 @@ function Breadcrumb({ items }) {
                 cursor: "pointer",
                 fontSize: "0.78rem",
                 fontWeight: 600,
-                color: "var(--blue)",
+                color: "#2563eb",
                 padding: 0,
                 display: "flex",
                 alignItems: "center",
@@ -1805,7 +1807,7 @@ function Breadcrumb({ items }) {
               style={{
                 fontSize: "0.78rem",
                 fontWeight: 700,
-                color: "var(--ink2)",
+                color: "#475569",
                 display: "flex",
                 alignItems: "center",
                 gap: 4,
@@ -1815,7 +1817,7 @@ function Breadcrumb({ items }) {
                 <Icon
                   d={item.icon}
                   size={12}
-                  style={{ color: "var(--ink3)" }}
+                  style={{ color: "#64748b" }}
                 />
               )}
               {item.label}
@@ -1955,7 +1957,7 @@ function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
         </div>
       </div>
       <p className="req-note-small">
-        Kolom bertanda <span style={{ color: "var(--red)" }}>*</span> wajib
+        Kolom bertanda <span style={{ color: "#dc2626" }}>*</span> wajib
         diisi
       </p>
       <div className="tambah-sec">
@@ -2011,7 +2013,7 @@ function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
                 <span
                   style={{
                     fontSize: "0.75rem",
-                    color: "var(--ink3)",
+                    color: "#64748b",
                     fontWeight: 600,
                     whiteSpace: "nowrap",
                   }}
@@ -2038,7 +2040,7 @@ function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
                     alignItems: "center",
                     gap: "4px",
                     background: "transparent",
-                    color: "#3b82f6",
+                    color: "#2563eb",
                     border: "none",
                     padding: "4px 6px",
                     borderRadius: "4px",
@@ -2053,7 +2055,7 @@ function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
                     e.currentTarget.style.background = "#eff6ff";
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.color = "#3b82f6";
+                    e.currentTarget.style.color = "#2563eb";
                     e.currentTarget.style.background = "transparent";
                   }}
                   onMouseDown={(e) => {
@@ -2076,7 +2078,7 @@ function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
                 <span
                   style={{
                     fontSize: "0.75rem",
-                    color: "var(--red)",
+                    color: "#dc2626",
                     fontWeight: 600,
                     whiteSpace: "nowrap",
                   }}
@@ -2099,7 +2101,7 @@ function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
                 <span
                   style={{
                     fontSize: "0.75rem",
-                    color: "var(--ink3)",
+                    color: "#64748b",
                     whiteSpace: "nowrap",
                   }}
                 >
@@ -2109,7 +2111,7 @@ function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
               
               {/* Opsi Pemilihan Patokan Waktu */}
               <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "4px" }}>
-                <span style={{ fontSize: "0.75rem", color: "var(--ink2)", fontWeight: 600 }}>Hitung dari:</span>
+                <span style={{ fontSize: "0.75rem", color: "#475569", fontWeight: 600 }}>Hitung dari:</span>
                 <label style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "0.75rem", cursor: "pointer" }}>
                   <input 
                     type="radio" 
@@ -2136,13 +2138,13 @@ function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
                   marginTop: "4px",
                   padding: "8px 12px",
                   background: sisaHariInfo.sisa < 0 ? "#fee2e2" : "#eff6ff",
-                  borderLeft: `3px solid ${sisaHariInfo.sisa < 0 ? "#ef4444" : "#3b82f6"}`,
+                  borderLeft: `3px solid ${sisaHariInfo.sisa < 0 ? "#dc2626" : "#2563eb"}`,
                   borderRadius: "6px",
                   fontSize: "0.75rem"
                 }}>
                   Estimasi Selesai: <strong>{sisaHariInfo.tglSelesai}</strong>
                   <br />
-                  <span style={{ color: sisaHariInfo.sisa < 0 ? "#dc2626" : "#1d4ed8", fontWeight: 600 }}>
+                  <span style={{ color: sisaHariInfo.sisa < 0 ? "#b91c1c" : "#1e40af", fontWeight: 600 }}>
                     {sisaHariInfo.sisa < 0 
                       ? `Terlewat ${Math.abs(sisaHariInfo.sisa)} hari` 
                       : sisaHariInfo.sisa === 0 
@@ -2174,7 +2176,7 @@ function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
                 placeholder={ph}
                 value={form[key]}
                 onChange={(e) => up(key, e.target.value)}
-                style={isDate ? { width: "160px", ...(key === "tgl_sp3" && patokanWaktu === "sp3" ? { border: "1px solid #3b82f6", background: "#f8fafc" } : {}) } : {}}
+                style={isDate ? { width: "160px", ...(key === "tgl_sp3" && patokanWaktu === "sp3" ? { border: "1px solid #2563eb", background: "#f8fafc" } : {}) } : {}}
               />
             </TFld>
           ))}
@@ -2185,7 +2187,7 @@ function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
                 type="date"
                 value={form.tgl_bamk}
                 onChange={(e) => up("tgl_bamk", e.target.value)}
-                style={{ width: "160px", ...(patokanWaktu === "bamk" ? { border: "1px solid #3b82f6", background: "#f8fafc" } : {}) }}
+                style={{ width: "160px", ...(patokanWaktu === "bamk" ? { border: "1px solid #2563eb", background: "#f8fafc" } : {}) }}
               />
               {patokanWaktu === "bamk" && (
                 <button
@@ -2193,7 +2195,7 @@ function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
                   style={{
                     padding: "6px 10px",
                     background: "#f0fdf4",
-                    color: "#16a34a",
+                    color: "#15803d",
                     border: "1px solid #bbf7d0",
                     borderRadius: "6px",
                     fontSize: "0.7rem",
@@ -2219,14 +2221,14 @@ function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
       </div>
       <div className="edit-footer">
         <div>
-          <span style={{ fontSize: "0.75rem", color: "var(--ink3)" }}>
+          <span style={{ fontSize: "0.75rem", color: "#64748b" }}>
             Pekerjaan akan disimpan ke pos anggaran:
           </span>
           <strong
             style={{
               fontSize: "0.82rem",
               display: "block",
-              color: "var(--ink)",
+              color: "#111827",
             }}
           >
             {anggaran.nama}
@@ -2235,7 +2237,7 @@ function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
             <span
               style={{
                 fontSize: "0.75rem",
-                color: "var(--red)",
+                color: "#dc2626",
                 marginTop: 4,
                 display: "block",
               }}
@@ -2303,15 +2305,15 @@ function TambahOpexModal({ onClose, onSave }) {
     <div className="overlay" onClick={onClose}>
       <div
         style={{
-          background: "var(--surf)",
-          borderRadius: "var(--r-lg)",
+          background: "white",
+          borderRadius: "16px",
           width: "100%",
           maxWidth: 580,
           maxHeight: "90vh",
           display: "flex",
           flexDirection: "column",
           overflow: "hidden",
-          boxShadow: "var(--sh-lg)",
+          boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1)",
           animation: "modalUp .2s cubic-bezier(.16,1,.3,1)",
         }}
         onClick={(e) => e.stopPropagation()}
@@ -2322,8 +2324,8 @@ function TambahOpexModal({ onClose, onSave }) {
             alignItems: "center",
             justifyContent: "space-between",
             padding: "16px 24px",
-            borderBottom: "1px solid var(--border)",
-            background: "var(--bg)",
+            borderBottom: "1px solid #e2e8f0",
+            background: "#f8fafc",
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -2332,8 +2334,8 @@ function TambahOpexModal({ onClose, onSave }) {
                 width: 38,
                 height: 38,
                 borderRadius: 10,
-                background: "var(--green-lt)",
-                color: "var(--green)",
+                background: "#dcfce7",
+                color: "#16a34a",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -2348,7 +2350,7 @@ function TambahOpexModal({ onClose, onSave }) {
               <p
                 style={{
                   fontSize: "0.75rem",
-                  color: "var(--ink4)",
+                  color: "#64748b",
                   fontWeight: 500,
                   marginTop: 2,
                 }}
@@ -2362,15 +2364,16 @@ function TambahOpexModal({ onClose, onSave }) {
               width: 28,
               height: 28,
               borderRadius: 6,
-              border: "1px solid var(--border)",
-              background: "var(--border-lt)",
+              border: "1px solid #e2e8f0",
+              background: "white",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               cursor: "pointer",
-              color: "var(--ink2)",
+              color: "#475569",
             }}
             onClick={onClose}
+            aria-label="Close"
           >
             <Icon d={I.x} size={14} />
           </button>
@@ -2380,7 +2383,8 @@ function TambahOpexModal({ onClose, onSave }) {
             <select
               value={form.kode}
               onChange={(e) => handleMaster(e.target.value)}
-              style={{ borderColor: "var(--green)" }}
+              style={{ borderColor: "#16a34a" }}
+              aria-label="Kode Master Anggaran"
             >
               <option value="">— Pilih Kode Master (Opsional) —</option>
               {BUDGET_MASTERS.map((m) => (
@@ -2429,8 +2433,8 @@ function TambahOpexModal({ onClose, onSave }) {
             justifyContent: "flex-end",
             gap: 10,
             padding: "14px 24px",
-            borderTop: "1px solid var(--border)",
-            background: "var(--bg)",
+            borderTop: "1px solid #e2e8f0",
+            background: "#f8fafc",
           }}
         >
           <button className="btn btn-outline" onClick={onClose}>
@@ -2499,7 +2503,7 @@ function RealisasiTablePage({
                 fontSize: "1.5rem",
                 fontWeight: 800,
                 letterSpacing: "-0.5px",
-                color: "var(--ink)",
+                color: "#111827",
                 marginBottom: 3,
               }}
             >
@@ -2513,10 +2517,10 @@ function RealisasiTablePage({
             <Icon d={I.plus} size={13} /> Entry Barang Baru
           </button>
           <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-            <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--ink2)" }}>
+            <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "#475569" }}>
               Daftar Barang OPEX
             </span>
-            <span style={{ fontSize: "0.72rem", color: "var(--ink4)", fontWeight: 500 }}>
+            <span style={{ fontSize: "0.72rem", color: "#94a3b8", fontWeight: 500 }}>
               {transactions.length} barang
             </span>
           </div>
@@ -2527,12 +2531,12 @@ function RealisasiTablePage({
         {[
           ["Pos Anggaran", ang.nama],
           ["Kode Master", ang.kd_anggaran_master || "—", null, true],
-          ["Nilai KAD", pagu > 0 ? fmt(pagu) : "—", "var(--blue)"],
-          ["Total Realisasi", fmt(totalAll), "var(--amber)"],
+          ["Nilai KAD", pagu > 0 ? fmt(pagu) : "—", "#2563eb"],
+          ["Total Realisasi", fmt(totalAll), "#d97706"],
           [
             "Sisa Anggaran",
             `${fmt(Math.max(0, sisa))}${sisa < 0 ? " (melebihi)" : ""}`,
-            sisa >= 0 ? "var(--green)" : "var(--red)",
+            sisa >= 0 ? "#16a34a" : "#dc2626",
           ],
         ].map(([lbl, val, color, mono]) => (
           <div key={lbl} className="asset-ctx-item">
@@ -2540,7 +2544,7 @@ function RealisasiTablePage({
             <strong style={color ? { color } : {}}>
               {mono ? (
                 <code
-                  style={{ fontFamily: "var(--mono)", fontSize: "0.82rem" }}
+                  style={{ fontFamily: "monospace", fontSize: "0.82rem" }}
                 >
                   {val}
                 </code>
@@ -2624,7 +2628,7 @@ function RealisasiTablePage({
                       <Icon
                         d={I.mapPin}
                         size={11}
-                        style={{ color: "var(--ink4)", flexShrink: 0 }}
+                        style={{ color: "#94a3b8", flexShrink: 0 }}
                       />
                       {t.location || ASSET_DB_DYN[t.asset_code]?.location || "—"}
                     </div>
@@ -2637,19 +2641,20 @@ function RealisasiTablePage({
                   <td style={{ textAlign: "right" }}>
                     <span
                       className="td-value"
-                      style={{ color: "var(--amber)" }}
+                      style={{ color: "#d97706" }}
                     >
                       {fmt(t.jumlah || t.acquisition_value)}
                     </span>
                   </td>
                   <td className="td-actions">
                     <div className="td-act-row">
-                      <button className="abtn" onClick={() => onEditRow(t)}>
+                      <button className="abtn" onClick={() => onEditRow(t)} aria-label="Edit">
                         <Icon d={I.edit} size={11} />
                       </button>
                       <button
                         className="abtn del"
                         onClick={() => onDeleteRow(t.id)}
+                        aria-label="Delete"
                       >
                         <Icon d={I.trash} size={11} />
                       </button>
@@ -2667,14 +2672,14 @@ function RealisasiTablePage({
                   style={{
                     fontWeight: 700,
                     fontSize: "0.75rem",
-                    color: "var(--green)",
+                    color: "#16a34a",
                   }}
                 >
                   Total {filtered.length} barang
                 </td>
                 <td
                   className="tfoot-total"
-                  style={{ textAlign: "right", color: "var(--green)" }}
+                  style={{ textAlign: "right", color: "#16a34a" }}
                 >
                   {fmt(totalFiltered)}
                 </td>
@@ -2797,34 +2802,34 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
         </div>
       </div>
 
-      <div className="ctx-card" style={{ borderColor: "var(--green)", background: "var(--green-lt)", borderLeft: "4px solid var(--green)" }}>
+      <div className="ctx-card" style={{ borderColor: "#16a34a", background: "#f0fdf4", borderLeft: "4px solid #16a34a" }}>
         <div className="ctx-item">
           <span>Pos Anggaran</span>
-          <strong style={{ color: "var(--ink)" }}>{ang.nama}</strong>
+          <strong style={{ color: "#111827" }}>{ang.nama}</strong>
         </div>
         <div className="ctx-item">
           <span>Nilai KAD</span>
-          <strong style={{ color: "var(--blue)" }}>{fmt(pagu)}</strong>
+          <strong style={{ color: "#2563eb" }}>{fmt(pagu)}</strong>
         </div>
         <div className="ctx-item">
           <span>Sisa Anggaran</span>
-          <strong className={sisa >= 0 ? "green" : "red"} style={{ color: sisa >= 0 ? "var(--green)" : "var(--red)" }}>
+          <strong className={sisa >= 0 ? "green" : "red"} style={{ color: sisa >= 0 ? "#16a34a" : "#dc2626" }}>
             {fmt(Math.max(0, sisa))}{sisa < 0 && " (melebihi)"}
           </strong>
         </div>
       </div>
 
-      <div className="acard" style={{ borderLeftColor: "var(--green)" }}>
-        <div className="acard-hdr" style={{ background: "var(--green-lt)" }}>
-          <span className="asset-number-badge" style={{ background: "var(--green)" }}>DETAIL BARANG OPEX</span>
+      <div className="acard" style={{ borderLeftColor: "#16a34a" }}>
+        <div className="acard-hdr" style={{ background: "#f0fdf4" }}>
+          <span className="asset-number-badge" style={{ background: "#16a34a" }}>DETAIL BARANG OPEX</span>
         </div>
         <div className="acard-body">
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <AEFld label="Jenis Barang" req={true}>
               {isEdit ? (
-                <div style={{ fontSize: "0.95rem", fontWeight: 600, color: "var(--ink)", padding: "4px 0" }}>{form.category}</div>
+                <div style={{ fontSize: "0.95rem", fontWeight: 600, color: "#111827", padding: "4px 0" }}>{form.category}</div>
               ) : (
-                <select value={form.category || ""} onChange={(e) => handleCat(e.target.value)}>
+                <select value={form.category || ""} onChange={(e) => handleCat(e.target.value)} aria-label="Jenis Barang">
                   <option value="">— Pilih Jenis Barang —</option>
                   {Object.entries(CATEGORY_NAMES).map(([cat, name]) => (
                     <option key={cat} value={cat}>{name}</option>
@@ -2837,13 +2842,13 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
               <AEFld label="Nama Barang" req={true}>
                 {isEdit ? (
                   <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0" }}>
-                    <div style={{ width: 4, height: 20, background: "var(--green)", borderRadius: 2 }} />
-                    <span style={{ fontSize: "1rem", fontWeight: 800, color: "var(--ink)", letterSpacing: "-0.2px" }}>
+                    <div style={{ width: 4, height: 20, background: "#16a34a", borderRadius: 2 }} />
+                    <span style={{ fontSize: "1rem", fontWeight: 800, color: "#111827", letterSpacing: "-0.2px" }}>
                       {ASSET_DB_DYN[form.items?.[0]?.asset_code]?.name || form.model}
                     </span>
                   </div>
                 ) : (
-                  <select value={form.model || ""} onChange={(e) => handleMod(e.target.value)}>
+                  <select value={form.model || ""} onChange={(e) => handleMod(e.target.value)} aria-label="Nama Barang">
                     <option value="">— Pilih Tipe —</option>
                     {availMods.map((mod) => <option key={mod} value={mod}>{mod}</option>)}
                   </select>
@@ -2857,6 +2862,7 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
                   value={form.items?.length || 0}
                   onChange={(e) => handleQtyChange(parseInt(e.target.value) || 0)}
                   style={{ maxWidth: "200px" }}
+                  aria-label="Kuantitas"
                 >
                   {Array.from({ length: 20 }, (_, i) => i + 1).map(n => (
                     <option key={n} value={n}>{n}</option>
@@ -2907,6 +2913,7 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
                             onClick={() => up("items", form.items.filter((_, i) => i !== idx))}
                             style={{ color: "#ef4444", background: "none", border: "none", cursor: "pointer", padding: "8px", display: "flex", alignItems: "center", justifyContent: "center" }}
                             title="Hapus baris"
+                            aria-label="Delete"
                           >
                             <Icon d={I.trash} size={16} />
                           </button>
@@ -2939,7 +2946,7 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
                   style={{ flex: 1 }}
                 />
                 {amount > 0 && (
-                  <span className="aefld-hint" style={{ color: "var(--blue)", fontWeight: 600 }}>
+                  <span className="aefld-hint" style={{ color: "#2563eb", fontWeight: 600 }}>
                     {fmt(amount)}
                   </span>
                 )}
@@ -2951,8 +2958,8 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
 
       <div className="edit-footer">
         <div>
-          <span style={{ fontSize: "0.75rem", color: "var(--ink3)" }}>Total Nilai Input</span>
-          <div style={{ fontSize: "1rem", fontWeight: 800, color: "var(--green)" }}>{fmt(amount * (form.items?.length || 0))}</div>
+          <span style={{ fontSize: "0.75rem", color: "#64748b" }}>Total Nilai Input</span>
+          <div style={{ fontSize: "1rem", fontWeight: 800, color: "#16a34a" }}>{fmt(amount * (form.items?.length || 0))}</div>
         </div>
         <div style={{ display: "flex", gap: 12 }}>
           <button className="btn btn-outline" onClick={onBack}>Batal</button>
@@ -2979,7 +2986,7 @@ function OpexCard({ ang, onSelect, onDelete, searchQ, onDirectProject }) {
   return (
     <div className="ang-card" onClick={() => onSelect(ang)}>
       <div className="ang-card-inner">
-        <div className="ang-card-accent opx" style={{ background: "var(--green)" }} />
+        <div className="ang-card-accent opx" style={{ background: "#16a34a" }} />
         <div className="ang-card-body" style={{ gridTemplateColumns: "2.4fr 1.4fr 1fr 2.1fr auto" }}>
           <div className="ang-card-info">
             <div className="ang-card-tags">
@@ -3036,8 +3043,8 @@ function OpexCard({ ang, onSelect, onDelete, searchQ, onDirectProject }) {
       </div>
 
       {matchedProjects.length > 0 && (
-        <div style={{ padding: "0 18px 18px", background: "var(--bg)", borderTop: "1px solid var(--border)", borderBottomLeftRadius: "8px", borderBottomRightRadius: "8px" }} onClick={e => e.stopPropagation()}>
-          <div style={{ fontSize: "0.7rem", fontWeight: 600, color: "var(--ink3)", textTransform: "uppercase", marginBottom: "8px", marginTop: "12px" }}>
+        <div style={{ padding: "0 18px 18px", background: "#f8fafc", borderTop: "1px solid #e2e8f0", borderBottomLeftRadius: "8px", borderBottomRightRadius: "8px" }} onClick={e => e.stopPropagation()}>
+          <div style={{ fontSize: "0.7rem", fontWeight: 600, color: "#64748b", textTransform: "uppercase", marginBottom: "8px", marginTop: "12px" }}>
             Pekerjaan yang Cocok:
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
@@ -3048,20 +3055,20 @@ function OpexCard({ ang, onSelect, onDelete, searchQ, onDirectProject }) {
                 style={{
                   textAlign: "left",
                   background: "white",
-                  border: "1px dashed var(--border)",
+                  border: "1px dashed #cbd5e1",
                   padding: "8px 10px",
                   borderRadius: "6px",
                   fontSize: "0.75rem",
                   fontWeight: 600,
-                  color: "var(--blue)",
+                  color: "#2563eb",
                   cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
                   gap: "6px",
                   transition: "all 0.15s ease",
                 }}
-                onMouseEnter={e => { e.currentTarget.style.background = "var(--green-light)"; e.currentTarget.style.borderColor = "var(--green)"; e.currentTarget.style.color = "var(--green-dark)"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "white"; e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.color = "var(--blue)"; }}
+                onMouseEnter={e => { e.currentTarget.style.background = "#dcfce7"; e.currentTarget.style.borderColor = "#16a34a"; e.currentTarget.style.color = "#15803d"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "white"; e.currentTarget.style.borderColor = "#cbd5e1"; e.currentTarget.style.color = "#2563eb"; }}
               >
                 <Icon d={I.briefcase} size={12} />
                 {p.nm_pekerjaan}
@@ -3094,9 +3101,9 @@ function EditOpexInline({ ang, onSave, onCancel }) {
   return (
     <div
       style={{
-        background: "var(--green-lt)",
-        borderTop: "1px solid var(--green-mid)",
-        borderBottom: "1px solid var(--green-mid)",
+        background: "#dcfce7",
+        borderTop: "1px solid #86efac",
+        borderBottom: "1px solid #86efac",
       }}
     >
       <div
@@ -3105,14 +3112,14 @@ function EditOpexInline({ ang, onSave, onCancel }) {
           alignItems: "center",
           justifyContent: "space-between",
           padding: "12px 20px 8px",
-          borderBottom: "1px solid var(--green-mid)",
+          borderBottom: "1px solid #86efac",
         }}
       >
         <h3
           style={{
             fontSize: "0.82rem",
             fontWeight: 800,
-            color: "var(--green)",
+            color: "#166534",
             display: "flex",
             alignItems: "center",
             gap: 8,
@@ -3133,6 +3140,7 @@ function EditOpexInline({ ang, onSave, onCancel }) {
           <select
             value={form.kd_anggaran_master}
             onChange={(e) => handleMaster(e.target.value)}
+            aria-label="Kode Master Anggaran"
           >
             <option value="">— Pilih —</option>
             {BUDGET_MASTERS.map((m) => (
@@ -3293,7 +3301,7 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
         {anggaran?.nilai_kad > 0 && (
           <div className="ctx-item">
             <span>Nilai KAD</span>
-            <strong style={{ color: anggaran.type === 'opex' ? "var(--green)" : "var(--blue)" }}>
+            <strong style={{ color: anggaran.type === 'opex' ? "#16a34a" : "#2563eb" }}>
               {fmt(anggaran.nilai_kad)}
             </strong>
           </div>
@@ -3342,7 +3350,7 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
                     alignItems: "center",
                     gap: "4px",
                     background: "transparent",
-                    color: "#3b82f6",
+                    color: "#2563eb",
                     border: "none",
                     padding: "4px 6px",
                     borderRadius: "4px",
@@ -3357,7 +3365,7 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
                     e.currentTarget.style.background = "#eff6ff";
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.color = "#3b82f6";
+                    e.currentTarget.style.color = "#2563eb";
                     e.currentTarget.style.background = "transparent";
                   }}
                   onMouseDown={(e) => {
@@ -3379,7 +3387,7 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
               {form.nilai_kontrak > 0 && (
                 <span
                   className="hfld-hint"
-                  style={{ color: "var(--red)", whiteSpace: "nowrap" }}
+                  style={{ color: "#dc2626", whiteSpace: "nowrap" }}
                 >
                   {fmt(parseFloat(form.nilai_kontrak))}
                 </span>
@@ -3400,7 +3408,7 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
               </div>
               
               <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "4px" }}>
-                <span style={{ fontSize: "0.75rem", color: "var(--ink2)", fontWeight: 600 }}>Hitung dari:</span>
+                <span style={{ fontSize: "0.75rem", color: "#475569", fontWeight: 600 }}>Hitung dari:</span>
                 <label style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "0.75rem", cursor: "pointer" }}>
                   <input 
                     type="radio" 
@@ -3426,13 +3434,13 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
                   marginTop: "4px",
                   padding: "8px 12px",
                   background: sisaHariInfo.sisa < 0 ? "#fee2e2" : "#eff6ff",
-                  borderLeft: `3px solid ${sisaHariInfo.sisa < 0 ? "#ef4444" : "#3b82f6"}`,
+                  borderLeft: `3px solid ${sisaHariInfo.sisa < 0 ? "#dc2626" : "#2563eb"}`,
                   borderRadius: "6px",
                   fontSize: "0.75rem"
                 }}>
                   Estimasi Selesai: <strong>{sisaHariInfo.tglSelesai}</strong>
                   <br />
-                  <span style={{ color: sisaHariInfo.sisa < 0 ? "#dc2626" : "#1d4ed8", fontWeight: 600 }}>
+                  <span style={{ color: sisaHariInfo.sisa < 0 ? "#b91c1c" : "#1e40af", fontWeight: 600 }}>
                     {sisaHariInfo.sisa < 0 
                       ? `Terlewat ${Math.abs(sisaHariInfo.sisa)} hari` 
                       : sisaHariInfo.sisa === 0 
@@ -3463,7 +3471,7 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
                 type={isDate ? "date" : "text"}
                 value={form[key] || ""}
                 onChange={(e) => up(key, e.target.value)}
-                style={isDate ? { width: "160px", ...(key === "tgl_sp3" && patokanWaktu === "sp3" ? { border: "1px solid #3b82f6", background: "#f8fafc" } : {}) } : {}}
+                style={isDate ? { width: "160px", ...(key === "tgl_sp3" && patokanWaktu === "sp3" ? { border: "1px solid #2563eb", background: "#f8fafc" } : {}) } : {}}
               />
             </HFld>
           ))}
@@ -3474,7 +3482,7 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
                 type="date"
                 value={form.tgl_bamk || ""}
                 onChange={(e) => up("tgl_bamk", e.target.value)}
-                style={{ width: "160px", ...(patokanWaktu === "bamk" ? { border: "1px solid #3b82f6", background: "#f8fafc" } : {}) }}
+                style={{ width: "160px", ...(patokanWaktu === "bamk" ? { border: "1px solid #2563eb", background: "#f8fafc" } : {}) }}
               />
               {patokanWaktu === "bamk" && (
                 <button
@@ -3482,7 +3490,7 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
                   style={{
                     padding: "6px 10px",
                     background: "#f0fdf4",
-                    color: "#16a34a",
+                    color: "#15803d",
                     border: "1px solid #bbf7d0",
                     borderRadius: "6px",
                     fontSize: "0.7rem",
@@ -3508,7 +3516,7 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
       </div>
       <div className="edit-footer">
         <div>
-          <span style={{ fontSize: "0.75rem", color: "var(--ink3)" }}>
+          <span style={{ fontSize: "0.75rem", color: "#64748b" }}>
             Menyimpan perubahan pekerjaan
           </span>
           <strong style={{ fontSize: "0.82rem", display: "block" }}>
@@ -3802,7 +3810,7 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast, allAngga
         </div>
         <div className="ctx-item">
           <span>Total Nilai Barang</span>
-          <strong style={{ color: anggaran.type === 'opex' ? "var(--green)" : "var(--blue)" }}>{fmt(total)}</strong>
+          <strong style={{ color: anggaran.type === 'opex' ? "#16a34a" : "#2563eb" }}>{fmt(total)}</strong>
         </div>
       </div>
       <div className="acard">
@@ -3819,6 +3827,7 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast, allAngga
                   upd("model", "");
                   upd("items", [{ id: `new-${Date.now()}-0`, serial_number: "", location: "", asset_code: "" }]);
                 }}
+                aria-label="Kategori"
               >
                 <option value="">— Pilih Kategori —</option>
                 {Object.entries(CATEGORY_NAMES)
@@ -3835,7 +3844,7 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast, allAngga
                       key={cat}
                       value={cat}
                       disabled={!isAvailable}
-                      style={{ color: !isAvailable ? "#ef4444" : "inherit" }}
+                      style={{ color: !isAvailable ? "#dc2626" : "inherit" }}
                     >
                       {name} {!isAvailable ? "- (Barang pd kategori ini tidak tersedia)" : ""}
                     </option>
@@ -3870,11 +3879,11 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast, allAngga
                     <span style={{
                       fontSize: "1.2rem",
                       fontWeight: 800,
-                      color: anggaran.type === 'opex' ? "var(--green)" : "var(--blue)"
+                      color: anggaran.type === 'opex' ? "#16a34a" : "#2563eb"
                     }}>
                       {form.items?.length || 0}
                     </span>
-                    <span style={{ fontSize: "0.75rem", color: "var(--ink3)", fontWeight: 600, textTransform: "none" }}>
+                    <span style={{ fontSize: "0.75rem", color: "#64748b", fontWeight: 600, textTransform: "none" }}>
                       Unit Terdaftar
                     </span>
                   </div>
@@ -3919,10 +3928,11 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast, allAngga
                           </div>
                           <button
                             onClick={() => upd("items", form.items.filter((_, i) => i !== idx))}
-                            style={{ color: "#ef4444", background: "none", border: "none", cursor: "pointer", padding: "8px", display: "flex", alignItems: "center", justifyContent: "center", transition: "transform 0.2s" }}
+                            style={{ color: "#dc2626", background: "none", border: "none", cursor: "pointer", padding: "8px", display: "flex", alignItems: "center", justifyContent: "center", transition: "transform 0.2s" }}
                             onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.1)"}
                             onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
                             title="Hapus baris"
+                            aria-label="Delete"
                           >
                             <Icon d={I.trash} size={16} />
                           </button>
@@ -3941,9 +3951,9 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast, allAngga
                     fontSize: "0.75rem",
                     justifyContent: "center",
                     borderStyle: "dashed",
-                    borderColor: "var(--blue-mid)",
-                    color: "var(--blue)",
-                    background: "var(--blue-lt)"
+                    borderColor: "#60a5fa",
+                    color: "#2563eb",
+                    background: "#eff6ff"
                   }}
                   onClick={() => {
                     if (form.items.length >= availSNs.length) {
@@ -3969,7 +3979,7 @@ function AssetEntryPage({ anggaran, project, onBack, onSave, showToast, allAngga
                   style={{ flex: 1 }}
                 />
                 {parseFloat(form.acquisition_value) > 0 && (
-                  <span className="aefld-hint" style={{ color: "var(--blue)", fontWeight: 600, whiteSpace: "nowrap" }}>
+                  <span className="aefld-hint" style={{ color: "#2563eb", fontWeight: 600, whiteSpace: "nowrap" }}>
                     {fmt(parseFloat(form.acquisition_value))}
                   </span>
                 )}
@@ -4178,7 +4188,7 @@ function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) 
         </div>
         <div className="ctx-item">
           <span>Total Nilai Barang</span>
-          <strong style={{ color: isOpx ? "var(--green)" : "var(--blue)" }}>{fmt(total)}</strong>
+          <strong style={{ color: isOpx ? "#16a34a" : "#2563eb" }}>{fmt(total)}</strong>
         </div>
       </div>
 
@@ -4190,15 +4200,15 @@ function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) 
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <AEFld label="Kategori" req={true}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "4px 0" }}>
-                <Icon d={I.package} size={14} style={{ color: isOpx ? "var(--green)" : "var(--blue)" }} />
-                <span style={{ fontSize: "0.95rem", fontWeight: 700, color: "var(--ink2)" }}>{form.category}</span>
+                <Icon d={I.package} size={14} style={{ color: isOpx ? "#16a34a" : "#2563eb" }} />
+                <span style={{ fontSize: "0.95rem", fontWeight: 700, color: "#475569" }}>{form.category}</span>
               </div>
             </AEFld>
 
             <AEFld label="Nama Barang" req={true}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "4px 0" }}>
-                <div style={{ width: 4, height: 20, background: isOpx ? "var(--green)" : "var(--blue)", borderRadius: 2 }} />
-                <span style={{ fontSize: "1rem", fontWeight: 800, color: "var(--ink)", letterSpacing: "-0.2px" }}>
+                <div style={{ width: 4, height: 20, background: isOpx ? "#16a34a" : "#2563eb", borderRadius: 2 }} />
+                <span style={{ fontSize: "1rem", fontWeight: 800, color: "#111827", letterSpacing: "-0.2px" }}>
                   {form.name}
                 </span>
               </div>
@@ -4209,11 +4219,11 @@ function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) 
                 <span style={{
                   fontSize: "1.2rem",
                   fontWeight: 800,
-                  color: isOpx ? "var(--green)" : "var(--blue)"
+                  color: isOpx ? "#16a34a" : "#2563eb"
                 }}>
                   {form.items?.length || 0}
                 </span>
-                <span style={{ fontSize: "0.75rem", color: "var(--ink3)", fontWeight: 600, textTransform: "none" }}>
+                <span style={{ fontSize: "0.75rem", color: "#64748b", fontWeight: 600, textTransform: "none" }}>
                   Unit Terdaftar
                 </span>
               </div>
@@ -4259,8 +4269,9 @@ function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) 
                           </div>
                           <button
                             onClick={() => upd("items", form.items.filter((_, i) => i !== idx))}
-                            style={{ color: "#ef4444", background: "none", border: "none", cursor: "pointer", padding: "8px", display: "flex", alignItems: "center", justifyContent: "center" }}
+                            style={{ color: "#dc2626", background: "none", border: "none", cursor: "pointer", padding: "8px", display: "flex", alignItems: "center", justifyContent: "center" }}
                             title="Hapus baris"
+                            aria-label="Delete"
                           >
                             <Icon d={I.trash} size={16} />
                           </button>
@@ -4278,9 +4289,9 @@ function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) 
                     fontSize: "0.75rem",
                     justifyContent: "center",
                     borderStyle: "dashed",
-                    borderColor: "var(--blue-mid)",
-                    color: "var(--blue)",
-                    background: "var(--blue-lt)"
+                    borderColor: "#60a5fa",
+                    color: "#2563eb",
+                    background: "#eff6ff"
                   }}
                   onClick={() => {
                     const ac = asset.asset_code || "";
@@ -4305,7 +4316,7 @@ function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) 
                   style={{ flex: 1 }}
                 />
                 {amount > 0 && (
-                  <span className="aefld-hint" style={{ color: "var(--blue)", fontWeight: 600, whiteSpace: "nowrap" }}>
+                  <span className="aefld-hint" style={{ color: "#2563eb", fontWeight: 600, whiteSpace: "nowrap" }}>
                     {fmt(amount)}
                   </span>
                 )}
@@ -4315,7 +4326,7 @@ function EditAssetPage({ anggaran, project, asset, onBack, onSave, showToast }) 
         </div>
       </div>
 
-      <div className="subpage-footer" style={{ marginTop: 20, display: "flex", justifyContent: "flex-end", gap: 12, background: "white", padding: 16, borderRadius: 12, border: "1px solid var(--border)", boxShadow: "var(--sh-md)" }}>
+      <div className="subpage-footer" style={{ marginTop: 20, display: "flex", justifyContent: "flex-end", gap: 12, background: "white", padding: 16, borderRadius: 12, border: "1px solid #cbd5e1", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)" }}>
         <button className="btn btn-outline" onClick={onBack}>Batal</button>
         <button
           className={`btn ${isOpx ? 'btn-green' : 'btn-prim'}`}
@@ -4473,7 +4484,7 @@ function AssetTablePage({
                 fontSize: "1.5rem",
                 fontWeight: 800,
                 letterSpacing: "-0.5px",
-                color: "var(--ink)",
+                color: "#111827",
                 marginBottom: 3,
               }}
             >
@@ -4484,29 +4495,29 @@ function AssetTablePage({
 
               <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
                 {/* Nilai Kontrak */}
-                <div style={{ background: "var(--red-lt)", padding: "4px 12px", borderRadius: "8px", border: "1px solid #fee2e2", display: "flex", alignItems: "center", gap: "8px", boxShadow: "var(--sh)" }}>
-                  <Icon d={I.briefcase} size={12} style={{ color: "var(--red)" }} />
+                <div style={{ background: "#fef2f2", padding: "4px 12px", borderRadius: "8px", border: "1px solid #fecaca", display: "flex", alignItems: "center", gap: "8px", boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }}>
+                  <Icon d={I.briefcase} size={12} style={{ color: "#dc2626" }} />
                   <div style={{ display: "flex", flexDirection: "column" }}>
-                    <span style={{ fontSize: "0.6rem", color: "var(--ink4)", fontWeight: 700, textTransform: "uppercase", lineHeight: 1, fontFamily: "inherit" }}>Nilai Kontrak</span>
-                    <strong style={{ fontSize: "0.85rem", color: "var(--red)", fontWeight: 800, fontFamily: "inherit" }}>{fmt(project?.nilai_kontrak)}</strong>
+                    <span style={{ fontSize: "0.6rem", color: "#475569", fontWeight: 700, textTransform: "uppercase", lineHeight: 1, fontFamily: "inherit" }}>Nilai Kontrak</span>
+                    <strong style={{ fontSize: "0.85rem", color: "#dc2626", fontWeight: 800, fontFamily: "inherit" }}>{fmt(project?.nilai_kontrak)}</strong>
                   </div>
                 </div>
 
                 {/* Total Nilai Barang */}
-                <div style={{ background: anggaran.type === 'opex' ? "var(--green-lt)" : "var(--blue-lt)", padding: "4px 12px", borderRadius: "8px", border: `1px solid ${anggaran.type === 'opex' ? "var(--green-mid)" : "var(--blue-mid)"}`, display: "flex", alignItems: "center", gap: "8px", boxShadow: "var(--sh)" }}>
-                  <Icon d={I.trendingUp} size={12} style={{ color: anggaran.type === 'opex' ? "var(--green)" : "var(--blue)" }} />
+                <div style={{ background: anggaran.type === 'opex' ? "#f0fdf4" : "#eff6ff", padding: "4px 12px", borderRadius: "8px", border: `1px solid ${anggaran.type === 'opex' ? "#bbf7d0" : "#bfdbfe"}`, display: "flex", alignItems: "center", gap: "8px", boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }}>
+                  <Icon d={I.trendingUp} size={12} style={{ color: anggaran.type === 'opex' ? "#16a34a" : "#2563eb" }} />
                   <div style={{ display: "flex", flexDirection: "column" }}>
-                    <span style={{ fontSize: "0.6rem", color: "var(--ink4)", fontWeight: 700, textTransform: "uppercase", lineHeight: 1, fontFamily: "inherit" }}>Total Nilai Barang</span>
-                    <strong style={{ fontSize: "0.85rem", color: anggaran.type === 'opex' ? "var(--green)" : "var(--blue)", fontWeight: 800, fontFamily: "inherit" }}>{fmt(totalAllAssets)}</strong>
+                    <span style={{ fontSize: "0.6rem", color: "#475569", fontWeight: 700, textTransform: "uppercase", lineHeight: 1, fontFamily: "inherit" }}>Total Nilai Barang</span>
+                    <strong style={{ fontSize: "0.85rem", color: anggaran.type === 'opex' ? "#16a34a" : "#2563eb", fontWeight: 800, fontFamily: "inherit" }}>{fmt(totalAllAssets)}</strong>
                   </div>
                 </div>
 
                 {/* Sisa Anggaran */}
-                <div style={{ background: sisaProject >= 0 ? "var(--green-lt)" : "var(--red-lt)", padding: "4px 12px", borderRadius: "8px", border: sisaProject >= 0 ? "1px solid var(--green-mid)" : "1px solid #fee2e2", display: "flex", alignItems: "center", gap: "8px", boxShadow: "var(--sh)" }}>
-                  <Icon d={I.wallet} size={12} style={{ color: sisaProject >= 0 ? "var(--green)" : "var(--red)" }} />
+                <div style={{ background: sisaProject >= 0 ? "#f0fdf4" : "#fef2f2", padding: "4px 12px", borderRadius: "8px", border: sisaProject >= 0 ? "1px solid #bbf7d0" : "1px solid #fecaca", display: "flex", alignItems: "center", gap: "8px", boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }}>
+                  <Icon d={I.wallet} size={12} style={{ color: sisaProject >= 0 ? "#16a34a" : "#dc2626" }} />
                   <div style={{ display: "flex", flexDirection: "column" }}>
-                    <span style={{ fontSize: "0.6rem", color: "var(--ink4)", fontWeight: 700, textTransform: "uppercase", lineHeight: 1, fontFamily: "inherit" }}>Sisa Anggaran</span>
-                    <strong style={{ fontSize: "0.85rem", color: sisaProject >= 0 ? "var(--green)" : "var(--red)", fontWeight: 800, fontFamily: "inherit" }}>{fmt(sisaProject)}</strong>
+                    <span style={{ fontSize: "0.6rem", color: "#475569", fontWeight: 700, textTransform: "uppercase", lineHeight: 1, fontFamily: "inherit" }}>Sisa Anggaran</span>
+                    <strong style={{ fontSize: "0.85rem", color: sisaProject >= 0 ? "#16a34a" : "#dc2626", fontWeight: 800, fontFamily: "inherit" }}>{fmt(sisaProject)}</strong>
                   </div>
                 </div>
               </div>
@@ -4523,14 +4534,14 @@ function AssetTablePage({
             onChange={(e) => setSearchQ(e.target.value)}
           />
         </div>
-        <div className="flt-box" style={{ background: "var(--blue-lt)", borderColor: "var(--blue-mid)", height: 32 }}>
-          <Icon d={I.calendar} size={13} style={{ color: "var(--blue)" }} />
+        <div className="flt-box" style={{ background: "#eff6ff", borderColor: "#bfdbfe", height: 32 }}>
+          <Icon d={I.calendar} size={13} style={{ color: "#2563eb" }} />
           <select
             aria-label="Filter Tahun"
             className="flt-select"
             value={filterYear}
             onChange={(e) => setFilterYear(e.target.value)}
-            style={{ color: "var(--blue)", fontWeight: 700, border: "none", background: "transparent", outline: "none", fontSize: "0.75rem" }}
+            style={{ color: "#2563eb", fontWeight: 700, border: "none", background: "transparent", outline: "none", fontSize: "0.75rem" }}
           >
             <option value="all">Semua Tahun</option>
             {availableYears.map((y) => (
@@ -4549,10 +4560,10 @@ function AssetTablePage({
           <Icon d={I.plus} size={13} /> Entry Barang Baru
         </button>
         <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-          <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--ink2)" }}>
+          <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "#475569" }}>
             Daftar Barang {anggaran.type === "opex" ? "OPEX" : "CAPEX"}
           </span>
-          <span style={{ fontSize: "0.72rem", color: "var(--ink4)", fontWeight: 500 }}>
+          <span style={{ fontSize: "0.72rem", color: "#94a3b8", fontWeight: 500 }}>
             Total {totalQty} barang
           </span>
         </div>
@@ -4651,12 +4662,13 @@ function AssetTablePage({
                     </td>
                     <td className="td-actions">
                       <div className="td-act-row">
-                        <button className="abtn" onClick={() => onEditAsset(a)}>
+                        <button className="abtn" onClick={() => onEditAsset(a)} aria-label="Edit">
                           <Icon d={I.edit} size={11} />
                         </button>
                         <button
                           className="abtn del"
                           onClick={() => handleDelete(a)}
+                          aria-label="Delete"
                         >
                           <Icon d={I.trash} size={11} />
                         </button>
@@ -4675,14 +4687,14 @@ function AssetTablePage({
                   style={{
                     fontWeight: 700,
                     fontSize: "0.75rem",
-                    color: anggaran.type === 'opex' ? "var(--green)" : "var(--blue)",
+                    color: anggaran.type === 'opex' ? "#16a34a" : "#2563eb",
                   }}
                 >
                   Total {filteredQty} {anggaran.type === 'opex' ? 'barang' : 'aset'}
                 </td>
                 <td
                   className="tfoot-total"
-                  style={{ textAlign: "right", color: anggaran.type === 'opex' ? "var(--green)" : "var(--blue)" }}
+                  style={{ textAlign: "right", color: anggaran.type === 'opex' ? "#16a34a" : "#2563eb" }}
                 >
                   {fmt(total)}
                 </td>
@@ -4783,8 +4795,8 @@ function AnggaranCard({ ang, onSelect, onShowRkap, onDelete, searchQ, onDirectPr
       </div>
 
       {matchedProjects.length > 0 && (
-        <div style={{ padding: "0 18px 18px", background: "var(--bg)", borderTop: "1px solid var(--border)", borderBottomLeftRadius: "8px", borderBottomRightRadius: "8px" }} onClick={e => e.stopPropagation()}>
-          <div style={{ fontSize: "0.7rem", fontWeight: 600, color: "var(--ink3)", textTransform: "uppercase", marginBottom: "8px", marginTop: "12px" }}>
+        <div style={{ padding: "0 18px 18px", background: "white", borderTop: "1px solid #e2e8f0", borderBottomLeftRadius: "8px", borderBottomRightRadius: "8px" }} onClick={e => e.stopPropagation()}>
+          <div style={{ fontSize: "0.7rem", fontWeight: 600, color: "#64748b", textTransform: "uppercase", marginBottom: "8px", marginTop: "12px" }}>
             Pekerjaan yang Cocok:
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
@@ -4795,12 +4807,12 @@ function AnggaranCard({ ang, onSelect, onShowRkap, onDelete, searchQ, onDirectPr
                 style={{
                   textAlign: "left",
                   background: "white",
-                  border: "1px dashed var(--border)",
+                  border: "1px dashed #e2e8f0",
                   padding: "8px 10px",
                   borderRadius: "6px",
                   fontSize: "0.75rem",
                   fontWeight: 600,
-                  color: "var(--blue)",
+                  color: "#2563eb",
                   cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
@@ -4808,7 +4820,7 @@ function AnggaranCard({ ang, onSelect, onShowRkap, onDelete, searchQ, onDirectPr
                   transition: "all 0.15s ease",
                 }}
                 onMouseEnter={e => { e.currentTarget.style.background = "#eff6ff"; e.currentTarget.style.borderColor = "#93c5fd"; e.currentTarget.style.color = "#1d4ed8"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "white"; e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.color = "var(--blue)"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "white"; e.currentTarget.style.borderColor = "#e2e8f0"; e.currentTarget.style.color = "#2563eb"; }}
               >
                 <Icon d={I.briefcase} size={12} />
                 {p.nm_pekerjaan}
@@ -4837,10 +4849,10 @@ function RkapDetailPage({ anggaran, onBack }) {
         ]}
       />
 
-      <div style={{ background: 'var(--surf)', borderRadius: 'var(--r-md)', border: '1px solid var(--border)', padding: '24px', boxShadow: 'var(--sh-sm)', marginBottom: 24 }}>
+      <div style={{ background: 'white', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '24px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', marginBottom: 24 }}>
         <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
-            <h2 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--ink)', lineHeight: 1.2 }}>{anggaran.nama}</h2>
+            <h2 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#111827', lineHeight: 1.2 }}>{anggaran.nama}</h2>
             <div style={{ display: 'flex', gap: 10, marginTop: 6 }}>
               <span className="badge blue" style={{ fontSize: '0.68rem', fontWeight: 700 }}>{anggaran.kode}</span>
               <span className="badge capex" style={{ fontSize: '0.68rem', fontWeight: 700 }}>KAD: {fmt(anggaran.nilai_kad)}</span>
@@ -4866,14 +4878,14 @@ function RkapDetailPage({ anggaran, onBack }) {
                     <td className="td-no">{i + 1}</td>
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <Icon d={I.calendar} size={13} style={{ color: "var(--blue)" }} />
+                        <Icon d={I.calendar} size={13} style={{ color: "#2563eb" }} />
                         <span style={{ fontWeight: 600 }}>Tahun Anggaran {h.tahun || h.thn || h.thn_anggaran || h.thn_rkap_awal || ""}</span>
                       </div>
                     </td>
-                    <td style={{ textAlign: 'right', fontWeight: 800, color: 'var(--blue)', fontFamily: 'var(--mono)' }}>
+                    <td style={{ textAlign: 'right', fontWeight: 800, color: '#2563eb', fontFamily: 'monospace' }}>
                       {fmt(parseIDRNum(h.nilai_rkap))}
                     </td>
-                    <td style={{ textAlign: 'center', fontWeight: 800, color: 'var(--ink2)' }}>
+                    <td style={{ textAlign: 'center', fontWeight: 800, color: '#475569' }}>
                       {percent.toFixed(1)}%
                     </td>
                   </tr>
@@ -4881,10 +4893,10 @@ function RkapDetailPage({ anggaran, onBack }) {
               })}
             </tbody>
             <tfoot>
-              <tr style={{ background: 'var(--bg)', fontStyle: 'normal' }}>
-                <td colSpan={2} style={{ textAlign: 'right', fontWeight: 800, color: 'var(--ink2)', padding: '12px' }}>TOTAL TERISI</td>
-                <td style={{ textAlign: 'right', fontWeight: 900, color: 'var(--blue)', padding: '12px', fontSize: '0.95rem' }}>{fmt(totalRkap)}</td>
-                <td style={{ textAlign: 'center', fontWeight: 800, color: 'var(--ink)', padding: '12px' }}>{((totalRkap / anggaran.nilai_kad) * 100).toFixed(1)}%</td>
+              <tr style={{ background: '#f8fafc', fontStyle: 'normal' }}>
+                <td colSpan={2} style={{ textAlign: 'right', fontWeight: 800, color: '#475569', padding: '12px' }}>TOTAL TERISI</td>
+                <td style={{ textAlign: 'right', fontWeight: 900, color: '#2563eb', padding: '12px', fontSize: '0.95rem' }}>{fmt(totalRkap)}</td>
+                <td style={{ textAlign: 'center', fontWeight: 800, color: '#111827', padding: '12px' }}>{((totalRkap / anggaran.nilai_kad) * 100).toFixed(1)}%</td>
               </tr>
             </tfoot>
           </table>
@@ -4999,33 +5011,33 @@ function PekerjaanListPage({
       />
 
       <div style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 10, animation: "fadeUp .2s ease-out" }}>
-        <code className="code-tag" style={{ fontSize: "0.78rem", color: isOpex ? "var(--green)" : "var(--blue)", background: isOpex ? "var(--green-lt)" : "var(--blue-lt)", padding: "3px 8px", borderRadius: 5, fontWeight: 700 }}>
+        <code className="code-tag" style={{ fontSize: "0.78rem", color: isOpex ? "#15803d" : "#1d4ed8", background: isOpex ? "#f0fdf4" : "#eff6ff", padding: "3px 8px", borderRadius: 5, fontWeight: 700 }}>
           {anggaran.kode}
         </code>
-        <h2 style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--ink)" }}>
+        <h2 style={{ fontSize: "1.1rem", fontWeight: 700, color: "#111827" }}>
           {anggaran?.nama || "Nama Anggaran"}
         </h2>
       </div>
 
       <div
         style={{
-          background: "var(--surf)",
-          border: isOpex ? "1px solid var(--green-mid)" : "1px solid var(--blue-mid)",
-          borderLeft: isOpex ? "4px solid var(--green)" : "4px solid var(--blue)",
-          borderRadius: "var(--r-lg)",
+          background: "white",
+          border: isOpex ? "1px solid #86efac" : "1px solid #bfdbfe",
+          borderLeft: isOpex ? "4px solid #16a34a" : "4px solid #2563eb",
+          borderRadius: "12px",
           padding: "18px 24px",
           marginBottom: 20,
           display: "flex",
           gap: 20,
           alignItems: "center",
           flexWrap: "wrap",
-          boxShadow: "var(--sh)",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
         }}
       >
         {[
           [isOpex ? "Tahun Anggaran" : "Tahun RKAP", isOpex ? anggaran.thn_anggaran : (isMulti ? `${anggaran?.thn_rkap_awal} — ${anggaran?.thn_rkap_akhir}` : (anggaran?.thn_rkap_awal || '—'))],
           "DIV",
-          ["Nilai KAD", fmt(anggaran?.nilai_kad || 0), false, isOpex ? "var(--green)" : "var(--blue)"],
+          ["Nilai KAD", fmt(anggaran?.nilai_kad || 0), false, isOpex ? "#16a34a" : "#2563eb"],
           "DIV",
           ...(isMulti
             ? [
@@ -5034,8 +5046,8 @@ function PekerjaanListPage({
                 (
                   <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                     {(anggaran?.history_anggaran || []).map((h, i) => (
-                      <div key={h.id || h.tahun || h.thn || h.thn_anggaran || i} style={{ fontSize: "0.72rem", whiteSpace: "nowrap", color: "var(--ink2)" }}>
-                        RKAP {h.tahun || h.thn || h.thn_anggaran || h.thn_rkap_awal || ""}: <span style={{ fontWeight: 800, color: "var(--blue)" }}>{fmt(parseIDRNum(h.nilai_rkap))}</span>
+                      <div key={h.id || h.tahun || h.thn || h.thn_anggaran || i} style={{ fontSize: "0.72rem", whiteSpace: "nowrap", color: "#475569" }}>
+                        RKAP {h.tahun || h.thn || h.thn_anggaran || h.thn_rkap_awal || ""}: <span style={{ fontWeight: 800, color: "#2563eb" }}>{fmt(parseIDRNum(h.nilai_rkap))}</span>
                       </div>
                     ))}
                   </div>
@@ -5045,9 +5057,9 @@ function PekerjaanListPage({
               "DIV"
             ]
             : []),
-          ["Nilai RAB", fmt(totalRab), false, "var(--amber)"],
+          ["Nilai RAB", fmt(totalRab), false, "#d97706"],
           "DIV",
-          ["Nilai Kontrak", fmt(totalKontrak), false, "var(--red)"],
+          ["Nilai Kontrak", fmt(totalKontrak), false, "#dc2626"],
           "DIV",
           ["% Kontrak", totalPercent.toFixed(1) + "%", false, pctColor(totalPercent)],
           "DIV",
@@ -5055,18 +5067,18 @@ function PekerjaanListPage({
             "Total / Sisa",
             `${projects.length} POS (${fmt((anggaran?.nilai_kad || 0) - totalKontrak)})`,
             false,
-            "var(--amber)"
+            "#d97706"
           ],
         ]
           .map((item, idx) => {
-            if (item === "DIV") return <div key={idx} style={{ width: 1, height: 40, background: "var(--border)" }} />;
+            if (item === "DIV") return <div key={idx} style={{ width: 1, height: 40, background: "#e2e8f0" }} />;
             const [lbl, val, isFull, color] = item;
             return (
               <div key={idx} style={{ flex: isFull ? "1 1 200px" : "0 1 auto", minWidth: isFull ? 150 : "auto" }}>
-                <div style={{ fontSize: "0.72rem", color: "var(--ink3)", fontWeight: 600, marginBottom: 4, textTransform: "uppercase", letterSpacing: 0.5 }}>
+                <div style={{ fontSize: "0.72rem", color: "#64748b", fontWeight: 600, marginBottom: 4, textTransform: "uppercase", letterSpacing: 0.5 }}>
                   {lbl}
                 </div>
-                <div style={{ fontSize: "0.95rem", fontWeight: 800, color: color || "var(--ink)" }}>{val}</div>
+                <div style={{ fontSize: "0.95rem", fontWeight: 800, color: color || "#111827" }}>{val}</div>
               </div>
             );
           })}
@@ -5106,7 +5118,7 @@ function PekerjaanListPage({
         </button>
       </div>
 
-      <div className="asset-table-wrap" style={{ borderRadius: "var(--r-lg)", overflow: "hidden", border: "1px solid var(--border)", boxShadow: "var(--sh-sm)" }}>
+      <div className="asset-table-wrap" style={{ borderRadius: "12px", overflow: "hidden", border: "1px solid #e2e8f0", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
         <table className="asset-table">
           <thead>
             <tr>
@@ -5144,7 +5156,7 @@ function PekerjaanListPage({
                     key={proj.id}
                     id={`proj-row-${proj.id}`}
                     style={{
-                      backgroundColor: highlightedProject === proj.id ? "var(--blue-lt)" : undefined,
+                      backgroundColor: highlightedProject === proj.id ? "#eff6ff" : undefined,
                       outline: highlightedProject === proj.id ? "1.5px solid #60a5fa" : undefined,
                       boxShadow: highlightedProject === proj.id ? "0 0 8px rgba(96, 165, 250, 0.25)" : undefined,
                       outlineOffset: "-1.5px",
@@ -5174,7 +5186,7 @@ function PekerjaanListPage({
                     <td>
                       <span
                         className="td-value"
-                        style={{ color: "var(--red)" }}
+                        style={{ color: "#dc2626" }}
                       >
                         {fmt(proj.nilai_kontrak || 0)}
                       </span>
@@ -5182,7 +5194,7 @@ function PekerjaanListPage({
                     <td>
                       <span
                         className="td-value"
-                        style={{ color: "var(--amber)" }}
+                        style={{ color: "#d97706" }}
                       >
                         {fmt(proj.nilai_rab || 0)}
                       </span>
@@ -5202,6 +5214,7 @@ function PekerjaanListPage({
                           className="abtn"
                           onClick={() => onGoEditProject(proj, anggaran)}
                           title="Edit"
+                          aria-label="Edit"
                         >
                           <Icon d={I.edit} size={11} />
                         </button>
@@ -5209,6 +5222,7 @@ function PekerjaanListPage({
                           className={`abtn ${isOpex ? 'green' : 'blue'}`}
                           onClick={() => onGoAssetTable(proj, anggaran)}
                           title={`Lihat ${itemLabel}`}
+                          aria-label="Lihat Data"
                         >
                           <Icon d={I.table} size={11} />
                         </button>
@@ -5224,6 +5238,7 @@ function PekerjaanListPage({
                             })
                           }
                           title="Hapus"
+                          aria-label="Delete"
                         >
                           <Icon d={I.trash} size={11} />
                         </button>
@@ -5969,7 +5984,7 @@ export default function BudgetManagement({ forcedType }) {
                     <div
                       style={{
                         fontSize: "0.75rem",
-                        color: "var(--ink3)",
+                        color: "#64748b",
                         marginTop: 4,
                       }}
                     >
@@ -6011,14 +6026,14 @@ export default function BudgetManagement({ forcedType }) {
                       <Icon
                         d={I.layers}
                         size={16}
-                        style={{ color: "var(--blue)" }}
+                        style={{ color: "#2563eb" }}
                       />{" "}
                       Daftar Pos Anggaran CAPEX
                     </div>
                     <p
                       style={{
                         fontSize: "0.78rem",
-                        color: "var(--ink3)",
+                        color: "#64748b",
                         marginTop: 4,
                       }}
                     >
@@ -6029,7 +6044,7 @@ export default function BudgetManagement({ forcedType }) {
                 <div className="toolbar" style={{ flexWrap: "wrap", gap: "8px" }}>
                   <div className="flt-box">
                     <Icon d={I.calendar} size={14} />
-                    <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--ink3)", marginRight: 4 }}>RKAP Dari</span>
+                    <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b", marginRight: 4 }}>RKAP Dari</span>
                     <select
                       aria-label="Filter Dari Tahun"
                       className="flt-select"
@@ -6047,7 +6062,7 @@ export default function BudgetManagement({ forcedType }) {
                     </select>
                   </div>
                   <div className="flt-box">
-                    <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--ink3)", marginRight: 4 }}>s/d</span>
+                    <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b", marginRight: 4 }}>s/d</span>
                     <select
                       aria-label="Filter Sampai Tahun"
                       className="flt-select"
@@ -6140,7 +6155,7 @@ export default function BudgetManagement({ forcedType }) {
                   <Icon
                     d={I.monitor}
                     size={16}
-                    style={{ color: "var(--green)" }}
+                    style={{ color: "#16a34a" }}
                   />{" "}
                   Pos Anggaran OPEX
                 </div>
