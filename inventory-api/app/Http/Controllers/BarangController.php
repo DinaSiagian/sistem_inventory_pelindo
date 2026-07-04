@@ -733,6 +733,40 @@ class BarangController extends Controller
                             'subzona_code' => $subzonaCode,
                             'id_pekerjaan' => $unit['id_pekerjaan'] ?? $data['id_pekerjaan'] ?? null,
                         ]);
+                        
+                        // Update condition by inserting a new MAINTENANCE transaction if it changed
+                        if (isset($unit['condition'])) {
+                            $kdBarang = DB::table('barang')->where('serial_number', $sn)->value('kd_barang');
+                            if ($kdBarang) {
+                                $activeTx = DB::table('asset_transactions')
+                                    ->where('kd_barang', $kdBarang)
+                                    ->where('is_current', true)
+                                    ->first();
+                                
+                                if ($activeTx && $activeTx->condition !== $unit['condition']) {
+                                    $operatorId = null;
+                                    try { $jwtUser = JWTAuth::user(); $operatorId = $jwtUser ? $jwtUser->id : null; } catch (\Exception $e) {}
+                                    
+                                    DB::table('asset_transactions')
+                                        ->where('transaction_id', $activeTx->transaction_id)
+                                        ->update(['is_current' => false]);
+                                        
+                                    DB::table('asset_transactions')->insert([
+                                        'kd_barang' => $kdBarang,
+                                        'transaction_type' => 'MAINTENANCE',
+                                        'condition' => $unit['condition'],
+                                        'notes' => 'Perubahan status/kondisi barang melalui form Edit Aset',
+                                        'giver_id' => $activeTx->receiver_id,
+                                        'receiver_id' => $activeTx->receiver_id,
+                                        'performed_by_id' => $operatorId,
+                                        'id_pekerjaan' => $unit['id_pekerjaan'] ?? $data['id_pekerjaan'] ?? null,
+                                        'is_current' => true,
+                                        'created_at' => \Carbon\Carbon::now(),
+                                        'updated_at' => \Carbon\Carbon::now()
+                                    ]);
+                                }
+                            }
+                        }
                     }
                     } else {
                         if ($nullIndex < $existingNullUnits->count()) {
@@ -741,6 +775,36 @@ class BarangController extends Controller
                                 'subzona_code' => $subzonaCode,
                                 'id_pekerjaan' => $unit['id_pekerjaan'] ?? $data['id_pekerjaan'] ?? null,
                             ]);
+                            if (isset($unit['condition'])) {
+                                $activeTx = DB::table('asset_transactions')
+                                    ->where('kd_barang', $targetKd)
+                                    ->where('is_current', true)
+                                    ->first();
+                                
+                                if ($activeTx && $activeTx->condition !== $unit['condition']) {
+                                    $operatorId = null;
+                                    try { $jwtUser = JWTAuth::user(); $operatorId = $jwtUser ? $jwtUser->id : null; } catch (\Exception $e) {}
+                                    
+                                    DB::table('asset_transactions')
+                                        ->where('transaction_id', $activeTx->transaction_id)
+                                        ->update(['is_current' => false]);
+                                        
+                                    DB::table('asset_transactions')->insert([
+                                        'kd_barang' => $targetKd,
+                                        'transaction_type' => 'MAINTENANCE',
+                                        'condition' => $unit['condition'],
+                                        'notes' => 'Perubahan status/kondisi barang melalui form Edit Aset',
+                                        'giver_id' => $activeTx->receiver_id,
+                                        'receiver_id' => $activeTx->receiver_id,
+                                        'performed_by_id' => $operatorId,
+                                        'id_pekerjaan' => $unit['id_pekerjaan'] ?? $data['id_pekerjaan'] ?? null,
+                                        'is_current' => true,
+                                        'created_at' => \Carbon\Carbon::now(),
+                                        'updated_at' => \Carbon\Carbon::now()
+                                    ]);
+                                }
+                            }
+                            
                             $nullIndex++;
                         } else {
                             if ($customKdBase) {

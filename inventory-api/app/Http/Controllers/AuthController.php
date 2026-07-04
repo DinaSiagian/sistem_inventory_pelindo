@@ -37,6 +37,8 @@ class AuthController extends Controller
                 'entity_code' => 'required|exists:entities,entity_code',
                 'branches_code' => 'required|exists:branches,branch_code',
                 'division_code' => 'nullable|exists:divisions,division_code',
+                'security_question' => 'required|string',
+                'security_answer' => 'required|string',
             ]);
 
             if ($validator->fails()) {
@@ -59,6 +61,10 @@ class AuthController extends Controller
                 'branches_code' => $request->branches_code,
                 'division_code' => $request->division_code ?: null,
                 'is_active' => true,
+                'recovery_code' => json_encode([
+                    'question' => $request->security_question,
+                    'answer' => strtolower(trim($request->security_answer))
+                ]),
             ]);
 
             // ✅ Generate JWT token untuk user yang baru dibuat
@@ -246,6 +252,76 @@ class AuthController extends Controller
                 'message' => 'Gagal logout'
             ], 500);
         }
+    }
+
+    /**
+     * Get Security Question for Password Reset
+     */
+    public function getSecurityQuestion(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => 'Email tidak valid'], 422);
+        }
+
+        $user = User::where('email', $request->email)->first();
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Email tidak ditemukan'], 404);
+        }
+
+        if (!$user->recovery_code) {
+            return response()->json(['success' => false, 'message' => 'Akun ini tidak memiliki pengaturan pertanyaan keamanan'], 400);
+        }
+
+        $recoveryData = json_decode($user->recovery_code, true);
+        
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'question' => $recoveryData['question'] ?? 'Pertanyaan tidak valid'
+            ]
+        ], 200);
+    }
+
+    /**
+     * Reset Password Using Security Question
+     */
+    public function resetSecurityPassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+            'security_answer' => 'required|string',
+            'password' => 'required|string|min:6|confirmed'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => 'Validasi gagal', 'errors' => $validator->errors()], 422);
+        }
+
+        $user = User::where('email', $request->email)->first();
+        if (!$user || !$user->recovery_code) {
+            return response()->json(['success' => false, 'message' => 'Akses ditolak atau email tidak ditemukan'], 400);
+        }
+
+        $recoveryData = json_decode($user->recovery_code, true);
+        $savedAnswer = $recoveryData['answer'] ?? '';
+        $inputAnswer = strtolower(trim($request->security_answer));
+
+        if ($inputAnswer !== $savedAnswer) {
+            return response()->json(['success' => false, 'message' => 'Jawaban keamanan salah'], 401);
+        }
+
+        $user->update([
+            'password' => Hash::make($request->password)
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Password berhasil direset. Silakan login kembali.'
+        ], 200);
     }
 
     /**

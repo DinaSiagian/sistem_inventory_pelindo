@@ -26,6 +26,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     // ── PUBLIC ROUTES (Tanpa JWT) ───────────────────
     $router->post('/register', 'AuthController@register');
     $router->post('/login',    'AuthController@login');
+    $router->post('/get-security-question', 'AuthController@getSecurityQuestion');
+    $router->post('/reset-security-password', 'AuthController@resetSecurityPassword');
 
     // Master Data untuk Auth (dropdown registrasi) - PUBLIC
     $router->get('/master-data', 'MasterDataController@getMasterData');

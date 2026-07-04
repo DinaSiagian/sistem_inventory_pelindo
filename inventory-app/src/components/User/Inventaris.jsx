@@ -2573,16 +2573,26 @@ const Inventaris = () => {
     }
   }, [currentView, assets, formData.category, formData.tipeAset, formData.assetId]);
 
-  const kpi = useMemo(
-    () => ({
-      total: assets.reduce((s, a) => s + (a.quantity || (a.units ? a.units.length : 1)), 0),
-      tersedia: assets.filter((a) => a.status === "Tersedia").reduce((s, a) => s + (a.quantity || (a.units ? a.units.length : 1)), 0),
-      maintenance: assets.filter((a) => a.status === "Non-Operasional").reduce((s, a) => s + (a.quantity || (a.units ? a.units.length : 1)), 0),
-      dipinjam: assets.filter((a) => a.status === "Dipinjam").reduce((s, a) => s + (a.quantity || (a.units ? a.units.length : 1)), 0),
-      totalNilai: assets.reduce((s, a) => s + ((a.value || 0) * (a.quantity || (a.units ? a.units.length : 1))), 0),
-    }),
-    [assets],
-  );
+  const kpi = useMemo(() => {
+    let total = 0, tersedia = 0, nonOperasional = 0, dipinjam = 0, totalNilai = 0;
+    assets.forEach((a) => {
+      const q = a.quantity || (a.units ? a.units.length : 1);
+      total += q;
+      totalNilai += (a.value || 0) * q;
+      if (a.units && a.units.length > 0) {
+        a.units.forEach((u) => {
+          if (u.status?.includes("Tersedia")) tersedia++;
+          else if (u.status?.includes("Non-Operasional")) nonOperasional++;
+          else if (u.status?.includes("Dipinjam")) dipinjam++;
+        });
+      } else {
+        if (a.status?.includes("Tersedia")) tersedia += q;
+        else if (a.status?.includes("Non-Operasional")) nonOperasional += q;
+        else if (a.status?.includes("Dipinjam")) dipinjam += q;
+      }
+    });
+    return { total, tersedia, maintenance: nonOperasional, dipinjam, totalNilai };
+  }, [assets]);
 
   const filtered = useMemo(
     () =>
@@ -2599,10 +2609,10 @@ const Inventaris = () => {
             (a.entitas && a.entitas.toLowerCase().includes(q)) ||
             (proj?.nm_pekerjaan && proj.nm_pekerjaan.toLowerCase().includes(q))) &&
           (!filterStatus || 
-            (filterStatus === "Tersedia" ? (a.status === filterStatus || a.units?.some(u => u.status === "Tersedia")) : 
-             filterStatus === "Dipinjam" ? (a.status === filterStatus || a.units?.some(u => u.status === "Dipinjam")) : 
-             filterStatus === "Non-Operasional" ? (a.status === filterStatus || a.units?.some(u => u.status === "Non-Operasional")) : 
-             a.status === filterStatus)) &&
+            (filterStatus === "Tersedia" ? (a.status?.includes("Tersedia") || a.units?.some(u => u.status?.includes("Tersedia"))) : 
+             filterStatus === "Dipinjam" ? (a.status?.includes("Dipinjam") || a.units?.some(u => u.status?.includes("Dipinjam"))) : 
+             filterStatus === "Non-Operasional" ? (a.status?.includes("Non-Operasional") || a.units?.some(u => u.status?.includes("Non-Operasional"))) : 
+             a.status?.includes(filterStatus))) &&
           (!filterCategory || a.category === filterCategory) &&
           (!filterBranch || a.branch === filterBranch) &&
           (!filterAnggaran || proj?.kd_anggaran === filterAnggaran) &&
@@ -2633,12 +2643,12 @@ const Inventaris = () => {
   const getDisplayInfo = (asset) => {
     if (!asset.units) return { qty: asset.quantity || 1, status: asset.status };
     if (filterStatus === "Tersedia" || filterStatus === "Dipinjam" || filterStatus === "Non-Operasional") {
-      const qty = asset.units.filter(u => u.status === filterStatus).length;
+      const qty = asset.units.filter(u => u.status?.includes(filterStatus)).length;
       return { isFiltered: true, qty: qty, status: filterStatus };
     }
-    const countTersedia = asset.units.filter(u => u.status === 'Tersedia').length;
-    const countDipinjam = asset.units.filter(u => u.status === 'Dipinjam').length;
-    const countNonOp = asset.units.filter(u => u.status === 'Non-Operasional').length;
+    const countTersedia = asset.units.filter(u => u.status?.includes('Tersedia')).length;
+    const countDipinjam = asset.units.filter(u => u.status?.includes('Dipinjam')).length;
+    const countNonOp = asset.units.filter(u => u.status?.includes('Non-Operasional')).length;
     
     if ((countTersedia > 0 && (countDipinjam > 0 || countNonOp > 0)) || 
         (countDipinjam > 0 && countNonOp > 0)) {

@@ -2352,14 +2352,14 @@ const ViewAsset = () => {
       totalNilai += (a.value || 0) * q;
       if (a.units && a.units.length > 0) {
         a.units.forEach((u) => {
-          if (u.status === "Tersedia") tersedia++;
-          else if (u.status === "Non-Operasional") nonOperasional++;
-          else if (u.status === "Dipinjam") dipinjam++;
+          if (u.status?.includes("Tersedia")) tersedia++;
+          else if (u.status?.includes("Non-Operasional")) nonOperasional++;
+          else if (u.status?.includes("Dipinjam")) dipinjam++;
         });
       } else {
-        if (a.status === "Tersedia") tersedia += q;
-        else if (a.status === "Non-Operasional") nonOperasional += q;
-        else if (a.status === "Dipinjam") dipinjam += q;
+        if (a.status?.includes("Tersedia")) tersedia += q;
+        else if (a.status?.includes("Non-Operasional")) nonOperasional += q;
+        else if (a.status?.includes("Dipinjam")) dipinjam += q;
       }
     });
     return { total, tersedia, maintenance: nonOperasional, dipinjam, totalNilai };
@@ -2380,10 +2380,10 @@ const ViewAsset = () => {
             (a.entitas && a.entitas.toLowerCase().includes(q)) ||
             (proj?.nm_pekerjaan && proj.nm_pekerjaan.toLowerCase().includes(q))) &&
           (!filterStatus || 
-            (filterStatus === "Tersedia" ? (a.status === filterStatus || a.units?.some(u => u.status === "Tersedia")) : 
-             filterStatus === "Dipinjam" ? (a.status === filterStatus || a.units?.some(u => u.status === "Dipinjam")) : 
-             filterStatus === "Non-Operasional" ? (a.status === filterStatus || a.units?.some(u => u.status === "Non-Operasional")) : 
-             a.status === filterStatus)) &&
+            (filterStatus === "Tersedia" ? (a.status?.includes("Tersedia") || a.units?.some(u => u.status?.includes("Tersedia"))) : 
+             filterStatus === "Dipinjam" ? (a.status?.includes("Dipinjam") || a.units?.some(u => u.status?.includes("Dipinjam"))) : 
+             filterStatus === "Non-Operasional" ? (a.status?.includes("Non-Operasional") || a.units?.some(u => u.status?.includes("Non-Operasional"))) : 
+             a.status?.includes(filterStatus))) &&
           (!filterCategory || a.category === filterCategory) &&
           (!filterBranch || a.branch === filterBranch) &&
           (!filterAnggaran || proj?.kd_anggaran === filterAnggaran) &&
@@ -2414,12 +2414,12 @@ const ViewAsset = () => {
   const getDisplayInfo = (asset) => {
     if (!asset.units) return { qty: asset.quantity || 1, status: asset.status };
     if (filterStatus === "Tersedia" || filterStatus === "Dipinjam" || filterStatus === "Non-Operasional") {
-      const qty = asset.units.filter(u => u.status === filterStatus).length;
+      const qty = asset.units.filter(u => u.status?.includes(filterStatus)).length;
       return { isFiltered: true, qty: qty, status: filterStatus };
     }
-    const countTersedia = asset.units.filter(u => u.status === 'Tersedia').length;
-    const countDipinjam = asset.units.filter(u => u.status === 'Dipinjam').length;
-    const countNonOp = asset.units.filter(u => u.status === 'Non-Operasional').length;
+    const countTersedia = asset.units.filter(u => u.status?.includes('Tersedia')).length;
+    const countDipinjam = asset.units.filter(u => u.status?.includes('Dipinjam')).length;
+    const countNonOp = asset.units.filter(u => u.status?.includes('Non-Operasional')).length;
     
     // Only show mixed state if there's actually a mix of statuses
     if ((countTersedia > 0 && (countDipinjam > 0 || countNonOp > 0)) || 
