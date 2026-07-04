@@ -127,9 +127,18 @@ class AuthController extends Controller
 
             $credentials = $request->only('email', 'password');
 
-            // Check if user exists and is active before attempting login
+            // Cek apakah user ada
             $user = User::where('email', $credentials['email'])->first();
-            if ($user && !$user->is_active) {
+            
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akun tidak ditemukan. Silakan periksa kembali email Anda.'
+                ], 404);
+            }
+
+            // Cek apakah user aktif
+            if (!$user->is_active) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Akun Anda telah dinonaktifkan. Silakan hubungi administrator.'
@@ -140,7 +149,7 @@ class AuthController extends Controller
             if (!$token = JWTAuth::attempt($credentials)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Email atau password salah'
+                    'message' => 'Password salah. Silakan coba lagi.'
                 ], 401);
             }
 

@@ -33,7 +33,7 @@ const ScanAsset = () => {
     switch (status?.toLowerCase()) {
       case "tersedia": return { bg: "#dcfce7", color: "#16a34a" };
       case "dipinjam": return { bg: "#fef9c3", color: "#ca8a04" };
-      case "maintenance": return { bg: "#fee2e2", color: "#dc2626" };
+      case "non-operasional": return { bg: "#fee2e2", color: "#dc2626" };
       default: return { bg: "#f1f5f9", color: "#475569" };
     }
   };
@@ -109,6 +109,16 @@ const ScanAsset = () => {
                 </div>
               </div>
             )}
+
+            <div style={{ display: "flex", alignItems: "flex-start", gap: "14px" }}>
+              <div style={{ background: "#f0fdf4", padding: "12px", borderRadius: "12px", color: "#16a34a" }}>
+                <Icon.User size={20} />
+              </div>
+              <div>
+                <div style={{ fontSize: "12px", color: "#64748b", fontWeight: "600", marginBottom: "2px" }}>Pemilik / Peminjam</div>
+                <div style={{ fontSize: "15px", color: "#0f172a", fontWeight: "600" }}>{asset.pemilik || "Admin IT"}</div>
+              </div>
+            </div>
 
             <div style={{ display: "flex", alignItems: "flex-start", gap: "14px" }}>
               <div style={{ background: "#f1f5f9", padding: "12px", borderRadius: "12px", color: "#3b82f6" }}>

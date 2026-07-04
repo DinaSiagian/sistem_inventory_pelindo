@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Schema;
 
 class TransactionController extends Controller
 {
@@ -75,6 +76,11 @@ class TransactionController extends Controller
                     'bp.nm_pekerjaan AS pekerjaan_nama',
                     'bp.no_pr AS pekerjaan_no_anggaran',
                     'bp.jenis_anggaran AS pekerjaan_jenis',
+                    'b.serial_number',
+                    'op.name AS operator_name',
+                    'gv.name AS giver_name',
+                    'rc.name AS receiver_name',
+                    'op.branches_code AS operator_branch',
                 ])
                 ->orderBy('t.created_at', 'desc')
                 ->get()
@@ -98,6 +104,7 @@ class TransactionController extends Controller
 
                 $borrows[] = [
                     'id' => (int) $row->transaction_id,
+                    'type' => 'BORROW',
                     'bast_number' => $row->bast_number,
                     'pekerjaan_kode' => $row->id_pekerjaan,
                     'pekerjaan' => [
@@ -109,14 +116,19 @@ class TransactionController extends Controller
                     ],
                     'asset_code' => $row->asset_code,
                     'code' => $row->kd_barang,
+                    'serial_number' => $row->serial_number ?: $row->kd_barang,
                     'name' => $row->asset_name,
                     'price' => (float) $row->price,
                     'tahun_pengadaan' => $row->procurement_date ? date('Y', strtotime($row->procurement_date)) : null,
                     'borrow_date' => Carbon::parse($row->transaction_date)->format('Y-m-d\TH:i:s'),
                     'due_date' => Carbon::parse($row->transaction_date)->addDays(30)->format('Y-m-d'),
                     'performed_by_id' => $row->operator_id ? (int) $row->operator_id : null,
+                    'performed_by_name' => $row->receiver_name ?: ($row->giver_name ?: $row->operator_name),
+                    'performed_by_branch' => $row->operator_branch ?: 'Gudang',
                     'giver_id' => $row->giver_id ? (int) $row->giver_id : null,
+                    'giver_name' => $row->giver_name,
                     'receiver_id' => $row->receiver_id ? (int) $row->receiver_id : null,
+                    'receiver_name' => $row->receiver_name,
                     'from_zone' => $row->subzona_code ?: 'Gudang',
                     'to_zone' => $row->subzona_code ?: 'Gudang',
                     'reason' => $row->notes ?: 'Kebutuhan operasional',
@@ -169,6 +181,11 @@ class TransactionController extends Controller
                     'bp.nm_pekerjaan AS pekerjaan_nama',
                     'bp.no_pr AS pekerjaan_no_anggaran',
                     'bp.jenis_anggaran AS pekerjaan_jenis',
+                    'b.serial_number',
+                    'op.name AS operator_name',
+                    'gv.name AS giver_name',
+                    'rc.name AS receiver_name',
+                    'op.branches_code AS operator_branch',
                 ])
                 ->orderBy('t.created_at', 'desc')
                 ->get()
@@ -197,6 +214,7 @@ class TransactionController extends Controller
 
                 $returns[] = [
                     'id' => (int) $row->transaction_id,
+                    'type' => 'RETURN',
                     'bast_number' => $row->bast_number,
                     'original_id' => $matchingBorrow ? (int) $matchingBorrow->transaction_id : null,
                     'pekerjaan_kode' => $row->id_pekerjaan,
@@ -209,19 +227,24 @@ class TransactionController extends Controller
                     ],
                     'asset_code' => $row->asset_code,
                     'code' => $row->kd_barang,
+                    'serial_number' => $row->serial_number ?: $row->kd_barang,
                     'name' => $row->asset_name,
                     'price' => (float) $row->price,
                     'tahun_pengadaan' => $row->procurement_date ? date('Y', strtotime($row->procurement_date)) : null,
                     'borrow_date' => $matchingBorrow ? Carbon::parse($matchingBorrow->created_at)->format('Y-m-d\TH:i:s') : Carbon::parse($row->transaction_date)->subDays(30)->format('Y-m-d\TH:i:s'),
                     'return_date' => Carbon::parse($row->transaction_date)->format('Y-m-d\TH:i:s'),
                     'performed_by_id' => $row->operator_id ? (int) $row->operator_id : null,
+                    'performed_by_name' => $row->giver_name ?: ($row->receiver_name ?: $row->operator_name),
+                    'performed_by_branch' => $row->operator_branch ?: 'Gudang',
                     'giver_id' => $row->giver_id ? (int) $row->giver_id : null,
+                    'giver_name' => $row->giver_name,
                     'receiver_id' => $row->receiver_id ? (int) $row->receiver_id : null,
+                    'receiver_name' => $row->receiver_name,
                     'from_zone' => $row->subzona_code ?: 'Gudang',
                     'to_zone' => $row->subzona_code ?: 'Gudang',
                     'reason' => $row->notes ?: 'Kembali operasional',
                     'return_condition' => $row->condition ?: 'BAIK',
-                    'return_notes' => $row->notes ?: 'Dikembalikan dalam kondisi baik',
+                    'return_notes' => $row->notes ?: '',
                     'attachment' => null,
                 ];
             }
@@ -324,7 +347,7 @@ class TransactionController extends Controller
                 $bastNumber = "BAST-IT/" . $transactionDate->format('Y/m/') . str_pad($txId, 4, '0', STR_PAD_LEFT);
                 DB::table('asset_transactions')->where('transaction_id', $txId)->update(['bast_number' => $bastNumber]);
 
-                // Update barang's physical location (subzona) to receiver's branch
+                // Update barang's physical location (subzona) and branch ownership to receiver's branch
                 $receiverUser = DB::table('users')->where('id', $receiverId)->first();
                 if ($receiverUser && $receiverUser->branches_code) {
                     $receiverSubzona = DB::table('subzona')
@@ -332,10 +355,19 @@ class TransactionController extends Controller
                         ->where('zonas.branch_code', $receiverUser->branches_code)
                         ->select('subzona.subzona_code')
                         ->first();
+                    
+                    $updateData = [];
                     if ($receiverSubzona) {
+                        $updateData['subzona_code'] = $receiverSubzona->subzona_code;
+                    }
+                    if (Schema::hasColumn('barang', 'branch')) {
+                        $updateData['branch'] = $receiverUser->branches_code;
+                    }
+
+                    if (!empty($updateData)) {
                         DB::table('barang')
                             ->where('kd_barang', $sn)
-                            ->update(['subzona_code' => $receiverSubzona->subzona_code]);
+                            ->update($updateData);
                     }
                 }
 
@@ -425,7 +457,7 @@ class TransactionController extends Controller
             $bastNumber = "BAST-IT/" . $returnDate->format('Y/m/') . str_pad($txId, 4, '0', STR_PAD_LEFT);
             DB::table('asset_transactions')->where('transaction_id', $txId)->update(['bast_number' => $bastNumber]);
 
-            // Update barang's physical location (subzona) to receiver's branch (the one getting the asset back)
+            // Update barang's physical location (subzona) and branch ownership to receiver's branch (the one getting the asset back)
             $receiverUser = DB::table('users')->where('id', $receiverId)->first();
             if ($receiverUser && $receiverUser->branches_code) {
                 $receiverSubzona = DB::table('subzona')
@@ -433,10 +465,19 @@ class TransactionController extends Controller
                     ->where('zonas.branch_code', $receiverUser->branches_code)
                     ->select('subzona.subzona_code')
                     ->first();
+                
+                $updateData = [];
                 if ($receiverSubzona) {
+                    $updateData['subzona_code'] = $receiverSubzona->subzona_code;
+                }
+                if (Schema::hasColumn('barang', 'branch')) {
+                    $updateData['branch'] = $receiverUser->branches_code;
+                }
+
+                if (!empty($updateData)) {
                     DB::table('barang')
                         ->where('kd_barang', $sn)
-                        ->update(['subzona_code' => $receiverSubzona->subzona_code]);
+                        ->update($updateData);
                 }
             }
 

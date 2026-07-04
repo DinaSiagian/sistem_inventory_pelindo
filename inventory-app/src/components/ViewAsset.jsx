@@ -106,6 +106,10 @@ const conditionConfig = {
   GOOD: { label: "Baik", color: "#16a34a", bg: "#dcfce7" },
   MINOR_DAMAGE: { label: "Rusak Ringan", color: "#d97706", bg: "#fef3c7" },
   DAMAGED: { label: "Rusak Berat", color: "#dc2626", bg: "#fee2e2" },
+  BAIK: { label: "Baik", color: "#16a34a", bg: "#dcfce7" },
+  RUSAK: { label: "Rusak", color: "#dc2626", bg: "#fee2e2" },
+  HILANG: { label: "Hilang", color: "#475569", bg: "#e2e8f0" },
+  DIPERBAIKI: { label: "Diperbaiki", color: "#2563eb", bg: "#dbeafe" },
 };
 
 const ENTITAS_LIST = [
@@ -1380,7 +1384,7 @@ function AssetHistoryTab({ assetCode, allBorrows }) {
   const history = useMemo(
     () =>
       allBorrows
-        .filter((b) => b.code === assetCode)
+        .filter((b) => b.asset_code === assetCode)
         .sort((a, b) => new Date(b.borrow_date) - new Date(a.borrow_date)),
     [assetCode, allBorrows],
   );
@@ -1392,38 +1396,22 @@ function AssetHistoryTab({ assetCode, allBorrows }) {
   }, [history]);
 
   const allEvents = useMemo(() => {
-    const events = [];
-    history.forEach(h => {
-      // Event Pinjam
-      events.push({
-        id: `${h.id}-borrow`,
-        type: "PINJAM",
+    return history.map(h => {
+      const isReturn = h.type === "RETURN";
+      return {
+        id: isReturn ? `${h.id}-return` : `${h.id}-borrow`,
+        type: isReturn ? "KEMBALI" : "PINJAM",
         serial_number: h.serial_number,
-        date: h.borrow_date,
-        person: h.performed_by_name,
+        date: isReturn ? h.return_date : h.borrow_date,
+        giver: h.giver_name || h.performed_by_name || "Sistem",
+        receiver: h.receiver_name || "Tidak Diketahui",
         branch: h.performed_by_branch,
-        location: `${h.from_zone} → ${h.to_zone}`,
-        condition: h.condition,
-        notes: h.reason,
-        timestamp: new Date(h.borrow_date).getTime()
-      });
-      // Event Kembali
-      if (h.is_returned) {
-        events.push({
-          id: `${h.id}-return`,
-          type: "KEMBALI",
-          serial_number: h.serial_number,
-          date: h.return_date,
-          person: h.returned_by_name || h.performed_by_name,
-          branch: h.performed_by_branch,
-          location: `${h.to_zone} → ${h.from_zone}`,
-          condition: h.return_condition,
-          notes: h.return_notes,
-          timestamp: new Date(h.return_date).getTime()
-        });
-      }
-    });
-    return events.sort((a, b) => a.timestamp - b.timestamp);
+        location: isReturn ? `${h.to_zone} → ${h.from_zone}` : `${h.from_zone} → ${h.to_zone}`,
+        condition: isReturn ? h.return_condition : h.condition,
+        notes: isReturn ? h.return_notes : h.reason,
+        timestamp: new Date(isReturn ? h.return_date : h.borrow_date).getTime()
+      };
+    }).sort((a, b) => b.timestamp - a.timestamp); // Sort by newest first
   }, [history]);
 
   const filteredEvents = useMemo(() => {
@@ -1486,6 +1474,11 @@ function AssetHistoryTab({ assetCode, allBorrows }) {
               {history.filter(h => !h.is_returned).length} Dipinjam
             </span>
           )}
+          {allEvents.some((e) => e.condition === "RUSAK") && (
+            <span className="hist-summary-pill" style={{ background: "#fee2e2", color: "#b91c1c", border: "1px solid #fecaca" }}>
+              {allEvents.filter(e => e.condition === "RUSAK").length}x Rusak
+            </span>
+          )}
         </div>
 
         {availableSNs.length > 0 && (
@@ -1525,14 +1518,14 @@ function AssetHistoryTab({ assetCode, allBorrows }) {
         >
           <thead style={{ background: "#f8fafc" }}>
             <tr>
-              <th style={{ padding: "12px 16px", fontSize: "12px", color: "#f7faffff", borderBottom: "1px solid #e2e8f0", width: "50px" }}>NO</th>
-              <th style={{ padding: "12px 16px", fontSize: "12px", color: "#f7faffff", borderBottom: "1px solid #e2e8f0" }}>AKSI</th>
-              <th style={{ padding: "12px 16px", fontSize: "12px", color: "#f7faffff", borderBottom: "1px solid #e2e8f0" }}>UNIT / SERIAL NUMBER</th>
-              <th style={{ padding: "12px 16px", fontSize: "12px", color: "#f7faffff", borderBottom: "1px solid #e2e8f0" }}>PEMINJAM</th>
-              <th style={{ padding: "12px 16px", fontSize: "12px", color: "#f7faffff", borderBottom: "1px solid #e2e8f0" }}>LOKASI</th>
-              <th style={{ padding: "12px 16px", fontSize: "12px", color: "#f7faffff", borderBottom: "1px solid #e2e8f0" }}>WAKTU</th>
-              <th style={{ padding: "12px 16px", fontSize: "12px", color: "#f7faffff", borderBottom: "1px solid #e2e8f0" }}>KONDISI</th>
-              <th style={{ padding: "12px 16px", fontSize: "12px", color: "#f7faffff", borderBottom: "1px solid #e2e8f0" }}>CATATAN</th>
+              <th style={{ padding: "12px 16px", fontSize: "12px", color: "#64748b", borderBottom: "1px solid #e2e8f0", width: "50px" }}>NO</th>
+              <th style={{ padding: "12px 16px", fontSize: "12px", color: "#64748b", borderBottom: "1px solid #e2e8f0" }}>AKSI</th>
+              <th style={{ padding: "12px 16px", fontSize: "12px", color: "#64748b", borderBottom: "1px solid #e2e8f0" }}>SERIAL NUMBER</th>
+              <th style={{ padding: "12px 16px", fontSize: "12px", color: "#64748b", borderBottom: "1px solid #e2e8f0" }}>PIHAK TERLIBAT</th>
+              <th style={{ padding: "12px 16px", fontSize: "12px", color: "#64748b", borderBottom: "1px solid #e2e8f0" }}>LOKASI</th>
+              <th style={{ padding: "12px 16px", fontSize: "12px", color: "#64748b", borderBottom: "1px solid #e2e8f0" }}>WAKTU</th>
+              <th style={{ padding: "12px 16px", fontSize: "12px", color: "#64748b", borderBottom: "1px solid #e2e8f0" }}>KONDISI</th>
+              <th style={{ padding: "12px 16px", fontSize: "12px", color: "#64748b", borderBottom: "1px solid #e2e8f0" }}>CATATAN</th>
             </tr>
           </thead>
           <tbody>
@@ -1569,18 +1562,14 @@ function AssetHistoryTab({ assetCode, allBorrows }) {
                     </div>
                   </td>
                   <td style={{ padding: "12px 16px" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                      <div style={{
-                        width: "28px", height: "28px", borderRadius: "50%", background: "#e2e8f0",
-                        color: "#475569", display: "flex", alignItems: "center", justifyContent: "center",
-                        fontWeight: "bold", fontSize: "11px"
-                      }}>
-                        {e.person.charAt(0)}
+                    <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                      <div style={{ fontSize: "12.5px", fontWeight: "700", color: "#1e293b", display: "flex", alignItems: "center", gap: "6px" }}>
+                         Penerima: {e.receiver}
                       </div>
-                      <div>
-                        <div style={{ fontSize: "13px", fontWeight: "700", color: "#1e293b" }}>{e.person}</div>
-                        <div style={{ fontSize: "10px", color: "#64748b" }}>{e.branch}</div>
+                      <div style={{ fontSize: "11px", color: "#64748b", display: "flex", alignItems: "center", gap: "6px" }}>
+                         Pemberi: {e.giver}
                       </div>
+                      <div style={{ fontSize: "10px", color: "#94a3b8", marginTop: "2px" }}>{e.branch}</div>
                     </div>
                   </td>
                   <td style={{ padding: "12px 16px", fontSize: "12.5px", color: "#475569" }}>
@@ -1597,7 +1586,7 @@ function AssetHistoryTab({ assetCode, allBorrows }) {
                     </span>
                   </td>
                   <td style={{ padding: "12px 16px", fontSize: "12px", color: "#64748b", maxWidth: "250px", whiteSpace: "normal", lineHeight: "1.4" }}>
-                    {e.notes || "—"}
+                    {e.notes || ""}
                   </td>
                 </tr>
               );
@@ -2189,8 +2178,9 @@ const ViewAsset = () => {
     try {
       const res = await transactionAPI.getAll();
       if (res.data.success) {
-        setAllBorrows(res.data.borrows || []);
-        sessionStorage.setItem('SWR_allBorrows', JSON.stringify(res.data.borrows || []));
+        const allTransactions = [...(res.data.borrows || []), ...(res.data.returns || [])];
+        setAllBorrows(allTransactions);
+        sessionStorage.setItem('SWR_allBorrows', JSON.stringify(allTransactions));
       }
     } catch (err) {
       console.error("Failed to fetch borrows:", err);
@@ -2354,16 +2344,26 @@ const ViewAsset = () => {
     }
   }, [currentView, assets, formData.category, formData.tipeAset, formData.assetId]);
 
-  const kpi = useMemo(
-    () => ({
-      total: assets.reduce((s, a) => s + (a.quantity || (a.units ? a.units.length : 1)), 0),
-      tersedia: assets.filter((a) => a.status === "Tersedia").reduce((s, a) => s + (a.quantity || (a.units ? a.units.length : 1)), 0),
-      maintenance: assets.filter((a) => a.status === "Maintenance").reduce((s, a) => s + (a.quantity || (a.units ? a.units.length : 1)), 0),
-      dipinjam: assets.filter((a) => a.status === "Dipinjam").reduce((s, a) => s + (a.quantity || (a.units ? a.units.length : 1)), 0),
-      totalNilai: assets.reduce((s, a) => s + ((a.value || 0) * (a.quantity || (a.units ? a.units.length : 1))), 0),
-    }),
-    [assets],
-  );
+  const kpi = useMemo(() => {
+    let total = 0, tersedia = 0, nonOperasional = 0, dipinjam = 0, totalNilai = 0;
+    assets.forEach((a) => {
+      const q = a.quantity || (a.units ? a.units.length : 1);
+      total += q;
+      totalNilai += (a.value || 0) * q;
+      if (a.units && a.units.length > 0) {
+        a.units.forEach((u) => {
+          if (u.status === "Tersedia") tersedia++;
+          else if (u.status === "Non-Operasional") nonOperasional++;
+          else if (u.status === "Dipinjam") dipinjam++;
+        });
+      } else {
+        if (a.status === "Tersedia") tersedia += q;
+        else if (a.status === "Non-Operasional") nonOperasional += q;
+        else if (a.status === "Dipinjam") dipinjam += q;
+      }
+    });
+    return { total, tersedia, maintenance: nonOperasional, dipinjam, totalNilai };
+  }, [assets]);
 
   const filtered = useMemo(
     () =>
@@ -2379,7 +2379,11 @@ const ViewAsset = () => {
             (a.tipeAset && a.tipeAset.toLowerCase().includes(q)) ||
             (a.entitas && a.entitas.toLowerCase().includes(q)) ||
             (proj?.nm_pekerjaan && proj.nm_pekerjaan.toLowerCase().includes(q))) &&
-          (!filterStatus || a.status === filterStatus) &&
+          (!filterStatus || 
+            (filterStatus === "Tersedia" ? (a.status === filterStatus || a.units?.some(u => u.status === "Tersedia")) : 
+             filterStatus === "Dipinjam" ? (a.status === filterStatus || a.units?.some(u => u.status === "Dipinjam")) : 
+             filterStatus === "Non-Operasional" ? (a.status === filterStatus || a.units?.some(u => u.status === "Non-Operasional")) : 
+             a.status === filterStatus)) &&
           (!filterCategory || a.category === filterCategory) &&
           (!filterBranch || a.branch === filterBranch) &&
           (!filterAnggaran || proj?.kd_anggaran === filterAnggaran) &&
@@ -2406,6 +2410,24 @@ const ViewAsset = () => {
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE,
   );
+
+  const getDisplayInfo = (asset) => {
+    if (!asset.units) return { qty: asset.quantity || 1, status: asset.status };
+    if (filterStatus === "Tersedia" || filterStatus === "Dipinjam" || filterStatus === "Non-Operasional") {
+      const qty = asset.units.filter(u => u.status === filterStatus).length;
+      return { isFiltered: true, qty: qty, status: filterStatus };
+    }
+    const countTersedia = asset.units.filter(u => u.status === 'Tersedia').length;
+    const countDipinjam = asset.units.filter(u => u.status === 'Dipinjam').length;
+    const countNonOp = asset.units.filter(u => u.status === 'Non-Operasional').length;
+    
+    // Only show mixed state if there's actually a mix of statuses
+    if ((countTersedia > 0 && (countDipinjam > 0 || countNonOp > 0)) || 
+        (countDipinjam > 0 && countNonOp > 0)) {
+      return { isMixed: true, qtyTersedia: countTersedia, qtyTotal: asset.units.length, status: asset.status };
+    }
+    return { qty: asset.units.length, status: asset.status };
+  };
 
   const activeFiltersCount = [
     filterStatus,
@@ -2445,7 +2467,9 @@ const ViewAsset = () => {
       ? "tersedia"
       : s === "Dipinjam"
         ? "dipinjam"
-        : "maintenance";
+        : s === "Sebagian Dipinjam"
+          ? "sebagian-dipinjam"
+          : "non-operasional";
   const getAssetImage = (asset) => {
     if (typeof asset.photo === "string") return asset.photo;
     return asset.photo?.dataUrl || CATEGORY_IMAGES[asset.category] || null;
@@ -2454,18 +2478,18 @@ const ViewAsset = () => {
   const getNextNomor = (eCode, bCode, zCode, szCode, catPrefix = "") => {
     // Kumpulkan SEMUA ID dari seluruh aset (benar-benar global, tidak difilter per lokasi)
     const allSystemIds = assets.flatMap(a => {
-       const ids = [];
-       // Pastikan ID mengikuti format panjang (minimal 6 segmen: Entitas-Branch-Zona-Subzona-Cat-Num)
-       if (a.id && a.id.includes("-") && a.id.split("-").length >= 6) ids.push(a.id);
-       if (a.custom_kd_barang && a.custom_kd_barang.includes("-") && a.custom_kd_barang.split("-").length >= 6) ids.push(a.custom_kd_barang);
-       if (a.units) {
-           a.units.forEach(u => {
-               if (u.kd_barang && u.kd_barang.includes("-") && u.kd_barang.split("-").length >= 6) ids.push(u.kd_barang);
-           });
-       }
-       return ids;
+      const ids = [];
+      // Pastikan ID mengikuti format panjang (minimal 6 segmen: Entitas-Branch-Zona-Subzona-Cat-Num)
+      if (a.id && a.id.includes("-") && a.id.split("-").length >= 6) ids.push(a.id);
+      if (a.custom_kd_barang && a.custom_kd_barang.includes("-") && a.custom_kd_barang.split("-").length >= 6) ids.push(a.custom_kd_barang);
+      if (a.units) {
+        a.units.forEach(u => {
+          if (u.kd_barang && u.kd_barang.includes("-") && u.kd_barang.split("-").length >= 6) ids.push(u.kd_barang);
+        });
+      }
+      return ids;
     });
-    
+
     // Nomor urut GLOBAL (3 digit terakhir): ambil dari SELURUH aset tanpa memandang lokasi
     const globalNums = allSystemIds.map((id) => {
       const parts = id.split("-");
@@ -2660,6 +2684,13 @@ const ViewAsset = () => {
 
     try {
       let startId = formData.assetId;
+      const CATEGORY_PREFIX = {
+        "ROUTER / JARINGAN": "RTR",
+        "CCTV CAMERA": "CCTV",
+        "HARDWARE": "HW",
+        "FURNITURE": "FURN",
+        "KENDARAAN": "KND",
+      };
       const prefix = `${CATEGORY_PREFIX[formData.category] || "BRG"}-`;
 
       let masterAssetCode = startId;
@@ -2667,23 +2698,23 @@ const ViewAsset = () => {
 
       let currentKdSuffix = 0;
       let customKdPrefix = "";
-      
+
       if (startId) {
-         isLocationBased = true;
-         const parts = startId.split("-");
-         if (parts.length >= 2) {
-             const lastPart = parts[parts.length - 1];
-             const secondLastPart = parts[parts.length - 2];
-             
-             if (!isNaN(parseInt(lastPart, 10))) {
-                 // Set the master asset code to exactly the last two parts (e.g. KND01-001)
-                 masterAssetCode = `${secondLastPart}-${lastPart}`;
-                 
-                 currentKdSuffix = parseInt(lastPart, 10) - 1;
-                 parts.pop();
-                 customKdPrefix = parts.join("-");
-             }
-         }
+        isLocationBased = true;
+        const parts = startId.split("-");
+        if (parts.length >= 2) {
+          const lastPart = parts[parts.length - 1];
+          const secondLastPart = parts[parts.length - 2];
+
+          if (!isNaN(parseInt(lastPart, 10))) {
+            // Set the master asset code to exactly the last two parts (e.g. KND01-001)
+            masterAssetCode = `${secondLastPart}-${lastPart}`;
+
+            currentKdSuffix = parseInt(lastPart, 10) - 1;
+            parts.pop();
+            customKdPrefix = parts.join("-");
+          }
+        }
       }
 
       // Removed the duplicate currentKdSuffix calculation since it's done above
@@ -2713,7 +2744,7 @@ const ViewAsset = () => {
         units: (formData.units || []).map((unit, index) => {
           let unitKdBarang = null;
           if (isLocationBased && customKdPrefix) {
-             unitKdBarang = `${customKdPrefix}-${String(currentKdSuffix + index + 1).padStart(3, "0")}`;
+            unitKdBarang = `${customKdPrefix}-${String(currentKdSuffix + index + 1).padStart(3, "0")}`;
           }
           return {
             kd_barang: unitKdBarang,
@@ -3076,7 +3107,7 @@ const ViewAsset = () => {
             className="add-asset-btn"
             onClick={() => setCurrentView("add")}
           >
-            <Icon.Plus /> Registrasi Unit Fisik
+            <Icon.Plus /> Registrasi Unit Barang
           </button>
         </div>
 
@@ -3088,6 +3119,7 @@ const ViewAsset = () => {
               val: kpi.total,
               lbl: "Total Barang",
               glow: "blue",
+              filterVal: "",
             },
             {
               cls: "kpi-tersedia",
@@ -3095,6 +3127,7 @@ const ViewAsset = () => {
               val: kpi.tersedia,
               lbl: "Tersedia",
               glow: "green",
+              filterVal: "Tersedia",
             },
             {
               cls: "kpi-dipinjam",
@@ -3102,13 +3135,15 @@ const ViewAsset = () => {
               val: kpi.dipinjam,
               lbl: "Dipinjam",
               glow: "yellow",
+              filterVal: "Dipinjam",
             },
             {
               cls: "kpi-maintenance",
               icon: <Icon.Wrench />,
               val: kpi.maintenance,
-              lbl: "Maintenance",
+              lbl: "Non-Operasional",
               glow: "red",
+              filterVal: "Non-Operasional",
             },
             {
               cls: "kpi-nilai",
@@ -3117,9 +3152,20 @@ const ViewAsset = () => {
               lbl: "Total Nilai Barang",
               glow: "cyan",
               sm: true,
+              filterVal: null,
             },
-          ].map(({ cls, icon, val, lbl, glow, sm }) => (
-            <div key={lbl} className={`kpi-card ${cls}`}>
+          ].map(({ cls, icon, val, lbl, glow, sm, filterVal }) => (
+            <div 
+              key={lbl} 
+              className={`kpi-card ${cls}`}
+              onClick={() => {
+                if (filterVal !== null) {
+                  setFilterStatus(filterVal);
+                  setCurrentPage(1);
+                }
+              }}
+              style={{ cursor: filterVal !== null ? "pointer" : "default" }}
+            >
               <div className="kpi-icon">{icon}</div>
               <div className="kpi-body">
                 <div className={`kpi-val${sm ? " kpi-val--sm" : ""}`}>
@@ -3317,7 +3363,7 @@ const ViewAsset = () => {
                 <div className="filter-sidebar-section">
                   <div className="filter-sidebar-title">Status</div>
                   <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                    {["Tersedia", "Dipinjam", "Maintenance"].map(status => (
+                    {["Tersedia", "Dipinjam", "Non-Operasional"].map(status => (
                       <label key={status} style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontSize: "13.5px", color: "#334155" }}>
                         <input
                           type="radio" name="statusFilter"
@@ -3379,6 +3425,7 @@ const ViewAsset = () => {
                   {paginated.map((asset) => {
                     const imgSrc = getAssetImage(asset);
                     const project = getProjectById(asset.id_pekerjaan);
+                    const displayInfo = getDisplayInfo(asset);
                     return (
                       <div
                         key={asset.id}
@@ -3418,21 +3465,21 @@ const ViewAsset = () => {
                           )}
                           <div className="asset-card-status">
                             <span
-                              className={`status-badge ${statusClass(asset.status)}`}
+                              className={`status-badge ${statusClass(displayInfo.status)}`}
                             >
-                              {asset.status}
+                              {displayInfo.status.toUpperCase()}
                             </span>
                           </div>
                         </div>
                         <div className="asset-card-body">
                           <code className="asset-card-id" title={`Katalog ID: ${asset.id}`}>
-                            {asset.units && asset.units.length > 0 
+                            {asset.units && asset.units.length > 0
                               ? asset.units[0].kd_barang
                               : asset.id}
                           </code>
                           <div className="asset-card-name">{asset.name}</div>
-                          <div style={{ 
-                            fontSize: "11px", 
+                          <div style={{
+                            fontSize: "11px",
                             color: (asset.units?.[0]?.location || asset.id_pekerjaan) ? "var(--blue)" : "#94a3b8",
                             fontWeight: (asset.units?.[0]?.location || asset.id_pekerjaan) ? "600" : "400",
                             marginBottom: "8px",
@@ -3455,7 +3502,17 @@ const ViewAsset = () => {
                                 borderRadius: "4px",
                               }}
                             >
-                              {asset.quantity || (asset.units ? asset.units.length : 1)}
+                              {displayInfo.isFiltered ? (
+                                <span>{displayInfo.qty}</span>
+                              ) : displayInfo.isMixed ? (
+                                <>
+                                  <span style={{ background: "#dcfce7", color: "#16a34a", padding: "1px 5px", borderRadius: "4px", fontSize: "11px", fontWeight: "800" }}>{displayInfo.qtyTersedia}</span>
+                                  <span style={{ margin: "0 2px", color: "#94a3b8" }}>/</span>
+                                  <span>{displayInfo.qtyTotal}</span>
+                                </>
+                              ) : (
+                                <span>{displayInfo.qty}</span>
+                              )}
                             </span>
                           </div>
                         </div>
@@ -3501,7 +3558,7 @@ const ViewAsset = () => {
               <thead>
                 <tr>
                   <th style={{ width: "60px" }}>GAMBAR</th>
-                  <th>KODE FISIK / KATALOG</th>
+                  <th>KODE ASET</th>
                   <th>NAMA BARANG</th>
                   <th style={{ minWidth: "150px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
@@ -3558,7 +3615,7 @@ const ViewAsset = () => {
                         <div className="empty-state-sub">
                           {activeFiltersCount > 0 || search
                             ? "Coba ubah kata kunci atau reset filter."
-                            : 'Belum ada barang fisik. Klik "Registrasi Unit Fisik" untuk mulai.'}
+                            : 'Belum ada barang fisik. Klik "Registrasi Unit Barang" untuk mulai.'}
                         </div>
                         {(activeFiltersCount > 0 || search) && (
                           <button
@@ -3578,6 +3635,7 @@ const ViewAsset = () => {
                   paginated.map((asset, idx) => {
                     const imgSrc = getAssetImage(asset);
                     const project = getProjectById(asset.id_pekerjaan);
+                    const displayInfo = getDisplayInfo(asset);
                     return (
                       <tr
                         key={asset.id}
@@ -3605,10 +3663,8 @@ const ViewAsset = () => {
                           )}
                         </td>
                         <td>
-                          <code className="asset-id-code" title={`Katalog ID: ${asset.id}`}>
-                            {asset.units && asset.units.length > 0 
-                              ? asset.units[0].kd_barang
-                              : asset.id}
+                          <code className="asset-id-code" title={`Kode Aset: ${asset.id}`}>
+                            {asset.id}
                           </code>
                         </td>
                         <td>
@@ -3631,22 +3687,35 @@ const ViewAsset = () => {
                           </div>
                         </td>
                         <td>
-                          <span className={`status-badge ${statusClass(asset.status)}`} style={{ padding: "4px 8px", fontSize: "11px" }}>
-                            {asset.status}
+                          <span className={`status-badge ${statusClass(displayInfo.status)}`} style={{ padding: "4px 8px", fontSize: "11px" }}>
+                            {displayInfo.status.toUpperCase()}
                           </span>
                         </td>
                         <td>
                           <span
                             style={{
-                              fontSize: "14px",
+                              fontSize: "12px",
                               fontWeight: "700",
-                              color: "#0f172a",
+                              color: "#475569",
                               background: "#f1f5f9",
-                              padding: "4px 10px",
+                              padding: "4px 8px",
                               borderRadius: "6px",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "4px"
                             }}
                           >
-                            {asset.quantity || (asset.units ? asset.units.length : 1)}
+                            {displayInfo.isFiltered ? (
+                              <span>{displayInfo.qty}</span>
+                            ) : displayInfo.isMixed ? (
+                              <>
+                                <span style={{ background: "#dcfce7", color: "#16a34a", padding: "2px 6px", borderRadius: "4px", fontSize: "13px", fontWeight: "800" }}>{displayInfo.qtyTersedia}</span>
+                                <span style={{ margin: "0 4px", color: "#94a3b8" }}>/</span>
+                                <span>{displayInfo.qtyTotal}</span>
+                              </>
+                            ) : (
+                              <span>{displayInfo.qty}</span>
+                            )}
                           </span>
                         </td>
                         <td className="fw-bold">{fmt(asset.value * (asset.quantity || 1))}</td>
@@ -3777,7 +3846,7 @@ const ViewAsset = () => {
 
     return (
       <PageWrapper
-        title="Registrasi Unit Fisik"
+        title="Registrasi Unit Barang"
         onBack={() => setCurrentView("list")}
       >
         <div style={{ maxWidth: "900px", margin: "0 auto" }}>
@@ -3803,9 +3872,9 @@ const ViewAsset = () => {
                 const registeredIds = new Set(assets.map(a => a.id));
                 const filteredKatalog = searchVal.length > 0
                   ? masterKatalog.filter(k => {
-                      const haystack = `${k.category_name || k.device_code} ${k.name} ${k.merek || ""} ${k.tipe || ""}`.toLowerCase();
-                      return haystack.includes(searchVal.toLowerCase());
-                    })
+                    const haystack = `${k.category_name || k.device_code} ${k.name} ${k.merek || ""} ${k.tipe || ""}`.toLowerCase();
+                    return haystack.includes(searchVal.toLowerCase());
+                  })
                   : [];
 
                 // Sort: unregistered first, registered last
@@ -4063,13 +4132,13 @@ const ViewAsset = () => {
                           return;
                         }
                         if (formData.katalogId) {
-                           setFormData(p => ({ ...p, assetId: `${formData.entitasCode}-${formData.branchCode}-${formData.zonaCode}-${formData.subzonaCode}-${formData.katalogId}` }));
+                          setFormData(p => ({ ...p, assetId: `${formData.entitasCode}-${formData.branchCode}-${formData.zonaCode}-${formData.subzonaCode}-${formData.katalogId}` }));
                         } else {
-                           const catPrefix = formData.category || "BRG";
-                           const nums = getNextNomor(formData.entitasCode, formData.branchCode, formData.zonaCode, formData.subzonaCode, catPrefix);
-                           const nextGlobalNum = typeof nums === 'object' ? nums.global : nums;
-                           let nextCatNum = typeof nums === 'object' ? nums.category : "";
-                           setFormData(p => ({ ...p, assetId: `${formData.entitasCode}-${formData.branchCode}-${formData.zonaCode}-${formData.subzonaCode}-${catPrefix}${nextCatNum}-${nextGlobalNum}` }));
+                          const catPrefix = formData.category || "BRG";
+                          const nums = getNextNomor(formData.entitasCode, formData.branchCode, formData.zonaCode, formData.subzonaCode, catPrefix);
+                          const nextGlobalNum = typeof nums === 'object' ? nums.global : nums;
+                          let nextCatNum = typeof nums === 'object' ? nums.category : "";
+                          setFormData(p => ({ ...p, assetId: `${formData.entitasCode}-${formData.branchCode}-${formData.zonaCode}-${formData.subzonaCode}-${catPrefix}${nextCatNum}-${nextGlobalNum}` }));
                         }
                         setShowLocationBuilder(false);
                       }}
@@ -4705,7 +4774,7 @@ const ViewAsset = () => {
                 </>
               ) : (
                 <>
-                  <Icon.Save /> Simpan Unit Fisik
+                  <Icon.Save /> Simpan Unit Barang
                 </>
               )}
             </button>
@@ -5149,17 +5218,28 @@ const ViewAsset = () => {
                             );
                           }
 
+                          const isRepaired = unit.status && unit.status.includes("Tersedia");
+                          
                           return (
                             <select
-                              value={unit.status || "Pilih Status Baru"}
+                              value={isRepaired ? unit.status : uCond}
                               onChange={(e) => updateEditUnitField(i, "status", e.target.value)}
-                              style={{ ...modernSelectStyle, padding: "8px", background: "#fff", borderColor: "#f59e0b", color: "#b45309" }}
+                              style={{ 
+                                ...modernSelectStyle, 
+                                padding: "8px", 
+                                background: "#fff", 
+                                borderColor: isRepaired ? "#10b981" : "#ef4444", 
+                                color: isRepaired ? "#047857" : "#b91c1c",
+                                fontWeight: 600
+                              }}
                             >
-                              <option value="Pilih Status Baru" disabled>-- Perbarui Status --</option>
+                              <option value={uCond}>
+                                {uCond === "HILANG" ? "Hilang" : uCond === "RUSAK" ? "Rusak" : "Non-Operasional"}
+                              </option>
                               {uCond === "HILANG" ? (
-                                <option>Tersedia (Telah Ditemukan)</option>
+                                <option value="Tersedia (Telah Ditemukan)">Ubah ke: Tersedia (Telah Ditemukan)</option>
                               ) : (
-                                <option>Tersedia (Telah Diperbaiki)</option>
+                                <option value="Tersedia (Telah Diperbaiki)">Ubah ke: Tersedia (Telah Diperbaiki)</option>
                               )}
                             </select>
                           );
@@ -5827,7 +5907,7 @@ const ViewAsset = () => {
         )}
 
         {detailTab === "units" && (
-          <div style={{ maxWidth: "900px" }}>
+          <div style={{ maxWidth: "100%" }}>
             <h3
               style={{
                 fontSize: "15px",
@@ -5845,18 +5925,19 @@ const ViewAsset = () => {
                 background: "#fff",
                 border: "1px solid #e2e8f0",
                 borderRadius: "12px",
-                overflow: "hidden",
+                overflowX: "auto",
                 boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1)",
               }}
             >
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead style={{ background: "#f8fafc" }}>
                   <tr>
-                    <th style={{ padding: "12px 16px", textAlign: "left", fontSize: "12px", color: "#64748b", borderBottom: "1px solid #e2e8f0", width: "50px" }}>NO</th>
-                    <th style={{ padding: "12px 16px", textAlign: "left", fontSize: "12px", color: "#64748b", borderBottom: "1px solid #e2e8f0" }}>ID BARANG</th>
-                    <th style={{ padding: "12px 16px", textAlign: "left", fontSize: "12px", color: "#64748b", borderBottom: "1px solid #e2e8f0" }}>HARGA SATUAN</th>
-                    <th style={{ padding: "12px 16px", textAlign: "left", fontSize: "12px", color: "#64748b", borderBottom: "1px solid #e2e8f0" }}>STATUS</th>
-                    <th style={{ padding: "12px 16px", textAlign: "left", fontSize: "12px", color: "#64748b", borderBottom: "1px solid #e2e8f0" }}>LOKASI SAAT INI</th>
+                    <th style={{ padding: "12px 16px", textAlign: "left", fontSize: "12px", color: "#64748b", borderBottom: "1px solid #e2e8f0", width: "50px", whiteSpace: "nowrap" }}>NO</th>
+                    <th style={{ padding: "12px 16px", textAlign: "left", fontSize: "12px", color: "#64748b", borderBottom: "1px solid #e2e8f0", whiteSpace: "nowrap" }}>ID BARANG</th>
+                    <th style={{ padding: "12px 16px", textAlign: "left", fontSize: "12px", color: "#64748b", borderBottom: "1px solid #e2e8f0", whiteSpace: "nowrap" }}>SN (SERIAL NUMBER)</th>
+                    <th style={{ padding: "12px 16px", textAlign: "left", fontSize: "12px", color: "#64748b", borderBottom: "1px solid #e2e8f0", whiteSpace: "nowrap" }}>HARGA SATUAN</th>
+                    <th style={{ padding: "12px 16px", textAlign: "left", fontSize: "12px", color: "#64748b", borderBottom: "1px solid #e2e8f0", whiteSpace: "nowrap" }}>STATUS</th>
+                    <th style={{ padding: "12px 16px", textAlign: "left", fontSize: "12px", color: "#64748b", borderBottom: "1px solid #e2e8f0", whiteSpace: "nowrap" }}>LOKASI SAAT INI</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -5865,10 +5946,11 @@ const ViewAsset = () => {
                     const status = activeBorrow ? "Dipinjam" : "Tersedia";
                     return (
                       <tr key={idx}>
-                        <td style={{ padding: "12px 16px", fontSize: "14px", borderBottom: "1px solid #f1f5f9", color: "#94a3b8", fontWeight: "bold" }}>{idx + 1}</td>
-                        <td style={{ padding: "12px 16px", fontSize: "14px", borderBottom: "1px solid #f1f5f9", color: "#0f172a", fontWeight: "600" }}>{u.kd_barang || u.serialNumber || "-"}</td>
-                        <td style={{ padding: "12px 16px", fontSize: "14px", borderBottom: "1px solid #f1f5f9", color: "#475569" }}>{fmt(a.value)}</td>
-                        <td style={{ padding: "12px 16px", fontSize: "14px", borderBottom: "1px solid #f1f5f9" }}>
+                        <td style={{ padding: "12px 16px", fontSize: "14px", borderBottom: "1px solid #f1f5f9", color: "#94a3b8", fontWeight: "bold", whiteSpace: "nowrap" }}>{idx + 1}</td>
+                        <td style={{ padding: "12px 16px", fontSize: "14px", borderBottom: "1px solid #f1f5f9", color: "#0f172a", fontWeight: "600", whiteSpace: "nowrap" }}>{u.kd_barang || "-"}</td>
+                        <td style={{ padding: "12px 16px", fontSize: "14px", borderBottom: "1px solid #f1f5f9", color: "#0f172a", whiteSpace: "nowrap" }}>{u.serialNumber || u.serial_number || "-"}</td>
+                        <td style={{ padding: "12px 16px", fontSize: "14px", borderBottom: "1px solid #f1f5f9", color: "#475569", whiteSpace: "nowrap" }}>{fmt(a.value)}</td>
+                        <td style={{ padding: "12px 16px", fontSize: "14px", borderBottom: "1px solid #f1f5f9", whiteSpace: "nowrap" }}>
                           <span style={{
                             padding: "4px 8px",
                             borderRadius: "6px",
@@ -5880,7 +5962,7 @@ const ViewAsset = () => {
                             {status}
                           </span>
                         </td>
-                        <td style={{ padding: "12px 16px", fontSize: "13.5px", borderBottom: "1px solid #f1f5f9", color: "#475569" }}>
+                        <td style={{ padding: "12px 16px", fontSize: "13.5px", borderBottom: "1px solid #f1f5f9", color: "#475569", whiteSpace: "nowrap" }}>
                           {activeBorrow ? (
                             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                               <Icon.ArrowUpRight /> {activeBorrow.to_zone}
@@ -5897,8 +5979,8 @@ const ViewAsset = () => {
                 </tbody>
                 <tfoot style={{ background: "#f8fafc", borderTop: "2px solid #e2e8f0" }}>
                   <tr>
-                    <td colSpan="4" style={{ padding: "12px 16px", textAlign: "right", fontSize: "13px", fontWeight: "800", color: "#64748b" }}>TOTAL NILAI KESELURUHAN ASET:</td>
-                    <td style={{ padding: "12px 16px", fontSize: "16px", fontWeight: "900", color: "#16a34a" }}>{fmt(a.value * (a.quantity || 1))}</td>
+                    <td colSpan="5" style={{ padding: "12px 16px", textAlign: "right", fontSize: "13px", fontWeight: "800", color: "#64748b", whiteSpace: "nowrap" }}>TOTAL NILAI KESELURUHAN ASET:</td>
+                    <td style={{ padding: "12px 16px", fontSize: "16px", fontWeight: "900", color: "#16a34a", whiteSpace: "nowrap" }}>{fmt(a.value * (a.quantity || 1))}</td>
                   </tr>
                 </tfoot>
               </table>

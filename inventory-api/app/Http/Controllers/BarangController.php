@@ -30,10 +30,13 @@ class BarangController extends Controller
 
             // Get active transaction for status
             $tx = DB::table('asset_transactions')
-                    ->where('kd_barang', $unit->kd_barang)
-                    ->where('is_current', true)
+                    ->leftJoin('users', 'asset_transactions.receiver_id', '=', 'users.id')
+                    ->select('asset_transactions.*', 'users.name as borrower_name')
+                    ->where('asset_transactions.kd_barang', $unit->kd_barang)
+                    ->where('asset_transactions.is_current', true)
                     ->first();
             $status = ($tx && strtoupper($tx->transaction_type) === 'BORROW') ? 'Dipinjam' : 'Tersedia';
+            $pemilik = ($status === 'Dipinjam' && !empty($tx->borrower_name)) ? $tx->borrower_name : 'Admin IT';
 
             // Get location hierarchy
             $locMatch = DB::table('subzona')
@@ -78,6 +81,7 @@ class BarangController extends Controller
                     'tipe' => $asset->tipe ?? '-',
                     'category' => $asset->device_code,
                     'status' => $status,
+                    'pemilik' => $pemilik,
                     'location' => $fullLocationStr,
                     'photo' => $asset->photo,
                     'specs' => $formattedSpecs,
@@ -187,17 +191,35 @@ class BarangController extends Controller
                         ? $locMatch->branch_name . ' / ' . $locMatch->zona_name . ' / ' . $locMatch->subzona_name 
                         : ($u->subzona_code ?: '-');
 
+                    $cond = $tx ? $tx->condition : 'Baik';
+                    $status = 'Tersedia';
+                    if ($tx && strtoupper($tx->transaction_type) === 'BORROW') {
+                        $status = 'Dipinjam';
+                    } else {
+                        $c = strtoupper($cond);
+                        if (in_array($c, ['RUSAK', 'HILANG', 'DIPERBAIKI', 'MINOR_DAMAGE', 'RUSAK RINGAN', 'RUSAK BERAT', 'DAMAGED', 'MISSING'])) {
+                            $status = 'Non-Operasional';
+                        }
+                    }
+
                     return [
                         'kd_barang' => $u->kd_barang,
                         'serialNumber' => $u->serial_number,
                         'location' => $fullLocationStr,
                         'id_pekerjaan' => $u->id_pekerjaan,
-                        'status' => ($tx && strtoupper($tx->transaction_type) === 'BORROW') ? 'Dipinjam' : 'Tersedia',
-                        'condition' => $tx ? $tx->condition : 'Baik'
+                        'status' => $status,
+                        'condition' => $cond
                     ];
                 })->toArray();
 
-                $status = (count($unitsArray) > 0 && count(array_filter($unitsArray, fn($u) => $u['status'] === 'Tersedia')) === 0) ? 'Dipinjam' : 'Tersedia';
+                $status = 'Tersedia';
+                if (count($unitsArray) > 0) {
+                    $tersediaCount = count(array_filter($unitsArray, fn($u) => $u['status'] === 'Tersedia'));
+                    if ($tersediaCount === 0) {
+                        $borrowedCount = count(array_filter($unitsArray, fn($u) => $u['status'] === 'Dipinjam'));
+                        $status = $borrowedCount > 0 ? 'Dipinjam' : 'Non-Operasional';
+                    }
+                }
                 $condition = count($unitsArray) > 0 ? $unitsArray[0]['condition'] : 'Baik';
 
                 return [
@@ -855,18 +877,21 @@ class BarangController extends Controller
                 if (str_contains($unitStatus, 'Tersedia')) {
                     $sn = $u['serialNumber'] ?? null;
                     if ($sn) {
+                        $kdBarang = DB::table('barang')->where('serial_number', $sn)->value('kd_barang');
+                        if (!$kdBarang) continue;
+
                         // Check if current active condition is not BAIK
                         $latestTx = DB::table('asset_transactions')
-                            ->where('serial_number', $sn)
+                            ->where('kd_barang', $kdBarang)
                             ->where('is_current', true)
                             ->first();
                             
-                        \Illuminate\Support\Facades\Log::info('Latest TX for ' . $sn . ': ' . json_encode($latestTx));
+                        \Illuminate\Support\Facades\Log::info('Latest TX for ' . $sn . ' (kd_barang: ' . $kdBarang . '): ' . json_encode($latestTx));
                             
                         if ($latestTx && strtoupper($latestTx->condition) !== 'BAIK') {
                             // Non-aktifkan transaksi sebelumnya
                             DB::table('asset_transactions')
-                                ->where('serial_number', $sn)
+                                ->where('kd_barang', $kdBarang)
                                 ->update(['is_current' => false]);
                                 
                             $txType = str_contains(strtolower($unitStatus), 'ditemukan') ? 'FOUND' : 'MAINTENANCE';
@@ -874,7 +899,7 @@ class BarangController extends Controller
                             // Buat transaksi baru
                             $txId = DB::table('asset_transactions')->insertGetId([
                                 'transaction_type' => $txType,
-                                'serial_number' => $sn,
+                                'kd_barang' => $kdBarang,
                                 'performed_by_id' => 1, // Admin IT
                                 'condition' => 'BAIK',
                                 'notes' => 'Status diupdate via Edit Data Barang: ' . $unitStatus,
@@ -1124,16 +1149,48 @@ class BarangController extends Controller
     public function getKatalog()
     {
         try {
-            $assets = DB::table('assets')
+            // Get the current user's branch code from JWT
+            $userBranchCode = null;
+            try {
+                $jwtUser = JWTAuth::user();
+                if ($jwtUser) {
+                    $userBranchCode = $jwtUser->branches_code ?? null;
+                }
+            } catch (\Exception $e) {}
+
+            $query = DB::table('assets')
                 ->leftJoin('device', 'assets.device_code', '=', 'device.device_code')
                 ->select('assets.*', 'device.name as category_name')
-                ->orderBy('assets.created_at', 'desc')
-                ->get();
+                ->orderBy('assets.created_at', 'desc');
 
-            $unitCounts = DB::table('barang')
+            if ($userBranchCode) {
+                // Filter: only assets that have at least 1 unit in this branch,
+                // OR assets that were created by this branch (branch_code column)
+                $assetCodesWithUnits = DB::table('barang')
+                    ->where('branch', $userBranchCode)
+                    ->distinct()
+                    ->pluck('asset_code');
+
+                if (Schema::hasColumn('assets', 'branch_code')) {
+                    $query->where(function($q) use ($userBranchCode, $assetCodesWithUnits) {
+                        $q->whereIn('assets.asset_code', $assetCodesWithUnits)
+                          ->orWhere('assets.branch_code', $userBranchCode);
+                    });
+                } else {
+                    $query->whereIn('assets.asset_code', $assetCodesWithUnits);
+                }
+            }
+
+            $assets = $query->get();
+
+            // Count units per branch
+            $unitCountsQuery = DB::table('barang')
                 ->select('asset_code', DB::raw('count(*) as total_units'))
-                ->groupBy('asset_code')
-                ->pluck('total_units', 'asset_code');
+                ->groupBy('asset_code');
+            if ($userBranchCode) {
+                $unitCountsQuery->where('branch', $userBranchCode);
+            }
+            $unitCounts = $unitCountsQuery->pluck('total_units', 'asset_code');
 
             $data = $assets->map(function($a) use ($unitCounts) {
                 $a->total_units = $unitCounts->get($a->asset_code) ?? 0;
@@ -1154,6 +1211,15 @@ class BarangController extends Controller
             if (empty($deviceCode)) {
                 return response()->json(['success' => false, 'message' => 'Kategori wajib diisi'], 400);
             }
+
+            // Get current user's branch code
+            $userBranchCode = null;
+            try {
+                $jwtUser = JWTAuth::user();
+                if ($jwtUser) {
+                    $userBranchCode = $jwtUser->branches_code ?? null;
+                }
+            } catch (\Exception $e) {}
             
             // Auto-insert device category if it doesn't exist
             $deviceExists = DB::table('device')->where('device_code', $deviceCode)->exists();
@@ -1202,6 +1268,7 @@ class BarangController extends Controller
                 'merek' => $request->input('merek') ?? null,
                 'tipe' => $request->input('tipe') ?? null,
                 'device_code' => $deviceCode,
+                'branch_code' => $userBranchCode ?? null,
                 'created_at' => \Carbon\Carbon::now(),
                 'updated_at' => \Carbon\Carbon::now(),
             ]);

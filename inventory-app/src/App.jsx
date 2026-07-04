@@ -11,7 +11,7 @@ import Auth from "./components/Auth";
 // === Admin pages (lazy) ===
 const Dashboard = lazy(() => import("./components/Dashboard"));
 const ViewAsset = lazy(() => import("./components/ViewAsset"));
-const MasterBarang = lazy(() => import("./components/MasterBarang"));
+const MasterAset = lazy(() => import("./components/MasterAset"));
 const BudgetManagement = lazy(() => import("./components/BudgetManagement"));
 const Budgetinput = lazy(() => import("./components/Budgetinput"));
 const Peminjaman = lazy(() => import("./components/Peminjaman"));
@@ -45,7 +45,7 @@ function App() {
           {/* Inventory Management Routes */}
           <Route path="/assets" element={<Navigate to="/assets/list" replace />} />
           <Route path="/assets/list" element={<Suspense fallback={<Loader />}><ViewAsset /></Suspense>} />
-          <Route path="/assets/master" element={<Suspense fallback={<Loader />}><MasterBarang /></Suspense>} />
+          <Route path="/assets/master" element={<Suspense fallback={<Loader />}><MasterAset /></Suspense>} />
 
           {/* BAST Aset routes */}
           <Route

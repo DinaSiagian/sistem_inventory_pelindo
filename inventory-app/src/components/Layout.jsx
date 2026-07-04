@@ -35,8 +35,8 @@ const Layout = () => {
       label: "Inventaris & Master",
       icon: <FaBox />,
       submenu: [
-        { path: "/assets/master", label: "Master Barang" },
-        { path: "/assets/list", label: "Data Aset / Fisik" },
+        { path: "/assets/master", label: "Master Aset" },
+        { path: "/assets/list", label: "Data Barang" },
       ],
     },
     { path: "/peminjaman", label: "BAST Aset", icon: <FaHandHolding /> },

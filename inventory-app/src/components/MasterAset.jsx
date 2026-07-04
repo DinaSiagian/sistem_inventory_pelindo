@@ -493,13 +493,15 @@ const getCss = (bgImg) => `
 @keyframes mbSlideUp { from { opacity: 0; transform: translateY(16px) } to { opacity: 1; transform: translateY(0) } }
 `;
 
-const MasterBarang = () => {
+const MasterAset = () => {
   const [items, setItems] = useState([]);
   const [categories, setCategories] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(null);
   const [form, setForm] = useState({ asset_code: "", category: "", name: "", merek: "", tipe: "" });
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 5;
 
   useEffect(() => { fetchData(); fetchCategories(); }, []);
 
@@ -526,6 +528,12 @@ const MasterBarang = () => {
       [i.name, i.merek, i.tipe, i.asset_code].some(v => v && v.toLowerCase().includes(q))
     );
   }, [items, search]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredItems.length / PAGE_SIZE));
+  const pagedItems = filteredItems.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  // Reset to page 1 when search changes
+  const handleSearch = (val) => { setSearch(val); setPage(1); };
 
   const openAdd = () => { setForm({ asset_code: "", category: "", name: "", merek: "", tipe: "" }); setModal("add"); };
   const openEdit = (item) => { setForm({ asset_code: item.asset_code, category: item.device_code, name: item.name, merek: item.merek || "", tipe: item.tipe || "" }); setModal("edit"); };
@@ -556,11 +564,11 @@ const MasterBarang = () => {
         {/* ── Page Header ── */}
         <div className="mb-page-header">
           <div className="mb-page-title-group">
-            <h1 className="mb-page-h1">Master Barang</h1>
+            <h1 className="mb-page-h1">Master Aset</h1>
             <p className="mb-page-desc">Kelola katalog spesifikasi perangkat — kategori, merek &amp; tipe</p>
           </div>
-          <button className="mb-btn-add" onClick={openAdd} aria-label="Tambah barang baru ke katalog">
-            <Plus size={17} aria-hidden="true" /> Tambah Barang Baru
+          <button className="mb-btn-add" onClick={openAdd} aria-label="Tambah aset baru ke katalog">
+            <Plus size={17} aria-hidden="true" /> Tambah Aset Baru
           </button>
         </div>
 
@@ -569,19 +577,19 @@ const MasterBarang = () => {
           <div className="mb-toolbar">
             <div className="mb-search-box" role="search">
               <Search size={15} style={{ color: '#9ca3af', flexShrink: 0 }} aria-hidden="true" />
-              <label htmlFor="mb-q" className="sr-only">Cari barang</label>
+              <label htmlFor="mb-q" className="sr-only">Cari aset</label>
               <input
                 id="mb-q"
                 type="search"
                 placeholder="Cari nama, merek, tipe, atau kode..."
                 value={search}
-                onChange={e => setSearch(e.target.value)}
-                aria-label="Cari barang"
+                onChange={e => handleSearch(e.target.value)}
+                aria-label="Cari aset"
                 autoComplete="off"
               />
             </div>
             <span className="mb-result-count" aria-live="polite">
-              {filteredItems.length} dari {items.length} barang
+              {filteredItems.length} dari {items.length} aset
             </span>
           </div>
 
@@ -590,9 +598,9 @@ const MasterBarang = () => {
               <caption className="sr-only">Daftar katalog master barang inventory Pelindo</caption>
               <thead>
                 <tr>
-                  <th scope="col" style={{ width: '13%' }}>Kode</th>
+                  <th scope="col" style={{ width: '13%' }}>Kode Aset</th>
                   <th scope="col" style={{ width: '15%' }}>Kategori</th>
-                  <th scope="col">Nama Barang</th>
+                  <th scope="col">Nama Aset</th>
                   <th scope="col" style={{ width: '12%' }}>Merek</th>
                   <th scope="col" style={{ width: '13%' }}>Tipe / Model</th>
                   <th scope="col" style={{ width: '10%', textAlign: 'center' }}>Unit</th>
@@ -612,10 +620,10 @@ const MasterBarang = () => {
                     <div className="mb-empty" role="status">
                       <div className="mb-empty-icon"><Search size={28} color="#94a3b8" /></div>
                       <h3>{search ? "Tidak ditemukan" : "Belum ada data"}</h3>
-                      <p>{search ? `Tidak ada barang cocok dengan "${search}"` : "Klik \"Tambah Barang Baru\" untuk mulai mengisi katalog."}</p>
+                      <p>{search ? `Tidak ada aset cocok dengan "${search}"` : "Klik \"Tambah Aset Baru\" untuk mulai mengisi katalog."}</p>
                     </div>
                   </td></tr>
-                ) : filteredItems.map(item => (
+                ) : pagedItems.map(item => (
                   <tr key={item.asset_code}>
                     <td><span className="mb-code-tag">{item.asset_code}</span></td>
                     <td><span className="mb-cat-tag">{item.category_name || item.device_code}</span></td>
@@ -645,6 +653,63 @@ const MasterBarang = () => {
               </tbody>
             </table>
           </div>
+
+          {/* ── Pagination ── */}
+          {totalPages > 1 && (
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '12px 20px', borderTop: '1px solid #f1f5f9', background: '#fafafa'
+            }}>
+              <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 500 }}>
+                Halaman {page} dari {totalPages} &nbsp;·&nbsp; {filteredItems.length} item
+              </span>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <button
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  style={{
+                    padding: '6px 14px', borderRadius: '8px', border: '1.5px solid #e5e7eb',
+                    background: page === 1 ? '#f9fafb' : '#fff', color: page === 1 ? '#d1d5db' : '#374151',
+                    fontWeight: 600, fontSize: '0.82rem', cursor: page === 1 ? 'not-allowed' : 'pointer',
+                    fontFamily: 'inherit', transition: 'all 0.15s'
+                  }}
+                >
+                  ← Sebelumnya
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(pg => (
+                  <button
+                    key={pg}
+                    onClick={() => setPage(pg)}
+                    style={{
+                      width: 34, height: 34, borderRadius: '8px',
+                      border: pg === page ? 'none' : '1.5px solid #e5e7eb',
+                      background: pg === page ? 'linear-gradient(135deg, #4f46e5, #6366f1)' : '#fff',
+                      color: pg === page ? '#fff' : '#374151',
+                      fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer',
+                      fontFamily: 'inherit', transition: 'all 0.15s',
+                      boxShadow: pg === page ? '0 2px 8px rgba(99,102,241,0.35)' : 'none'
+                    }}
+                  >
+                    {pg}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  style={{
+                    padding: '6px 14px', borderRadius: '8px', border: '1.5px solid #e5e7eb',
+                    background: page === totalPages ? '#f9fafb' : '#fff',
+                    color: page === totalPages ? '#d1d5db' : '#374151',
+                    fontWeight: 600, fontSize: '0.82rem',
+                    cursor: page === totalPages ? 'not-allowed' : 'pointer',
+                    fontFamily: 'inherit', transition: 'all 0.15s'
+                  }}
+                >
+                  Selanjutnya →
+                </button>
+              </div>
+            </div>
+          )}
         </section>
       </main>
 
@@ -656,7 +721,7 @@ const MasterBarang = () => {
             <div className="mb-modal-head">
               <h2 id="mb-dlg-title">
                 <Tag size={17} aria-hidden="true" />
-                {modal === 'add' ? 'Tambah Barang Baru' : 'Edit Data Barang'}
+                {modal === 'add' ? 'Tambah Aset Baru' : 'Edit Data Aset'}
               </h2>
               <button className="mb-close-btn" onClick={() => setModal(null)} aria-label="Tutup dialog">
                 <X size={16} aria-hidden="true" />
@@ -675,7 +740,7 @@ const MasterBarang = () => {
                   </select>
                 </div>
                 <div className="mb-field">
-                  <label htmlFor="mb-merek">Merek Barang</label>
+                  <label htmlFor="mb-merek">Merek</label>
                   <input id="mb-merek" type="text" placeholder="Contoh: Lenovo, Hikvision, TP-Link"
                     value={form.merek} onChange={e => setForm({ ...form, merek: e.target.value })} autoComplete="off" />
                 </div>
@@ -685,7 +750,7 @@ const MasterBarang = () => {
                     value={form.tipe} onChange={e => setForm({ ...form, tipe: e.target.value })} autoComplete="off" />
                 </div>
                 <div className="mb-field">
-                  <label htmlFor="mb-name">Nama Barang / Brosur <span style={{ color: '#ef4444' }} aria-hidden="true">*</span></label>
+                  <label htmlFor="mb-name">Nama Barang <span style={{ color: '#ef4444' }} aria-hidden="true">*</span></label>
                   <input id="mb-name" type="text" placeholder="Contoh: Lenovo ThinkPad T14 Gen 3"
                     value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
                     required aria-required="true" autoComplete="off" />
@@ -694,7 +759,7 @@ const MasterBarang = () => {
               <div className="mb-modal-foot">
                 <button type="button" className="mb-btn mb-btn-ghost" onClick={() => setModal(null)}>Batal</button>
                 <button type="submit" className="mb-btn mb-btn-save">
-                  <Save size={15} aria-hidden="true" /> Simpan Barang
+                  <Save size={15} aria-hidden="true" /> Simpan Aset
                 </button>
               </div>
             </form>
@@ -705,4 +770,4 @@ const MasterBarang = () => {
   );
 };
 
-export default MasterBarang;
+export default MasterAset;
