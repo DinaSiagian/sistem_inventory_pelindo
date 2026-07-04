@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import { barangAPI, budgetAPI, masterDataAPI, transactionAPI, katalogAPI } from "../services/api";
-import { QRCodeSVG } from "qrcode.react";
 import "./ViewAsset.css";
 // ── CAPEX ANGGARAN MASTER (thn_anggaran → nm_anggaran → pekerjaan) ─────
 let CAPEX_ANGGARAN = [];
@@ -1564,10 +1563,10 @@ function AssetHistoryTab({ assetCode, allBorrows }) {
                   <td style={{ padding: "12px 16px" }}>
                     <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                       <div style={{ fontSize: "12.5px", fontWeight: "700", color: "#1e293b", display: "flex", alignItems: "center", gap: "6px" }}>
-                         Penerima: {e.receiver}
+                        Penerima: {e.receiver}
                       </div>
                       <div style={{ fontSize: "11px", color: "#64748b", display: "flex", alignItems: "center", gap: "6px" }}>
-                         Pemberi: {e.giver}
+                        Pemberi: {e.giver}
                       </div>
                       <div style={{ fontSize: "10px", color: "#94a3b8", marginTop: "2px" }}>{e.branch}</div>
                     </div>
@@ -2379,11 +2378,11 @@ const ViewAsset = () => {
             (a.tipeAset && a.tipeAset.toLowerCase().includes(q)) ||
             (a.entitas && a.entitas.toLowerCase().includes(q)) ||
             (proj?.nm_pekerjaan && proj.nm_pekerjaan.toLowerCase().includes(q))) &&
-          (!filterStatus || 
-            (filterStatus === "Tersedia" ? (a.status?.includes("Tersedia") || a.units?.some(u => u.status?.includes("Tersedia"))) : 
-             filterStatus === "Dipinjam" ? (a.status?.includes("Dipinjam") || a.units?.some(u => u.status?.includes("Dipinjam"))) : 
-             filterStatus === "Non-Operasional" ? (a.status?.includes("Non-Operasional") || a.units?.some(u => u.status?.includes("Non-Operasional"))) : 
-             a.status?.includes(filterStatus))) &&
+          (!filterStatus ||
+            (filterStatus === "Tersedia" ? (a.status?.includes("Tersedia") || a.units?.some(u => u.status?.includes("Tersedia"))) :
+              filterStatus === "Dipinjam" ? (a.status?.includes("Dipinjam") || a.units?.some(u => u.status?.includes("Dipinjam"))) :
+                filterStatus === "Non-Operasional" ? (a.status?.includes("Non-Operasional") || a.units?.some(u => u.status?.includes("Non-Operasional"))) :
+                  a.status?.includes(filterStatus))) &&
           (!filterCategory || a.category === filterCategory) &&
           (!filterBranch || a.branch === filterBranch) &&
           (!filterAnggaran || proj?.kd_anggaran === filterAnggaran) &&
@@ -2420,10 +2419,10 @@ const ViewAsset = () => {
     const countTersedia = asset.units.filter(u => u.status?.includes('Tersedia')).length;
     const countDipinjam = asset.units.filter(u => u.status?.includes('Dipinjam')).length;
     const countNonOp = asset.units.filter(u => u.status?.includes('Non-Operasional')).length;
-    
+
     // Only show mixed state if there's actually a mix of statuses
-    if ((countTersedia > 0 && (countDipinjam > 0 || countNonOp > 0)) || 
-        (countDipinjam > 0 && countNonOp > 0)) {
+    if ((countTersedia > 0 && (countDipinjam > 0 || countNonOp > 0)) ||
+      (countDipinjam > 0 && countNonOp > 0)) {
       return { isMixed: true, qtyTersedia: countTersedia, qtyTotal: asset.units.length, status: asset.status };
     }
     return { qty: asset.units.length, status: asset.status };
@@ -2999,7 +2998,6 @@ const ViewAsset = () => {
     const asset = selectedAsset;
     const units = asset.units && asset.units.length > 0 ? asset.units : [{ serialNumber: asset.id }];
 
-    const w = window.open("", "_blank", "width=800,height=800");
     let html = `<!DOCTYPE html><html><head><title>Print QR Codes — ${asset.name}</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
@@ -3041,9 +3039,31 @@ const ViewAsset = () => {
 </div>`;
     });
 
-    html += `</div><script>setTimeout(()=>{window.print();window.close();}, 1500);</script></body></html>`;
-    w.document.write(html);
-    w.document.close();
+    html += `</div></body></html>`;
+
+    // Gunakan iframe tersembunyi agar fungsi print tidak memblokir atau menimpa halaman utama
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+    
+    iframe.contentDocument.open();
+    iframe.contentDocument.write(html);
+    iframe.contentDocument.close();
+
+    // Tunggu gambar barcode dimuat sebelum trigger print
+    setTimeout(() => {
+      try {
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+      } catch (err) {
+        console.error("Print gagal", err);
+      }
+      setTimeout(() => {
+        if (document.body.contains(iframe)) {
+          document.body.removeChild(iframe);
+        }
+      }, 1000);
+    }, 1500);
   };
 
   // ── RENDER LIST VIEW (TAMPILAN AWAL - TIDAK DIUBAH) ─────────────
@@ -3155,8 +3175,8 @@ const ViewAsset = () => {
               filterVal: null,
             },
           ].map(({ cls, icon, val, lbl, glow, sm, filterVal }) => (
-            <div 
-              key={lbl} 
+            <div
+              key={lbl}
               className={`kpi-card ${cls}`}
               onClick={() => {
                 if (filterVal !== null) {
@@ -5219,16 +5239,16 @@ const ViewAsset = () => {
                           }
 
                           const isRepaired = unit.status && unit.status.includes("Tersedia");
-                          
+
                           return (
                             <select
                               value={isRepaired ? unit.status : uCond}
                               onChange={(e) => updateEditUnitField(i, "status", e.target.value)}
-                              style={{ 
-                                ...modernSelectStyle, 
-                                padding: "8px", 
-                                background: "#fff", 
-                                borderColor: isRepaired ? "#10b981" : "#ef4444", 
+                              style={{
+                                ...modernSelectStyle,
+                                padding: "8px",
+                                background: "#fff",
+                                borderColor: isRepaired ? "#10b981" : "#ef4444",
                                 color: isRepaired ? "#047857" : "#b91c1c",
                                 fontWeight: 600
                               }}
@@ -6293,7 +6313,11 @@ const ViewAsset = () => {
                   <div style={{ fontSize: "10px", fontWeight: "700", color: "#444", marginBottom: "8px" }}>{barcodeVal}</div>
 
                   <div style={{ textAlign: "center", padding: "16px 0", margin: "8px 0" }}>
-                    <QRCodeSVG value={`${window.location.origin}/scan/${barcodeVal}`} size={140} />
+                    <img 
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(`${window.location.origin}/scan/${barcodeVal}`)}`} 
+                      alt="QR Code" 
+                      style={{ width: "140px", height: "140px", margin: "0 auto", display: "block" }} 
+                    />
                   </div>
 
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginTop: "10px" }}>
