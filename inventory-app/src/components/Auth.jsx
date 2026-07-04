@@ -68,6 +68,7 @@ const Auth = () => {
   const [forgotSent, setForgotSent] = useState(false);
   const [loginError, setLoginError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [masterData, setMasterData] = useState({
     entities: ENTITAS_FALLBACK,
     roles: [
@@ -91,6 +92,24 @@ const Auth = () => {
   });
 
   const navigate = useNavigate();
+
+  // Load Remember Me Data
+  useEffect(() => {
+    try {
+      const savedEmail = localStorage.getItem("rememberedEmail");
+      const savedPassword = localStorage.getItem("rememberedPassword");
+      if (savedEmail && savedPassword) {
+        setRememberMe(true);
+        setRegisterData((prev) => ({
+          ...prev,
+          email: atob(savedEmail),
+          password: atob(savedPassword),
+        }));
+      }
+    } catch (error) {
+      console.error("Error reading remember me data", error);
+    }
+  }, []);
 
   // Load Master Data
   useEffect(() => {
@@ -230,6 +249,14 @@ const Auth = () => {
           const { user, access_token } = res.data.data;
           localStorage.setItem("token", access_token);
           localStorage.setItem("user", JSON.stringify(user));
+
+          if (rememberMe) {
+            localStorage.setItem("rememberedEmail", btoa(emailInput));
+            localStorage.setItem("rememberedPassword", btoa(passwordInput));
+          } else {
+            localStorage.removeItem("rememberedEmail");
+            localStorage.removeItem("rememberedPassword");
+          }
 
           // ✅ Redirect langsung ke dashboard berdasarkan role
           if (user.role_code === "admin") {
@@ -587,6 +614,13 @@ const Auth = () => {
                         placeholder="email@pelindo.co.id"
                         required
                         disabled={isLoading}
+                        value={registerData.email}
+                        onChange={(e) =>
+                          setRegisterData({
+                            ...registerData,
+                            email: e.target.value,
+                          })
+                        }
                       />
                     </div>
                   </div>
@@ -640,7 +674,12 @@ const Auth = () => {
                   {isLogin && (
                     <div className="form-actions">
                       <label className="remember-me">
-                        <input type="checkbox" disabled={isLoading} />
+                        <input
+                          type="checkbox"
+                          disabled={isLoading}
+                          checked={rememberMe}
+                          onChange={(e) => setRememberMe(e.target.checked)}
+                        />
                         <span>Ingat Saya</span>
                       </label>
                       <span
