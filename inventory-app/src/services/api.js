@@ -45,6 +45,8 @@ export const authAPI = {
   logout: () => api.post("/logout"),
   getMasterData: () => api.get("/master-data"),
   getMe: () => api.get("/me"),
+  getSecurityQuestion: (data) => api.post("/get-security-question", data),
+  resetSecurityPassword: (data) => api.post("/reset-security-password", data),
 };
 
 export const masterDataAPI = {

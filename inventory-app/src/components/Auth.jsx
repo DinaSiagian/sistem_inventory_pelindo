@@ -89,7 +89,15 @@ const Auth = () => {
     email: "",
     password: "",
     konfirmasi: "",
+    security_question: "",
+    security_answer: "",
   });
+
+  const [forgotStep, setForgotStep] = useState(1);
+  const [forgotQuestion, setForgotQuestion] = useState("");
+  const [forgotAnswer, setForgotAnswer] = useState("");
+  const [forgotNewPassword, setForgotNewPassword] = useState("");
+  const [forgotConfirmPassword, setForgotConfirmPassword] = useState("");
 
   const navigate = useNavigate();
 
@@ -184,15 +192,44 @@ const Auth = () => {
     setIsForgotPassword(false);
     setLoginError("");
     setForgotSent(false);
+    setForgotStep(1);
+    setRegisterData(prev => ({...prev, security_question: "", security_answer: ""}));
   };
 
   const handleForgotSubmit = async (e) => {
     e.preventDefault();
+    setLoginError("");
     setIsLoading(true);
+    
     try {
-      setForgotSent(true);
-    } catch {
-      setLoginError("Gagal mengirim instruksi reset. Coba lagi.");
+      if (forgotStep === 1) {
+        // Step 1: Minta pertanyaan keamanan
+        const res = await authAPI.getSecurityQuestion({ email: forgotEmail });
+        if (res.data?.success) {
+          setForgotQuestion(res.data.data.question);
+          setForgotStep(2);
+        }
+      } else if (forgotStep === 2) {
+        // Step 2: Reset password
+        if (forgotNewPassword !== forgotConfirmPassword) {
+          setLoginError("Password baru dan konfirmasi tidak cocok.");
+          setIsLoading(false);
+          return;
+        }
+
+        const res = await authAPI.resetSecurityPassword({
+          email: forgotEmail,
+          security_answer: forgotAnswer,
+          password: forgotNewPassword,
+          password_confirmation: forgotConfirmPassword,
+        });
+
+        if (res.data?.success) {
+          setForgotSent(true); // Berhasil reset, tampilkan layar sukses
+        }
+      }
+    } catch (err) {
+      setLoginError(extractErrorMessage(err));
     } finally {
       setIsLoading(false);
     }
@@ -203,6 +240,10 @@ const Auth = () => {
     setForgotEmail("");
     setForgotSent(false);
     setLoginError("");
+    setForgotStep(1);
+    setForgotAnswer("");
+    setForgotNewPassword("");
+    setForgotConfirmPassword("");
   };
 
   // Extract error message helper
@@ -285,6 +326,8 @@ const Auth = () => {
           entity_code: registerData.entitas,
           branches_code: registerData.cabang,
           division_code: registerData.divisi || null,
+          security_question: registerData.security_question,
+          security_answer: registerData.security_answer,
         });
 
         if (res.data?.success) {
@@ -327,28 +370,85 @@ const Auth = () => {
                     <div className="fp-heading">
                       <h2>Lupa Kata Sandi?</h2>
                       <p>
-                        Tenang, masukkan email terdaftar Anda dan kami akan
-                        mengirimkan instruksi reset kata sandi.
+                        {forgotStep === 1 
+                          ? "Masukkan email Anda untuk mencari pertanyaan keamanan Anda." 
+                          : "Jawab pertanyaan keamanan berikut untuk mereset kata sandi Anda."}
                       </p>
                     </div>
                     <form
                       onSubmit={handleForgotSubmit}
                       className="auth-form fp-form"
                     >
-                      <div className="form-group">
-                        <label>Alamat Email</label>
-                        <div className="input-wrapper">
-                          <FaEnvelope className="input-icon" />
-                          <input
-                            type="email"
-                            placeholder="email@pelindo.co.id"
-                            value={forgotEmail}
-                            onChange={(e) => setForgotEmail(e.target.value)}
-                            required
-                            disabled={isLoading}
-                          />
+                      {forgotStep === 1 ? (
+                        <div className="form-group">
+                          <label>Alamat Email</label>
+                          <div className="input-wrapper">
+                            <FaEnvelope className="input-icon" />
+                            <input
+                              type="email"
+                              placeholder="email@pelindo.co.id"
+                              value={forgotEmail}
+                              onChange={(e) => setForgotEmail(e.target.value)}
+                              required
+                              disabled={isLoading}
+                            />
+                          </div>
                         </div>
-                      </div>
+                      ) : (
+                        <>
+                          <div className="form-group">
+                            <label>Pertanyaan Keamanan</label>
+                            <div className="input-wrapper">
+                              <input type="text" value={forgotQuestion} disabled className="disabled-input" style={{backgroundColor: '#eee'}} />
+                            </div>
+                          </div>
+                          <div className="form-group">
+                            <label>Jawaban Keamanan</label>
+                            <div className="input-wrapper">
+                              <FaLock className="input-icon" />
+                              <input
+                                type="text"
+                                placeholder="Jawaban Anda"
+                                value={forgotAnswer}
+                                onChange={(e) => setForgotAnswer(e.target.value)}
+                                required
+                                disabled={isLoading}
+                              />
+                            </div>
+                          </div>
+                          <div className="form-group">
+                            <label>Password Baru</label>
+                            <div className="input-wrapper">
+                              <FaLock className="input-icon" />
+                              <input
+                                type="password"
+                                placeholder="••••••••"
+                                value={forgotNewPassword}
+                                onChange={(e) => setForgotNewPassword(e.target.value)}
+                                required
+                                disabled={isLoading}
+                              />
+                            </div>
+                          </div>
+                          <div className="form-group">
+                            <label>Konfirmasi Password Baru</label>
+                            <div className="input-wrapper">
+                              <FaLock className="input-icon" />
+                              <input
+                                type="password"
+                                placeholder="••••••••"
+                                value={forgotConfirmPassword}
+                                onChange={(e) => setForgotConfirmPassword(e.target.value)}
+                                required
+                                disabled={isLoading}
+                              />
+                            </div>
+                          </div>
+                        </>
+                      )}
+
+                      {loginError && <div className="error-alert">{loginError}</div>}
+
                       <button
                         type="submit"
                         className="auth-button fp-submit-btn"
@@ -358,8 +458,10 @@ const Auth = () => {
                           <>
                             <FaSpinner className="spin-icon" /> Memproses...
                           </>
+                        ) : forgotStep === 1 ? (
+                          "Lanjutkan"
                         ) : (
-                          "Kirim Instruksi Reset"
+                          "Reset Password"
                         )}
                       </button>
                     </form>
@@ -376,13 +478,8 @@ const Auth = () => {
                     <div className="fp-success-icon">
                       <FaCheckCircle />
                     </div>
-                    <h2>Email Terkirim!</h2>
-                    <p>Instruksi reset kata sandi telah dikirim ke</p>
-                    <div className="fp-email-chip">{forgotEmail}</div>
-                    <p className="fp-note">
-                      Cek folder <strong>Spam</strong> atau{" "}
-                      <strong>Junk Mail</strong> Anda.
-                    </p>
+                    <h2>Password Direset!</h2>
+                    <p>Kata sandi Anda telah berhasil diperbarui.</p>
                     <button
                       className="auth-button fp-submit-btn"
                       onClick={backToLogin}
@@ -649,25 +746,72 @@ const Auth = () => {
 
                   {/* Konfirmasi Password */}
                   {!isLogin && (
-                    <div className="form-group">
-                      <label>Konfirmasi Password</label>
-                      <div className="input-wrapper">
-                        <FaLock className="input-icon" />
-                        <input
-                          type="password"
-                          placeholder="Ulangi password"
-                          value={registerData.konfirmasi}
-                          onChange={(e) =>
-                            setRegisterData({
-                              ...registerData,
-                              konfirmasi: e.target.value,
-                            })
-                          }
-                          required
-                          disabled={isLoading}
-                        />
+                    <>
+                      <div className="form-group">
+                        <label>Konfirmasi Password</label>
+                        <div className="input-wrapper">
+                          <FaLock className="input-icon" />
+                          <input
+                            type="password"
+                            placeholder="Ulangi password"
+                            value={registerData.konfirmasi}
+                            onChange={(e) =>
+                              setRegisterData({
+                                ...registerData,
+                                konfirmasi: e.target.value,
+                              })
+                            }
+                            required
+                            disabled={isLoading}
+                          />
+                        </div>
                       </div>
-                    </div>
+
+                      <hr style={{ margin: "20px 0", borderTop: "1px solid #ddd" }} />
+                      <h4 style={{ marginBottom: "15px", color: "#333", fontSize: "14px" }}>🔒 Pengaturan Pemulihan Akun</h4>
+
+                      <div className="form-group">
+                        <label>Pertanyaan Keamanan</label>
+                        <div className="input-wrapper">
+                          <FaLock className="input-icon" />
+                          <select
+                            value={registerData.security_question}
+                            onChange={(e) =>
+                              setRegisterData({
+                                ...registerData,
+                                security_question: e.target.value,
+                              })
+                            }
+                            required
+                            disabled={isLoading}
+                          >
+                            <option value="" disabled>Pilih Pertanyaan</option>
+                            <option value="Siapa nama ibu kandung Anda?">Siapa nama ibu kandung Anda?</option>
+                            <option value="Di kota manakah Anda lahir?">Di kota manakah Anda lahir?</option>
+                            <option value="Siapa nama ayah kandung Anda?">Siapa nama ayah kandung Anda?</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div className="form-group">
+                        <label>Jawaban Keamanan</label>
+                        <div className="input-wrapper">
+                          <FaLock className="input-icon" />
+                          <input
+                            type="text"
+                            placeholder="Jawaban dari pertanyaan"
+                            value={registerData.security_answer}
+                            onChange={(e) =>
+                              setRegisterData({
+                                ...registerData,
+                                security_answer: e.target.value,
+                              })
+                            }
+                            required
+                            disabled={isLoading}
+                          />
+                        </div>
+                      </div>
+                    </>
                   )}
 
                   {/* Ingat Saya & Lupa Password */}
