@@ -133,7 +133,7 @@ class UserController extends Controller
                 'table_name'  => 'users',
                 'record_id'   => (string) $user->id,
                 'old_value'   => null,
-                'new_value'   => json_encode($this->setLastLoginActual($user) ?? $this->formatUser($user)),
+                'new_value'   => json_encode($this->getLastLoginActual($user) ?? $this->formatUser($user)),
                 'ip_address'  => $request->ip(),
                 'created_at'  => Carbon::now(),
             ]);
@@ -141,7 +141,7 @@ class UserController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'User berhasil dibuat',
-                'data'    => ($this->setLastLoginActual($user) ?? true) ? $this->formatUser($user) : null,
+                'data'    => ($this->getLastLoginActual($user) ?? true) ? $this->formatUser($user) : null,
             ], 201);
         } catch (Exception $e) {
             Log::error('UserController@store: ' . $e->getMessage());

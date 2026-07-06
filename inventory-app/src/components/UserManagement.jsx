@@ -1408,6 +1408,17 @@ function MdModal({ title, iconName, iconColor, fields, onClose, onSave }) {
 
   const handleSave = () => {
     if (!validate()) return;
+
+    // Proteksi khusus untuk longitude dan latitude agar tidak meledakkan database decimal(10,8)
+    if (form.longitude && (parseFloat(form.longitude) > 99.99 || parseFloat(form.longitude) < -99.99)) {
+      alert("Error: Database saat ini hanya mendukung nilai Longitude antara -99.99 hingga 99.99 (decimal 10,8). Silakan kosongkan atau hubungi Admin Database.");
+      return;
+    }
+    if (form.latitude && (parseFloat(form.latitude) > 99.99 || parseFloat(form.latitude) < -99.99)) {
+      alert("Error: Database saat ini hanya mendukung nilai Latitude antara -99.99 hingga 99.99.");
+      return;
+    }
+
     onSave(form);
   };
 
@@ -3064,7 +3075,7 @@ function UserFormView({
             <span className="um-req">*</span>
           </label>
           <div className="um-role-options">
-            {Object.entries(roleConfig).map(([val, cfg]) => (
+            {Object.entries(roleConfig).filter(([val]) => val !== 'superadmin').map(([val, cfg]) => (
               <label
                 key={val}
                 className={`um-role-opt ${form.role_code === val ? "active" : ""}`}
@@ -4586,6 +4597,7 @@ const UserManagement = () => {
   const [view, setView] = useState("list");
   const [selectedUser, setSelectedUser] = useState(null);
   const [formUser, setFormUser] = useState(null);
+  const [deleteModal, setDeleteModal] = useState(false);
 
   const [search, setSearch] = useState("");
   const [filterRole, setFilterRole] = useState("semua");
@@ -4680,7 +4692,7 @@ const UserManagement = () => {
         const res = await userAPI.create(payload);
         if (res.data?.success) {
           setUsers((prev) => [res.data.data, ...prev]);
-          recordActivity({ action_type: "REGISTER", table_name: "users", record_id: res.data.data.id, new_value: { username: res.data.data.username, email: res.data.data.email } });
+          fetchLogs();
         }
       }
     } catch (err) {
@@ -4731,7 +4743,7 @@ const UserManagement = () => {
   };
   const goDelete = (u) => {
     setSelectedUser(u);
-    setView("delete");
+    setDeleteModal(true);
   };
   const goList = () => setView("list");
   const goDetailFromEdit = () => {
@@ -4778,19 +4790,7 @@ const UserManagement = () => {
       <ResetPassView user={selectedUser} onBack={() => setView("detail")} />
     );
   }
-  if (view === "delete" && selectedUser) {
-    return (
-      <DeleteUserView
-        user={selectedUser}
-        onBack={() => setView("detail")}
-        onConfirm={(id) => {
-          handleDelete(id);
-          setSelectedUser(null);
-          setView("list");
-        }}
-      />
-    );
-  }
+  // (view === "delete" block has been replaced by deleteModal overlay)
 
   // ── LIST VIEW ──
   return (
@@ -5130,6 +5130,18 @@ const UserManagement = () => {
         </div>
         <ActivityLogSection logs={logs} users={users} />
       </div>
+      {deleteModal && selectedUser && (
+        <MdDeleteModal
+          itemName={selectedUser.name}
+          onClose={() => setDeleteModal(false)}
+          onConfirm={() => {
+            handleDelete(selectedUser.id);
+            setDeleteModal(false);
+            setSelectedUser(null);
+            setView("list");
+          }}
+        />
+      )}
     </div>
   );
 };
