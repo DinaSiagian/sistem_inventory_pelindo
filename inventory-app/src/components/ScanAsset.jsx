@@ -60,8 +60,27 @@ const ScanAsset = () => {
     );
   }
 
+  const getAssetImage = (photo) => {
+    if (typeof photo === "string" && photo.trim() !== "") {
+      if (photo.startsWith("data:") || photo.startsWith("http")) {
+        return photo;
+      }
+      if (photo.startsWith("/")) {
+        const backendUrl = window.location.hostname === "localhost" ? "http://localhost:8000" : "";
+        return backendUrl + photo;
+      }
+      if (photo.includes("\\") || photo.includes(":/")) {
+        const parts = photo.split("\\");
+        const filename = parts[parts.length - 1];
+        const backendUrl = window.location.hostname === "localhost" ? "http://localhost:8000" : "";
+        return `${backendUrl}/uploads/assets/${filename}`;
+      }
+    }
+    return null;
+  };
+
   const sColor = getStatusColor(asset.status);
-  const imgSrc = asset.photo ? asset.photo : null;
+  const imgSrc = getAssetImage(asset.photo);
 
   return (
     <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%)", padding: "20px", fontFamily: "'Inter', sans-serif", display: "flex", justifyContent: "center", alignItems: "flex-start" }}>

@@ -42,6 +42,11 @@ export default defineConfig({
         target: 'http://localhost:8000',
         changeOrigin: true,
         secure: false,
+      },
+      '/uploads': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        secure: false,
       }
     }
   },
@@ -51,6 +56,11 @@ export default defineConfig({
     headers: securityHeaders,
     proxy: {
       '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/uploads': {
         target: 'http://localhost:8000',
         changeOrigin: true,
         secure: false,

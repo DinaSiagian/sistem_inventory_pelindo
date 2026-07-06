@@ -271,46 +271,6 @@ const getProjectName = (id) => {
   return p ? p.nm_pekerjaan : "—";
 };
 
-
-const CATEGORY_IMAGES = {
-  Laptop:
-    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-  CCTV:
-    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-  Router:
-    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-  "PC Desktop":
-    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-  Server:
-    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-  Switch:
-    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-  Printer:
-    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-  Lainnya:
-    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-  "IT Equipment":
-    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-  Kendaraan:
-    "https://images.unsplash.com/photo-1547036967-23d11aacaee0?w=400&h=300&fit=crop",
-  "Alat Berat":
-    "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=400&h=300&fit=crop",
-  Furniture:
-    "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&h=300&fit=crop",
-  // Short codes
-  LPT: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-  CTV: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-  RTR: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-  PC: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-  SRV: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-  SWT: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-  PRN: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-  OTH: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-  KND: "https://images.unsplash.com/photo-1547036967-23d11aacaee0?w=400&h=300&fit=crop",
-  AB: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=400&h=300&fit=crop",
-  FRN: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&h=300&fit=crop",
-};
-
 const conditionConfig = {
   GOOD: { label: "Baik", color: "#16a34a", bg: "#dcfce7" },
   MINOR_DAMAGE: { label: "Rusak Ringan", color: "#d97706", bg: "#fef3c7" },
@@ -2699,8 +2659,22 @@ const Inventaris = () => {
           ? "sebagian-dipinjam"
           : "non-operasional";
   const getAssetImage = (asset) => {
-    if (typeof asset.photo === "string") return asset.photo;
-    return asset.photo?.dataUrl || CATEGORY_IMAGES[asset.category] || null;
+    if (typeof asset.photo === "string" && asset.photo.trim() !== "") {
+      if (asset.photo.startsWith("data:") || asset.photo.startsWith("http")) {
+        return asset.photo;
+      }
+      if (asset.photo.startsWith("/")) {
+        const backendUrl = window.location.hostname === "localhost" ? "http://localhost:8000" : "";
+        return backendUrl + asset.photo;
+      }
+      if (asset.photo.includes("\\") || asset.photo.includes(":/")) {
+        const parts = asset.photo.split("\\");
+        const filename = parts[parts.length - 1];
+        const backendUrl = window.location.hostname === "localhost" ? "http://localhost:8000" : "";
+        return `${backendUrl}/uploads/assets/${filename}`;
+      }
+    }
+    return asset.photo?.dataUrl || null;
   };
 
   const getNextNomor = (eCode, bCode, zCode, szCode) => {

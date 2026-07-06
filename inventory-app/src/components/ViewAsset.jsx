@@ -61,46 +61,6 @@ const getProjectName = (id) => {
   return p ? p.nm_pekerjaan : "—";
 };
 
-
-const CATEGORY_IMAGES = {
-  Laptop:
-    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-  CCTV:
-    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-  Router:
-    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-  "PC Desktop":
-    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-  Server:
-    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-  Switch:
-    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-  Printer:
-    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-  Lainnya:
-    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-  "IT Equipment":
-    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-  Kendaraan:
-    "https://images.unsplash.com/photo-1547036967-23d11aacaee0?w=400&h=300&fit=crop",
-  "Alat Berat":
-    "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=400&h=300&fit=crop",
-  Furniture:
-    "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&h=300&fit=crop",
-  // Short codes
-  LPT: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-  CTV: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-  RTR: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-  PC: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-  SRV: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-  SWT: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-  PRN: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-  OTH: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop",
-  KND: "https://images.unsplash.com/photo-1547036967-23d11aacaee0?w=400&h=300&fit=crop",
-  AB: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=400&h=300&fit=crop",
-  FRN: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&h=300&fit=crop",
-};
-
 const conditionConfig = {
   GOOD: { label: "Baik", color: "#16a34a", bg: "#dcfce7" },
   MINOR_DAMAGE: { label: "Rusak Ringan", color: "#d97706", bg: "#fef3c7" },
@@ -1613,14 +1573,25 @@ function PhotoUpload({ value, onChange }) {
       return;
     }
     const reader = new FileReader();
-    reader.onload = (e) =>
+    reader.onload = (e) => {
+      let mockFolder = "C:\\Users\\MSI\\Pictures\\Camera Roll\\";
+      const nameLower = file.name.toLowerCase();
+      if (nameLower.includes("screenshot")) {
+        mockFolder = "C:\\Users\\MSI\\Pictures\\Screenshots\\";
+      } else if (nameLower.includes("download")) {
+        mockFolder = "C:\\Users\\MSI\\Downloads\\";
+      } else if (nameLower.includes("document") || nameLower.includes("dokumen")) {
+        mockFolder = "C:\\Users\\MSI\\Documents\\";
+      }
+      
       onChange({
         dataUrl: e.target.result,
         name: file.name,
-        path: file.path || ("C:\\Users\\local\\Pictures\\" + file.name),
+        path: file.path || (mockFolder + file.name),
         size: file.size,
         type: file.type,
       });
+    };
     reader.readAsDataURL(file);
   };
   const formatSize = (bytes) =>
@@ -1628,9 +1599,34 @@ function PhotoUpload({ value, onChange }) {
       ? `${(bytes / 1024).toFixed(1)} KB`
       : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   if (value) {
+    let displayUrl = "";
+    if (typeof value === "string") {
+      if (value.startsWith("data:") || value.startsWith("http")) {
+        displayUrl = value;
+      } else if (value.startsWith("/")) {
+        const backendUrl = window.location.hostname === "localhost" ? "http://localhost:8000" : "";
+        displayUrl = backendUrl + value;
+      } else if (value.includes("\\") || value.includes(":/")) {
+        const parts = value.split("\\");
+        const filename = parts[parts.length - 1];
+        const backendUrl = window.location.hostname === "localhost" ? "http://localhost:8000" : "";
+        displayUrl = `${backendUrl}/uploads/assets/${filename}`;
+      }
+    } else if (value && typeof value === "object") {
+      displayUrl = value.dataUrl;
+    }
+
+    const nameStr = typeof value === "string"
+      ? value.split("\\").pop().split("/").pop()
+      : value.name;
+
+    const sizeStr = typeof value === "string"
+      ? "Tersimpan"
+      : formatSize(value.size);
+
     return (
-      <div className="photo-preview-wrap" style={{ margin: 0 }}>
-        <img src={value.dataUrl} alt="preview" className="photo-preview-img" />
+      <div className="photo-preview-wrap" style={{ margin: 0, width: "100%", maxWidth: "400px" }}>
+        <img src={displayUrl} alt="preview" className="photo-preview-img" />
         <div className="photo-preview-overlay">
           <button
             type="button"
@@ -1655,8 +1651,10 @@ function PhotoUpload({ value, onChange }) {
           />
         </div>
         <div className="photo-preview-info">
-          <span>{value.name}</span>
-          <span className="photo-size-badge">{formatSize(value.size)}</span>
+          <span style={{ textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap", maxWidth: "250px" }}>
+            {nameStr}
+          </span>
+          <span className="photo-size-badge">{sizeStr}</span>
         </div>
       </div>
     );
@@ -1676,6 +1674,7 @@ function PhotoUpload({ value, onChange }) {
       }}
       onClick={() => fileInputRef.current?.click()}
       style={{
+        width: "100%",
         maxWidth: "400px",
         margin: 0,
         minHeight: "140px",
@@ -2470,8 +2469,22 @@ const ViewAsset = () => {
           ? "sebagian-dipinjam"
           : "non-operasional";
   const getAssetImage = (asset) => {
-    if (typeof asset.photo === "string") return asset.photo;
-    return asset.photo?.dataUrl || CATEGORY_IMAGES[asset.category] || null;
+    if (typeof asset.photo === "string" && asset.photo.trim() !== "") {
+      if (asset.photo.startsWith("data:") || asset.photo.startsWith("http")) {
+        return asset.photo;
+      }
+      if (asset.photo.startsWith("/")) {
+        const backendUrl = window.location.hostname === "localhost" ? "http://localhost:8000" : "";
+        return backendUrl + asset.photo;
+      }
+      if (asset.photo.includes("\\") || asset.photo.includes(":/")) {
+        const parts = asset.photo.split("\\");
+        const filename = parts[parts.length - 1];
+        const backendUrl = window.location.hostname === "localhost" ? "http://localhost:8000" : "";
+        return `${backendUrl}/uploads/assets/${filename}`;
+      }
+    }
+    return asset.photo?.dataUrl || null;
   };
 
   const getNextNomor = (eCode, bCode, zCode, szCode, catPrefix = "") => {
