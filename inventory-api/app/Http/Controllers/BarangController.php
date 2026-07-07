@@ -298,12 +298,132 @@ class BarangController extends Controller
                         mkdir($dir, 0777, true);
                     }
                     file_put_contents($dir . '/' . $fileName, $image_base64);
+
+                    // Try to automatically find the actual local path of the file on the user's laptop
+                    $localPath = $this->findLocalFilePath($fileName, $dataUrl);
+                    if ($localPath) {
+                        return $localPath;
+                    }
+
                     return isset($photoData['path']) && !empty($photoData['path']) ? $photoData['path'] : '/uploads/assets/' . $fileName;
                 }
             }
         }
         
         return is_array($photoData) ? ($photoData['path'] ?? $photoData['name'] ?? null) : $photoData;
+    }
+
+    private function findLocalFilePath($filename, $base64Data)
+    {
+        // 1. Get file content to compare
+        $targetContent = base64_decode(explode(";base64,", $base64Data)[1] ?? '');
+        if (empty($targetContent)) {
+            return null;
+        }
+        $targetSize = strlen($targetContent);
+        $targetHash = md5($targetContent);
+
+        // 2. Query the PowerShell search helper
+        $path = $this->searchFileInWindows($filename);
+        
+        // DEBUG LOGGING
+        $logFile = app()->basePath('public/debug_search.log');
+        $logMsg = "[" . date('Y-m-d H:i:s') . "] Search for: " . $filename . PHP_EOL .
+                  "Target size: " . $targetSize . ", Hash: " . $targetHash . PHP_EOL .
+                  "PowerShell returned: " . ($path ?? 'NULL') . PHP_EOL;
+
+        if ($path && file_exists($path)) {
+            $actualSize = filesize($path);
+            $actualHash = md5_file($path);
+            $logMsg .= "Actual file size: " . $actualSize . ", Hash: " . $actualHash . PHP_EOL;
+            
+            // Verify file size and MD5 hash to ensure it is the exact file that was uploaded
+            if ($actualSize === $targetSize && $actualHash === $targetHash) {
+                $logMsg .= "STATUS: MATCH FOUND!" . PHP_EOL . PHP_EOL;
+                file_put_contents($logFile, $logMsg, FILE_APPEND);
+                return $path;
+            } else {
+                $logMsg .= "STATUS: SIZE OR HASH MISMATCH!" . PHP_EOL . PHP_EOL;
+            }
+        } else {
+            $logMsg .= "STATUS: FILE NOT FOUND OR EMPTY PATH!" . PHP_EOL . PHP_EOL;
+        }
+        file_put_contents($logFile, $logMsg, FILE_APPEND);
+
+        return null;
+    }
+
+    private function searchFileInWindows($filename)
+    {
+        $filenameEscaped = str_replace("'", "''", $filename);
+        $userProfile = getenv('USERPROFILE');
+        $userProfileEscaped = str_replace("'", "''", $userProfile);
+
+        $psScript = <<<PS
+\$filename = '{$filenameEscaped}';
+\$userProfile = '{$userProfileEscaped}';
+
+# 1. Try Windows Search Index (instant query, covers indexed files on all drives)
+try {
+    \$conn = New-Object -ComObject ADODB.Connection
+    \$conn.Open("Provider=Search.CollatorDSO;Extended Properties='Application=Windows';")
+    \$rs = New-Object -ComObject ADODB.Recordset
+    \$query = "SELECT System.ItemPathDisplay FROM SystemIndex WHERE System.ItemName = '\$filename'"
+    \$rs.Open(\$query, \$conn)
+    while (-not \$rs.EOF) {
+        \$path = \$rs.Fields.Item("System.ItemPathDisplay").Value
+        if (\$path -like "C:\\Users\\*" -or \$path -like "D:\\*" -or \$path -like "E:\\*") {
+            if (Test-Path \$path) {
+                Write-Output \$path
+                exit
+            }
+        }
+        \$rs.MoveNext()
+    }
+} catch {}
+
+# 2. Fallback 1: Search common user directories with depth limit of 4
+\$searchDirs = @()
+if (\$userProfile -and (Test-Path \$userProfile)) {
+    \$subFolders = @('Downloads', 'Documents', 'Pictures', 'Desktop', 'OneDrive')
+    foreach (\$sub in \$subFolders) {
+        \$dir = Join-Path \$userProfile \$sub
+        if (Test-Path \$dir) { \$searchDirs += \$dir }
+    }
+}
+if (Test-Path 'C:\\Dokumen') { \$searchDirs += 'C:\\Dokumen' }
+
+foreach (\$dir in \$searchDirs) {
+    \$found = Get-ChildItem -Path \$dir -Filter \$filename -Recurse -Depth 4 -File -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
+    if (\$found) {
+        Write-Output \$found
+        exit
+    }
+}
+
+# 3. Fallback 2: Check other drive roots with depth limit of 2 (skipping system directories)
+for (\$i = 67; \$i -le 90; \$i++) {
+    \$drive = "\$([char]\$i):" + [char]92
+    if (Test-Path \$drive) {
+        \$subdirs = Get-ChildItem -Path \$drive -Directory -ErrorAction SilentlyContinue
+        foreach (\$s in \$subdirs) {
+            if (\$s.Name -in @('Windows', 'Program Files', 'Program Files (x86)', 'ProgramData', 'Users', 'System Volume Information', '\$Recycle.Bin', 'msocache')) { continue }
+            \$found = Get-ChildItem -Path \$s.FullName -Filter \$filename -Recurse -Depth 2 -File -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
+            if (\$found) {
+                Write-Output \$found
+                exit
+            }
+        }
+    }
+}
+PS;
+
+        // PowerShell -EncodedCommand expects UTF-16LE base64 encoded string to avoid escaping issues
+        $utf16 = mb_convert_encoding($psScript, 'UTF-16LE', 'UTF-8');
+        $base64 = base64_encode($utf16);
+        $cmd = 'powershell -NoProfile -ExecutionPolicy Bypass -EncodedCommand ' . $base64;
+        $output = shell_exec($cmd);
+        return $output ? trim($output) : null;
     }
 
     public function store(Request $request)

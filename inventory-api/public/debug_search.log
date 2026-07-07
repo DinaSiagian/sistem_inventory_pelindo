@@ -1,0 +1,46 @@
+[2026-07-07 14:49:43] Search for: project-agiantravel.png
+Target size: 3013091, Hash: 6874780c9de0f4f0ec73d4ff532b7fea
+PowerShell returned: The '++' operator works only on numbers. The operand is a 'System.Char'.
+At line:43 char:46
++ for ($char = [char]'C'; $char -le [char]'Z'; $char++) {
++                                              ~~~~~~~
+    + CategoryInfo          : InvalidOperation: (:) [], RuntimeException
+    + FullyQualifiedErrorId : OperatorRequiresNumber
+STATUS: FILE NOT FOUND OR EMPTY PATH!
+
+[2026-07-07 14:50:25] Search for: foto laptop.jpg
+Target size: 93833, Hash: b71c1cb71d889db9f5734628a712ffaa
+PowerShell returned: C:\Users\LENOVO\Downloads\foto laptop.jpg
+Actual file size: 93833, Hash: b71c1cb71d889db9f5734628a712ffaa
+STATUS: MATCH FOUND!
+
+[2026-07-07 14:53:33] Search for: Manajemen Pendonor.png
+Target size: 108273, Hash: 10735aa0472ee36da29cfbbd95841136
+PowerShell returned: C:\Users\LENOVO\Downloads\PPW Sistem Informasi Bank Darah Digital\Manajemen Pendonor.png
+Actual file size: 108273, Hash: 10735aa0472ee36da29cfbbd95841136
+STATUS: MATCH FOUND!
+
+[2026-07-07 15:00:52] Search for: Profile Admin.png
+Target size: 117352, Hash: ac5ee4485cfe3e60f82c9f650e5a1532
+PowerShell returned: C:\Users\LENOVO\Downloads\PPW Sistem Informasi Bank Darah Digital\Profile Admin.png
+Actual file size: 117352, Hash: ac5ee4485cfe3e60f82c9f650e5a1532
+STATUS: MATCH FOUND!
+
+[2026-07-07 15:03:18] Search for: BPMN.png
+Target size: 1031087, Hash: 65075ec8f1a844395461db50003c9350
+PowerShell returned: C:\Users\LENOVO\OneDrive\Documents\FILE PENTING DINA\Project Magang\BPMN.png
+Actual file size: 1031087, Hash: 65075ec8f1a844395461db50003c9350
+STATUS: MATCH FOUND!
+
+[2026-07-07 15:04:33] Search for: Screenshot 2026-07-07 104505.png
+Target size: 85731, Hash: ed26bbed144b637d929d0f329ca10328
+PowerShell returned: C:\Users\LENOVO\OneDrive\Pictures\Screenshots\Screenshot 2026-07-07 104505.png
+Actual file size: 85731, Hash: ed26bbed144b637d929d0f329ca10328
+STATUS: MATCH FOUND!
+
+[2026-07-07 19:35:45] Search for: Screenshot 2026-01-13 092744.png
+Target size: 758533, Hash: 45092196ddb8269c7ff098817687f9c1
+PowerShell returned: C:\Users\LENOVO\OneDrive\Pictures\Screenshots\Screenshot 2026-01-13 092744.png
+Actual file size: 758533, Hash: 45092196ddb8269c7ff098817687f9c1
+STATUS: MATCH FOUND!
+

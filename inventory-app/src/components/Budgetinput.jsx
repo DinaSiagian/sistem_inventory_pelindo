@@ -3740,6 +3740,7 @@ function OpexModule({ masterList, setMasterList }) {
     });
 
     prevMastersRef.current = current;
+    localStorage.setItem("budget_cache_opex", JSON.stringify(current));
   }, [masters, isInitialLoad]);
 
   const [toast, setToast] = useState(null);
@@ -5559,6 +5560,7 @@ function CapexModule({ capexList, setCapexList }) {
     });
 
     prevCapexRef.current = current;
+    localStorage.setItem("budget_cache_capex", JSON.stringify(current));
   }, [capexList, isInitialLoad]);
 
   const [toast, setToast] = useState(null);

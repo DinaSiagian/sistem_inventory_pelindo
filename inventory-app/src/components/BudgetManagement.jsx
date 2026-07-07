@@ -104,32 +104,32 @@ const fmtDate = (d) =>
 const newId = () =>
   `id-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 function pctColor(p) {
-  return p >= 100
+  return p > 100
     ? "#ef4444"
-    : p >= 80
+    : p >= 90
       ? "#f59e0b"
       : p >= 50
         ? "#3b82f6"
         : "#22c55e";
 }
 function pctMeta(p) {
-  if (p >= 100)
+  if (p > 100)
     return {
       label: "Over Budget",
       bg: "#fef2f2",
       fg: "#b91c1c",
       border: "#fecaca",
     };
-  if (p >= 80)
+  if (p >= 90)
     return {
-      label: "Near Limit",
+      label: "Penuh",
       bg: "#fffbeb",
       fg: "#b45309",
       border: "#fde68a",
     };
   if (p >= 50)
     return {
-      label: "On Track",
+      label: "Normal",
       bg: "#eff6ff",
       fg: "#1d4ed8",
       border: "#bfdbfe",
@@ -1830,6 +1830,22 @@ function Breadcrumb({ items }) {
 }
 // ══════ TAMBAH PEKERJAAN PAGE ══════
 function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
+  const isOpex = !anggaran.thn_rkap_awal;
+  const totalRealisasiPage = isOpex
+    ? (anggaran.realisasi_tahunan || []).reduce(
+        (s, r) => s + (r.realisasi_murni || 0) + (r.realisasi_bymhd || 0),
+        0,
+      )
+    : 0;
+  const hasRevisionPage = isOpex
+    ? (anggaran.realisasi_tahunan || []).some(
+        (r) => (r.history || []).some((h) => !h.is_initial)
+      )
+    : false;
+  const updatedNilaiKadPage = isOpex && hasRevisionPage
+    ? totalRealisasiPage
+    : (anggaran.nilai_kad || 0);
+
   const [form, setForm] = useState({
     nm_pekerjaan: "",
     nilai_rab: "",
@@ -1899,7 +1915,7 @@ function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
     (s, p) => s + (p.nilai_kontrak || 0),
     0,
   );
-  const sisaAnggaran = anggaran.nilai_kad - totalKontrak;
+  const sisaAnggaran = updatedNilaiKadPage - totalKontrak;
   const sisaClass =
     sisaAnggaran > 0
       ? "sisa-ok"
@@ -1915,16 +1931,16 @@ function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
       alert("Nilai RAB wajib diisi dan harus lebih besar dari 0");
       return;
     }
-    if (nilaiRab > anggaran.nilai_kad) {
-      alert(`Nilai RAB tidak boleh melebihi Nilai KAD (${fmt(anggaran.nilai_kad)})`);
+    if (nilaiRab > updatedNilaiKadPage) {
+      alert(`Nilai RAB tidak boleh melebihi Nilai KAD (${fmt(updatedNilaiKadPage)})`);
       return;
     }
     if (!form.nilai_kontrak || nilaiKontrak <= 0) {
       alert("Nilai Kontrak wajib diisi dan harus lebih besar dari 0");
       return;
     }
-    if (nilaiKontrak > anggaran.nilai_kad) {
-      alert(`Nilai Kontrak tidak boleh melebihi Nilai KAD (${fmt(anggaran.nilai_kad)})`);
+    if (nilaiKontrak > updatedNilaiKadPage) {
+      alert(`Nilai Kontrak tidak boleh melebihi Nilai KAD (${fmt(updatedNilaiKadPage)})`);
       return;
     }
     onSave({
@@ -1972,7 +1988,7 @@ function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
                 disabled
                 style={{ flex: 1, opacity: 0.7 }}
               />
-              {anggaran.nilai_kad > 0 && (
+              {updatedNilaiKadPage > 0 && (
                 <div className="anggaran-info-bar">
                   <div className="ai-item-s">
                     <span className="ai-lbl-s">Sisa Anggaran</span>
@@ -2973,11 +2989,15 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
 }
 // ══════ OPEX CARD ══════
 function OpexCard({ ang, onSelect, onDelete, searchQ, onDirectProject }) {
-  const assetTotal = (ang.assets || []).reduce(
-    (s, a) => s + ((a.jumlah || 1) * (a.acquisition_value || 0)),
+  const totalRealisasi = (ang.realisasi_tahunan || []).reduce(
+    (s, r) => s + (r.realisasi_murni || 0) + (r.realisasi_bymhd || 0),
     0,
   );
-  const serapan = ang.nilai_kad > 0 ? Math.round((assetTotal / ang.nilai_kad) * 100) : 0;
+  const hasRevision = (ang.realisasi_tahunan || []).some(
+    (r) => (r.history || []).some((h) => !h.is_initial)
+  );
+  const updatedNilaiKad = hasRevision ? totalRealisasi : ang.nilai_kad;
+  const serapan = ang.nilai_kad > 0 ? Math.round((totalRealisasi / ang.nilai_kad) * 100) : 0;
   const meta = pctMeta(serapan);
   const matchedProjects = searchQ 
     ? (ang.projects || []).filter(p => p.nm_pekerjaan?.toLowerCase().includes(searchQ.toLowerCase()))
@@ -3009,7 +3029,7 @@ function OpexCard({ ang, onSelect, onDelete, searchQ, onDirectProject }) {
           <div className="ang-card-fin">
             <div className="amt-blk">
               <span className="amt-lbl">Nilai KAD</span>
-              <span className="amt-val green">{fmt(ang.nilai_kad)}</span>
+              <span className="amt-val green">{fmt(updatedNilaiKad)}</span>
             </div>
           </div>
         </div>
@@ -3200,6 +3220,22 @@ function EditOpexInline({ ang, onSave, onCancel }) {
 }
 // ══════ EDIT PROJECT PAGE ══════
 function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
+  const isOpex = !anggaran.thn_rkap_awal;
+  const totalRealisasiEdit = isOpex
+    ? (anggaran.realisasi_tahunan || []).reduce(
+        (s, r) => s + (r.realisasi_murni || 0) + (r.realisasi_bymhd || 0),
+        0,
+      )
+    : 0;
+  const hasRevisionEdit = isOpex
+    ? (anggaran.realisasi_tahunan || []).some(
+        (r) => (r.history || []).some((h) => !h.is_initial)
+      )
+    : false;
+  const updatedNilaiKadEdit = isOpex && hasRevisionEdit
+    ? totalRealisasiEdit
+    : (anggaran.nilai_kad || 0);
+
   const [form, setForm] = useState({ ...project });
   const [patokanWaktu, setPatokanWaktu] = useState("sp3");
   const up = (k, v) => setForm((f) => ({ ...f, [k]: v }));
@@ -3256,16 +3292,16 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
       showToast("Nilai RAB wajib diisi dan harus lebih besar dari 0");
       return;
     }
-    if (nilaiRab > anggaran.nilai_kad) {
-      showToast(`Nilai RAB tidak boleh melebihi Nilai KAD (${fmt(anggaran.nilai_kad)})`);
+    if (nilaiRab > updatedNilaiKadEdit) {
+      showToast(`Nilai RAB tidak boleh melebihi Nilai KAD (${fmt(updatedNilaiKadEdit)})`);
       return;
     }
     if (!form.nilai_kontrak || nilaiKontrak <= 0) {
       showToast("Nilai Kontrak wajib diisi dan harus lebih besar dari 0");
       return;
     }
-    if (nilaiKontrak > anggaran.nilai_kad) {
-      showToast(`Nilai Kontrak tidak boleh melebihi Nilai KAD (${fmt(anggaran.nilai_kad)})`);
+    if (nilaiKontrak > updatedNilaiKadEdit) {
+      showToast(`Nilai Kontrak tidak boleh melebihi Nilai KAD (${fmt(updatedNilaiKadEdit)})`);
       return;
     }
     onSave(project.id, {
@@ -3298,11 +3334,11 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
             <strong>{isCode ? <code>{val}</code> : val}</strong>
           </div>
         ))}
-        {anggaran?.nilai_kad > 0 && (
+        {updatedNilaiKadEdit > 0 && (
           <div className="ctx-item">
             <span>Nilai KAD</span>
             <strong style={{ color: anggaran.type === 'opex' ? "#16a34a" : "#2563eb" }}>
-              {fmt(anggaran.nilai_kad)}
+              {fmt(updatedNilaiKadEdit)}
             </strong>
           </div>
         )}
@@ -4933,6 +4969,21 @@ function PekerjaanListPage({
   const projects = anggaran.projects || [];
   const isOpex = anggaran.type === "opex";
   const isMulti = !isOpex && (anggaran.thn_rkap_awal !== anggaran.thn_rkap_akhir);
+  const totalRealisasiDetail = isOpex && anggaran
+    ? (anggaran.realisasi_tahunan || []).reduce(
+        (s, r) => s + (r.realisasi_murni || 0) + (r.realisasi_bymhd || 0),
+        0,
+      )
+    : 0;
+  const hasRevisionDetail = isOpex && anggaran
+    ? (anggaran.realisasi_tahunan || []).some(
+        (r) => (r.history || []).some((h) => !h.is_initial)
+      )
+    : false;
+  const updatedNilaiKadDetail = isOpex && hasRevisionDetail
+    ? totalRealisasiDetail
+    : (anggaran?.nilai_kad || 0);
+
   const itemLabel = isOpex ? "Barang" : "Aset";
 
   const availableDates = useMemo(() => {
@@ -5037,7 +5088,7 @@ function PekerjaanListPage({
         {[
           [isOpex ? "Tahun Anggaran" : "Tahun RKAP", isOpex ? anggaran.thn_anggaran : (isMulti ? `${anggaran?.thn_rkap_awal} — ${anggaran?.thn_rkap_akhir}` : (anggaran?.thn_rkap_awal || '—'))],
           "DIV",
-          ["Nilai KAD", fmt(anggaran?.nilai_kad || 0), false, isOpex ? "#16a34a" : "#2563eb"],
+          ["Nilai KAD", fmt(isOpex ? updatedNilaiKadDetail : (anggaran?.nilai_kad || 0)), false, isOpex ? "#16a34a" : "#2563eb"],
           "DIV",
           ...(isMulti
             ? [
@@ -5315,8 +5366,8 @@ export default function BudgetManagement({ forcedType }) {
     };
 
     // 1. Load dari Cache agar INSTAN
-    const cachedCapex = localStorage.getItem("budget_mgmt_cache_capex");
-    const cachedOpex = localStorage.getItem("budget_mgmt_cache_opex");
+    const cachedCapex = localStorage.getItem("budget_cache_capex");
+    const cachedOpex = localStorage.getItem("budget_cache_opex");
 
     if (cachedCapex) {
       setCapexData(cleanAssets(JSON.parse(cachedCapex)));
@@ -5333,12 +5384,12 @@ export default function BudgetManagement({ forcedType }) {
       if (!cancelled && res.data?.success) {
         const data = cleanAssets(res.data.data ?? []);
         setCapexData(data);
-        localStorage.setItem("budget_mgmt_cache_capex", JSON.stringify(data));
+        localStorage.setItem("budget_cache_capex", JSON.stringify(data));
       }
     }).catch(err => {
       console.error("Failed to load CAPEX", err);
     }).finally(() => {
-      if (!cancelled && !localStorage.getItem("budget_mgmt_cache_opex")) {
+      if (!cancelled && !localStorage.getItem("budget_cache_opex")) {
         // Hanya set loading false jika opex juga sudah (atau tidak ada cache)
       }
     });
@@ -5348,7 +5399,7 @@ export default function BudgetManagement({ forcedType }) {
       if (!cancelled && res.data?.success) {
         const data = cleanAssets(res.data.data ?? []);
         setOpexData(data);
-        localStorage.setItem("budget_mgmt_cache_opex", JSON.stringify(data));
+        localStorage.setItem("budget_cache_opex", JSON.stringify(data));
       }
     }).catch(err => {
       console.error("Failed to load OPEX", err);
@@ -5483,10 +5534,17 @@ export default function BudgetManagement({ forcedType }) {
       0,
     );
     const opexCount = opexFiltered.length;
-    const opexPagu = opexFiltered.reduce(
-      (s, a) => s + (a.nilai_kad || 0),
-      0,
-    );
+    const opexPagu = opexFiltered.reduce((s, a) => {
+      const totalR = (a.realisasi_tahunan || []).reduce(
+        (sum, r) => sum + (r.realisasi_murni || 0) + (r.realisasi_bymhd || 0),
+        0,
+      );
+      const hasRevision = (a.realisasi_tahunan || []).some(
+        (r) => (r.history || []).some((h) => !h.is_initial)
+      );
+      const val = hasRevision ? totalR : (a.nilai_kad || 0);
+      return s + val;
+    }, 0);
     const opexRealisasi = opexFiltered.reduce(
       (s, a) =>
         s + (a.assets || []).reduce((ts, t) => ts + (t.acquisition_value || 0), 0),
