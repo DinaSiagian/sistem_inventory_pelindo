@@ -308,6 +308,7 @@ class TransactionController extends Controller
             }
 
             $insertedIds = [];
+            $bastNumber = null; // Single BAST number for entire batch
 
             foreach ($request->input('items') as $item) {
                 $sn = $item['kd_barang'];
@@ -327,8 +328,6 @@ class TransactionController extends Controller
                     ->where('kd_barang', $sn)
                     ->update(['is_current' => false]);
 
-
-
                 // Insert BORROW transaction
                 $txId = DB::table('asset_transactions')->insertGetId([
                     'kd_barang' => $sn,
@@ -344,7 +343,10 @@ class TransactionController extends Controller
                     'updated_at' => $transactionDate,
                 ], 'transaction_id');
 
-                $bastNumber = "BAST-IT/" . $transactionDate->format('Y/m/') . str_pad($txId, 4, '0', STR_PAD_LEFT);
+                // Generate BAST number from first item's ID, reuse for the rest
+                if ($bastNumber === null) {
+                    $bastNumber = "BAST-IT/" . $transactionDate->format('Y/m/') . str_pad($txId, 4, '0', STR_PAD_LEFT);
+                }
                 DB::table('asset_transactions')->where('transaction_id', $txId)->update(['bast_number' => $bastNumber]);
 
                 // Update barang's physical location (subzona) and branch ownership to receiver's branch
@@ -379,7 +381,8 @@ class TransactionController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Berita Acara Serah Terima berhasil disimpan',
-                'inserted_ids' => $insertedIds
+                'inserted_ids' => $insertedIds,
+                'bast_number' => $bastNumber,
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -398,14 +401,29 @@ class TransactionController extends Controller
             $user = JWTAuth::user();
             $operatorId = $user ? $user->id : null;
 
-            $validator = Validator::make($request->all(), [
-                'code' => 'required|string', // serial_number
-                'giver_id' => 'required|integer',
-                'receiver_id' => 'required|integer',
-                'return_date' => 'nullable|string',
-                'return_notes' => 'nullable|string',
-                'return_condition' => 'nullable|string',
-            ]);
+            // Check if it's a batch request (has 'items' array) or a single request
+            $isBatch = $request->has('items');
+
+            if ($isBatch) {
+                $validator = Validator::make($request->all(), [
+                    'giver_id' => 'required|integer',
+                    'receiver_id' => 'required|integer',
+                    'return_date' => 'nullable|string',
+                    'items' => 'required|array',
+                    'items.*.code' => 'required|string',
+                    'items.*.return_notes' => 'nullable|string',
+                    'items.*.return_condition' => 'nullable|string',
+                ]);
+            } else {
+                $validator = Validator::make($request->all(), [
+                    'code' => 'required|string',
+                    'giver_id' => 'required|integer',
+                    'receiver_id' => 'required|integer',
+                    'return_date' => 'nullable|string',
+                    'return_notes' => 'nullable|string',
+                    'return_condition' => 'nullable|string',
+                ]);
+            }
 
             if ($validator->fails()) {
                 return response()->json([
@@ -415,70 +433,91 @@ class TransactionController extends Controller
                 ], 422);
             }
 
-            $sn = $request->input('code');
             $giverId = $request->input('giver_id');
             $receiverId = $request->input('receiver_id');
             $returnDate = $request->input('return_date') 
                 ? Carbon::parse($request->input('return_date')) 
                 : Carbon::now();
-            $notes = $request->input('return_notes') ?? null;
-            $condition = $request->input('return_condition') ?? 'BAIK';
 
-            // Fetch id_pekerjaan from barang/assets
-            $barangInfo = DB::table('barang AS b')
-                ->join('assets AS a', 'b.asset_code', '=', 'a.asset_code')
-                ->where('b.kd_barang', $sn)
-                ->select(DB::raw('COALESCE(b.id_pekerjaan, a.id_pekerjaan) AS id_pekerjaan'))
-                ->first();
-            $idPekerjaan = $barangInfo ? $barangInfo->id_pekerjaan : null;
+            $itemsToProcess = [];
+            if ($isBatch) {
+                $itemsToProcess = $request->input('items');
+            } else {
+                $itemsToProcess = [
+                    [
+                        'code' => $request->input('code'),
+                        'return_notes' => $request->input('return_notes'),
+                        'return_condition' => $request->input('return_condition'),
+                    ]
+                ];
+            }
 
-            // Set all previous transactions for this serial number as not current
-            DB::table('asset_transactions')
-                ->where('kd_barang', $sn)
-                ->update(['is_current' => false]);
+            $insertedIds = [];
+            $bastNumber = null;
 
+            foreach ($itemsToProcess as $item) {
+                $sn = $item['code'];
+                $notes = $item['return_notes'] ?? null;
+                $condition = $item['return_condition'] ?? 'BAIK';
 
-
-            // Insert RETURN transaction
-            $txId = DB::table('asset_transactions')->insertGetId([
-                'kd_barang' => $sn,
-                'transaction_type' => 'RETURN',
-                'performed_by_id' => $operatorId,
-                'condition' => $condition,
-                'notes' => $notes,
-                'giver_id' => $giverId,
-                'receiver_id' => $receiverId,
-                'id_pekerjaan' => $idPekerjaan,
-                'is_current' => true,
-                'created_at' => $returnDate,
-                'updated_at' => $returnDate,
-            ], 'transaction_id');
-
-            $bastNumber = "BAST-IT/" . $returnDate->format('Y/m/') . str_pad($txId, 4, '0', STR_PAD_LEFT);
-            DB::table('asset_transactions')->where('transaction_id', $txId)->update(['bast_number' => $bastNumber]);
-
-            // Update barang's physical location (subzona) and branch ownership to receiver's branch (the one getting the asset back)
-            $receiverUser = DB::table('users')->where('id', $receiverId)->first();
-            if ($receiverUser && $receiverUser->branches_code) {
-                $receiverSubzona = DB::table('subzona')
-                    ->join('zonas', 'subzona.zona_code', '=', 'zonas.zona_code')
-                    ->where('zonas.branch_code', $receiverUser->branches_code)
-                    ->select('subzona.subzona_code')
+                // Fetch id_pekerjaan from barang/assets
+                $barangInfo = DB::table('barang AS b')
+                    ->join('assets AS a', 'b.asset_code', '=', 'a.asset_code')
+                    ->where('b.kd_barang', $sn)
+                    ->select(DB::raw('COALESCE(b.id_pekerjaan, a.id_pekerjaan) AS id_pekerjaan'))
                     ->first();
-                
-                $updateData = [];
-                if ($receiverSubzona) {
-                    $updateData['subzona_code'] = $receiverSubzona->subzona_code;
-                }
-                if (Schema::hasColumn('barang', 'branch')) {
-                    $updateData['branch'] = $receiverUser->branches_code;
-                }
+                $idPekerjaan = $barangInfo ? $barangInfo->id_pekerjaan : null;
 
-                if (!empty($updateData)) {
-                    DB::table('barang')
-                        ->where('kd_barang', $sn)
-                        ->update($updateData);
+                // Set all previous transactions for this serial number as not current
+                DB::table('asset_transactions')
+                    ->where('kd_barang', $sn)
+                    ->update(['is_current' => false]);
+
+                // Insert RETURN transaction
+                $txId = DB::table('asset_transactions')->insertGetId([
+                    'kd_barang' => $sn,
+                    'transaction_type' => 'RETURN',
+                    'performed_by_id' => $operatorId,
+                    'condition' => $condition,
+                    'notes' => $notes,
+                    'giver_id' => $giverId,
+                    'receiver_id' => $receiverId,
+                    'id_pekerjaan' => $idPekerjaan,
+                    'is_current' => true,
+                    'created_at' => $returnDate,
+                    'updated_at' => $returnDate,
+                ], 'transaction_id');
+
+                if ($bastNumber === null) {
+                    $bastNumber = "BAST-IT/" . $returnDate->format('Y/m/') . str_pad($txId, 4, '0', STR_PAD_LEFT);
                 }
+                DB::table('asset_transactions')->where('transaction_id', $txId)->update(['bast_number' => $bastNumber]);
+
+                // Update barang's physical location (subzona) and branch ownership to receiver's branch
+                $receiverUser = DB::table('users')->where('id', $receiverId)->first();
+                if ($receiverUser && $receiverUser->branches_code) {
+                    $receiverSubzona = DB::table('subzona')
+                        ->join('zonas', 'subzona.zona_code', '=', 'zonas.zona_code')
+                        ->where('zonas.branch_code', $receiverUser->branches_code)
+                        ->select('subzona.subzona_code')
+                        ->first();
+                    
+                    $updateData = [];
+                    if ($receiverSubzona) {
+                        $updateData['subzona_code'] = $receiverSubzona->subzona_code;
+                    }
+                    if (Schema::hasColumn('barang', 'branch')) {
+                        $updateData['branch'] = $receiverUser->branches_code;
+                    }
+
+                    if (!empty($updateData)) {
+                        DB::table('barang')
+                            ->where('kd_barang', $sn)
+                            ->update($updateData);
+                    }
+                }
+                
+                $insertedIds[] = $txId;
             }
 
             DB::commit();

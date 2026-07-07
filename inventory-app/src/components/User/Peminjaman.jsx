@@ -687,29 +687,49 @@ const genNomorBAST = (id, date) => {
   return `BAST-IT/${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, "0")}/${String(id).padStart(4, "0")}`;
 };
 
-const generateBAST = (item, type = "borrow", assetsList = []) => {
-  let fullItem = { ...item };
-  const found = assetsList.find(a => a.code === (item.code || item.asset_code));
-  if (found) {
-    fullItem.specs = found.specs || [];
-    fullItem.customSpecs = found.customSpecs || [];
-    if (!fullItem.category) fullItem.category = found.category || "";
-    fullItem.serialNumber = found.serialNumber || "-";
-  }
-  item = fullItem;
+const generateBAST = (itemOrItems, type = "borrow", assetsList = []) => {
+  // Support both single item and array of items
+  const items = Array.isArray(itemOrItems) ? itemOrItems : [itemOrItems];
+  
+  // Enrich each item with asset specs
+  const enrichedItems = items.map(item => {
+    let fullItem = { ...item };
+    const found = assetsList.find(a => a.code === (item.code || item.asset_code));
+    if (found) {
+      fullItem.specs = found.specs || [];
+      fullItem.customSpecs = found.customSpecs || [];
+      if (!fullItem.category) fullItem.category = found.category || "";
+      fullItem.serialNumber = found.serialNumber || "-";
+    }
+    return fullItem;
+  });
 
+  const firstItem = enrichedItems[0];
   const isBorrow = type === "borrow";
-  const giver = getUser(item.giver_id);
-  const receiver = getUser(item.receiver_id);
-  const nomorBAST = item.bast_number || genNomorBAST(item.id, isBorrow ? item.borrow_date : item.return_date);
-  const tglDokumen = fmtDate(isBorrow ? item.borrow_date : item.return_date);
-  let rawCond = isBorrow ? item.condition : item.return_condition;
-  rawCond = (rawCond || "").toUpperCase();
-  if (rawCond === "GOOD") rawCond = "BAIK";
-  if (rawCond === "MINOR_DAMAGE" || rawCond === "DAMAGED") rawCond = "RUSAK";
-  if (rawCond === "MISSING") rawCond = "HILANG";
-  const kondisi = conditionConfig[rawCond];
-  const pekerjaan = item.pekerjaan || getPekerjaan(item.pekerjaan_kode);
+  const giver = getUser(firstItem.giver_id);
+  const receiver = getUser(firstItem.receiver_id);
+  const nomorBAST = firstItem.bast_number || genNomorBAST(firstItem.id, isBorrow ? firstItem.borrow_date : firstItem.return_date);
+  const tglDokumen = fmtDate(isBorrow ? firstItem.borrow_date : firstItem.return_date);
+
+  // Build table rows for ALL items
+  const tableRows = enrichedItems.map((item, idx) => {
+    const pekerjaan = item.pekerjaan || getPekerjaan(item.pekerjaan_kode);
+    return `<tr>
+        <td class="center">${idx + 1}</td>
+        <td>
+          ${item.name}
+          ${pekerjaan || item.category || (item.specs && item.specs.length > 0) || (item.customSpecs && item.customSpecs.length > 0) ? `
+          <br/>Spesifikasi :
+          <ul>
+            ${item.category ? `<li>Kategori: ${item.category}</li>` : ''}
+            ${pekerjaan ? `<li>Tahun Pengadaan: ${pekerjaan.tahun_pengadaan || pekerjaan.tahun || "-"}</li>` : ''}
+            ${(item.specs || []).map(s => `<li>${s.spec_label}: ${s.value} ${s.default_unit || ''}</li>`).join('')}
+            ${(item.customSpecs || []).map(s => `<li>${s.spec_label}: ${s.value} ${s.default_unit || ''}</li>`).join('')}
+          </ul>` : ''}
+        </td>
+        <td class="center">${item.serialNumber || item.code}</td>
+      </tr>`;
+  }).join('');
   const html = `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"/><style>*{margin:0;padding:0;box-sizing:border-box;}@page{size:A4;margin:0;}body{font-family:Arial,Helvetica,sans-serif;font-size:11pt;color:#000;background:#fff;padding:0.5cm 1.5cm;}.kop{display:flex;justify-content:flex-end;margin-bottom:10px;}.kop-logo{width:250px;}.judul-doc{text-align:center;margin-bottom:10px;}.judul-doc h2{font-size:12pt;font-weight:bold;text-decoration:underline;margin-bottom:2px;}.nomor-doc{text-align:center;font-size:11pt;margin-bottom:10px;}.subjudul{text-align:center;font-size:11pt;margin-bottom:15px;}.intro{margin-bottom:15px;line-height:1.5;text-align:justify;}.detail-pihak{width:100%;border-collapse:collapse;margin-bottom:15px;}.detail-pihak td{vertical-align:top;padding:2px 0;line-height:1.5;}.detail-pihak td.num{width:4%;text-align:left;}.detail-pihak td.name{width:26%;}.detail-pihak td.colon{width:2%;text-align:center;}.detail-pihak td.desc{width:68%;text-align:justify;}.pernyataan-tengah{text-align:center;margin:15px 0;}.tabel-aset{width:100%;border-collapse:collapse;margin-bottom:15px;}.tabel-aset th,.tabel-aset td{border:1px solid #000;padding:4px 6px;font-size:10pt;vertical-align:top;}.tabel-aset th{font-weight:bold;text-align:center;background-color:#e2e2e2;}.tabel-aset td.center{text-align:center;}.tabel-aset ul{margin:5px 0 0 20px;padding:0;list-style-type:disc;}.ketentuan{margin-bottom:20px;line-height:1.4;text-align:justify;}.ketentuan>ol{margin:10px 0 10px 25px;padding:0;}.ketentuan>ol>li{margin-bottom:5px;padding-left:5px;}.ketentuan>ol>li>ul{margin:5px 0 0 20px;padding:0;list-style-type:disc;}.ketentuan>ol>li>ul>li{margin-bottom:3px;}.penutup{margin-bottom:25px;line-height:1.4;text-align:justify;}.ttd-section{display:flex;justify-content:space-between;margin-top:15px;}.ttd-box{width:45%;text-align:center;}.ttd-box .ttd-label{font-weight:normal;margin-bottom:70px;line-height:1.4;}.ttd-box .ttd-nama{font-weight:bold;}@media print{body{padding:0.5cm 1.5cm;}.no-print{display:none!important;}}</style></head><body>
 <table style="width: 100%; border: none; border-collapse: collapse;">
   <thead style="display: table-header-group;">
@@ -769,21 +789,7 @@ const generateBAST = (item, type = "borrow", assetsList = []) => {
       </tr>
     </thead>
     <tbody>
-      <tr>
-        <td class="center">1</td>
-        <td>
-          ${item.name}
-          ${pekerjaan || item.category || (item.specs && item.specs.length > 0) || (item.customSpecs && item.customSpecs.length > 0) ? `
-          <br/>Spesifikasi :
-          <ul>
-            ${item.category ? `<li>Kategori: ${item.category}</li>` : ''}
-            ${pekerjaan ? `<li>Tahun Pengadaan: ${pekerjaan.tahun_pengadaan || pekerjaan.tahun || "-"}</li>` : ''}
-            ${(item.specs || []).map(s => `<li>${s.spec_label}: ${s.value} ${s.default_unit || ''}</li>`).join('')}
-            ${(item.customSpecs || []).map(s => `<li>${s.spec_label}: ${s.value} ${s.default_unit || ''}</li>`).join('')}
-          </ul>` : ''}
-        </td>
-        <td class="center">${item.serialNumber || item.code}</td>
-      </tr>
+      ${tableRows}
     </tbody>
   </table>
 
@@ -2629,7 +2635,35 @@ function BorrowDetailPage({ data, assets, onBack, onEdit, onReturn }) {
               gap: 8,
             }}
           >
-
+            <button
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: ".4rem",
+                padding: ".45rem 1rem",
+                borderRadius: 8,
+                border: "1.5px solid #7c3aed",
+                fontSize: ".78rem",
+                fontWeight: 600,
+                color: "#fff",
+                background: "#7c3aed",
+                cursor: "pointer",
+                fontFamily: "inherit",
+                boxShadow: "0 2px 6px rgba(124,58,237,0.25)",
+              }}
+              onClick={() => {
+                const allItems = items.map(it => ({
+                  ...it,
+                  giver_id: giver_id,
+                  receiver_id: receiver_id,
+                  bast_number: data.bast_number,
+                  borrow_date: it.borrow_date || date,
+                }));
+                generateBAST(allItems, "borrow", assets);
+              }}
+            >
+              <Icon.Printer /> Generate BAST
+            </button>
           </div>
         </div>
 
@@ -3608,7 +3642,7 @@ function HistoryPage({ assetCode, assetName, borrows, returns, onBack }) {
       : new Date(backdateValue).toISOString();
 
       try {
-      const returnPromises = [];
+      const returnItems = [];
       const borrowItems = [];
 
       baDraft.forEach((d) => {
@@ -3617,27 +3651,27 @@ function HistoryPage({ assetCode, assetName, borrows, returns, onBack }) {
       const isReturn = isP2Admin || Number(pihak2.id) === d.item.previous_giver_id;
 
       if (isReturn) {
-        returnPromises.push(
-          transactionAPI.returnAsset({
+        returnItems.push({
             code: d.item.code,
-            giver_id: Number(pihak1.id),
-            receiver_id: Number(pihak2.id),
-            return_date: finalDate,
             return_condition: d.condition,
             return_notes: d.notes || "",
-          })
-        );
+        });
         } else {
         borrowItems.push({
-          serial_number: d.item.code,
+          kd_barang: d.item.code,
           condition: d.condition,
           notes: d.notes || "",
         });
         }
       });
 
-      if (returnPromises.length > 0) {
-        await Promise.all(returnPromises);
+      if (returnItems.length > 0) {
+        await transactionAPI.returnAsset({
+          giver_id: Number(pihak1.id),
+          receiver_id: Number(pihak2.id),
+          return_date: finalDate,
+          items: returnItems
+        });
       }
 
       if (borrowItems.length > 0) {
