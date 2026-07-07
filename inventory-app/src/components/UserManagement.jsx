@@ -2940,6 +2940,8 @@ function UserFormView({
         is_active: true,
         password: "",
         confirm_password: "",
+        security_question: "",
+        security_answer: "",
       },
   );
   const [showPass, setShowPass] = useState(false);
@@ -2966,6 +2968,8 @@ function UserFormView({
         e.password = "Minimal 8 karakter";
       if (form.password !== form.confirm_password)
         e.confirm_password = "Password tidak cocok";
+      if (!form.security_question) e.security_question = "Wajib dipilih";
+      if (!form.security_answer.trim()) e.security_answer = "Wajib diisi";
     } else {
       // Edit mode: Only validate if confirm_password is filled (user intent to change)
       if (form.confirm_password) {
@@ -3265,6 +3269,50 @@ function UserFormView({
             )}
           </div>
         </div>
+        {!isEdit && (
+          <>
+            <div style={{ margin: "4px 0", padding: "10px 0 4px 0", borderTop: "1px solid #e2e8f0" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "12px" }}>
+                <Ico n="shield" size={13} style={{ color: "#7c3aed" }} />
+                <span style={{ fontSize: ".8rem", fontWeight: 700, color: "#475569" }}>Pengaturan Pemulihan Akun</span>
+              </div>
+            </div>
+            <div className="um-form-group">
+              <label>
+                <Ico n="lock" size={11} /> Pertanyaan Keamanan <span className="um-req">*</span>
+              </label>
+              <select
+                value={form.security_question}
+                onChange={(e) => setForm({ ...form, security_question: e.target.value })}
+                className={errors.security_question ? "um-input-error" : ""}
+              >
+                <option value="">-- Pilih Pertanyaan --</option>
+                <option value="Siapa nama ibu kandung Anda?">Siapa nama ibu kandung Anda?</option>
+                <option value="Di kota manakah Anda lahir?">Di kota manakah Anda lahir?</option>
+                <option value="Siapa nama ayah kandung Anda?">Siapa nama ayah kandung Anda?</option>
+              </select>
+              {errors.security_question && (
+                <span className="um-error">{errors.security_question}</span>
+              )}
+            </div>
+            <div className="um-form-group">
+              <label>
+                <Ico n="lock" size={11} /> Jawaban Keamanan <span className="um-req">*</span>
+              </label>
+              <input
+                type="text"
+                value={form.security_answer}
+                onChange={(e) => setForm({ ...form, security_answer: e.target.value })}
+                placeholder="Jawaban dari pertanyaan di atas"
+                className={errors.security_answer ? "um-input-error" : ""}
+              />
+              {errors.security_answer && (
+                <span className="um-error">{errors.security_answer}</span>
+              )}
+              <span className="um-hint">Jawaban ini digunakan untuk pemulihan akun jika lupa password.</span>
+            </div>
+          </>
+        )}
         <div className="um-form-group">
           <label>Status Akun</label>
           <div className="um-status-toggle">
@@ -4688,6 +4736,8 @@ const UserManagement = () => {
           role_code: saved.role_code, entity_code: saved.entity_code,
           branch_code: saved.branch_code, division_code: saved.division_code || null,
           is_active: saved.is_active,
+          security_question: saved.security_question || null,
+          security_answer: saved.security_answer || null,
         };
         const res = await userAPI.create(payload);
         if (res.data?.success) {

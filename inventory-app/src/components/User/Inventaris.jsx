@@ -322,7 +322,7 @@ const SUBZONA_LIST = [
   { name: "Jalan", code: "JLN" },
   { name: "Taman", code: "TPK" },
 ];
-const ITEMS_PER_PAGE = 8;
+const ITEMS_PER_PAGE = 5;
 
 const SPEC_UNIT_OPTIONS = [
   { group: "Penyimpanan", units: ["B", "KB", "MB", "GB", "TB"] },
@@ -1553,7 +1553,7 @@ function AssetHistoryTab({ assetCode, allBorrows }) {
   const history = useMemo(
     () =>
       allBorrows
-        .filter((b) => b.code === assetCode)
+        .filter((b) => b.asset_code === assetCode)
         .sort((a, b) => new Date(b.borrow_date) - new Date(a.borrow_date)),
     [assetCode, allBorrows],
   );
@@ -2235,13 +2235,15 @@ const SmartLocationInput = ({ value, onChange, placeholder = "Pilih Branch / Zon
 
 // ── MAIN COMPONENT ────────────────────────────────────────────────
 const Inventaris = () => {
-  const [assets, setAssets] = useState([]);
-  const [dbCategories, setDbCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [assets, setAssets] = useState(() => {
+    try { return JSON.parse(sessionStorage.getItem('SWR_InventarisAssets')) || []; } catch(e) { return []; }
+  });
+  const [dbCategories, setDbCategories] = useState(() => {
+    try { return JSON.parse(sessionStorage.getItem('SWR_InventarisCats')) || []; } catch(e) { return []; }
+  });
   const [dbLocations, setDbLocations] = useState({ branches: [], zonas: [], subzonas: [] });
 
   const fetchAssets = async () => {
-    setLoading(true);
     try {
       const [resAssets, resDevices, resCapex, resOpex, resB, resZ, resS] = await Promise.all([
         barangAPI.getAll(),
@@ -2253,7 +2255,9 @@ const Inventaris = () => {
         masterDataAPI.getSubzonas()
       ]);
       setAssets(resAssets.data);
+      sessionStorage.setItem('SWR_InventarisAssets', JSON.stringify(resAssets.data));
       setDbCategories(resDevices.data || []);
+      sessionStorage.setItem('SWR_InventarisCats', JSON.stringify(resDevices.data || []));
 
       if (resB.data?.success && resZ.data?.success && resS.data?.success) {
         setDbLocations({
@@ -2326,13 +2330,12 @@ const Inventaris = () => {
 
     } catch (err) {
       console.error("Gagal mengambil data aset", err);
-    } finally {
-      // Small delay for quick but visible processing feedback
-      setTimeout(() => setLoading(false), 300);
     }
   };
 
-  const [allBorrows, setAllBorrows] = useState([]);
+  const [allBorrows, setAllBorrows] = useState(() => {
+    try { return JSON.parse(sessionStorage.getItem('SWR_InventarisBorrows')) || []; } catch(e) { return []; }
+  });
 
   useEffect(() => {
     fetchAssets();
@@ -2343,7 +2346,9 @@ const Inventaris = () => {
     try {
       const res = await transactionAPI.getAll();
       if (res.data.success) {
-        setAllBorrows([...(res.data.borrows || []), ...(res.data.returns || [])]);
+        const trxs = [...(res.data.borrows || []), ...(res.data.returns || [])];
+        setAllBorrows(trxs);
+        sessionStorage.setItem('SWR_InventarisBorrows', JSON.stringify(trxs));
       }
     } catch (err) {
       console.error("Failed to fetch borrows:", err);
@@ -2672,6 +2677,9 @@ const Inventaris = () => {
         const filename = parts[parts.length - 1];
         const backendUrl = window.location.hostname === "localhost" ? "http://localhost:8000" : "";
         return `${backendUrl}/uploads/assets/${filename}`;
+      } else {
+        const backendUrl = window.location.hostname === "localhost" ? "http://localhost:8000" : "";
+        return `${backendUrl}/uploads/assets/${asset.photo}`;
       }
     }
     return asset.photo?.dataUrl || null;
@@ -3531,42 +3539,7 @@ const Inventaris = () => {
 
 
 
-        <div className="table-container" style={{ position: "relative", minHeight: loading ? "300px" : "auto" }}>
-          {loading && (
-            <div style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: "rgba(255, 255, 255, 0.7)",
-              zIndex: 10,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "12px",
-              backdropFilter: "blur(2px)",
-              borderRadius: "16px"
-            }}>
-              <style>{`
-                .spinner-loader {
-                  width: 32px;
-                  height: 32px;
-                  border: 3px solid #f3f3f3;
-                  border-top: 3px solid #2563eb;
-                  border-radius: 50%;
-                  animation: spin-loader 0.8s linear infinite;
-                }
-                @keyframes spin-loader {
-                  0% { transform: rotate(0deg); }
-                  100% { transform: rotate(360deg); }
-                }
-              `}</style>
-              <div className="spinner-loader"></div>
-              <span style={{ fontSize: "12px", fontWeight: "700", color: "#475569", letterSpacing: "0.5px" }}>MEMUAT DATA...</span>
-            </div>
-          )}
+        <div className="table-container" style={{ position: "relative", minHeight: "auto" }}>
           {activeFiltersCount > 0 && (
             <div className="table-info-bar" style={{ justifyContent: "flex-end" }}>
               <span className="filter-active-note">
@@ -3756,7 +3729,7 @@ const Inventaris = () => {
               <tbody>
                 {paginated.length === 0 ? (
                   <tr>
-                    <td colSpan="5">
+                    <td colSpan="8">
                       <div className="empty-state">
                         <div className="empty-state-icon">
                           <Icon.BoxOpen />
@@ -3869,77 +3842,6 @@ const Inventaris = () => {
                           </span>
                         </td>
                         <td className="fw-bold">{fmt(asset.value * (asset.quantity || 1))}</td>
-                        <td onClick={(e) => e.stopPropagation()}>
-                          <div
-                            className="action-wrap"
-                            ref={
-                              activeDropdown === asset.id ? dropdownRef : null
-                            }
-                          >
-                            <button
-                              className="action-dot-btn"
-                              onClick={() =>
-                                setActiveDropdown(
-                                  activeDropdown === asset.id ? null : asset.id,
-                                )
-                              }
-                            >
-                              <span style={{ display: "none" }}><Icon.Dots /></span>
-                            </button>
-                            {activeDropdown === asset.id && (
-                              <div className={`action-dropdown ${idx >= paginated.length - 2 ? "dropdown-up" : ""}`}>
-                                <button
-                                  onClick={() => {
-                                    setSelectedAsset(asset);
-                                    setCurrentView("detail");
-                                    setDetailTab("info");
-                                    setActiveDropdown(null);
-                                  }}
-                                >
-                                  <Icon.Eye /> Lihat Detail
-                                </button>
-                                <button
-                                  className="action-history"
-                                  onClick={() => {
-                                    setSelectedAsset(asset);
-                                    setCurrentView("detail");
-                                    setDetailTab("history");
-                                    setActiveDropdown(null);
-                                  }}
-                                >
-                                  <Icon.History /> Riwayat Pinjam
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    setSelectedAsset(asset);
-                                    setCurrentView("barcode");
-                                    setActiveDropdown(null);
-                                  }}
-                                >
-                                  <span style={{ display: "none" }}><Icon.Barcode /> Cetak Barcode</span>
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    setActiveDropdown(null);
-                                    openEditPage(asset);
-                                  }}
-                                >
-                                  <span style={{ display: "none" }}><span style={{ display: "none" }}><Icon.Edit /> Edit Barang</span></span>
-                                </button>
-                                <button
-                                  className="action-delete"
-                                  onClick={() => {
-                                    setSelectedAsset(asset);
-                                    setShowDeleteModal(true);
-                                    setActiveDropdown(null);
-                                  }}
-                                >
-                                  <Icon.Trash /> Hapus
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        </td>
                       </tr>
                     );
                   })
@@ -3948,36 +3850,114 @@ const Inventaris = () => {
             </table>
           )}
 
-          {totalPages > 1 && (
-            <div className="pagination">
-              <button
-                className="pg-btn"
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage((p) => p - 1)}
-              >
-                <Icon.ChevronLeft />
-              </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                <button
-                  key={p}
-                  className={`pg-btn ${p === currentPage ? "pg-active" : ""}`}
-                  onClick={() => setCurrentPage(p)}
-                >
-                  {p}
-                </button>
-              ))}
-              <button
-                className="pg-btn"
-                disabled={currentPage === totalPages}
-                onClick={() => setCurrentPage((p) => p + 1)}
-              >
-                <Icon.ChevronRight />
-              </button>
-              <span className="pg-info">
-                Halaman {currentPage} dari {totalPages}
+
+          {filtered.length > 0 && (
+            <div className="pagination" style={{ justifyContent: "space-between", flexWrap: "wrap", gap: "8px" }}>
+              {/* Info data kiri */}
+              <span className="pg-info" style={{ marginLeft: 0, fontSize: "13px", color: "#475569", fontWeight: "600" }}>
+                Menampilkan{" "}
+                <strong style={{ color: "#0f172a" }}>
+                  {(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)}
+                </strong>{" "}
+                dari{" "}
+                <strong style={{ color: "#0f172a" }}>{filtered.length}</strong>{" "}
+                data
               </span>
+
+              {/* Navigasi halaman */}
+              {totalPages > 1 && (
+                <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                  <button
+                    className="pg-btn"
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage((p) => p - 1)}
+                    title="Halaman sebelumnya"
+                  >
+                    <Icon.ChevronLeft />
+                  </button>
+
+                  {(() => {
+                    const pages = [];
+                    const delta = 1; // halaman di sekitar aktif
+                    const range = [];
+                    for (
+                      let i = Math.max(2, currentPage - delta);
+                      i <= Math.min(totalPages - 1, currentPage + delta);
+                      i++
+                    ) {
+                      range.push(i);
+                    }
+
+                    // Halaman pertama selalu tampil
+                    pages.push(
+                      <button
+                        key={1}
+                        className={`pg-btn ${currentPage === 1 ? "pg-active" : ""}`}
+                        onClick={() => setCurrentPage(1)}
+                      >
+                        1
+                      </button>
+                    );
+
+                    // Ellipsis kiri
+                    if (range.length > 0 && range[0] > 2) {
+                      pages.push(
+                        <span key="ellipsis-l" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: "35px", height: "35px", color: "#94a3b8", fontSize: "14px" }}>
+                          …
+                        </span>
+                      );
+                    }
+
+                    range.forEach((p) => {
+                      pages.push(
+                        <button
+                          key={p}
+                          className={`pg-btn ${p === currentPage ? "pg-active" : ""}`}
+                          onClick={() => setCurrentPage(p)}
+                        >
+                          {p}
+                        </button>
+                      );
+                    });
+
+                    // Ellipsis kanan
+                    if (range.length > 0 && range[range.length - 1] < totalPages - 1) {
+                      pages.push(
+                        <span key="ellipsis-r" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: "35px", height: "35px", color: "#94a3b8", fontSize: "14px" }}>
+                          …
+                        </span>
+                      );
+                    }
+
+                    // Halaman terakhir selalu tampil (jika lebih dari 1)
+                    if (totalPages > 1) {
+                      pages.push(
+                        <button
+                          key={totalPages}
+                          className={`pg-btn ${currentPage === totalPages ? "pg-active" : ""}`}
+                          onClick={() => setCurrentPage(totalPages)}
+                        >
+                          {totalPages}
+                        </button>
+                      );
+                    }
+
+                    return pages;
+                  })()}
+
+                  <button
+                    className="pg-btn"
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage((p) => p + 1)}
+                    title="Halaman berikutnya"
+                  >
+                    <Icon.ChevronRight />
+                  </button>
+                </div>
+              )}
             </div>
           )}
+
         </div>
       </div>
     );

@@ -5509,7 +5509,9 @@ function HistoryPage({ assetCode, assetName, borrows, returns, onBack }) {
 
       fetchedBorrows = allB;
       setBorrows(allB);
+      sessionStorage.setItem('SWR_UserBorrows', JSON.stringify(allB));
       setReturns(allR);
+      sessionStorage.setItem('SWR_UserReturns', JSON.stringify(allR));
 
         [...(allB), ...(allR)].forEach((tx) => {
           if (tx.pekerjaan && tx.pekerjaan.kode && !dbProjects[String(tx.pekerjaan.kode)]) {
@@ -5531,6 +5533,7 @@ function HistoryPage({ assetCode, assetName, borrows, returns, onBack }) {
       jabatan: u.role_code || "User", nip: u.nip,
         }));
       setUsersState(mappedUsers);
+      sessionStorage.setItem('SWR_UserUsers', JSON.stringify(mappedUsers));
       }
 
       if (barangRes.data && Array.isArray(barangRes.data)) {
@@ -5561,6 +5564,7 @@ function HistoryPage({ assetCode, assetName, borrows, returns, onBack }) {
           }
         });
       setAssetsState(flattened);
+      sessionStorage.setItem('SWR_UserAssets', JSON.stringify(flattened));
       }
     } catch (err) {
         console.error("Error loading Peminjaman data:", err);
@@ -5875,7 +5879,7 @@ function HistoryPage({ assetCode, assetName, borrows, returns, onBack }) {
                 {groupedTransactions.length === 0 ? (
                   <tr>
                     <td
-                      colSpan="7"
+                      colSpan="6"
                       style={{
                         ...S.td,
                         textAlign: "center",
@@ -5976,24 +5980,6 @@ function HistoryPage({ assetCode, assetName, borrows, returns, onBack }) {
                           >
                             {tx.items.length} Item
                           </span>
-                        </td>
-                        <td
-                          style={{ ...S.td, textAlign: "center" }}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <div style={S.actionRow}>
-                            <button
-                              style={{ ...S.iconBtn, color: "#2563eb" }}
-                              title="Detail"
-                              onClick={() =>
-                                setNav({ page: "borrow-detail", data: tx })
-                              }
-                            >
-                              <Icon.Eye />
-                            </button>
-
-
-                          </div>
                         </td>
                       </tr>
                     );

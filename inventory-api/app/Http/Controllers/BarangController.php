@@ -281,6 +281,31 @@ class BarangController extends Controller
         }
     }
 
+    private function processPhoto($photoData)
+    {
+        if (empty($photoData)) return null;
+        
+        if (is_array($photoData) && !empty($photoData['dataUrl'])) {
+            $dataUrl = $photoData['dataUrl'];
+            if (strpos($dataUrl, 'data:image') === 0) {
+                $image_parts = explode(";base64,", $dataUrl);
+                if (count($image_parts) >= 2) {
+                    $image_base64 = base64_decode($image_parts[1]);
+                    $originalName = $photoData['name'] ?? '';
+                    $fileName = !empty($originalName) ? basename($originalName) : (uniqid() . '.png');
+                    $dir = app()->basePath('public/uploads/assets');
+                    if (!is_dir($dir)) {
+                        mkdir($dir, 0777, true);
+                    }
+                    file_put_contents($dir . '/' . $fileName, $image_base64);
+                    return isset($photoData['path']) && !empty($photoData['path']) ? $photoData['path'] : '/uploads/assets/' . $fileName;
+                }
+            }
+        }
+        
+        return is_array($photoData) ? ($photoData['path'] ?? $photoData['name'] ?? null) : $photoData;
+    }
+
     public function store(Request $request)
     {
         DB::beginTransaction();
@@ -325,6 +350,17 @@ class BarangController extends Controller
             if ($useExisting && !empty($proposedId) && DB::table('assets')->where('asset_code', $proposedId)->exists()) {
                 // Gunakan katalog yang sudah ada, JANGAN buat aset baru
                 $finalId = $proposedId;
+                
+                // Update photo if provided during unit registration
+                if (isset($data['photo']) && is_array($data['photo'])) {
+                    $newPhoto = $this->processPhoto($data['photo']);
+                    if ($newPhoto) {
+                        DB::table('assets')->where('asset_code', $finalId)->update([
+                            'photo' => $newPhoto,
+                            'updated_at' => \Carbon\Carbon::now()
+                        ]);
+                    }
+                }
             } else {
                 if (!empty($proposedId) && strpos($proposedId, $prefix) === 0) {
                     $finalId = $proposedId;
@@ -385,7 +421,7 @@ class BarangController extends Controller
                     'id_pekerjaan' => $data['id_pekerjaan'] ?? null,
                     'acquisition_value' => $data['value'] ?? 0,
                     'procurement_date' => $data['procurementDate'] ?? null,
-                    'photo' => is_array($data['photo']) ? ($data['photo']['path'] ?? $data['photo']['name'] ?? null) : $data['photo'],
+                    'photo' => $this->processPhoto($data['photo'] ?? null),
                     'created_at' => \Carbon\Carbon::now(),
                     'updated_at' => \Carbon\Carbon::now(),
                 ]);
@@ -619,7 +655,7 @@ class BarangController extends Controller
             ];
 
             if (isset($data['photo'])) {
-                $assetData['photo'] = is_array($data['photo']) ? ($data['photo']['path'] ?? $data['photo']['name'] ?? null) : $data['photo'];
+                $assetData['photo'] = $this->processPhoto($data['photo']);
             }
 
             DB::table('assets')->where('asset_code', $id)->update($assetData);
@@ -843,7 +879,10 @@ class BarangController extends Controller
 
                 while ($nullIndex < $existingNullUnits->count()) {
                     $targetKd = $existingNullUnits[$nullIndex]->kd_barang;
-                    DB::table('barang')->where('kd_barang', $targetKd)->delete();
+                    $hasTx = DB::table('asset_transactions')->where('kd_barang', $targetKd)->exists();
+                    if (!$hasTx) {
+                        DB::table('barang')->where('kd_barang', $targetKd)->delete();
+                    }
                     $nullIndex++;
                 }
 

@@ -5569,6 +5569,8 @@ function CapexModule({ capexList, setCapexList }) {
   const [detailCapex, setDetailCapex] = useState(null);
   const [editAnggaran, setEditAnggaran] = useState(null);
   const [filterCapexTahun, setFilterCapexTahun] = useState("");
+  const [currentCapexPage, setCurrentCapexPage] = useState(1);
+  const CAPEX_PAGE_SIZE = 5;
 
   const toast_ = (msg) => {
     setToast(msg);
@@ -5784,6 +5786,17 @@ function CapexModule({ capexList, setCapexList }) {
       </div>
     );
   }
+
+  const filteredCapexList = capexList.filter(
+    (c) =>
+      !filterCapexTahun ||
+      c.thn_anggaran === parseInt(filterCapexTahun)
+  );
+  const capexTotalPages = Math.ceil(filteredCapexList.length / CAPEX_PAGE_SIZE);
+  const paginatedCapexListData = filteredCapexList.slice(
+    (currentCapexPage - 1) * CAPEX_PAGE_SIZE,
+    currentCapexPage * CAPEX_PAGE_SIZE
+  );
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }} onClick={() => setActiveDropdown(null)}>
@@ -6040,7 +6053,7 @@ function CapexModule({ capexList, setCapexList }) {
                   fontSize: "0.72rem",
                   fontWeight: 700,
                 }}
-                onClick={() => setFilterCapexTahun("")}
+                onClick={() => { setFilterCapexTahun(""); setCurrentCapexPage(1); }}
               >
                 <X size={12} /> Clear
               </button>
@@ -6125,9 +6138,10 @@ function CapexModule({ capexList, setCapexList }) {
                               opacity: 0,
                             }}
                             value={filterCapexTahun}
-                            onChange={(e) =>
-                              setFilterCapexTahun(e.target.value)
-                            }
+                            onChange={(e) => {
+                              setFilterCapexTahun(e.target.value);
+                              setCurrentCapexPage(1);
+                            }}
                             title={filterCapexTahun || "Filter tahun"}
                           >
                             <option value="">Semua</option>
@@ -6175,13 +6189,7 @@ function CapexModule({ capexList, setCapexList }) {
                   </td>
                 </tr>
               ) : (
-                capexList
-                  .filter(
-                    (c) =>
-                      !filterCapexTahun ||
-                      c.thn_anggaran === parseInt(filterCapexTahun),
-                  )
-                  .flatMap((c, idx) => {
+                paginatedCapexListData.flatMap((c, idx) => {
                     const isLebih = c.thn_rkap_awal != c.thn_rkap_akhir;
                     const validAnggaran = (c.anggaran_tahunan || []).filter(
                       (a) => {
@@ -6597,6 +6605,90 @@ function CapexModule({ capexList, setCapexList }) {
           </table>
         </div>
       </div>
+
+      {capexTotalPages > 1 ? (
+          <div
+            style={{
+              background: "white",
+              border: "1px solid #e2e8f0",
+              borderRadius: 10,
+              padding: "12px 18px",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <div style={{ fontSize: "0.8rem", color: "#64748b" }}>
+              Menampilkan{" "}
+              <b>
+                {(currentCapexPage - 1) * CAPEX_PAGE_SIZE + 1}–
+                {Math.min(
+                  currentCapexPage * CAPEX_PAGE_SIZE,
+                  filteredCapexList.length,
+                )}
+              </b>{" "}
+              dari <b>{filteredCapexList.length}</b>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <button
+                aria-label="Halaman Sebelumnya"
+                style={{
+                  ...S.abtn,
+                  padding: "6px 12px",
+                  opacity: currentCapexPage === 1 ? 0.4 : 1,
+                }}
+                disabled={currentCapexPage === 1}
+                onClick={() => setCurrentCapexPage((p) => p - 1)}
+              >
+                <ChevronRight
+                  size={14}
+                  style={{ transform: "rotate(180deg)", color: "#475569" }}
+                />
+              </button>
+              {Array.from({ length: capexTotalPages }, (_, i) => i + 1).map(
+                (pg) => (
+                  <button
+                    key={pg}
+                    aria-label={`Halaman ${pg}`}
+                    onClick={() => setCurrentCapexPage(pg)}
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: 6,
+                      border:
+                        pg === currentCapexPage
+                          ? "2px solid #2563eb"
+                          : "1px solid #e2e8f0",
+                      background:
+                        pg === currentCapexPage ? "#2563eb" : "white",
+                      color: pg === currentCapexPage ? "white" : "#475569",
+                      fontWeight: pg === currentCapexPage ? 700 : 500,
+                      fontSize: "0.82rem",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {pg}
+                  </button>
+                ),
+              )}
+              <button
+                aria-label="Halaman Berikutnya"
+                style={{
+                  ...S.abtn,
+                  padding: "6px 12px",
+                  opacity: currentCapexPage === capexTotalPages ? 0.4 : 1,
+                }}
+                disabled={currentCapexPage === capexTotalPages}
+                onClick={() => setCurrentCapexPage((p) => p + 1)}
+              >
+                <ChevronRight size={14} style={{ color: "#475569" }} />
+              </button>
+            </div>
+          </div>
+        ) : null}
     </div>
   );
 }

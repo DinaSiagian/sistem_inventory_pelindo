@@ -1023,7 +1023,7 @@ const Dashboard = () => {
     let tAset = 0;
     let tAvail = 0;
     let tMaint = 0;
-    const cond = { "Baik": 0, "Rusak": 0, "Hilang": 0, "Diperbaiki": 0 };
+    const cond = { "Baik": 0, "Rusak": 0, "Hilang": 0 };
 
     const activeBorrowSet = new Set();
     dbBorrows.forEach(b => {
@@ -1036,13 +1036,21 @@ const Dashboard = () => {
           tAset++;
           const isActive = activeBorrowSet.has(u.serialNumber);
           const st = (u.condition || "BAIK").toUpperCase();
-          if (!isActive && (st === "BAIK" || st === "GOOD")) tAvail++;
+          const isNonOp = u.status && u.status.includes("Non-Operasional");
 
-          if (st === "BAIK" || st === "GOOD") cond["Baik"]++;
-          else if (st === "DIPERBAIKI" || st === "MAINTENANCE") { cond["Diperbaiki"]++; tMaint++; }
-          else if (st === "RUSAK" || st === "MINOR_DAMAGE" || st === "RUSAK RINGAN" || st === "RUSAK BERAT" || st === "DAMAGED") cond["Rusak"]++;
-          else if (st === "HILANG" || st === "MISSING") cond["Hilang"]++;
-          else cond["Baik"]++;
+          if (!isActive && !isNonOp && (st === "BAIK" || st === "GOOD")) tAvail++;
+
+          if (isNonOp || st === "DIPERBAIKI" || st === "MAINTENANCE" || st === "NON-OPERASIONAL" || st === "NON OPERASIONAL") {
+            tMaint++;
+          }
+          
+          if (st === "RUSAK" || st === "MINOR_DAMAGE" || st === "RUSAK RINGAN" || st === "RUSAK BERAT" || st === "DAMAGED" || st === "DIPERBAIKI" || st === "MAINTENANCE") {
+            cond["Rusak"]++;
+          } else if (st === "HILANG" || st === "MISSING") {
+            cond["Hilang"]++;
+          } else {
+            cond["Baik"]++;
+          }
         });
       }
     });
@@ -1051,7 +1059,6 @@ const Dashboard = () => {
       { name: "Baik", value: cond["Baik"], color: "#16a34a" },
       { name: "Rusak", value: cond["Rusak"], color: "#dc2626" },
       { name: "Hilang", value: cond["Hilang"], color: "#9ca3af" },
-      { name: "Diperbaiki", value: cond["Diperbaiki"], color: "#3b82f6" }
     ];
 
     return { totalAset: tAset, totalAvailable: tAvail, totalMaint: tMaint, dataKondisi: dKondisi, totalKondisiVal: tAset };
@@ -1141,8 +1148,8 @@ const Dashboard = () => {
               <div className="stats-row">
                 {[
                   { title: "Total Aset", value: dynamicStats.totalAset.toLocaleString(), icon: <FaBox />, color: "#1a56db", bg: "#eff6ff", sub: "Unit terdaftar" },
-                  { title: "Available", value: dynamicStats.totalAvailable.toLocaleString(), icon: <FaCheckCircle />, color: "#16a34a", bg: "#f0fdf4", sub: "Siap digunakan" },
-                  { title: "Pemeliharaan", value: dynamicStats.totalMaint.toLocaleString(), icon: <FaTools />, color: "#d97706", bg: "#fffbeb", sub: "Sedang diperbaiki" },
+                  { title: "Tersedia", value: dynamicStats.totalAvailable.toLocaleString(), icon: <FaCheckCircle />, color: "#16a34a", bg: "#f0fdf4", sub: "Siap digunakan" },
+                  { title: "Non Operasional", value: dynamicStats.totalMaint.toLocaleString(), icon: <FaTools />, color: "#d97706", bg: "#fffbeb", sub: "Tidak dapat digunakan" },
                 ].map((s) => (
                   <div key={s.title} className="stat-card">
                     <div className="stat-icon" style={{ background: s.bg, color: s.color }}>{s.icon}</div>

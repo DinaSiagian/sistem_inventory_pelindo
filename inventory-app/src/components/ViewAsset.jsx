@@ -1574,20 +1574,10 @@ function PhotoUpload({ value, onChange }) {
     }
     const reader = new FileReader();
     reader.onload = (e) => {
-      let mockFolder = "C:\\Users\\MSI\\Pictures\\Camera Roll\\";
-      const nameLower = file.name.toLowerCase();
-      if (nameLower.includes("screenshot")) {
-        mockFolder = "C:\\Users\\MSI\\Pictures\\Screenshots\\";
-      } else if (nameLower.includes("download")) {
-        mockFolder = "C:\\Users\\MSI\\Downloads\\";
-      } else if (nameLower.includes("document") || nameLower.includes("dokumen")) {
-        mockFolder = "C:\\Users\\MSI\\Documents\\";
-      }
-      
       onChange({
         dataUrl: e.target.result,
         name: file.name,
-        path: file.path || (mockFolder + file.name),
+        path: file.path || file.name,
         size: file.size,
         type: file.type,
       });
@@ -1611,6 +1601,9 @@ function PhotoUpload({ value, onChange }) {
         const filename = parts[parts.length - 1];
         const backendUrl = window.location.hostname === "localhost" ? "http://localhost:8000" : "";
         displayUrl = `${backendUrl}/uploads/assets/${filename}`;
+      } else {
+        const backendUrl = window.location.hostname === "localhost" ? "http://localhost:8000" : "";
+        displayUrl = `${backendUrl}/uploads/assets/${value}`;
       }
     } else if (value && typeof value === "object") {
       displayUrl = value.dataUrl;
@@ -2482,6 +2475,9 @@ const ViewAsset = () => {
         const filename = parts[parts.length - 1];
         const backendUrl = window.location.hostname === "localhost" ? "http://localhost:8000" : "";
         return `${backendUrl}/uploads/assets/${filename}`;
+      } else {
+        const backendUrl = window.location.hostname === "localhost" ? "http://localhost:8000" : "";
+        return `${backendUrl}/uploads/assets/${asset.photo}`;
       }
     }
     return asset.photo?.dataUrl || null;

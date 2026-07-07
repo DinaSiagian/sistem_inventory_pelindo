@@ -74,6 +74,9 @@ const ScanAsset = () => {
         const filename = parts[parts.length - 1];
         const backendUrl = window.location.hostname === "localhost" ? "http://localhost:8000" : "";
         return `${backendUrl}/uploads/assets/${filename}`;
+      } else {
+        const backendUrl = window.location.hostname === "localhost" ? "http://localhost:8000" : "";
+        return `${backendUrl}/uploads/assets/${photo}`;
       }
     }
     return null;
