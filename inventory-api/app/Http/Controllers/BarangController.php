@@ -23,7 +23,7 @@ class BarangController extends Controller
             }
 
             // Get the main asset in 'assets' table
-            $asset = DB::table('assets')->where('asset_code', $unit->asset_code)->first();
+            $asset = DB::table('assets')->where('asset_code', $unit->asset_code)->whereNull('deleted_at')->first();
             if (!$asset) {
                 return response()->json(['success' => false, 'message' => 'Data induk aset tidak ditemukan'], 404);
             }
@@ -112,8 +112,8 @@ class BarangController extends Controller
                     ->toArray();
             }
 
-            // Fetch all barang
-            $barangAll = DB::table('barang')->get();
+            // Fetch all active barang (not soft-deleted)
+            $barangAll = DB::table('barang')->whereNull('deleted_at')->get();
 
             $allSubzonas = DB::table('subzona')
                 ->join('zonas', 'subzona.zona_code', '=', 'zonas.zona_code')
@@ -489,45 +489,30 @@ PS;
                         $finalId = $prefix . str_pad($num + 1, 4, '0', STR_PAD_LEFT);
                     }
                 } else {
-                    if (empty($proposedId)) {
-                        $catPrefix = strtoupper($deviceCode);
-                        $allAssets = DB::table('assets')->pluck('asset_code')->toArray();
-                        
-                        $maxKategori = 0;
-                        $maxGlobal = 0;
-                        
-                        foreach ($allAssets as $ac) {
-                            if (preg_match('/^([A-Z]+)(\d{2})-(\d{3})$/', $ac, $matches)) {
-                                $cat = $matches[1];
-                                $catUrut = intval($matches[2]);
-                                $globUrut = intval($matches[3]);
-                                
-                                if ($cat === $catPrefix && $catUrut > $maxKategori) {
-                                    $maxKategori = $catUrut;
-                                }
-                                if ($globUrut > $maxGlobal) {
-                                    $maxGlobal = $globUrut;
-                                }
-                            } else {
-                                // Fallback for old data or other formats to calculate max global
-                                $globalCount = DB::table('assets')->count();
-                                if ($globalCount > $maxGlobal) {
-                                    $maxGlobal = $globalCount;
-                                }
+                    $catPrefix = strtoupper($deviceCode);
+                    $allAssets = DB::table('assets')->pluck('asset_code')->toArray();
+                    
+                    $maxKategori = 0;
+                    
+                    foreach ($allAssets as $ac) {
+                        if (preg_match('/^([A-Z]+)-(\d+)$/', $ac, $matches)) {
+                            $cat = $matches[1];
+                            $catUrut = intval($matches[2]);
+                            
+                            if ($cat === $catPrefix && $catUrut > $maxKategori) {
+                                $maxKategori = $catUrut;
+                            }
+                        } elseif (preg_match('/^([A-Z]+)(\d{2})-(\d{3})$/', $ac, $matches)) {
+                            $cat = $matches[1];
+                            $catUrut = intval($matches[2]);
+                            if ($cat === $catPrefix && $catUrut > $maxKategori) {
+                                $maxKategori = $catUrut;
                             }
                         }
-                        
-                        $kategoriUrut = str_pad($maxKategori + 1, 2, '0', STR_PAD_LEFT);
-                        $globalUrut = str_pad($maxGlobal + 1, 3, '0', STR_PAD_LEFT);
-                        $finalId = $catPrefix . $kategoriUrut . '-' . $globalUrut;
-                    } else {
-                        $finalId = $proposedId;
-                        $suffix = 2;
-                        while (DB::table('assets')->where('asset_code', $finalId)->exists()) {
-                            $finalId = $proposedId . '-' . $suffix;
-                            $suffix++;
-                        }
                     }
+                    
+                    $kategoriUrut = str_pad($maxKategori + 1, 4, '0', STR_PAD_LEFT);
+                    $finalId = $catPrefix . '-' . $kategoriUrut;
                 }
                 $data['id'] = $finalId;
 
@@ -581,30 +566,20 @@ PS;
                 // regardless of what branch code was placed in the ID format.
                 $ownerBranchCode = $userBranchCode ?: $branch;
 
-                $customKdBase = $data['custom_kd_barang'] ?? null;
-                
-                if ($customKdBase) {
-                    $parts = explode('-', $customKdBase);
-                    
-                    // Branch sync removed to respect frontend's exact ID format
-                    
-                    // Removed Sync asset_code logic to respect frontend's exact format
-                    $customKdBase = implode('-', $parts);
-                }
-
-                $customKdSuffix = 0;
-                $customKdPrefix = $customKdBase;
-                if ($customKdBase) {
-                    // Check if customKdBase ends with a numeric sequence (e.g. -001)
-                    $parts = explode('-', $customKdBase);
-                    $lastPart = end($parts);
-                    if (is_numeric($lastPart)) {
-                        $customKdSuffix = (int)$lastPart - 1; // start from the one before
-                        array_pop($parts);
-                        $customKdPrefix = implode('-', $parts);
+                if (!empty($data['custom_kd_barang'])) {
+                    // Extract the base prefix and the starting number
+                    // E.g. "SPMT-BLW-GDG-LT1-CCTV-0005" -> prefix "SPMT-BLW-GDG-LT1-CCTV", suffix 4
+                    if (preg_match('/^(.*)-(\d+)$/', $data['custom_kd_barang'], $matches)) {
+                        $customKdPrefix = $matches[1];
+                        $customKdSuffix = (int)$matches[2] - 1; // start before the requested sequence
+                    } else {
+                        $customKdPrefix = $data['custom_kd_barang'];
+                        $customKdSuffix = 0;
                     }
-
-                    // Check existing IDs to find the max suffix
+                } else {
+                    $customKdPrefix = $data['id'];
+                    $customKdSuffix = 0;
+                    
                     $existingKds = DB::table('barang')->where('kd_barang', 'like', $customKdPrefix . '-%')->pluck('kd_barang')->toArray();
                     foreach ($existingKds as $ekd) {
                         $eparts = explode('-', $ekd);
@@ -614,8 +589,6 @@ PS;
                         }
                     }
                 }
-
-                $numericKdCounter = null;
 
                 foreach ($data['units'] as $idx => $unit) {
                     // Use !empty() instead of ?? to also handle empty strings from frontend
@@ -637,17 +610,8 @@ PS;
                         }
                     }
 
-                    if ($customKdBase) {
-                        $customKdSuffix++;
-                        $kd_barang = $customKdPrefix . '-' . str_pad($customKdSuffix, 3, '0', STR_PAD_LEFT);
-                    } else {
-                        if ($numericKdCounter === null) {
-                            $numericKdCounter = DB::table('barang')->whereRaw("kd_barang ~ '^[0-9]+$'")->max(DB::raw("CAST(kd_barang AS BIGINT)"));
-                            $numericKdCounter = $numericKdCounter ? (int)$numericKdCounter : 0;
-                        }
-                        $numericKdCounter++;
-                        $kd_barang = (string)$numericKdCounter;
-                    }
+                    $customKdSuffix++;
+                    $kd_barang = $customKdPrefix . '-' . str_pad($customKdSuffix, 4, '0', STR_PAD_LEFT);
 
                     $insertData = [
                         'kd_barang' => $kd_barang,
@@ -792,49 +756,15 @@ PS;
                 $numericKdCounter = DB::table('barang')->whereRaw("kd_barang ~ '^[0-9]+$'")->max(DB::raw("CAST(kd_barang AS BIGINT)"));
                 $numericKdCounter = $numericKdCounter ? (int)$numericKdCounter : 0;
                 
-                $customKdBase = $data['custom_kd_barang'] ?? null;
-                
-                if ($customKdBase) {
-                    $parts = explode('-', $customKdBase);
-                    
-                    $branch = $data['branch'] ?? null;
-                    if ($branch && count($parts) >= 3) {
-                        $parts[1] = $branch;
-                    }
-                    
-                    $finalParts = explode('-', $id);
-                    if (count($finalParts) >= 2) {
-                        $lastPart = $parts[count($parts) - 1];
-                        if (is_numeric($lastPart)) {
-                            $parts[count($parts) - 1] = str_pad((int)$finalParts[1], 3, '0', STR_PAD_LEFT);
-                            if (count($parts) >= 2) {
-                                $parts[count($parts) - 2] = $finalParts[0];
-                            }
-                            $customKdBase = implode('-', $parts);
-                        } else {
-                            $customKdBase = implode('-', $parts) . '-' . $finalParts[0] . '-' . str_pad((int)$finalParts[1], 3, '0', STR_PAD_LEFT);
-                        }
-                    } else {
-                        $customKdBase = implode('-', $parts);
-                    }
-                }
-                
-                if (!$customKdBase) {
-                    $existingKd = DB::table('barang')->where('asset_code', $id)->where('kd_barang', 'like', '%-KB-%')->value('kd_barang');
-                    if ($existingKd) {
-                        $parts = explode('-KB-', $existingKd);
-                        $customKdBase = $parts[0];
-                    }
-                }
-                
+                $customKdPrefix = $id;
                 $customKdSuffix = 0;
-                if ($customKdBase) {
-                    $existingKds = DB::table('barang')->where('kd_barang', 'like', $customKdBase . '-KB-%')->pluck('kd_barang')->toArray();
-                    foreach ($existingKds as $ekd) {
-                        $parts = explode('-KB-', $ekd);
-                        if (count($parts) == 2) {
-                            $customKdSuffix = max($customKdSuffix, (int)$parts[1]);
-                        }
+                
+                $existingKds = DB::table('barang')->where('kd_barang', 'like', $customKdPrefix . '-%')->pluck('kd_barang')->toArray();
+                foreach ($existingKds as $ekd) {
+                    $eparts = explode('-', $ekd);
+                    $elast = end($eparts);
+                    if (is_numeric($elast)) {
+                        $customKdSuffix = max($customKdSuffix, (int)$elast);
                     }
                 }
 
@@ -850,13 +780,8 @@ PS;
                     if ($sn !== null) {
                         $exists = DB::table('barang')->where('serial_number', $sn)->exists();
                         if (!$exists) {
-                            if ($customKdBase) {
-                                $customKdSuffix++;
-                                $kd_barang = $customKdBase . '-KB-' . str_pad($customKdSuffix, 3, '0', STR_PAD_LEFT);
-                            } else {
-                                $numericKdCounter++;
-                                $kd_barang = (string)$numericKdCounter;
-                            }
+                            $customKdSuffix++;
+                            $kd_barang = $customKdPrefix . '-' . str_pad($customKdSuffix, 4, '0', STR_PAD_LEFT);
 
                             $insertData = [
                                 'kd_barang' => $kd_barang,
@@ -1001,7 +926,7 @@ PS;
                     $targetKd = $existingNullUnits[$nullIndex]->kd_barang;
                     $hasTx = DB::table('asset_transactions')->where('kd_barang', $targetKd)->exists();
                     if (!$hasTx) {
-                        DB::table('barang')->where('kd_barang', $targetKd)->delete();
+                        DB::table('barang')->where('kd_barang', $targetKd)->update(['deleted_at' => \Carbon\Carbon::now()]);
                     }
                     $nullIndex++;
                 }
@@ -1013,7 +938,7 @@ PS;
                     $kd = DB::table('barang')->where('serial_number', $snToDelete)->value('kd_barang');
                     $hasTx = $kd ? DB::table('asset_transactions')->where('kd_barang', $kd)->exists() : false;
                     if (!$hasTx) {
-                        DB::table('barang')->where('serial_number', $snToDelete)->delete();
+                        DB::table('barang')->where('serial_number', $snToDelete)->update(['deleted_at' => \Carbon\Carbon::now()]);
                     }
                 }
             }
@@ -1163,8 +1088,8 @@ PS;
 
             // Delete child records explicitly to avoid constraint errors if ON DELETE CASCADE is missing
             DB::table('asset_specifications')->where('asset_code', $id)->delete();
-            DB::table('barang')->where('asset_code', $id)->delete();
-            DB::table('assets')->where('asset_code', $id)->delete();
+            DB::table('barang')->where('asset_code', $id)->update(['deleted_at' => \Carbon\Carbon::now()]);
+            DB::table('assets')->where('asset_code', $id)->update(['deleted_at' => \Carbon\Carbon::now()]);
 
             DB::commit();
             return response()->json(['success' => true, 'message' => 'Data deleted successfully']);
@@ -1384,6 +1309,7 @@ PS;
             $query = DB::table('assets')
                 ->leftJoin('device', 'assets.device_code', '=', 'device.device_code')
                 ->select('assets.*', 'device.name as category_name')
+                ->whereNull('assets.deleted_at')
                 ->orderBy('assets.created_at', 'desc');
 
             if ($userBranchCode) {
@@ -1391,6 +1317,7 @@ PS;
                 // OR assets that were created by this branch (branch_code column)
                 $assetCodesWithUnits = DB::table('barang')
                     ->where('branch', $userBranchCode)
+                    ->whereNull('deleted_at')
                     ->distinct()
                     ->pluck('asset_code');
 
@@ -1409,6 +1336,7 @@ PS;
             // Count units per branch
             $unitCountsQuery = DB::table('barang')
                 ->select('asset_code', DB::raw('count(*) as total_units'))
+                ->whereNull('deleted_at')
                 ->groupBy('asset_code');
             if ($userBranchCode) {
                 $unitCountsQuery->where('branch', $userBranchCode);
@@ -1459,31 +1387,26 @@ PS;
             $allAssets = DB::table('assets')->pluck('asset_code')->toArray();
             
             $maxKategori = 0;
-            $maxGlobal = 0;
             
             foreach ($allAssets as $ac) {
-                if (preg_match('/^([A-Z]+)(\d{2})-(\d{3})$/', $ac, $matches)) {
+                if (preg_match('/^([A-Z]+)-(\d+)$/', $ac, $matches)) {
                     $cat = $matches[1];
                     $catUrut = intval($matches[2]);
-                    $globUrut = intval($matches[3]);
                     
                     if ($cat === $catPrefix && $catUrut > $maxKategori) {
                         $maxKategori = $catUrut;
                     }
-                    if ($globUrut > $maxGlobal) {
-                        $maxGlobal = $globUrut;
-                    }
-                } else {
-                    $globalCount = DB::table('assets')->count();
-                    if ($globalCount > $maxGlobal) {
-                        $maxGlobal = $globalCount;
+                } elseif (preg_match('/^([A-Z]+)(\d{2})-(\d{3})$/', $ac, $matches)) {
+                    $cat = $matches[1];
+                    $catUrut = intval($matches[2]);
+                    if ($cat === $catPrefix && $catUrut > $maxKategori) {
+                        $maxKategori = $catUrut;
                     }
                 }
             }
             
-            $kategoriUrut = str_pad($maxKategori + 1, 2, '0', STR_PAD_LEFT);
-            $globalUrut = str_pad($maxGlobal + 1, 3, '0', STR_PAD_LEFT);
-            $finalId = $catPrefix . $kategoriUrut . '-' . $globalUrut;
+            $kategoriUrut = str_pad($maxKategori + 1, 4, '0', STR_PAD_LEFT);
+            $finalId = $catPrefix . '-' . $kategoriUrut;
 
             DB::table('assets')->insert([
                 'asset_code' => $finalId,
@@ -1538,8 +1461,8 @@ PS;
 
             // Delete child records explicitly to avoid constraint errors
             DB::table('asset_specifications')->where('asset_code', $id)->delete();
-            DB::table('barang')->where('asset_code', $id)->delete();
-            DB::table('assets')->where('asset_code', $id)->delete();
+            DB::table('barang')->where('asset_code', $id)->update(['deleted_at' => \Carbon\Carbon::now()]);
+            DB::table('assets')->where('asset_code', $id)->update(['deleted_at' => \Carbon\Carbon::now()]);
 
             DB::commit();
             return response()->json(['success' => true, 'message' => 'Katalog beserta unit fisiknya berhasil dihapus']);

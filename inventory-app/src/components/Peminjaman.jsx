@@ -761,7 +761,7 @@ const generateBAST = (itemOrItems, type = "borrow", assetsList = []) => {
   </div>
   <div class="subjudul">
     TENTANG<br/>
-    SERAH TERIMA PERANGKAT KERJA A.N. ${receiver.name.toUpperCase()}
+    ${isBorrow ? `SERAH TERIMA PERANGKAT KERJA A.N. ${receiver.name.toUpperCase()}` : `BAST PENGEMBALIAN ATAS ${giver.name.toUpperCase()}`}
   </div>
   <div class="intro">
     Pada hari ini, ${tglDokumen}, yang bertanda tangan di bawah ini:
@@ -786,7 +786,7 @@ const generateBAST = (itemOrItems, type = "borrow", assetsList = []) => {
   </div>
   
   <div class="intro">
-    <strong>Pihak Pertama</strong> dengan ini menyerahkan Perangkat Kerja kepada <strong>Pihak Kedua</strong>, dengan rincian sebagai berikut:
+    <strong>Pihak Pertama</strong> dengan ini ${isBorrow ? 'menyerahkan' : 'mengembalikan'} Perangkat Kerja kepada <strong>Pihak Kedua</strong>, dengan rincian sebagai berikut:
   </div>
 
   <table class="tabel-aset">
@@ -2648,7 +2648,7 @@ function BorrowDetailPage({ data, assets, onBack, onEdit }) {
           >
             <button
               style={{ ...S.btnGhost, padding: "8px 12px" }}
-              onClick={() => generateBAST(items, "borrow", assets)}
+              onClick={() => generateBAST(items, data.type || "borrow", assets)}
             >
               <Icon.Printer /> Cetak BAST
             </button>

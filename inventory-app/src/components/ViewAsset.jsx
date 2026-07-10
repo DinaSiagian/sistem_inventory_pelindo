@@ -1,6 +1,9 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import { barangAPI, budgetAPI, masterDataAPI, transactionAPI, katalogAPI } from "../services/api";
 import "./ViewAsset.css";
+import LogoPelindo from "../pictures/pelindo2.png";
+import { PELINDO_LOGO_BASE64 } from "../data/logoBase64";
+
 // ── CAPEX ANGGARAN MASTER (thn_anggaran → nm_anggaran → pekerjaan) ─────
 let CAPEX_ANGGARAN = [];
 
@@ -2968,34 +2971,69 @@ const ViewAsset = () => {
       "Kode Aset",
       "Nama",
       "Kategori",
-      "Entitas",
       "Branch",
       "Zona",
       "Subzona",
       "Status",
-      "ID Pekerjaan",
-      "Nama Pekerjaan",
-      "Nilai",
+      "Pemilik Barang",
+      "NIP",
       "Tgl Pengadaan",
     ];
-    const rows = filtered.map((a) => [
-      a.id,
-      a.name,
-      a.category,
-      a.entitas,
-      a.branch,
-      a.zona,
-      a.subzona,
-      a.status,
-      a.id_pekerjaan || "",
-      getProjectName(a.id_pekerjaan),
-      a.value,
-      a.procurementDate,
-    ]);
-    const csv = [headers, ...rows]
-      .map((r) => r.map((v) => `"${v}"`).join(","))
+    const rows = filtered.flatMap((a) => {
+      const kategoriFullName = CATEGORY_NAMES[a.category] || a.category;
+
+      let branchName = a.branch || "-";
+      const branchObj = Object.values(BRANCH_BY_ENTITY).flat().find(b => b.code === a.branch || b.name === a.branch);
+      if (branchObj) branchName = branchObj.name;
+
+      let zonaName = a.zona || "-";
+      const zonaObj = ZONA_LIST.find(z => z.code === a.zona || z.name === a.zona);
+      if (zonaObj) zonaName = zonaObj.name;
+
+      let subzonaName = a.subzona || "-";
+      const subzonaObj = SUBZONA_LIST.find(s => s.code === a.subzona || s.name === a.subzona);
+      if (subzonaObj) subzonaName = subzonaObj.name;
+
+      const units = (a.units && a.units.length > 0) ? a.units : [null];
+
+      return units.map((u) => {
+        let kondisiLengkap = "-";
+        if (u && u.condition) {
+           kondisiLengkap = conditionConfig[u.condition]?.label || u.condition;
+        } else if (a.condition) {
+           kondisiLengkap = conditionConfig[a.condition]?.label || a.condition;
+        } else {
+           kondisiLengkap = "Baik";
+        }
+
+        let pemilik = "Admin IT";
+        let nip = "-";
+        const unitId = u ? (u.kd_barang || u.serialNumber || a.id) : a.id;
+        
+        const activeBorrows = allBorrows.filter(b => b.type === "BORROW" && !b.is_returned && (b.code === unitId || b.asset_code === unitId || b.serial_number === unitId));
+        if (activeBorrows.length > 0) {
+          pemilik = activeBorrows[0].receiver_name || activeBorrows[0].performed_by_name || "Admin IT";
+          nip = activeBorrows[0].receiver_nip || "-";
+        }
+
+        return [
+          unitId,
+          a.name,
+          kategoriFullName,
+          branchName,
+          zonaName,
+          subzonaName,
+          kondisiLengkap,
+          pemilik,
+          nip !== "-" ? `\t${nip}` : "-",
+          a.procurementDate || "-",
+        ];
+      });
+    });
+    const csvContent = [headers, ...rows]
+      .map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(";"))
       .join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
+    const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
@@ -3003,48 +3041,38 @@ const ViewAsset = () => {
     link.click();
   };
 
-  const handlePrintBarcode = () => {
+  const handlePrintBarcode = (unitIndex = null) => {
     const asset = selectedAsset;
-    const units = asset.units && asset.units.length > 0 ? asset.units : [{ serialNumber: asset.id }];
+    let units = asset.units && asset.units.length > 0 ? asset.units : [{ serialNumber: asset.id }];
+
+    if (unitIndex !== null && typeof unitIndex === "number") {
+      units = [units[unitIndex]];
+    }
 
     let html = `<!DOCTYPE html><html><head><title>Print QR Codes — ${asset.name}</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:'Courier New',monospace;background:#fff;padding:20px}
   .label-container{display:flex;flex-direction:column;gap:30px;align-items:center}
-  .label{width:360px;background:#fff;border:2.5px solid #111;border-radius:10px;padding:18px 20px;page-break-inside:avoid}
-  .lh{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1.5px solid #111;padding-bottom:10px;margin-bottom:10px}
-  .lbrand{font-size:16px;font-weight:900;letter-spacing:3px;color:#000}
-  .lsub{font-size:8px;font-weight:700;color:#555;letter-spacing:1.5px;margin-top:2px}
-  .lstatus{border:1.5px solid #000;border-radius:4px;padding:3px 8px;font-size:8px;font-weight:900;letter-spacing:1px;text-transform:uppercase}
-  .lname{font-size:14px;font-weight:800;margin:8px 0 3px;color:#000;font-family:sans-serif}
-  .lid{font-size:10px;font-weight:700;color:#444;letter-spacing:.5px;margin-bottom:10px}
-  .lbar{text-align:center;padding:12px 0;margin:12px 0}
-  .lmeta{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px;border-top:1px solid #eee;padding-top:8px}
-  .mi label{display:block;font-size:7.5px;color:#888;text-transform:uppercase;letter-spacing:.4px;margin-bottom:1px}
-  .mi span{font-size:9.5px;font-weight:700;color:#111}
-  .lfoot{text-align:center;margin-top:10px;font-size:7px;color:#aaa;letter-spacing:.5px;border-top:1px dashed #ddd;padding-top:7px;text-transform:uppercase}
+  .label{width:260px;background:#fff;border:2.5px solid #111;border-radius:10px;padding:20px;page-break-inside:avoid;text-align:center;}
+  .lid{font-size:11.5px;font-weight:900;color:#000;letter-spacing:0.5px;margin-top:10px;}
+  .lbar{margin:10px 0;}
   @media print{body{padding:0}.label{box-shadow:none;margin-bottom:20px}}
 </style></head><body><div class="label-container">`;
 
     units.forEach((u) => {
       const barcodeVal = u.kd_barang || asset.id;
       const scanUrl = `${window.location.origin}/scan/${barcodeVal}`;
-      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(scanUrl)}`;
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(scanUrl)}`;
+      const logoUrl = PELINDO_LOGO_BASE64;
 
       html += `
 <div class="label">
-  <div class="lh"><div><div class="lbrand">PELINDO</div><div class="lsub">ASSET MANAGEMENT SYSTEM</div></div><span class="lstatus">${asset.status}</span></div>
-  <div class="lname">${asset.name}</div>
-  <div class="lid">${barcodeVal}</div>
-  <div class="lbar"><img src="${qrUrl}" style="width:140px;height:140px;margin:0 auto;display:block;" alt="QR Code" /></div>
-  <div class="lmeta">
-    <div class="mi"><label>Entitas</label><span>${asset.entitas || "—"}</span></div>
-    <div class="mi"><label>Cabang</label><span>${asset.branch}</span></div>
-    <div class="mi"><label>Zona / Subz</label><span>${asset.zona}/${asset.subzona}</span></div>
-    <div class="mi"><label>Aset ID</label><span>${asset.id}</span></div>
+  <div style="padding-bottom:4px; margin-bottom:10px; border-bottom:1.5px solid #111;">
+    <img src="${logoUrl}" style="max-height:65px; margin:-8px 0; display:inline-block; object-fit:contain;" alt="Pelindo Logo" />
   </div>
-  <div class="lfoot">SCAN UNTUK DETAIL ASET — ${new Date().getFullYear()}</div>
+  <div class="lbar"><img src="${qrUrl}" style="width:220px;height:220px;margin:0 auto;display:block;" alt="QR Code" /></div>
+  <div class="lid">${barcodeVal}</div>
 </div>`;
     });
 
@@ -3072,7 +3100,7 @@ const ViewAsset = () => {
           document.body.removeChild(iframe);
         }
       }, 1000);
-    }, 1500);
+    }, 2500);
   };
 
   // ── RENDER LIST VIEW (TAMPILAN AWAL - TIDAK DIUBAH) ─────────────
@@ -6278,13 +6306,13 @@ const ViewAsset = () => {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))",
+              gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
               gap: "24px",
               paddingBottom: "40px"
             }}
           >
             {units.map((u, idx) => {
-              const barcodeVal = u.serialNumber || asset.id;
+              const barcodeVal = u.kd_barang || asset.id;
               return (
                 <div
                   key={idx}
@@ -6293,52 +6321,54 @@ const ViewAsset = () => {
                     border: "2px solid #e2e8f0",
                     borderRadius: "12px",
                     padding: "20px",
-                    position: "relative"
+                    textAlign: "center",
+                    width: "100%",
+                    maxWidth: "260px",
+                    margin: "0 auto",
+                    display: "flex",
+                    flexDirection: "column"
                   }}
                 >
-                  <div style={{
-                    position: "absolute",
-                    top: "12px",
-                    right: "12px",
-                    fontSize: "10px",
-                    fontWeight: "800",
-                    color: "#94a3b8",
-                    background: "#f8fafc",
-                    padding: "2px 6px",
-                    borderRadius: "4px"
-                  }}>
-                    UNIT {idx + 1}
+                  <div style={{ paddingBottom: "4px", marginBottom: "10px", borderBottom: "1.5px solid #111" }}>
+                    <img src={PELINDO_LOGO_BASE64} style={{ maxHeight: "65px", margin: "-8px 0", display: "inline-block", objectFit: "contain" }} alt="Pelindo Logo" />
                   </div>
 
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "1.5px solid #111", paddingBottom: "10px", marginBottom: "10px" }}>
-                    <div>
-                      <div style={{ fontSize: "14px", fontWeight: "900", letterSpacing: "2px", color: "#000" }}>PELINDO</div>
-                      <div style={{ fontSize: "7px", fontWeight: "700", color: "#555", letterSpacing: "1px" }}>ASSET MANAGEMENT</div>
-                    </div>
-                    <span style={{ border: "1.5px solid #000", borderRadius: "4px", padding: "2px 6px", fontSize: "7px", fontWeight: "900", textTransform: "uppercase" }}>{asset.status}</span>
-                  </div>
-
-                  <div style={{ fontSize: "13px", fontWeight: "800", margin: "6px 0 2px", color: "#000" }}>{asset.name}</div>
-                  <div style={{ fontSize: "10px", fontWeight: "700", color: "#444", marginBottom: "8px" }}>{barcodeVal}</div>
-
-                  <div style={{ textAlign: "center", padding: "16px 0", margin: "8px 0" }}>
+                  <div style={{ padding: "4px 0", margin: "4px 0" }}>
                     <img 
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(`${window.location.origin}/scan/${barcodeVal}`)}`} 
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`${window.location.origin}/scan/${barcodeVal}`)}`} 
                       alt="QR Code" 
-                      style={{ width: "140px", height: "140px", margin: "0 auto", display: "block" }} 
+                      style={{ width: "220px", height: "220px", margin: "0 auto", display: "block" }} 
                     />
                   </div>
 
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginTop: "10px" }}>
-                    <div>
-                      <span style={{ display: "block", fontSize: "7px", color: "#888", textTransform: "uppercase" }}>Cabang</span>
-                      <span style={{ fontSize: "9px", fontWeight: "700", color: "#111" }}>{asset.branch}</span>
-                    </div>
-                    <div>
-                      <span style={{ display: "block", fontSize: "7px", color: "#888", textTransform: "uppercase" }}>Zona/Sub</span>
-                      <span style={{ fontSize: "9px", fontWeight: "700", color: "#111" }}>{asset.zona}/{asset.subzona}</span>
-                    </div>
+                  <div style={{ fontSize: "11.5px", fontWeight: "900", color: "#000", letterSpacing: "0.5px", marginTop: "4px", marginBottom: "16px" }}>
+                    {barcodeVal}
                   </div>
+
+                  <button
+                    onClick={() => handlePrintBarcode(idx)}
+                    style={{
+                      marginTop: "auto",
+                      width: "100%",
+                      padding: "10px",
+                      background: "#f1f5f9",
+                      color: "#475569",
+                      border: "none",
+                      borderRadius: "8px",
+                      fontSize: "12px",
+                      fontWeight: "700",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "6px",
+                      transition: "background 0.2s"
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.background = "#e2e8f0"}
+                    onMouseOut={(e) => e.currentTarget.style.background = "#f1f5f9"}
+                  >
+                    <Icon.Print /> Cetak Unit Ini
+                  </button>
                 </div>
               );
             })}

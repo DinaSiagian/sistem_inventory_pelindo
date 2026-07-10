@@ -752,7 +752,7 @@ const generateBAST = (itemOrItems, type = "borrow", assetsList = []) => {
   </div>
   <div class="subjudul">
     TENTANG<br/>
-    SERAH TERIMA PERANGKAT KERJA A.N. ${receiver.name.toUpperCase()}
+    ${isBorrow ? `SERAH TERIMA PERANGKAT KERJA A.N. ${receiver.name.toUpperCase()}` : `BAST PENGEMBALIAN ATAS ${giver.name.toUpperCase()}`}
   </div>
   <div class="intro">
     Pada hari ini, ${tglDokumen}, yang bertanda tangan di bawah ini:
@@ -777,7 +777,7 @@ const generateBAST = (itemOrItems, type = "borrow", assetsList = []) => {
   </div>
   
   <div class="intro">
-    <strong>Pihak Pertama</strong> dengan ini menyerahkan Perangkat Kerja kepada <strong>Pihak Kedua</strong>, dengan rincian sebagai berikut:
+    <strong>Pihak Pertama</strong> dengan ini ${isBorrow ? 'menyerahkan' : 'mengembalikan'} Perangkat Kerja kepada <strong>Pihak Kedua</strong>, dengan rincian sebagai berikut:
   </div>
 
   <table class="tabel-aset">
@@ -2659,7 +2659,7 @@ function BorrowDetailPage({ data, assets, onBack, onEdit, onReturn }) {
                   bast_number: data.bast_number,
                   borrow_date: it.borrow_date || date,
                 }));
-                generateBAST(allItems, "borrow", assets);
+                generateBAST(allItems, data.type || "borrow", assets);
               }}
             >
               <Icon.Printer /> Generate BAST
@@ -5668,6 +5668,7 @@ function HistoryPage({ assetCode, assetName, borrows, returns, onBack }) {
           receiver_id: b.receiver_id,
           items: [],
           pekerjaan_kode: b.pekerjaan_kode,
+          type: b.return_date ? "return" : "borrow",
         };
       }
       groups[key].items.push(b);

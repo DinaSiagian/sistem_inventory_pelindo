@@ -1034,16 +1034,13 @@ const Dashboard = () => {
       if (item.units && Array.isArray(item.units)) {
         item.units.forEach(u => {
           tAset++;
-          const isActive = activeBorrowSet.has(u.serialNumber);
-          const st = (u.condition || "BAIK").toUpperCase();
-          const isNonOp = u.status && u.status.includes("Non-Operasional");
-
-          if (!isActive && !isNonOp && (st === "BAIK" || st === "GOOD")) tAvail++;
-
-          if (isNonOp || st === "DIPERBAIKI" || st === "MAINTENANCE" || st === "NON-OPERASIONAL" || st === "NON OPERASIONAL") {
+          if (u.status === "Tersedia") {
+            tAvail++;
+          } else if (u.status && u.status.includes("Non-Operasional")) {
             tMaint++;
           }
           
+          const st = (u.condition || "BAIK").toUpperCase();
           if (st === "RUSAK" || st === "MINOR_DAMAGE" || st === "RUSAK RINGAN" || st === "RUSAK BERAT" || st === "DAMAGED" || st === "DIPERBAIKI" || st === "MAINTENANCE") {
             cond["Rusak"]++;
           } else if (st === "HILANG" || st === "MISSING") {

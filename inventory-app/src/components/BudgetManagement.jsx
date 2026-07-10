@@ -934,7 +934,7 @@ body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:var(--bg);c
 .jc-meta{display:flex;flex-direction:column;gap:4px;font-size:0.75rem;color:var(--ink3);font-weight:500}
 .jc-meta span{display:flex;align-items:center;gap:6px}
 .jc-fin{display:flex;align-items:center;justify-content:flex-start;gap:24px}
-.amt-blk{display:flex;flex-direction:column;gap:2px;text-align:left;min-width:140px}
+.amt-blk{display:flex;flex-direction:column;gap:2px;text-align:right;width:100%}
 .amt-lbl{font-size:0.65rem;color:var(--ink4);font-weight:600;text-transform:uppercase;letter-spacing:0.5px}
 .amt-val{font-size:0.9rem;font-weight:800}
 .amt-val.blue{color:var(--blue)}.amt-val.amber{color:var(--amber)}.amt-val.red{color:var(--red)}.amt-val.green{color:var(--green)}
@@ -1131,15 +1131,15 @@ body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:var(--bg);c
 .ang-card:hover{transform:translateY(-2px);box-shadow:var(--sh-md);border-color:var(--blue-mid)}
 .ang-card-inner{display:flex}
 .ang-card-accent{width:4px;flex-shrink:0;background:var(--blue)}
-.ang-card-body{flex:1;min-width:0;padding:16px 18px;display:grid;grid-template-columns:2.5fr 1.5fr 2fr auto;align-items:center;gap:16px}
+.ang-card-body{flex:1;min-width:0;padding:12px 18px;display:grid;grid-template-columns:minmax(0,4fr) minmax(0,2.5fr) minmax(0,2.5fr) auto;align-items:center;gap:12px}
 .ang-card-info{display:flex;flex-direction:column;gap:5px;min-width:0}
 .ang-card-tags{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .ang-card-title{font-size:0.88rem;font-weight:700;color:var(--ink);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .ang-card-meta{display:flex;flex-direction:column;gap:4px;font-size:0.75rem;color:var(--ink3);font-weight:500}
 .ang-card-meta span{display:flex;align-items:center;gap:6px}
-.ang-card-fin{display:flex;align-items:center;justify-content:flex-end;gap:18px}
-.ang-card-year{display:flex;flex-direction:column;gap:5px;justify-content:center}
-.ang-card-actions{display:flex;align-items:center;gap:8px}
+.ang-card-fin{display:flex;flex-direction:column;align-items:flex-end;gap:2px;text-align:right;justify-self:stretch}
+.ang-card-fin .amt-lbl{font-size:0.65rem;text-transform:uppercase;letter-spacing:0.5px;color:var(--ink4);font-weight:600}
+.ang-card-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px}
 .ang-card-chevron{color:var(--blue);display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:var(--blue-lt);border:1px solid var(--blue-mid)}
 .yr-tag.multi {
   cursor: pointer;
@@ -1831,20 +1831,19 @@ function Breadcrumb({ items }) {
 // ══════ TAMBAH PEKERJAAN PAGE ══════
 function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
   const isOpex = !anggaran.thn_rkap_awal;
-  const totalRealisasiPage = isOpex
-    ? (anggaran.realisasi_tahunan || []).reduce(
-        (s, r) => s + (r.realisasi_murni || 0) + (r.realisasi_bymhd || 0),
-        0,
-      )
-    : 0;
-  const hasRevisionPage = isOpex
-    ? (anggaran.realisasi_tahunan || []).some(
-        (r) => (r.history || []).some((h) => !h.is_initial)
-      )
-    : false;
-  const updatedNilaiKadPage = isOpex && hasRevisionPage
-    ? totalRealisasiPage
-    : (anggaran.nilai_kad || 0);
+  let netPlafonChanges = 0;
+  const historySource = isOpex ? anggaran.realisasi_tahunan : anggaran.anggaran_tahunan;
+  (historySource || []).forEach(r => {
+    (r.history || []).forEach(h => {
+      if (h.tipe === "penambahan" || h.tipe === "transfer") {
+        netPlafonChanges += h.nilai;
+      } else if (h.tipe === "pengurangan" || h.tipe === "bymhd") {
+        netPlafonChanges -= h.nilai;
+      }
+    });
+  });
+  const isOpex = !!anggaran.kd_opex || !!anggaran.realisasi_tahunan;
+  const updatedNilaiKadPage = (anggaran.nilai_kad || 0) + (isOpex ? netPlafonChanges : 0);
 
   const [form, setForm] = useState({
     nm_pekerjaan: "",
@@ -1926,6 +1925,14 @@ function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
     if (!form.nm_pekerjaan) return;
     const nilaiKontrak = parseFloat(form.nilai_kontrak) || 0;
     const nilaiRab = parseFloat(form.nilai_rab) || 0;
+
+    if (form.tgl_kontrak) {
+      const contractYear = new Date(form.tgl_kontrak).getFullYear();
+      if (contractYear < anggaran.thn_rkap_awal || contractYear > anggaran.thn_rkap_akhir) {
+        alert(`Tahun Tanggal Kontrak (${contractYear}) tidak sesuai dengan masa berlaku RKAP (${anggaran.thn_rkap_awal} - ${anggaran.thn_rkap_akhir}).`);
+        return;
+      }
+    }
 
     if (!form.nilai_rab || nilaiRab <= 0) {
       alert("Nilai RAB wajib diisi dan harus lebih besar dari 0");
@@ -2498,8 +2505,22 @@ function RealisasiTablePage({
     (s, t) => s + (parseFloat(t.jumlah || t.acquisition_value) || 0),
     0,
   );
-  const pagu = ang.nilai_anggaran_tahunan || 0;
-  const sisa = pagu - totalAll;
+  let netPlafonChanges = 0;
+  (ang.realisasi_tahunan || []).forEach(r => {
+    (r.history || []).forEach(h => {
+      if (h.tipe === "penambahan" || h.tipe === "transfer") {
+        netPlafonChanges += h.nilai;
+      } else if (h.tipe === "pengurangan" || h.tipe === "bymhd") {
+        netPlafonChanges -= h.nilai;
+      }
+    });
+  });
+
+  const pagu = (ang.nilai_anggaran_tahunan || 0) + netPlafonChanges;
+  
+  // Total Semua Pengeluaran
+  const totalPengeluaran = totalAll;
+  const sisa = pagu - totalPengeluaran;
   return (
     <div className="asset-page">
       <Breadcrumb
@@ -2824,11 +2845,15 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
           <strong style={{ color: "#111827" }}>{ang.nama}</strong>
         </div>
         <div className="ctx-item">
-          <span>Nilai KAD</span>
+          <span>Nilai KAD (Plafon)</span>
           <strong style={{ color: "#2563eb" }}>{fmt(pagu)}</strong>
         </div>
         <div className="ctx-item">
-          <span>Sisa Anggaran</span>
+          <span>Total Pengeluaran (Termasuk Ini)</span>
+          <strong style={{ color: "#d97706" }}>{fmt(prev + amount * (form.items?.length || 0))}</strong>
+        </div>
+        <div className="ctx-item">
+          <span>Estimasi Sisa Anggaran</span>
           <strong className={sisa >= 0 ? "green" : "red"} style={{ color: sisa >= 0 ? "#16a34a" : "#dc2626" }}>
             {fmt(Math.max(0, sisa))}{sisa < 0 && " (melebihi)"}
           </strong>
@@ -2989,15 +3014,30 @@ function RealisasiPage({ ang, editData, onBack, onSave, showToast }) {
 }
 // ══════ OPEX CARD ══════
 function OpexCard({ ang, onSelect, onDelete, searchQ, onDirectProject }) {
-  const totalRealisasi = (ang.realisasi_tahunan || []).reduce(
-    (s, r) => s + (r.realisasi_murni || 0) + (r.realisasi_bymhd || 0),
-    0,
+  // Pisahkan Penambahan dan Pengurangan untuk mengubah Plafon
+  let netPlafonChanges = 0;
+
+  (ang.realisasi_tahunan || []).forEach(r => {
+    (r.history || []).forEach(h => {
+      if (h.tipe === "penambahan" || h.tipe === "transfer") {
+        netPlafonChanges += h.nilai;
+      } else if (h.tipe === "pengurangan" || h.tipe === "bymhd") {
+        netPlafonChanges -= h.nilai;
+      }
+    });
+  });
+
+  const assetTotal = (ang.assets || []).reduce(
+    (s, a) => s + ((a.jumlah || 1) * (a.acquisition_value || 0)), 0
   );
-  const hasRevision = (ang.realisasi_tahunan || []).some(
-    (r) => (r.history || []).some((h) => !h.is_initial)
+  const projectTotal = (ang.projects || []).reduce(
+    (s, p) => s + (p.nilai_kontrak || 0), 0
   );
-  const updatedNilaiKad = hasRevision ? totalRealisasi : ang.nilai_kad;
-  const serapan = ang.nilai_kad > 0 ? Math.round((totalRealisasi / ang.nilai_kad) * 100) : 0;
+
+  const totalPengeluaran = assetTotal + projectTotal;
+  const isOpexCard = !!ang.kd_opex || !!ang.realisasi_tahunan;
+  const updatedNilaiKad = (ang.nilai_kad || 0) + (isOpexCard ? netPlafonChanges : 0);
+  const serapan = updatedNilaiKad > 0 ? Math.round((totalPengeluaran / updatedNilaiKad) * 100) : 0;
   const meta = pctMeta(serapan);
   const matchedProjects = searchQ 
     ? (ang.projects || []).filter(p => p.nm_pekerjaan?.toLowerCase().includes(searchQ.toLowerCase()))
@@ -3007,10 +3047,13 @@ function OpexCard({ ang, onSelect, onDelete, searchQ, onDirectProject }) {
     <div className="ang-card" onClick={() => onSelect(ang)}>
       <div className="ang-card-inner">
         <div className="ang-card-accent opx" style={{ background: "#16a34a" }} />
-        <div className="ang-card-body" style={{ gridTemplateColumns: "2.4fr 1.4fr 1fr 2.1fr auto" }}>
+        <div className="ang-card-body">
           <div className="ang-card-info">
             <div className="ang-card-tags">
               <span className="badge opex">OPEX</span>
+              <span className="yr-tag">
+                {ang.thn_anggaran}
+              </span>
               <code className="code-tag">{ang.kode}</code>
             </div>
             <p className="ang-card-title">{ang.nama}</p>
@@ -3021,42 +3064,38 @@ function OpexCard({ ang, onSelect, onDelete, searchQ, onDirectProject }) {
             <span><Icon d={I.package} size={12} /> {(ang.assets || []).reduce((s, a) => s + (a.jumlah || 1), 0)} barang terdaftar</span>
           </div>
 
-          <div className="ang-card-year">
-            <span className="amt-lbl" style={{ fontSize: '0.72rem' }}>Tahun</span>
-            <span className="yr-tag" style={{ width: 'fit-content', fontSize: '0.8rem', fontWeight: 800, padding: '2px 8px' }}> {ang.thn_anggaran}</span>
-          </div>
-
           <div className="ang-card-fin">
             <div className="amt-blk">
               <span className="amt-lbl">Nilai KAD</span>
-              <span className="amt-val green">{fmt(updatedNilaiKad)}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="ang-card-actions" style={{ padding: '0 18px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div className="ring-wrap">
-              <div className="ring">
-                <svg width="30" height="30" viewBox="0 0 36 36">
-                  <circle cx="18" cy="18" r="16" fill="none" stroke="#e2e8f0" strokeWidth="4" />
-                  <circle cx="18" cy="18" r="16" fill="none" stroke={pctColor(serapan)} strokeWidth="4"
-                    strokeDasharray={`${(Math.min(serapan, 100) / 100) * 2 * Math.PI * 16} ${2 * Math.PI * 16}`}
-                    strokeDashoffset={2 * Math.PI * 16 * 0.25} strokeLinecap="round" />
-                </svg>
-                <span className="ring-lbl" style={{ fontSize: '0.6rem' }}>{serapan}%</span>
-              </div>
-              <span className="status-pill" style={{ background: meta.bg, color: meta.fg, borderColor: meta.border, fontSize: '0.6rem', padding: '1px 6px' }}>
-                {meta.label}
+              <span style={{ fontWeight: 800, fontSize: "1.1rem", color: (serapan > 100 || updatedNilaiKad < 0) ? "#dc2626" : "#16a34a" }}>
+                {fmt(updatedNilaiKad)}
               </span>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button className="abtn green" onClick={(e) => { e.stopPropagation(); onSelect(ang); }}>
-              Pekerjaan
-            </button>
-            <div className="ang-card-chevron">
-              <Icon d={I.chevRight} size={16} />
+          <div className="ang-card-actions" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div className="ring-wrap">
+                <div className="ring">
+                  <svg width="30" height="30" viewBox="0 0 36 36">
+                    <circle cx="18" cy="18" r="16" fill="none" stroke="#e2e8f0" strokeWidth="4" />
+                    <circle cx="18" cy="18" r="16" fill="none" stroke={pctColor(serapan)} strokeWidth="4"
+                      strokeDasharray={`${(Math.min(serapan, 100) / 100) * 2 * Math.PI * 16} ${2 * Math.PI * 16}`}
+                      strokeDashoffset={2 * Math.PI * 16 * 0.25} strokeLinecap="round" />
+                  </svg>
+                  <span className="ring-lbl" style={{ fontSize: '0.6rem' }}>{serapan}%</span>
+                </div>
+                <span className="status-pill" style={{ background: meta.bg, color: meta.fg, borderColor: meta.border, fontSize: '0.6rem', padding: '1px 6px' }}>
+                  {meta.label}
+                </span>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 8, marginLeft: 16 }}>
+              <button className="abtn green" onClick={(e) => { e.stopPropagation(); onSelect(ang); }}>
+                Pekerjaan
+              </button>
+              <div className="ang-card-chevron">
+                <Icon d={I.chevRight} size={16} />
+              </div>
             </div>
           </div>
         </div>
@@ -3287,6 +3326,14 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
   const handleSave = () => {
     const nilaiKontrak = parseFloat(form.nilai_kontrak) || 0;
     const nilaiRab = parseFloat(form.nilai_rab) || 0;
+
+    if (form.tgl_kontrak) {
+      const contractYear = new Date(form.tgl_kontrak).getFullYear();
+      if (contractYear < anggaran.thn_rkap_awal || contractYear > anggaran.thn_rkap_akhir) {
+        showToast(`Tahun Tanggal Kontrak (${contractYear}) tidak sesuai dengan masa berlaku RKAP (${anggaran.thn_rkap_awal} - ${anggaran.thn_rkap_akhir}).`);
+        return;
+      }
+    }
 
     if (!form.nilai_rab || nilaiRab <= 0) {
       showToast("Nilai RAB wajib diisi dan harus lebih besar dari 0");
@@ -4756,8 +4803,20 @@ function AnggaranCard({ ang, onSelect, onShowRkap, onDelete, searchQ, onDirectPr
     (s, a) => s + ((a.jumlah || 1) * (a.acquisition_value || 0)),
     0,
   );
-  const nilaiKadBatas = ang.nilai_kad || 0;
-  const serapan = ang.nilai_kad > 0 ? Math.round((assetTotal / ang.nilai_kad) * 100) : 0;
+  let netPlafonChanges = 0;
+  (ang.anggaran_tahunan || ang.realisasi_tahunan || []).forEach(r => {
+    (r.history || []).forEach(h => {
+      if (h.tipe === "penambahan" || h.tipe === "transfer") {
+        netPlafonChanges += h.nilai;
+      } else if (h.tipe === "pengurangan" || h.tipe === "bymhd") {
+        netPlafonChanges -= h.nilai;
+      }
+    });
+  });
+
+  const isOpexCard = !!ang.kd_opex || !!ang.realisasi_tahunan;
+  const updatedNilaiKad = (ang.nilai_kad || 0) + (isOpexCard ? netPlafonChanges : 0);
+  const serapan = updatedNilaiKad > 0 ? Math.round((assetTotal / updatedNilaiKad) * 100) : 0;
   const meta = pctMeta(serapan);
   const isMulti = ang.thn_rkap_awal !== ang.thn_rkap_akhir;
   const matchedProjects = searchQ 
@@ -4797,34 +4856,35 @@ function AnggaranCard({ ang, onSelect, onShowRkap, onDelete, searchQ, onDirectPr
           <div className="ang-card-fin">
             <div className="amt-blk">
               <span className="amt-lbl">Nilai KAD</span>
-              <span className="amt-val blue">{fmt(ang.nilai_kad)}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="ang-card-actions" style={{ padding: '0 18px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div className="ring-wrap">
-              <div className="ring">
-                <svg width="30" height="30" viewBox="0 0 36 36">
-                  <circle cx="18" cy="18" r="16" fill="none" stroke="#e2e8f0" strokeWidth="4" />
-                  <circle cx="18" cy="18" r="16" fill="none" stroke={pctColor(serapan)} strokeWidth="4"
-                    strokeDasharray={`${(Math.min(serapan, 100) / 100) * 2 * Math.PI * 16} ${2 * Math.PI * 16}`}
-                    strokeDashoffset={2 * Math.PI * 16 * 0.25} strokeLinecap="round" />
-                </svg>
-                <span className="ring-lbl" style={{ fontSize: '0.6rem' }}>{serapan}%</span>
-              </div>
-              <span className="status-pill" style={{ background: meta.bg, color: meta.fg, borderColor: meta.border, fontSize: '0.6rem', padding: '1px 6px' }}>
-                {meta.label}
+              <span style={{ fontWeight: 800, fontSize: "1.1rem", color: (serapan > 100 || updatedNilaiKad < 0) ? "#dc2626" : "#2563eb" }}>
+                {fmt(updatedNilaiKad)}
               </span>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button className="abtn blue" onClick={(e) => { e.stopPropagation(); onSelect(ang); }}>
-              Pekerjaan
-            </button>
-            <div className="ang-card-chevron">
-              <Icon d={I.chevRight} size={16} />
+          <div className="ang-card-actions" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div className="ring-wrap">
+                <div className="ring">
+                  <svg width="30" height="30" viewBox="0 0 36 36">
+                    <circle cx="18" cy="18" r="16" fill="none" stroke="#e2e8f0" strokeWidth="4" />
+                    <circle cx="18" cy="18" r="16" fill="none" stroke={pctColor(serapan)} strokeWidth="4"
+                      strokeDasharray={`${(Math.min(serapan, 100) / 100) * 2 * Math.PI * 16} ${2 * Math.PI * 16}`}
+                      strokeDashoffset={2 * Math.PI * 16 * 0.25} strokeLinecap="round" />
+                  </svg>
+                  <span className="ring-lbl" style={{ fontSize: '0.6rem' }}>{serapan}%</span>
+                </div>
+                <span className="status-pill" style={{ background: meta.bg, color: meta.fg, borderColor: meta.border, fontSize: '0.6rem', padding: '1px 6px' }}>
+                  {meta.label}
+                </span>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 8, marginLeft: 16 }}>
+              <button className="abtn blue" onClick={(e) => { e.stopPropagation(); onSelect(ang); }}>
+                Pekerjaan
+              </button>
+              <div className="ang-card-chevron">
+                <Icon d={I.chevRight} size={16} />
+              </div>
             </div>
           </div>
         </div>

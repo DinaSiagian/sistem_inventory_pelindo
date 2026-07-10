@@ -80,6 +80,8 @@ class TransactionController extends Controller
                     'op.name AS operator_name',
                     'gv.name AS giver_name',
                     'rc.name AS receiver_name',
+                    'rc.nip AS receiver_nip',
+                    'gv.nip AS giver_nip',
                     'op.branches_code AS operator_branch',
                 ])
                 ->orderBy('t.created_at', 'desc')
@@ -129,6 +131,7 @@ class TransactionController extends Controller
                     'giver_name' => $row->giver_name,
                     'receiver_id' => $row->receiver_id ? (int) $row->receiver_id : null,
                     'receiver_name' => $row->receiver_name,
+                    'receiver_nip' => $row->receiver_nip,
                     'from_zone' => $row->subzona_code ?: 'Gudang',
                     'to_zone' => $row->subzona_code ?: 'Gudang',
                     'reason' => $row->notes ?: '',
@@ -185,6 +188,8 @@ class TransactionController extends Controller
                     'op.name AS operator_name',
                     'gv.name AS giver_name',
                     'rc.name AS receiver_name',
+                    'rc.nip AS receiver_nip',
+                    'gv.nip AS giver_nip',
                     'op.branches_code AS operator_branch',
                 ])
                 ->orderBy('t.created_at', 'desc')
@@ -240,6 +245,7 @@ class TransactionController extends Controller
                     'giver_name' => $row->giver_name,
                     'receiver_id' => $row->receiver_id ? (int) $row->receiver_id : null,
                     'receiver_name' => $row->receiver_name,
+                    'receiver_nip' => $row->receiver_nip,
                     'from_zone' => $row->subzona_code ?: 'Gudang',
                     'to_zone' => $row->subzona_code ?: 'Gudang',
                     'reason' => $row->notes ?: '',
