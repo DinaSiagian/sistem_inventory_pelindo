@@ -1842,7 +1842,7 @@ function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
       }
     });
   });
-  const isOpex = !!anggaran.kd_opex || !!anggaran.realisasi_tahunan;
+
   const updatedNilaiKadPage = (anggaran.nilai_kad || 0) + (isOpex ? netPlafonChanges : 0);
 
   const [form, setForm] = useState({
