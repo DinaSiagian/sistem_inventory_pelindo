@@ -1696,7 +1696,13 @@ function PctRing({ pct }) {
   const meta = pctMeta(pct);
   const r = 16,
     circ = 2 * Math.PI * r;
-  const filled = (Math.min(pct, 100) / 100) * circ;
+  const pctNum = Math.min(pct, 100);
+  let filled = (pctNum / 100) * circ;
+  let offset = 0;
+  if (pctNum > 0 && pctNum < 100) {
+    filled = Math.max(0.1, filled - 4);
+    offset = -2;
+  }
   return (
     <div className="ring-wrap">
       <div className="ring">
@@ -1717,7 +1723,8 @@ function PctRing({ pct }) {
             stroke={pctColor(pct)}
             strokeWidth="4"
             strokeDasharray={`${filled} ${circ}`}
-            strokeDashoffset={circ * 0.25}
+            strokeDashoffset={offset}
+            transform="rotate(-90 18 18)"
             strokeLinecap="round"
             style={{ transition: "stroke-dasharray .5s ease" }}
           />
@@ -3061,8 +3068,29 @@ function OpexCard({ ang, onSelect, onDelete, searchQ, onDirectProject }) {
     ? (parseFloat(ang.nilai_kad) || 0) + (isOpexCard ? netPlafonChanges : 0)
     : Math.max(parseFloat(ang.nilai_anggaran) || 0, dynamicTotalRkap);
 
-  const serapan = updatedNilaiKad > 0 ? Math.round((totalPengeluaran / updatedNilaiKad) * 100) : 0;
-  const meta = pctMeta(serapan);
+  const isOverbudget = projectTotal > updatedNilaiKad;
+  const usagePercent = updatedNilaiKad > 0 ? Math.round((assetTotal / updatedNilaiKad) * 100) : 0;
+  
+  let meta = { label: "Tersedia", bg: "#f0fdf4", fg: "#15803d", border: "#bbf7d0" };
+  let ringColor = "#22c55e"; // green
+  if (usagePercent >= 100) {
+    meta = { label: "Habis", bg: "#fef2f2", fg: "#b91c1c", border: "#fecaca" };
+    ringColor = "#ef4444"; // red
+  } else if (usagePercent >= 93) {
+    meta = { label: "Hampir Habis", bg: "#fffbeb", fg: "#b45309", border: "#fde68a" };
+    ringColor = "#f59e0b"; // amber
+  } else if (usagePercent >= 50) {
+    ringColor = "#3b82f6"; // blue
+  }
+
+  const circRing = 2 * Math.PI * 16;
+  let ringDashLength = (Math.min(usagePercent, 100) / 100) * circRing;
+  let ringDashOffset = 0;
+  if (usagePercent > 0 && usagePercent < 100) {
+    ringDashLength = Math.max(0.1, ringDashLength - 4);
+    ringDashOffset = -2;
+  }
+
   const matchedProjects = searchQ
     ? (ang.projects || []).filter(p => p.nm_pekerjaan?.toLowerCase().includes(searchQ.toLowerCase()))
     : [];
@@ -3091,22 +3119,28 @@ function OpexCard({ ang, onSelect, onDelete, searchQ, onDirectProject }) {
           <div className="ang-card-fin">
             <div className="amt-blk">
               <span className="amt-lbl">Nilai KAD</span>
-              <span style={{ fontWeight: 800, fontSize: "1.1rem", color: (serapan > 100 || updatedNilaiKad < 0) ? "#dc2626" : "#16a34a" }}>
+              <span style={{ fontWeight: 800, fontSize: "1.1rem", color: (isOverbudget || updatedNilaiKad < 0) ? "#dc2626" : "#16a34a" }}>
                 {fmt(updatedNilaiKad)}
               </span>
             </div>
           </div>
           <div className="ang-card-actions" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div className="ring-wrap">
+              {isOverbudget && (
+                 <span className="status-pill" style={{ background: "#fef2f2", color: "#b91c1c", borderColor: "#fecaca", fontSize: '0.6rem', padding: '1px 6px', fontWeight: 800, marginRight: 4 }}>
+                   OVERBUDGET
+                 </span>
+              )}
+              <div className="ring-wrap" title={`Penggunaan KAD: ${fmt(assetTotal)} / ${fmt(updatedNilaiKad)}`}>
                 <div className="ring">
                   <svg width="30" height="30" viewBox="0 0 36 36">
                     <circle cx="18" cy="18" r="16" fill="none" stroke="#e2e8f0" strokeWidth="4" />
-                    <circle cx="18" cy="18" r="16" fill="none" stroke={pctColor(serapan)} strokeWidth="4"
-                      strokeDasharray={`${(Math.min(serapan, 100) / 100) * 2 * Math.PI * 16} ${2 * Math.PI * 16}`}
-                      strokeDashoffset={2 * Math.PI * 16 * 0.25} strokeLinecap="round" />
+                    <circle cx="18" cy="18" r="16" fill="none" stroke={ringColor} strokeWidth="4"
+                      strokeDasharray={`${ringDashLength} ${circRing}`}
+                      strokeDashoffset={ringDashOffset} transform="rotate(-90 18 18)" strokeLinecap="round"
+                      style={{ transition: "stroke-dasharray .5s ease" }} />
                   </svg>
-                  <span className="ring-lbl" style={{ fontSize: '0.6rem' }}>{serapan}%</span>
+                  <span className="ring-lbl" style={{ fontSize: '0.6rem' }}>{usagePercent}%</span>
                 </div>
                 <span className="status-pill" style={{ background: meta.bg, color: meta.fg, borderColor: meta.border, fontSize: '0.6rem', padding: '1px 6px' }}>
                   {meta.label}
@@ -4619,14 +4653,16 @@ function AssetTablePage({
                   </div>
                 </div>
 
-                {/* Sisa Anggaran */}
+                {/* Sisa Kontrak */}
                 <div style={{ background: sisaProject >= 0 ? "#f0fdf4" : "#fef2f2", padding: "4px 12px", borderRadius: "8px", border: sisaProject >= 0 ? "1px solid #bbf7d0" : "1px solid #fecaca", display: "flex", alignItems: "center", gap: "8px", boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }}>
                   <Icon d={I.wallet} size={12} style={{ color: sisaProject >= 0 ? "#16a34a" : "#dc2626" }} />
                   <div style={{ display: "flex", flexDirection: "column" }}>
-                    <span style={{ fontSize: "0.6rem", color: "#475569", fontWeight: 700, textTransform: "uppercase", lineHeight: 1, fontFamily: "inherit" }}>Sisa Anggaran</span>
+                    <span style={{ fontSize: "0.6rem", color: "#475569", fontWeight: 700, textTransform: "uppercase", lineHeight: 1, fontFamily: "inherit" }}>Sisa Kontrak</span>
                     <strong style={{ fontSize: "0.85rem", color: sisaProject >= 0 ? "#16a34a" : "#dc2626", fontWeight: 800, fontFamily: "inherit" }}>{fmt(sisaProject)}</strong>
                   </div>
                 </div>
+
+
               </div>
             </div>
           </div>
@@ -4845,8 +4881,30 @@ function AnggaranCard({ ang, onSelect, onShowRkap, onDelete, searchQ, onDirectPr
     ? (parseFloat(ang.nilai_kad) || 0) + (isOpexCard ? netPlafonChanges : 0)
     : Math.max(parseFloat(ang.nilai_anggaran) || 0, dynamicTotalRkap);
 
-  const serapan = updatedNilaiKad > 0 ? Math.round((assetTotal / updatedNilaiKad) * 100) : 0;
-  const meta = pctMeta(serapan);
+  const projectTotal = (ang.projects || []).reduce((s, p) => s + (p.nilai_kontrak || 0), 0);
+  const isOverbudget = projectTotal > updatedNilaiKad;
+  const usagePercent = updatedNilaiKad > 0 ? Math.round((assetTotal / updatedNilaiKad) * 100) : 0;
+  
+  let meta = { label: "Tersedia", bg: "#f0fdf4", fg: "#15803d", border: "#bbf7d0" };
+  let ringColor = "#22c55e"; // green
+  if (usagePercent >= 100) {
+    meta = { label: "Habis", bg: "#fef2f2", fg: "#b91c1c", border: "#fecaca" };
+    ringColor = "#ef4444"; // red
+  } else if (usagePercent >= 93) {
+    meta = { label: "Hampir Habis", bg: "#fffbeb", fg: "#b45309", border: "#fde68a" };
+    ringColor = "#f59e0b"; // amber
+  } else if (usagePercent >= 50) {
+    ringColor = "#3b82f6"; // blue
+  }
+
+  const circRing = 2 * Math.PI * 16;
+  let ringDashLength = (Math.min(usagePercent, 100) / 100) * circRing;
+  let ringDashOffset = 0;
+  if (usagePercent > 0 && usagePercent < 100) {
+    ringDashLength = Math.max(0.1, ringDashLength - 4);
+    ringDashOffset = -2;
+  }
+
   const isMulti = ang.thn_rkap_awal !== ang.thn_rkap_akhir;
   const matchedProjects = searchQ
     ? (ang.projects || []).filter(p => p.nm_pekerjaan?.toLowerCase().includes(searchQ.toLowerCase()))
@@ -4885,22 +4943,28 @@ function AnggaranCard({ ang, onSelect, onShowRkap, onDelete, searchQ, onDirectPr
           <div className="ang-card-fin">
             <div className="amt-blk">
               <span className="amt-lbl">Nilai KAD</span>
-              <span style={{ fontWeight: 800, fontSize: "1.1rem", color: (serapan > 100 || updatedNilaiKad < 0) ? "#dc2626" : "#2563eb" }}>
+              <span style={{ fontWeight: 800, fontSize: "1.1rem", color: (isOverbudget || updatedNilaiKad < 0) ? "#dc2626" : "#2563eb" }}>
                 {fmt(updatedNilaiKad)}
               </span>
             </div>
           </div>
           <div className="ang-card-actions" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div className="ring-wrap">
+              {isOverbudget && (
+                 <span className="status-pill" style={{ background: "#fef2f2", color: "#b91c1c", borderColor: "#fecaca", fontSize: '0.6rem', padding: '1px 6px', fontWeight: 800, marginRight: 4 }}>
+                   OVERBUDGET
+                 </span>
+              )}
+              <div className="ring-wrap" title={`Penggunaan KAD: ${fmt(assetTotal)} / ${fmt(updatedNilaiKad)}`}>
                 <div className="ring">
                   <svg width="30" height="30" viewBox="0 0 36 36">
                     <circle cx="18" cy="18" r="16" fill="none" stroke="#e2e8f0" strokeWidth="4" />
-                    <circle cx="18" cy="18" r="16" fill="none" stroke={pctColor(serapan)} strokeWidth="4"
-                      strokeDasharray={`${(Math.min(serapan, 100) / 100) * 2 * Math.PI * 16} ${2 * Math.PI * 16}`}
-                      strokeDashoffset={2 * Math.PI * 16 * 0.25} strokeLinecap="round" />
+                    <circle cx="18" cy="18" r="16" fill="none" stroke={ringColor} strokeWidth="4"
+                      strokeDasharray={`${ringDashLength} ${circRing}`}
+                      strokeDashoffset={ringDashOffset} transform="rotate(-90 18 18)" strokeLinecap="round"
+                      style={{ transition: "stroke-dasharray .5s ease" }} />
                   </svg>
-                  <span className="ring-lbl" style={{ fontSize: '0.6rem' }}>{serapan}%</span>
+                  <span className="ring-lbl" style={{ fontSize: '0.6rem' }}>{usagePercent}%</span>
                 </div>
                 <span className="status-pill" style={{ background: meta.bg, color: meta.fg, borderColor: meta.border, fontSize: '0.6rem', padding: '1px 6px' }}>
                   {meta.label}

@@ -2455,7 +2455,7 @@ const Inventaris = () => {
   const CATEGORY_NAMES = useMemo(() => {
     const base = {
       LPT: "LAPTOP",
-      CTV: "CCTV CAMERA",
+      CCTV: "CCTV CAMERA",
       RTR: "ROUTER / JARINGAN",
       PC: "PC DESKTOP",
       SRV: "SERVER",
@@ -2466,7 +2466,7 @@ const Inventaris = () => {
       FRN: "FURNITURE",
       MAT: "MATERIAL",
       SFT: "SOFTWARE LICENSE",
-      HDW: "HARDWARE",
+      HW: "HARDWARE",
       OTH: "IT LAINNYA"
     };
     if (dbCategories && dbCategories.length > 0) {
@@ -3097,38 +3097,90 @@ const Inventaris = () => {
   };
 
   const handleExport = () => {
+    const conditionConfig = {
+      BAIK: { label: "Baik" },
+      RUSAK_RINGAN: { label: "Rusak Ringan" },
+      RUSAK_BERAT: { label: "Rusak Berat" },
+    };
     const headers = [
-      "ID Barang",
+      "Kode Aset",
       "Nama",
       "Kategori",
-      "Entitas",
       "Branch",
       "Zona",
       "Subzona",
       "Status",
-      "ID Pekerjaan",
-      "Nama Pekerjaan",
-      "Nilai",
-      "Tgl Pengadaan",
+      "Pemilik Barang",
+      "NIP",
+      "Tanggal Pengadaan",
     ];
-    const rows = filtered.map((a) => [
-      a.id,
-      a.name,
-      a.category,
-      a.entitas,
-      a.branch,
-      a.zona,
-      a.subzona,
-      a.status,
-      a.id_pekerjaan || "",
-      getProjectName(a.id_pekerjaan),
-      a.value,
-      a.procurement_date || a.procurementDate || a.tahun_pengadaan || "-",
-    ]);
+    const rows = filtered.flatMap((a) => {
+      const kategoriFullName = CATEGORY_NAMES[a.category] || a.category || "-";
+
+      let branchName = a.branch || "-";
+      const branchObj = Object.values(BRANCH_BY_ENTITY).flat().find(b => b.code === a.branch || b.name === a.branch);
+      if (branchObj) branchName = branchObj.name;
+      else if (dbLocations?.branches?.length > 0) {
+        const dBranch = dbLocations.branches.find(b => b.branch_code === a.branch || b.name === a.branch);
+        if (dBranch) branchName = dBranch.name;
+      }
+
+      let zonaName = a.zona || "-";
+      const zonaObj = ZONA_LIST.find(z => z.code === a.zona || z.name === a.zona);
+      if (zonaObj) zonaName = zonaObj.name;
+      else if (dbLocations?.zonas?.length > 0) {
+        const dZona = dbLocations.zonas.find(z => z.zona_code === a.zona || z.name === a.zona);
+        if (dZona) zonaName = dZona.name;
+      }
+
+      let subzonaName = a.subzona || "-";
+      const subzonaObj = SUBZONA_LIST.find(s => s.code === a.subzona || s.name === a.subzona);
+      if (subzonaObj) subzonaName = subzonaObj.name;
+      else if (dbLocations?.subzonas?.length > 0) {
+        const dSub = dbLocations.subzonas.find(s => s.subzona_code === a.subzona || s.name === a.subzona);
+        if (dSub) subzonaName = dSub.name;
+      }
+
+      const units = (a.units && a.units.length > 0) ? a.units : [null];
+
+      return units.map((u) => {
+        let kondisiLengkap = "-";
+        if (u && u.condition) {
+           kondisiLengkap = conditionConfig[u.condition]?.label || u.condition;
+        } else if (a.condition) {
+           kondisiLengkap = conditionConfig[a.condition]?.label || a.condition;
+        } else {
+           kondisiLengkap = "Baik";
+        }
+
+        let pemilik = "Admin IT";
+        let nip = "-";
+        const unitId = u ? (u.kd_barang || u.serialNumber || a.id) : a.id;
+        
+        const activeBorrows = allBorrows.filter(b => b.type === "BORROW" && !b.is_returned && (b.code === unitId || b.asset_code === unitId || b.serial_number === unitId));
+        if (activeBorrows.length > 0) {
+          pemilik = activeBorrows[0].receiver_name || activeBorrows[0].performed_by_name || "Admin IT";
+          nip = activeBorrows[0].receiver_nip || "-";
+        }
+
+        return [
+          unitId,
+          a.name,
+          kategoriFullName,
+          branchName,
+          zonaName,
+          subzonaName,
+          kondisiLengkap,
+          pemilik,
+          nip !== "-" ? `\t${nip}` : "-",
+          a.procurement_date || a.procurementDate || a.tahun_pengadaan || "-",
+        ];
+      });
+    });
     const csv = [headers, ...rows]
-      .map((r) => r.map((v) => `"${v}"`).join(","))
+      .map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","))
       .join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
