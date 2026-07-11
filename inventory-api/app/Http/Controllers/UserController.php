@@ -100,6 +100,8 @@ class UserController extends Controller
                 'branch_code'   => 'required|exists:branches,branch_code',
                 'division_code' => 'nullable|exists:divisions,division_code',
                 'is_active'     => 'nullable|boolean',
+                'security_question' => 'nullable|string',
+                'security_answer'   => 'nullable|string',
             ]);
 
             if ($validator->fails()) {
