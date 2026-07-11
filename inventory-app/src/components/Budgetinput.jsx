@@ -765,18 +765,24 @@ function InlineHistoryTable({ row, mode = "opex", onUpdateHistoryRecord, onDelet
     pengurangan: { label: "Pengurangan", color: "#dc2626", bg: "#fee2e2" },
     bymhd: { label: "BYMHD", color: "#d97706", bg: "#fef3c7" },
     transfer: { label: `Transfer ${lbl}`, color: "#7c3aed", bg: "#ede9fe" },
+    switch_out: { label: `Switch Keluar`, color: "#9333ea", bg: "#faf5ff" },
+    switch_in: { label: `Switch Masuk`, color: "#10b981", bg: "#ecfdf5" },
+    switch_in_kad: { label: `Switch KAD Masuk`, color: "#059669", bg: "#d1fae5" },
   };
 
   let totalReal = 0, totalBymhd = 0;
   const rows = history.map((h) => {
     const isInitial = h.is_initial || h.tipe === "initial";
     let real = null, bymhd = null;
-    if (isInitial || h.tipe === "penambahan" || h.tipe === "transfer") {
+    if (isInitial || h.tipe === "penambahan" || h.tipe === "transfer" || h.tipe === "switch_in") {
       real = h.nilai;
       totalReal += h.nilai;
-    } else if (h.tipe === "pengurangan") {
+    } else if (h.tipe === "pengurangan" || h.tipe === "switch_out") {
       real = -h.nilai;
       totalReal -= h.nilai;
+    } else if (h.tipe === "switch_in_kad") {
+      real = h.nilai;
+      if (mode === "opex") totalReal += h.nilai;
     } else if (h.tipe === "bymhd") {
       bymhd = h.nilai;
       totalBymhd += h.nilai;
@@ -811,9 +817,18 @@ function InlineHistoryTable({ row, mode = "opex", onUpdateHistoryRecord, onDelet
                 <th style={{ ...S.th, width: 40, textAlign: "center" }}>NO</th>
                 <th style={{ ...S.th, width: 120 }}>TANGGAL</th>
                 <th style={{ ...S.th, width: 160 }}>TIPE</th>
-                <th style={{ ...S.th, textAlign: "right" }}>MURNI (Rp)</th>
-                <th style={{ ...S.th, textAlign: "right" }}>BYMHD (Rp)</th>
-                <th style={{ ...S.th, textAlign: "right" }}>JUMLAH (Rp)</th>
+                {mode === "opex" ? (
+                  <>
+                    <th style={{ ...S.th, textAlign: "right" }}>MURNI (Rp)</th>
+                    <th style={{ ...S.th, textAlign: "right" }}>BYMHD (Rp)</th>
+                    <th style={{ ...S.th, textAlign: "right" }}>JUMLAH (Rp)</th>
+                  </>
+                ) : (
+                  <>
+                    <th style={{ ...S.th, textAlign: "right" }}>NILAI (Rp)</th>
+                    <th style={{ ...S.th, textAlign: "right" }}>TOTAL (Rp)</th>
+                  </>
+                )}
                 <th style={{ ...S.th, textAlign: "center", width: 100 }}>AKSI</th>
               </tr>
             </thead>
@@ -843,30 +858,58 @@ function InlineHistoryTable({ row, mode = "opex", onUpdateHistoryRecord, onDelet
                       </div>
                     )}
                   </td>
-                  <td
-                    style={{
-                      ...S.td,
-                      textAlign: "right",
-                      color: h.real === null ? "#cbd5e1" : h.real < 0 ? "#ef4444" : "#16a34a",
-                    }}
-                  >
-                    {h.real !== null ? (
-                      <>{h.real < 0 ? "−" : ""}{fmt(Math.abs(h.real))}</>
-                    ) : "—"}
-                  </td>
-                  <td style={{ ...S.td, textAlign: "right", color: "#d97706" }}>
-                    {h.bymhd !== null ? fmt(h.bymhd) : <span style={{ color: "#cbd5e1" }}>—</span>}
-                  </td>
-                  <td
-                    style={{
-                      ...S.td,
-                      textAlign: "right",
-                      fontWeight: 600,
-                      color: (h.jumlah || 0) < 0 ? "#ef4444" : "#1e293b",
-                    }}
-                  >
-                    {h.jumlah < 0 ? "−" : ""}{fmt(Math.abs(h.jumlah || 0))}
-                  </td>
+                  {mode === "opex" ? (
+                    <>
+                      <td
+                        style={{
+                          ...S.td,
+                          textAlign: "right",
+                          color: h.real === null ? "#cbd5e1" : h.real < 0 ? "#ef4444" : "#16a34a",
+                        }}
+                      >
+                        {h.real !== null ? (
+                          <>{h.real < 0 ? "−" : ""}{fmt(Math.abs(h.real))}</>
+                        ) : "—"}
+                      </td>
+                      <td style={{ ...S.td, textAlign: "right", color: "#d97706" }}>
+                        {h.bymhd !== null ? fmt(h.bymhd) : <span style={{ color: "#cbd5e1" }}>—</span>}
+                      </td>
+                      <td
+                        style={{
+                          ...S.td,
+                          textAlign: "right",
+                          fontWeight: 600,
+                          color: (h.jumlah || 0) < 0 ? "#ef4444" : "#1e293b",
+                        }}
+                      >
+                        {h.tipe === "switch_in_kad" && mode === "capex" ? "—" : <>{h.jumlah < 0 ? "−" : ""}{fmt(Math.abs(h.jumlah || 0))}</>}
+                      </td>
+                    </>
+                  ) : (
+                    <>
+                      <td
+                        style={{
+                          ...S.td,
+                          textAlign: "right",
+                          color: h.real === null ? "#cbd5e1" : h.real < 0 ? "#ef4444" : "#16a34a",
+                        }}
+                      >
+                        {h.real !== null ? (
+                          <>{h.real < 0 ? "−" : ""}{fmt(Math.abs(h.real))}</>
+                        ) : "—"}
+                      </td>
+                      <td
+                        style={{
+                          ...S.td,
+                          textAlign: "right",
+                          fontWeight: 600,
+                          color: (h.jumlah || 0) < 0 ? "#ef4444" : "#1e293b",
+                        }}
+                      >
+                        {h.tipe === "switch_in_kad" && mode === "capex" ? "—" : <>{h.jumlah < 0 ? "−" : ""}{fmt(Math.abs(h.jumlah || 0))}</>}
+                      </td>
+                    </>
+                  )}
                   <td style={{ ...S.td, textAlign: "center" }}>
                     <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>
                       <button
@@ -877,7 +920,6 @@ function InlineHistoryTable({ row, mode = "opex", onUpdateHistoryRecord, onDelet
                           borderColor: "#fde68a",
                         }}
                         onClick={() => {
-
                           setEditHistoryId(h.id);
                           setEditFormH({
                             tipe: h.tipe,
@@ -897,7 +939,6 @@ function InlineHistoryTable({ row, mode = "opex", onUpdateHistoryRecord, onDelet
                           borderColor: "#fecaca",
                         }}
                         onClick={() => {
-
                           if (onDeleteHistoryRecord) {
                             onDeleteHistoryRecord(h.id);
                           }
@@ -914,7 +955,7 @@ function InlineHistoryTable({ row, mode = "opex", onUpdateHistoryRecord, onDelet
             <tfoot>
               <tr style={{ background: "#f8fafc" }}>
                 <td
-                  colSpan={5}
+                  colSpan={mode === "opex" ? 5 : 4}
                   style={{ ...S.td, textAlign: "right", fontWeight: 600, color: "#475569" }}
                 >
                   TOTAL ANGGARAN SAAT INI
@@ -1068,28 +1109,31 @@ function EditSection({
   onUpdateRow,
   mode = "opex",
   maxPenambahan,
+  allTargets = [],
 }) {
   const [tipe, setTipe] = useState("");
   const [nilai, setNilai] = useState("");
   const [ket, setKet] = useState("");
+  const [targetMasterId, setTargetMasterId] = useState("");
 
   const OPEX_OPTS = [
     { value: "penambahan", label: "Penambahan Anggaran", color: "#16a34a", bg: "#f0fdf4" },
     { value: "pengurangan", label: "Pengurangan Anggaran", color: "#dc2626", bg: "#fef2f2" },
     { value: "bymhd", label: "BYMHD", color: "#d97706", bg: "#fffbeb" },
-    { value: "transfer", label: "Transfer Anggaran", color: "#7c3aed", bg: "#f5f3ff" },
+    { value: "switch_out", label: "Switch", color: "#9333ea", bg: "#faf5ff" },
   ];
   const CAPEX_OPTS = [
     { value: "penambahan", label: "Penambahan", color: "#16a34a", bg: "#f0fdf4" },
     { value: "pengurangan", label: "Pengurangan", color: "#dc2626", bg: "#fef2f2" },
+    { value: "switch_out", label: "Switch", color: "#9333ea", bg: "#faf5ff" },
   ];
   const OPTS = mode === "opex" ? OPEX_OPTS : CAPEX_OPTS;
 
   const currentTotal = (row.history || []).reduce((acc, h) => {
     if (h.is_initial || h.tipe === "initial") return acc + h.nilai;
-    if (h.tipe === "penambahan") return acc + h.nilai;
-    if (h.tipe === "pengurangan") return acc - h.nilai;
-    if (h.tipe === "bymhd" || h.tipe === "transfer") return acc + h.nilai;
+    if (h.tipe === "penambahan" || h.tipe === "transfer" || h.tipe === "switch_in") return acc + h.nilai;
+    if (h.tipe === "pengurangan" || h.tipe === "switch_out") return acc - h.nilai;
+    if (h.tipe === "bymhd") return acc + h.nilai;
     return acc;
   }, 0);
 
@@ -1097,10 +1141,14 @@ function EditSection({
     if (!tipe || !nilai) return;
     const numNilai = parseIDRNum(nilai);
 
-    if (tipe === "pengurangan" && (currentTotal - numNilai < 0)) {
-      if (!window.confirm("Nilai melebihi anggaran berjalan, tetap mau disimpan?")) {
-        return;
-      }
+    if (tipe === "switch_out" && !targetMasterId) {
+      alert("Pilih anggaran tujuan untuk switch!");
+      return;
+    }
+
+    if ((tipe === "pengurangan" || tipe === "switch_out") && (currentTotal - numNilai < 0)) {
+      alert("Gagal menyimpan: Nilai pengurangan melebihi sisa anggaran!");
+      return;
     }
 
     if (mode === "capex" && tipe === "penambahan" && typeof maxPenambahan === "number") {
@@ -1110,20 +1158,38 @@ function EditSection({
       }
     }
 
+    let finalKet = ket;
+    if (tipe === "switch_out") {
+      const targetLabel = allTargets.find(t => t.id === targetMasterId)?.label || "Tidak diketahui";
+      if (ket) {
+        finalKet = `Switch dikirim ke: ${targetLabel} - ${ket}`;
+      } else {
+        finalKet = `Switch dikirim ke: ${targetLabel}`;
+      }
+    }
+
     const newEntry = {
       id: uid(),
       tgl: new Date().toISOString().split("T")[0],
       tipe,
       nilai: numNilai,
-      keterangan: ket,
+      keterangan: finalKet,
       is_initial: false,
     };
-    onSave(row.id, newEntry, tipe, numNilai);
+    if (tipe === "switch_out") {
+      newEntry.target_id = targetMasterId;
+      newEntry.target_nama = allTargets.find(t => t.id === targetMasterId)?.label;
+    }
+
+    onSave(row.id, newEntry, tipe, numNilai, targetMasterId);
   };
 
   const selOpt = OPTS.find((o) => o.value === tipe);
   const lbl = mode === "opex" ? "Nama Anggaran Master" : "Nama Anggaran CAPEX";
   const totalLbl = mode === "opex" ? "Total Anggaran Berjalan" : "Total Anggaran Berjalan";
+
+  const isExceeding = (tipe === "pengurangan" || tipe === "switch_out") && (currentTotal - parseIDRNum(nilai) < 0);
+  const isBtnDisabled = !tipe || !nilai || isExceeding;
 
   return (
     <div
@@ -1198,7 +1264,7 @@ function EditSection({
                       width: "auto",
                       flex: 1,
                       maxWidth: 280,
-                      borderColor: tipe === "pengurangan" && (currentTotal - parseIDRNum(nilai) < 0) ? "#ef4444" : "#e2e8f0",
+                      borderColor: isExceeding ? "#ef4444" : "#e2e8f0",
                     }}
                     placeholder="Contoh: 50.000.000"
                     value={formatIDRInput(nilai)}
@@ -1216,7 +1282,7 @@ function EditSection({
                     </span>
                   )}
                 </div>
-                {tipe === "pengurangan" && currentTotal - parseIDRNum(nilai) < 0 && (
+                {isExceeding && (
                   <div
                     style={{
                       marginTop: 4,
@@ -1238,7 +1304,7 @@ function EditSection({
                     </span>
                   </div>
                 )}
-                {tipe === "pengurangan" && currentTotal - parseIDRNum(nilai) >= 0 && (
+                {((tipe === "pengurangan" || tipe === "switch_out") && !isExceeding) && (
                   <div
                     style={{
                       fontSize: "0.75rem",
@@ -1252,6 +1318,22 @@ function EditSection({
               </div>
             ),
           },
+          ...(tipe === "switch_out" ? [{
+            label: "Pilih Anggaran Tujuan",
+            required: true,
+            content: (
+              <select
+                style={{ ...S.inp, maxWidth: 400, width: "100%" }}
+                value={targetMasterId}
+                onChange={(e) => setTargetMasterId(e.target.value)}
+              >
+                <option value="">— Pilih Anggaran Tujuan —</option>
+                {allTargets.map(t => (
+                  <option key={t.id} value={t.id}>{t.label}</option>
+                ))}
+              </select>
+            )
+          }] : []),
           {
             label: "Keterangan",
             content: (
@@ -1299,11 +1381,12 @@ function EditSection({
           style={{
             ...S.btn,
             background: mode === "opex" ? "#ea580c" : "#2563eb",
-            opacity: !tipe || !nilai ? 0.5 : 1,
+            opacity: isBtnDisabled ? 0.5 : 1,
+            cursor: isBtnDisabled ? "not-allowed" : "pointer",
             padding: "9px 18px",
             borderRadius: 8,
           }}
-          disabled={!tipe || !nilai}
+          disabled={isBtnDisabled}
           onClick={handleSubmit}
         >
           {mode === "opex" ? (
@@ -1322,7 +1405,7 @@ function EditSection({
 }
 
 // ── ANGGARAN SECTION (OPEX) ────────────────────────────────────
-function RealisasiSection({ master, setMasters, toast_ }) {
+function RealisasiSection({ master, masters, setMasters, toast_ }) {
   const [showForm, setShowForm] = useState(false);
   const [editRowId, setEditRowId] = useState(null);
   const [confirm, setConfirm] = useState(null);
@@ -1382,18 +1465,22 @@ function RealisasiSection({ master, setMasters, toast_ }) {
     });
   };
 
-  const handleSavePerubahan = (rowId, newEntry, tipe, nilai) => {
-    setMasters((prev) =>
-      prev.map((m) => {
+  const handleSavePerubahan = (rowId, newEntry, tipe, nilai, targetId) => {
+    setMasters((prev) => {
+      let nextMasters = [...prev];
+      nextMasters = nextMasters.map((m) => {
         if (m.id !== master.id) return m;
+        let newNilaiAnggaran = m.nilai_anggaran;
+        if (tipe === "switch_out") newNilaiAnggaran = Math.max(0, newNilaiAnggaran - nilai);
         return {
           ...m,
+          nilai_anggaran: newNilaiAnggaran,
           realisasi_tahunan: (m.realisasi_tahunan || []).map((r) => {
             if (r.id !== rowId) return r;
             let newMurni = r.realisasi_murni,
               newBymhd = r.realisasi_bymhd || 0;
-            if (tipe === "pengurangan") newMurni -= nilai;
-            else if (tipe === "penambahan" || tipe === "transfer") newMurni += nilai;
+            if (tipe === "pengurangan" || tipe === "switch_out") newMurni -= nilai;
+            else if (tipe === "penambahan" || tipe === "transfer" || tipe === "switch_in") newMurni += nilai;
             else if (tipe === "bymhd") newBymhd += nilai;
             return {
               ...r,
@@ -1403,8 +1490,54 @@ function RealisasiSection({ master, setMasters, toast_ }) {
             };
           }),
         };
-      }),
-    );
+      });
+
+      if (tipe === "switch_out" && targetId) {
+        const sourceRow = (master.realisasi_tahunan || []).find(r => r.id === rowId);
+        const thn = sourceRow?.thn;
+        if (thn) {
+          const switchInEntry = {
+            id: uid(),
+            tgl: newEntry.tgl,
+            tipe: "switch_in_kad",
+            nilai,
+            keterangan: `Switch masuk dari: ${master.kd} - ${master.nama}`,
+            source_id: master.id,
+            source_nama: `${master.kd} - ${master.nama}`,
+            is_initial: false,
+            linked_out_id: newEntry.id,
+          };
+          nextMasters = nextMasters.map((m) => {
+            if (m.id !== targetId) return m;
+            let targetRows = m.realisasi_tahunan || [];
+            let targetRowIdx = targetRows.findIndex(r => parseInt(r.thn) === parseInt(thn));
+            if (targetRowIdx === -1) {
+              const newTargetRow = {
+                id: uid(),
+                thn: parseInt(thn),
+                realisasi_murni: parseFloat(nilai) || 0,
+                realisasi_bymhd: 0,
+                history: [switchInEntry]
+              };
+              targetRows = [...targetRows, newTargetRow];
+            } else {
+              targetRows = targetRows.map((r, idx) => {
+                if (idx !== targetRowIdx) return r;
+                return {
+                  ...r,
+                  realisasi_murni: (parseFloat(r.realisasi_murni) || 0) + parseFloat(nilai),
+                  history: [...(r.history || []), switchInEntry]
+                };
+              });
+            }
+            // Update the destination KAD (nilai_anggaran)
+            const updatedNilaiAnggaran = (parseFloat(m.nilai_anggaran) || 0) + parseFloat(nilai);
+            return { ...m, nilai_anggaran: updatedNilaiAnggaran, realisasi_tahunan: targetRows };
+          });
+        }
+      }
+      return nextMasters;
+    });
     toast_("Perubahan anggaran disimpan.");
     setEditRowId(null);
   };
@@ -1489,8 +1622,8 @@ function RealisasiSection({ master, setMasters, toast_ }) {
             newHistory.forEach((h) => {
               const isInitial = h.is_initial || h.tipe === "initial";
               if (isInitial) newMurni += h.nilai;
-              else if (h.tipe === "penambahan" || h.tipe === "transfer") newMurni += h.nilai;
-              else if (h.tipe === "pengurangan") newMurni -= h.nilai;
+              else if (h.tipe === "penambahan" || h.tipe === "transfer" || h.tipe === "switch_in") newMurni += h.nilai;
+              else if (h.tipe === "pengurangan" || h.tipe === "switch_out") newMurni -= h.nilai;
               else if (h.tipe === "bymhd") newBymhd += h.nilai;
             });
             return {
@@ -1507,19 +1640,35 @@ function RealisasiSection({ master, setMasters, toast_ }) {
   };
 
   const handleDeleteHistoryRecord = (historyId) => {
-    setMasters((prev) =>
-      prev.map((m) => {
-        if (m.id !== master.id) return m;
-        return {
-          ...m,
-          realisasi_tahunan: (m.realisasi_tahunan || []).map((r) => {
+    setMasters((prev) => {
+      let recordToDelete = null;
+      let sourceRowThn = null;
+      const sourceMaster = prev.find(m => m.id === master.id);
+      if (sourceMaster) {
+        (sourceMaster.realisasi_tahunan || []).forEach(r => {
+          const found = (r.history || []).find(h => h.id === historyId);
+          if (found) {
+            recordToDelete = found;
+            sourceRowThn = r.thn;
+          }
+        });
+      }
+
+      return prev.map((m) => {
+        let updatedM = { ...m };
+
+        if (m.id === master.id) {
+          if (recordToDelete && recordToDelete.tipe === "switch_out") {
+            updatedM.nilai_anggaran = (parseFloat(updatedM.nilai_anggaran) || 0) + recordToDelete.nilai;
+          }
+          updatedM.realisasi_tahunan = (m.realisasi_tahunan || []).map((r) => {
             const newHistory = (r.history || []).filter((h) => h.id !== historyId);
             let newMurni = 0, newBymhd = 0;
             newHistory.forEach((h) => {
               const isInitial = h.is_initial || h.tipe === "initial";
               if (isInitial) newMurni += h.nilai;
-              else if (h.tipe === "penambahan" || h.tipe === "transfer") newMurni += h.nilai;
-              else if (h.tipe === "pengurangan") newMurni -= h.nilai;
+              else if (h.tipe === "penambahan" || h.tipe === "transfer" || h.tipe === "switch_in" || h.tipe === "switch_in_kad") newMurni += h.nilai;
+              else if (h.tipe === "pengurangan" || h.tipe === "switch_out") newMurni -= h.nilai;
               else if (h.tipe === "bymhd") newBymhd += h.nilai;
             });
             return {
@@ -1528,11 +1677,74 @@ function RealisasiSection({ master, setMasters, toast_ }) {
               realisasi_murni: Math.max(0, newMurni),
               realisasi_bymhd: Math.max(0, newBymhd),
             };
-          }),
-        };
-      }),
-    );
-    toast_("Riwayat dihapus.");
+          });
+        }
+
+        if (recordToDelete && recordToDelete.tipe === "switch_out" && m.id === recordToDelete.target_id) {
+          let targetMatched = false;
+          updatedM.realisasi_tahunan = (m.realisasi_tahunan || []).map((r) => {
+            if (parseInt(r.thn) === parseInt(sourceRowThn)) {
+              const targetHistory = (r.history || []).filter(h => {
+                if (!targetMatched && h.tipe === "switch_in_kad" && (h.linked_out_id === recordToDelete.id || (h.source_id === master.id && h.nilai === recordToDelete.nilai && h.tgl === recordToDelete.tgl))) {
+                  targetMatched = true;
+                  return false;
+                }
+                return true;
+              });
+              
+              let newMurni = 0;
+              let newBymhd = 0;
+              targetHistory.forEach((h) => {
+                 const isInitial = h.is_initial || h.tipe === "initial";
+                 if (isInitial) newMurni += h.nilai;
+                 else if (h.tipe === "penambahan" || h.tipe === "transfer" || h.tipe === "switch_in" || h.tipe === "switch_in_kad") newMurni += h.nilai;
+                 else if (h.tipe === "pengurangan" || h.tipe === "switch_out") newMurni -= h.nilai;
+                 else if (h.tipe === "bymhd") newBymhd += h.nilai;
+              });
+              
+              return { ...r, history: targetHistory, realisasi_murni: Math.max(0, newMurni), realisasi_bymhd: Math.max(0, newBymhd) };
+            }
+            return r;
+          });
+          
+          if (targetMatched) {
+            updatedM.nilai_anggaran = Math.max(0, (parseFloat(updatedM.nilai_anggaran) || 0) - recordToDelete.nilai);
+            const totalMurni = (updatedM.realisasi_tahunan || []).reduce((acc, row) => acc + (parseFloat(row.realisasi_murni) || 0), 0);
+            if (totalMurni > updatedM.nilai_anggaran) {
+               const diffToClear = totalMurni - updatedM.nilai_anggaran;
+               let targetRow = updatedM.realisasi_tahunan.find(r => r.history && r.history.some(h => h.tipe === "penambahan" && h.nilai >= diffToClear));
+               if (!targetRow) targetRow = updatedM.realisasi_tahunan.find(r => r.history && r.history.some(h => h.tipe === "penambahan"));
+               if (!targetRow) targetRow = updatedM.realisasi_tahunan.reduce((prev, curr) => (parseFloat(curr.realisasi_murni || 0) > parseFloat(prev.realisasi_murni || 0)) ? curr : prev, updatedM.realisasi_tahunan[0]);
+               
+               if (targetRow) {
+                   const clonedRow = { ...targetRow, history: [...(targetRow.history || [])] };
+                   clonedRow.history.push({
+                       id: uid(),
+                       tgl: new Date().toISOString().split("T")[0],
+                       tipe: "pengurangan",
+                       nilai: diffToClear,
+                       keterangan: `Penyesuaian Otomatis (Switch Batal) - Dikurangi dari Tahun ${clonedRow.thn}`,
+                       is_initial: false
+                   });
+                   let newMurni = 0;
+                   clonedRow.history.forEach((h) => {
+                      const isInitial = h.is_initial || h.tipe === "initial";
+                      if (isInitial) newMurni += h.nilai;
+                      else if (h.tipe === "penambahan" || h.tipe === "transfer" || h.tipe === "switch_in" || h.tipe === "switch_in_kad") newMurni += h.nilai;
+                      else if (h.tipe === "pengurangan" || h.tipe === "switch_out") newMurni -= h.nilai;
+                   });
+                   clonedRow.realisasi_murni = Math.max(0, newMurni);
+                   
+                   updatedM.realisasi_tahunan = updatedM.realisasi_tahunan.map(r => r.id === clonedRow.id ? clonedRow : r);
+               }
+            }
+          }
+        }
+
+        return updatedM;
+      });
+    });
+    toast_("Riwayat dihapus, transfer dibatalkan.");
   };
 
   const grandTotal = list.reduce(
@@ -1846,6 +2058,7 @@ function RealisasiSection({ master, setMasters, toast_ }) {
                               handleUpdateRow(row.id, changes)
                             }
                             mode="opex"
+                            allTargets={masters.filter(m => m.id !== master.id).map(m => ({ id: m.id, label: `${m.kd} - ${m.nama}` }))}
                           />
                         </td>
                       </tr>
@@ -1938,7 +2151,7 @@ function RealisasiSection({ master, setMasters, toast_ }) {
 }
 
 // ── CAPEX ANGGARAN TAHUNAN SECTION ─────────────────────────────
-function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
+function CapexAnggaranTahunanSection({ capex, capexList, setCapexList, toast_ }) {
   const [editRowId, setEditRowId] = useState(null);
   const [confirm, setConfirm] = useState(null);
   const list = capex.anggaran_tahunan || [];
@@ -1958,7 +2171,7 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
 
   const displayList = allYears.map(y => {
     const existingChild = list.find(r => parseInt(r.thn) === y);
-    
+
     if (y === parentYear) {
       let combinedHistory = [
         {
@@ -1997,8 +2210,8 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
     let real = 0, bymhd = 0;
     (history || []).forEach((h) => {
       if (h.is_initial || h.tipe === "initial") real += h.nilai;
-      else if (h.tipe === "penambahan" || h.tipe === "transfer") real += h.nilai;
-      else if (h.tipe === "pengurangan") real -= h.nilai;
+      else if (h.tipe === "penambahan" || h.tipe === "transfer" || h.tipe === "switch_in") real += h.nilai;
+      else if (h.tipe === "pengurangan" || h.tipe === "switch_out") real -= h.nilai;
       else if (h.tipe === "bymhd") bymhd += h.nilai;
     });
     return { real, bymhd, total: real + bymhd };
@@ -2012,11 +2225,15 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
   const sisaRkapTersedia = Math.max(0, nilaiKadBatas - totalChildAnggaran);
 
 
-  const handleSavePerubahan = (rowId, newEntry, tipe, nilai) => {
-    setCapexList((prev) =>
-      prev.map((c) => {
+  const handleSavePerubahan = (rowId, newEntry, tipe, nilai, targetId) => {
+    setCapexList((prev) => {
+      let nextList = [...prev];
+      nextList = nextList.map((c) => {
         if (c.id !== capex.id) return c;
-        
+
+        let newNilaiKad = parseIDRNum(c.nilai_kad || 0);
+        if (tipe === "switch_out") newNilaiKad = Math.max(0, newNilaiKad - nilai);
+
         let newList = c.anggaran_tahunan || [];
         let targetRow = newList.find(r => r.id === rowId);
 
@@ -2034,20 +2251,103 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
 
         return {
           ...c,
+          nilai_kad: newNilaiKad,
           anggaran_tahunan: newList.map((r) => {
             if (r.id !== rowId) return r;
-            let newNilai = r.nilai_anggaran || 0;
-            if (tipe === "pengurangan") newNilai -= nilai;
-            else if (tipe === "penambahan") newNilai += nilai;
+            let newNilai = parseIDRNum(r.nilai_anggaran || 0);
+            if (tipe === "pengurangan" || tipe === "switch_out") newNilai -= nilai;
+            else if (tipe === "penambahan" || tipe === "switch_in") newNilai += nilai;
+
+            let linkedSwitchId = undefined;
+            if ((tipe === "penambahan" || tipe === "switch_in") && nilai > 0) {
+                  let unlinkedSwitch = null;
+                  (c.anggaran_tahunan || []).forEach(r2 => {
+                      if (r2.history) {
+                          r2.history.forEach(h2 => {
+                              if (!unlinkedSwitch && h2.tipe === "switch_in_kad" && h2.nilai === nilai) {
+                                  let isLinked = false;
+                                  (c.anggaran_tahunan || []).forEach(r3 => {
+                                      if (r3.history) {
+                                          r3.history.forEach(h3 => {
+                                              if (h3.linked_switch_id === h2.id) isLinked = true;
+                                          });
+                                      }
+                                  });
+                                  if (!isLinked) unlinkedSwitch = h2;
+                              }
+                          });
+                      }
+                  });
+                  if (unlinkedSwitch) linkedSwitchId = unlinkedSwitch.id;
+            }
+
+            let finalEntry = { ...newEntry };
+            if (linkedSwitchId) {
+                finalEntry.linked_switch_id = linkedSwitchId;
+            }
+
             return {
               ...r,
               nilai_anggaran: newNilai,
-              history: [...(r.history || []), newEntry],
+              history: [...(r.history || []), finalEntry],
             };
           }),
         };
-      }),
-    );
+      });
+
+      if (tipe === "switch_out" && targetId) {
+        let thn = null;
+        if (typeof rowId === 'string' && rowId.startsWith("virtual-")) {
+          thn = parseInt(rowId.replace("virtual-master-", "").replace("virtual-", ""));
+        } else {
+          const sourceRow = (capex.anggaran_tahunan || []).find(r => r.id === rowId);
+          thn = sourceRow ? sourceRow.thn : null;
+        }
+
+        if (thn) {
+          const switchInEntry = {
+            id: uid(),
+            tgl: newEntry.tgl,
+            tipe: "switch_in_kad",
+            nilai,
+            keterangan: `Switch masuk dari: ${capex.kd_capex || capex.kd_master} - ${capex.nm_anggaran}`,
+            source_id: capex.id,
+            source_nama: `${capex.kd_capex || capex.kd_master} - ${capex.nm_anggaran}`,
+            is_initial: false,
+            linked_out_id: newEntry.id,
+          };
+
+          nextList = nextList.map((c) => {
+            if (c.id !== targetId) return c;
+            let targetRows = c.anggaran_tahunan || [];
+            let targetRowIdx = targetRows.findIndex(r => parseInt(r.thn || r.tahun || r.thn_anggaran) === parseInt(thn));
+
+            if (targetRowIdx === -1) {
+              targetRows = [...targetRows, {
+                id: uid(),
+                thn: parseInt(thn),
+                nilai_anggaran: 0,
+                history: [switchInEntry]
+              }];
+            } else {
+              targetRows = targetRows.map((r, idx) => {
+                if (idx !== targetRowIdx) return r;
+                return {
+                  ...r,
+                  // Do NOT add to nilai_anggaran for switch_in_kad!
+                  history: [...(r.history || []), switchInEntry]
+                };
+              });
+            }
+
+            // Update the destination KAD (nilai_kad)
+            const updatedNilaiKad = parseIDRNum(c.nilai_kad || 0) + parseFloat(nilai);
+            return { ...c, nilai_kad: updatedNilaiKad, anggaran_tahunan: targetRows };
+          });
+        }
+      }
+      return nextList;
+    });
     toast_("Perubahan anggaran disimpan.");
     setEditRowId(null);
   };
@@ -2067,6 +2367,30 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
             if (changes.thn !== undefined) upd.thn = changes.thn;
             if (changes.overrideTotal !== undefined) {
               const selisih = changes.overrideTotal - r.nilai_anggaran;
+              
+              let linkedSwitchId = undefined;
+              if (selisih > 0) {
+                  let unlinkedSwitch = null;
+                  (c.anggaran_tahunan || []).forEach(r2 => {
+                      if (r2.history) {
+                          r2.history.forEach(h2 => {
+                              if (!unlinkedSwitch && h2.tipe === "switch_in_kad" && h2.nilai === selisih) {
+                                  let isLinked = false;
+                                  (c.anggaran_tahunan || []).forEach(r3 => {
+                                      if (r3.history) {
+                                          r3.history.forEach(h3 => {
+                                              if (h3.linked_switch_id === h2.id) isLinked = true;
+                                          });
+                                      }
+                                  });
+                                  if (!isLinked) unlinkedSwitch = h2;
+                              }
+                          });
+                      }
+                  });
+                  if (unlinkedSwitch) linkedSwitchId = unlinkedSwitch.id;
+              }
+
               upd.nilai_anggaran = changes.overrideTotal;
               upd.history = [
                 ...(r.history || []),
@@ -2077,6 +2401,7 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
                   nilai: Math.abs(selisih),
                   keterangan: "Edit langsung total anggaran berjalan",
                   is_initial: false,
+                  ...(linkedSwitchId ? { linked_switch_id: linkedSwitchId } : {})
                 },
               ];
             }
@@ -2123,31 +2448,142 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
   };
 
   const handleDeleteHistoryRecord = (historyId) => {
-    setCapexList((prev) =>
-      prev.map((c) => {
-        if (c.id !== capex.id) return c;
-        return {
-          ...c,
-          anggaran_tahunan: (c.anggaran_tahunan || []).map((r) => {
+    if (historyId === "master-initial") {
+      toast_("Nilai awal master tidak dapat dihapus!");
+      return;
+    }
+    setCapexList((prev) => {
+      let recordToDelete = null;
+      let sourceRowThn = null;
+      const sourceCapex = prev.find(c => c.id === capex.id);
+      if (sourceCapex) {
+        (sourceCapex.anggaran_tahunan || []).forEach(r => {
+          const found = (r.history || []).find(h => h.id === historyId);
+          if (found) {
+            recordToDelete = found;
+            sourceRowThn = r.thn || r.tahun || r.thn_anggaran;
+          }
+        });
+      }
+
+      return prev.map((c) => {
+        let updatedC = { ...c };
+
+        if (c.id === capex.id) {
+          if (recordToDelete && recordToDelete.tipe === "switch_out") {
+            updatedC.nilai_kad = parseIDRNum(updatedC.nilai_kad || 0) + recordToDelete.nilai;
+          }
+          updatedC.anggaran_tahunan = (c.anggaran_tahunan || []).map((r) => {
             if (historyId === "master-initial") return r;
             const newHistory = (r.history || []).filter((h) => h.id !== historyId);
             let newNilai = 0;
             newHistory.forEach((h) => {
               const isInitial = h.is_initial || h.tipe === "initial";
               if (isInitial) newNilai += h.nilai;
-              else if (h.tipe === "penambahan") newNilai += h.nilai;
-              else if (h.tipe === "pengurangan") newNilai -= h.nilai;
+              else if (h.tipe === "penambahan" || h.tipe === "switch_in") newNilai += h.nilai;
+              else if (h.tipe === "pengurangan" || h.tipe === "switch_out") newNilai -= h.nilai;
             });
             return {
               ...r,
               history: newHistory,
-              nilai_anggaran: Math.max(0, newNilai),
+              nilai_anggaran: newNilai,
             };
-          }),
-        };
-      }),
-    );
-    toast_("Riwayat dihapus.");
+          });
+        }
+
+        if (recordToDelete && recordToDelete.tipe === "switch_out" && c.id === recordToDelete.target_id) {
+          let targetMatched = false;
+          let matchedSwitchInId = null;
+          updatedC.anggaran_tahunan = (c.anggaran_tahunan || []).map((r) => {
+            if (parseInt(r.thn || r.tahun || r.thn_anggaran) === parseInt(sourceRowThn)) {
+              const targetHistory = (r.history || []).filter(h => {
+                if (!targetMatched && h.tipe === "switch_in_kad" && (h.linked_out_id === recordToDelete.id || (h.source_id === capex.id && h.nilai === recordToDelete.nilai && h.tgl === recordToDelete.tgl))) {
+                  targetMatched = true;
+                  matchedSwitchInId = h.id;
+                  return false;
+                }
+                return true;
+              });
+              return { ...r, history: targetHistory };
+            }
+            return r;
+          });
+          
+          if (targetMatched) {
+            updatedC.nilai_kad = Math.max(0, parseIDRNum(updatedC.nilai_kad || 0) - recordToDelete.nilai);
+            let totalRkap = parseIDRNum(updatedC.nilai_rkap || 0) + (updatedC.anggaran_tahunan || []).reduce((acc, row) => {
+               return acc + parseIDRNum(row.nilai_anggaran || 0);
+            }, 0);
+            if (totalRkap > updatedC.nilai_kad) {
+               const diffToClear = totalRkap - updatedC.nilai_kad;
+               let candidates = [];
+               (updatedC.anggaran_tahunan || []).forEach(r => {
+                   if (r.history) {
+                       r.history.forEach(h => {
+                           if (h.tipe === "penambahan" || h.tipe === "switch_in") {
+                               candidates.push({ row: r, history: h });
+                           }
+                       });
+                   }
+               });
+               
+               candidates.sort((a, b) => {
+                   if (matchedSwitchInId) {
+                       const aLinked = a.history.linked_switch_id === matchedSwitchInId ? 1 : 0;
+                       const bLinked = b.history.linked_switch_id === matchedSwitchInId ? 1 : 0;
+                       if (aLinked !== bLinked) return bLinked - aLinked;
+                   }
+                   
+                   const aExact = a.history.nilai === diffToClear ? 1 : 0;
+                   const bExact = b.history.nilai === diffToClear ? 1 : 0;
+                   if (aExact !== bExact) return bExact - aExact;
+                   
+                   const aEnough = a.history.nilai >= diffToClear ? 1 : 0;
+                   const bEnough = b.history.nilai >= diffToClear ? 1 : 0;
+                   if (aEnough !== bEnough) return bEnough - aEnough;
+                   
+                   if (a.history.tgl !== b.history.tgl) {
+                       return new Date(b.history.tgl) - new Date(a.history.tgl);
+                   }
+                   
+                   const timeA = parseInt((a.history.id || "").split("-")[1] || "0");
+                   const timeB = parseInt((b.history.id || "").split("-")[1] || "0");
+                   if (Math.abs(timeA - timeB) > 500000) return timeA - timeB;
+                   return timeB - timeA;
+               });
+
+               let targetRow = candidates.length > 0 ? candidates[0].row : null;
+               if (!targetRow) targetRow = (updatedC.anggaran_tahunan || []).reduce((prev, curr) => (parseIDRNum(curr.nilai_anggaran || 0) > parseIDRNum(prev.nilai_anggaran || 0)) ? curr : prev, updatedC.anggaran_tahunan[0]);
+               
+               if (targetRow) {
+                   const clonedRow = { ...targetRow, history: [...(targetRow.history || [])] };
+                   clonedRow.history.push({
+                       id: uid(),
+                       tgl: new Date().toISOString().split("T")[0],
+                       tipe: "pengurangan",
+                       nilai: diffToClear,
+                       keterangan: `Penyesuaian Otomatis (Switch Batal) - Dikurangi dari Tahun ${clonedRow.thn || clonedRow.tahun || clonedRow.thn_anggaran}`,
+                       is_initial: false
+                   });
+                   let newNilai = 0;
+                   clonedRow.history.forEach((h) => {
+                      const isInitial = h.is_initial || h.tipe === "initial";
+                      if (isInitial) newNilai += h.nilai;
+                      else if (h.tipe === "penambahan" || h.tipe === "switch_in") newNilai += h.nilai;
+                      else if (h.tipe === "pengurangan" || h.tipe === "switch_out") newNilai -= h.nilai;
+                   });
+                   clonedRow.nilai_anggaran = newNilai;
+                   
+                   updatedC.anggaran_tahunan = updatedC.anggaran_tahunan.map(r => r.id === clonedRow.id ? clonedRow : r);
+               }
+            }
+          }
+        }
+
+        return updatedC;
+      });
+    });
+    toast_("Riwayat dihapus, transfer dibatalkan.");
   };
 
   return (
@@ -2224,7 +2660,6 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
               <th style={{ ...S.th, width: 40, textAlign: "center" }}>NO</th>
               <th style={{ ...S.th, width: 80, textAlign: "center" }}>TAHUN</th>
               <th style={{ ...S.th, textAlign: "right" }}>REAL (Rp)</th>
-              <th style={{ ...S.th, textAlign: "right" }}>BYMHD (Rp)</th>
               <th style={{ ...S.th, textAlign: "right" }}>TOTAL (Rp)</th>
               <th style={{ ...S.th, textAlign: "center", width: 100 }}>AKSI</th>
             </tr>
@@ -2292,16 +2727,6 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
                         style={{
                           ...S.td,
                           textAlign: "right",
-                          fontWeight: 600,
-                          color: bymhd > 0 ? "#d97706" : "#cbd5e1",
-                        }}
-                      >
-                        {fmt(bymhd)}
-                      </td>
-                      <td
-                        style={{
-                          ...S.td,
-                          textAlign: "right",
                           fontWeight: 700,
                           color: "#1d4ed8",
                         }}
@@ -2329,7 +2754,7 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
                     {editRowId === row.id && (
                       <tr>
                         <td
-                          colSpan={6}
+                          colSpan={5}
                           style={{
                             padding: "0 16px 16px",
                             background: "#fffbeb",
@@ -2346,6 +2771,7 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
                             }
                             mode="capex"
                             maxPenambahan={sisaRkapTersedia}
+                            allTargets={(capexList || []).filter(c => c.id !== capex.id).map(c => ({ id: c.id, label: `${c.kd_capex || c.kd_master || ""} - ${c.nm_anggaran}` }))}
                           />
                         </td>
                       </tr>
@@ -2384,22 +2810,6 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
                       (acc, r) => acc + calcRealBymhd(r.history || []).real,
                       0,
                     ),
-                  )}
-                </td>
-                <td
-                  style={{
-                    ...S.td,
-                    textAlign: "right",
-                    fontWeight: 800,
-                    color: "#d97706",
-                    fontSize: "0.88rem",
-                  }}
-                >
-                  {fmt(
-                    displayList.reduce(
-                      (acc, r) => acc + calcRealBymhd(r.history || []).bymhd,
-                      0,
-                    )
                   )}
                 </td>
                 <td
@@ -2475,7 +2885,7 @@ function CapexAnggaranTahunanSection({ capex, setCapexList, toast_ }) {
 }
 
 // ── CAPEX DETAIL PAGE ──────────────────────────────────────────
-function CapexDetailPage({ capex, onBack, setCapexList, toast_ }) {
+function CapexDetailPage({ capex, capexList, onBack, setCapexList, toast_ }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       <div
@@ -2627,6 +3037,7 @@ function CapexDetailPage({ capex, onBack, setCapexList, toast_ }) {
         <div style={{ padding: "20px 0 0" }}>
           <CapexAnggaranTahunanSection
             capex={capex}
+            capexList={capexList}
             setCapexList={setCapexList}
             toast_={toast_}
           />
@@ -4205,6 +4616,7 @@ function OpexModule({ masterList, setMasterList }) {
               <div style={{ marginTop: 0 }}>
                 <RealisasiSection
                   master={latest}
+                  masters={masters}
                   setMasters={setMasters}
                   toast_={toast_}
                 />
@@ -5657,6 +6069,7 @@ function CapexModule({ capexList, setCapexList }) {
         {toast && <ToastMsg msg={toast} onDone={() => setToast(null)} />}
         <CapexDetailPage
           capex={latest}
+          capexList={capexList}
           onBack={() => setDetailCapex(null)}
           setCapexList={setCapexList}
           toast_={toast_}
@@ -6086,21 +6499,17 @@ function CapexModule({ capexList, setCapexList }) {
                   const isLebih = c.thn_rkap_awal != c.thn_rkap_akhir;
                   const validAnggaran = (c.anggaran_tahunan || []).filter(
                     (a) => {
-                      const hasValue = (a.nilai_anggaran !== undefined && parseIDRNum(a.nilai_anggaran) > 0) ||
-                        (a.nilai_rkap !== undefined && parseIDRNum(a.nilai_rkap) > 0) ||
-                        (a.nilai !== undefined && parseIDRNum(a.nilai) > 0);
-                      return hasValue;
+                      const num = parseIDRNum(a.nilai_anggaran || a.nilai_rkap || a.nilai || 0);
+                      return num !== 0 || (a.history && a.history.length > 0);
                     }
                   );
                   const initialYearChild = validAnggaran.find(
                     (a) => (a.thn || a.tahun || a.thn_anggaran) === c.thn_anggaran
                   );
-                  const parentRkapValue = initialYearChild
-                    ? parseIDRNum(initialYearChild.nilai_anggaran || initialYearChild.nilai_rkap || initialYearChild.nilai)
-                    : parseIDRNum(c.nilai_rkap);
-                  const subTotalRkap = initialYearChild
-                    ? validAnggaran.reduce((s, a) => s + parseIDRNum(a.nilai_anggaran || a.nilai_rkap || a.nilai), 0)
-                    : parentRkapValue + validAnggaran.reduce((s, a) => s + parseIDRNum(a.nilai_anggaran || a.nilai_rkap || a.nilai), 0);
+                  const parentRkapValue = parseIDRNum(c.nilai_rkap) + (initialYearChild
+                    ? parseIDRNum(initialYearChild.nilai_anggaran || initialYearChild.nilai_rkap || initialYearChild.nilai || 0)
+                    : 0);
+                  const subTotalRkap = parseIDRNum(c.nilai_rkap) + validAnggaran.reduce((s, a) => s + parseIDRNum(a.nilai_anggaran || a.nilai_rkap || a.nilai || 0), 0);
                   const childRowsToRender = initialYearChild
                     ? validAnggaran.filter((a) => (a.thn || a.tahun || a.thn_anggaran) !== c.thn_anggaran)
                     : validAnggaran;

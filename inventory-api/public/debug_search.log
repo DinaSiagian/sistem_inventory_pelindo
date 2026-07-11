@@ -44,3 +44,75 @@ PowerShell returned: C:\Users\LENOVO\OneDrive\Pictures\Screenshots\Screenshot 20
 Actual file size: 758533, Hash: 45092196ddb8269c7ff098817687f9c1
 STATUS: MATCH FOUND!
 
+[2026-07-10 20:25:48] Search for: Screenshot 2026-01-19 105627.png
+Target size: 317774, Hash: 743e5ede307a858dba8513c96fbd9dde
+PowerShell returned: C:\Users\LENOVO\OneDrive\Pictures\Screenshots\Screenshot 2026-01-19 105627.png
+Actual file size: 317774, Hash: 743e5ede307a858dba8513c96fbd9dde
+STATUS: MATCH FOUND!
+
+[2026-07-10 20:27:33] Search for: Screenshot 2026-01-19 105627.png
+Target size: 317774, Hash: 743e5ede307a858dba8513c96fbd9dde
+PowerShell returned: C:\Users\LENOVO\OneDrive\Pictures\Screenshots\Screenshot 2026-01-19 105627.png
+Actual file size: 317774, Hash: 743e5ede307a858dba8513c96fbd9dde
+STATUS: MATCH FOUND!
+
+[2026-07-10 20:29:12] Search for: bpmn current 1.png
+Target size: 139176, Hash: f660a953462d42c4fee28975ab66a85f
+PowerShell returned: C:\Users\LENOVO\OneDrive\Documents\FILE PENTING DINA\Project Magang\bpmn current 1.png
+Actual file size: 139176, Hash: f660a953462d42c4fee28975ab66a85f
+STATUS: MATCH FOUND!
+
+[2026-07-10 22:24:00] Search for: logo-pelindo-multi-terminal.jpg
+Target size: 39985, Hash: 6af7edf8686d84a7e01b45264b28ce78
+PowerShell returned: C:\Users\LENOVO\OneDrive\Documents\FILE PENTING DINA\Project Magang\logo-pelindo-multi-terminal.jpg
+Actual file size: 39985, Hash: 6af7edf8686d84a7e01b45264b28ce78
+STATUS: MATCH FOUND!
+
+[2026-07-10 22:24:10] Search for: logo-pelindo-multi-terminal.jpg
+Target size: 39985, Hash: 6af7edf8686d84a7e01b45264b28ce78
+PowerShell returned: C:\Users\LENOVO\OneDrive\Documents\FILE PENTING DINA\Project Magang\logo-pelindo-multi-terminal.jpg
+Actual file size: 39985, Hash: 6af7edf8686d84a7e01b45264b28ce78
+STATUS: MATCH FOUND!
+
+[2026-07-10 22:24:23] Search for: logo-pelindo-multi-terminal.jpg
+Target size: 39985, Hash: 6af7edf8686d84a7e01b45264b28ce78
+PowerShell returned: C:\Users\LENOVO\OneDrive\Documents\FILE PENTING DINA\Project Magang\logo-pelindo-multi-terminal.jpg
+Actual file size: 39985, Hash: 6af7edf8686d84a7e01b45264b28ce78
+STATUS: MATCH FOUND!
+
+[2026-07-10 22:24:44] Search for: logo-pelindo-multi-terminal.jpg
+Target size: 39985, Hash: 6af7edf8686d84a7e01b45264b28ce78
+PowerShell returned: C:\Users\LENOVO\OneDrive\Documents\FILE PENTING DINA\Project Magang\logo-pelindo-multi-terminal.jpg
+Actual file size: 39985, Hash: 6af7edf8686d84a7e01b45264b28ce78
+STATUS: MATCH FOUND!
+
+[2026-07-10 22:25:49] Search for: logo-pelindo-multi-terminal.jpg
+Target size: 39985, Hash: 6af7edf8686d84a7e01b45264b28ce78
+PowerShell returned: C:\Users\LENOVO\OneDrive\Documents\FILE PENTING DINA\Project Magang\logo-pelindo-multi-terminal.jpg
+Actual file size: 39985, Hash: 6af7edf8686d84a7e01b45264b28ce78
+STATUS: MATCH FOUND!
+
+[2026-07-10 22:26:49] Search for: logo-pelindo-multi-terminal.jpg
+Target size: 39985, Hash: 6af7edf8686d84a7e01b45264b28ce78
+PowerShell returned: C:\Users\LENOVO\OneDrive\Documents\FILE PENTING DINA\Project Magang\logo-pelindo-multi-terminal.jpg
+Actual file size: 39985, Hash: 6af7edf8686d84a7e01b45264b28ce78
+STATUS: MATCH FOUND!
+
+[2026-07-10 22:27:00] Search for: logo-pelindo-multi-terminal.jpg
+Target size: 39985, Hash: 6af7edf8686d84a7e01b45264b28ce78
+PowerShell returned: C:\Users\LENOVO\OneDrive\Documents\FILE PENTING DINA\Project Magang\logo-pelindo-multi-terminal.jpg
+Actual file size: 39985, Hash: 6af7edf8686d84a7e01b45264b28ce78
+STATUS: MATCH FOUND!
+
+[2026-07-10 22:49:15] Search for: TARGET SYSTEM.png
+Target size: 450334, Hash: 361ec3039aed1356df78ba29db981d0a
+PowerShell returned: C:\Users\LENOVO\OneDrive\Documents\FILE PENTING DINA\Project Magang\TARGET SYSTEM.png
+Actual file size: 450334, Hash: 361ec3039aed1356df78ba29db981d0a
+STATUS: MATCH FOUND!
+
+[2026-07-11 09:54:39] Search for: currentsystem joy.png
+Target size: 276975, Hash: a55772c17421b6c171ade34ad499dcef
+PowerShell returned: C:\Users\LENOVO\OneDrive\Documents\FILE PENTING DINA\Project Magang\currentsystem joy.png
+Actual file size: 276975, Hash: a55772c17421b6c171ade34ad499dcef
+STATUS: MATCH FOUND!
+

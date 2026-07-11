@@ -489,9 +489,9 @@ function CapexDetailModal({ programs, selectedYear, onClose, onGoToBudget }) {
     }
     const totalCount = filtered.length;
     const sorted = [...filtered].sort((a, b) => {
-        const ar = a.realisasi_per_tahun.reduce((s, r) => s + r.realisasi, 0);
-        const br = b.realisasi_per_tahun.reduce((s, r) => s + r.realisasi, 0);
-        return br - ar;
+      const ar = a.realisasi_per_tahun.reduce((s, r) => s + r.realisasi, 0);
+      const br = b.realisasi_per_tahun.reduce((s, r) => s + r.realisasi, 0);
+      return br - ar;
     });
     return { displayed: sorted.slice(0, 3), totalCount };
   }, [programs, selectedYear]);
@@ -774,7 +774,7 @@ const CapexBudgetCard = ({ selectedYear, onOpenDetail, programsRaw }) => {
         3 program teratas tahun ini
       </div>
       <SlidePager
-        items={[...programs.filter((p) => (isNaN(yr) ? true : p.isActiveThisYear))].sort((a,b) => b.totalRealisasi - a.totalRealisasi).slice(0, 3)}
+        items={[...programs.filter((p) => (isNaN(yr) ? true : p.isActiveThisYear))].sort((a, b) => b.totalRealisasi - a.totalRealisasi).slice(0, 3)}
         itemKey="id"
         renderItem={(p) => {
           const cfg = statusCfg[p.status] || statusCfg.belum;
@@ -832,7 +832,7 @@ const OpexBudgetCard = ({ tahun, onOpenDetail, dataOpex }) => {
         3 pos anggaran teratas tahun ini
       </div>
       <SlidePager
-        items={[...dataOpex].sort((a,b) => b.realisasi - a.realisasi).slice(0, 3)}
+        items={[...dataOpex].sort((a, b) => b.realisasi - a.realisasi).slice(0, 3)}
         itemKey="id"
         renderItem={(opex) => {
           const p = opex.rkap > 0 ? (opex.realisasi / opex.rkap) * 100 : 0;
@@ -986,9 +986,9 @@ const Dashboard = () => {
         if (!asset.category) return;
         const device = activeDevices.find(d => d.device_code === asset.category);
         if (!device) return;
-        
+
         const qty = asset.units && Array.isArray(asset.units) ? asset.units.length : 1;
-        
+
         const date = asset.created_at ? new Date(asset.created_at) : new Date();
         let dayIdx = date.getDay() - 1;
         if (dayIdx === -1) dayIdx = 6;
@@ -1007,9 +1007,9 @@ const Dashboard = () => {
         if (!asset.category) return;
         const device = activeDevices.find(d => d.device_code === asset.category);
         if (!device) return;
-        
+
         const qty = asset.units && Array.isArray(asset.units) ? asset.units.length : 1;
-        
+
         const date = asset.created_at ? new Date(asset.created_at) : new Date();
         const monthIdx = date.getMonth();
         base[monthIdx][device.device_code] += qty;
@@ -1039,7 +1039,7 @@ const Dashboard = () => {
           } else if (u.status && u.status.includes("Non-Operasional")) {
             tMaint++;
           }
-          
+
           const st = (u.condition || "BAIK").toUpperCase();
           if (st === "RUSAK" || st === "MINOR_DAMAGE" || st === "RUSAK RINGAN" || st === "RUSAK BERAT" || st === "DAMAGED" || st === "DIPERBAIKI" || st === "MAINTENANCE") {
             cond["Rusak"]++;
@@ -1065,18 +1065,18 @@ const Dashboard = () => {
     const categoryTotals = {};
     const validDevices = dbDevices.filter(d => d && d.name);
     validDevices.forEach(d => { categoryTotals[d.name] = 0; });
-    
+
     dbAssets.forEach(item => {
       const device = validDevices.find(d => d.device_code === item.category);
       const devName = device ? device.name : null;
       if (devName && categoryTotals[devName] !== undefined) {
-         const qty = parseInt(item.quantity, 10);
-         categoryTotals[devName] += (isNaN(qty) ? 1 : qty);
+        const qty = parseInt(item.quantity, 10);
+        categoryTotals[devName] += (isNaN(qty) ? 1 : qty);
       }
     });
 
     const colors = ["#1a56db", "#16a34a", "#d97706", "#7c3aed", "#e11d48", "#0891b2", "#84cc16", "#f59e0b", "#6366f1", "#14b8a6"];
-    
+
     return validDevices
       .map((d, i) => ({
         name: String(d.name),
@@ -1164,8 +1164,8 @@ const Dashboard = () => {
                 <div className="card">
                   <div className="card-header-row">
                     <div>
-                      <div className="card-title">Tren Peminjaman per Kategori</div>
-                      <div className="card-subtitle">Volume peminjaman berdasarkan tipe aset</div>
+                      <div className="card-title">Jumlah Aset per Kategori</div>
+                      <div className="card-subtitle">Visualisasi jumlah aset pada setiap kategori</div>
                     </div>
                     <div className="toggle-pill">
                       <button className={`toggle-btn ${trendTimeframe === 'hari' ? 'active' : ''}`} onClick={() => setTrendTimeframe('hari')}>Per Hari</button>
@@ -1181,20 +1181,20 @@ const Dashboard = () => {
                           <YAxis tick={{ fontSize: 12, fill: "#94a3b8" }} axisLine={false} tickLine={false} allowDecimals={false} />
                           <Tooltip cursor={{ stroke: '#e2e8f0', strokeWidth: 2 }} contentStyle={{ borderRadius: 16, border: "none", boxShadow: "0 8px 32px rgba(0,0,0,0.08)", padding: "16px" }} />
                           {activeDevices && activeDevices.map((device, index) => {
-                             const colors = ["#22c55e", "#3b82f6", "#f59e0b", "#ec4899", "#8b5cf6", "#6366f1", "#14b8a6", "#f43f5e", "#0ea5e9", "#10b981"];
-                             const color = colors[index % colors.length];
-                             return (
-                               <Line 
-                                 key={device.device_code}
-                                 type="monotone" 
-                                 dataKey={device.device_code} 
-                                 name={device.name || device.device_name || device.device_code}
-                                 stroke={color} 
-                                 strokeWidth={2} 
-                                 dot={{ r: 4, strokeWidth: 2, fill: "#fff", stroke: color }} 
-                                 activeDot={{ r: 6, strokeWidth: 0, fill: color }} 
-                               />
-                             );
+                            const colors = ["#22c55e", "#3b82f6", "#f59e0b", "#ec4899", "#8b5cf6", "#6366f1", "#14b8a6", "#f43f5e", "#0ea5e9", "#10b981"];
+                            const color = colors[index % colors.length];
+                            return (
+                              <Line
+                                key={device.device_code}
+                                type="monotone"
+                                dataKey={device.device_code}
+                                name={device.name || device.device_name || device.device_code}
+                                stroke={color}
+                                strokeWidth={2}
+                                dot={{ r: 4, strokeWidth: 2, fill: "#fff", stroke: color }}
+                                activeDot={{ r: 6, strokeWidth: 0, fill: color }}
+                              />
+                            );
                           })}
                         </LineChart>
                       </ResponsiveContainer>

@@ -136,8 +136,26 @@ function pctMeta(p) {
     };
   return { label: "Healthy", bg: "#f0fdf4", fg: "#15803d", border: "#bbf7d0" };
 }
-const ASSET_DB = {};
 
+function calcDynamicRkap(row) {
+  if (!row || !row.history || !Array.isArray(row.history)) {
+    return parseFloat(row?.realisasi_murni || row?.nilai_anggaran || row?.nilai_rkap || 0);
+  }
+  let real = 0;
+  row.history.forEach((h) => {
+    const isInitial = h.is_initial || h.tipe === "initial";
+    if (isInitial) {
+      real += h.nilai;
+    } else if (h.tipe === "penambahan" || h.tipe === "switch_in" || h.tipe === "transfer") {
+      real += h.nilai;
+    } else if (h.tipe === "pengurangan" || h.tipe === "switch_out") {
+      real -= h.nilai;
+    }
+  });
+  return real;
+}
+
+const ASSET_DB = {};
 const SN_DB = {};
 
 function useAssetDB(refreshKey = 0) {
@@ -2131,26 +2149,26 @@ function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
                   hari kerja
                 </span>
               </div>
-              
+
               {/* Opsi Pemilihan Patokan Waktu */}
               <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "4px" }}>
                 <span style={{ fontSize: "0.75rem", color: "#475569", fontWeight: 600 }}>Hitung dari:</span>
                 <label style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "0.75rem", cursor: "pointer" }}>
-                  <input 
-                    type="radio" 
-                    name="patokan" 
-                    value="sp3" 
-                    checked={patokanWaktu === "sp3"} 
-                    onChange={() => setPatokanWaktu("sp3")} 
+                  <input
+                    type="radio"
+                    name="patokan"
+                    value="sp3"
+                    checked={patokanWaktu === "sp3"}
+                    onChange={() => setPatokanWaktu("sp3")}
                   /> SP3
                 </label>
                 <label style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "0.75rem", cursor: "pointer" }}>
-                  <input 
-                    type="radio" 
-                    name="patokan" 
-                    value="bamk" 
-                    checked={patokanWaktu === "bamk"} 
-                    onChange={() => setPatokanWaktu("bamk")} 
+                  <input
+                    type="radio"
+                    name="patokan"
+                    value="bamk"
+                    checked={patokanWaktu === "bamk"}
+                    onChange={() => setPatokanWaktu("bamk")}
                   /> BAMK
                 </label>
               </div>
@@ -2168,10 +2186,10 @@ function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
                   Estimasi Selesai: <strong>{sisaHariInfo.tglSelesai}</strong>
                   <br />
                   <span style={{ color: sisaHariInfo.sisa < 0 ? "#b91c1c" : "#1e40af", fontWeight: 600 }}>
-                    {sisaHariInfo.sisa < 0 
-                      ? `Terlewat ${Math.abs(sisaHariInfo.sisa)} hari` 
-                      : sisaHariInfo.sisa === 0 
-                        ? "Hari ini batas akhir!" 
+                    {sisaHariInfo.sisa < 0
+                      ? `Terlewat ${Math.abs(sisaHariInfo.sisa)} hari`
+                      : sisaHariInfo.sisa === 0
+                        ? "Hari ini batas akhir!"
                         : `Sisa ${sisaHariInfo.sisa} hari`}
                   </span>
                 </div>
@@ -2203,7 +2221,7 @@ function TambahPekerjaanPage({ anggaran, onBack, onSave }) {
               />
             </TFld>
           ))}
-          
+
           <TFld label="Tanggal BAMK">
             <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
               <input
@@ -2517,7 +2535,7 @@ function RealisasiTablePage({
   });
 
   const pagu = (ang.nilai_anggaran_tahunan || 0) + netPlafonChanges;
-  
+
   // Total Semua Pengeluaran
   const totalPengeluaran = totalAll;
   const sisa = pagu - totalPengeluaran;
@@ -3035,11 +3053,17 @@ function OpexCard({ ang, onSelect, onDelete, searchQ, onDirectProject }) {
   );
 
   const totalPengeluaran = assetTotal + projectTotal;
+  
   const isOpexCard = !!ang.kd_opex || !!ang.realisasi_tahunan;
-  const updatedNilaiKad = (ang.nilai_kad || 0) + (isOpexCard ? netPlafonChanges : 0);
+  const rows = isOpexCard ? (ang.realisasi_tahunan || []) : (ang.anggaran_tahunan || []);
+  const dynamicTotalRkap = rows.reduce((s, r) => s + calcDynamicRkap(r), 0);
+  const updatedNilaiKad = ang.nilai_anggaran === undefined 
+    ? (parseFloat(ang.nilai_kad) || 0) + (isOpexCard ? netPlafonChanges : 0)
+    : Math.max(parseFloat(ang.nilai_anggaran) || 0, dynamicTotalRkap);
+
   const serapan = updatedNilaiKad > 0 ? Math.round((totalPengeluaran / updatedNilaiKad) * 100) : 0;
   const meta = pctMeta(serapan);
-  const matchedProjects = searchQ 
+  const matchedProjects = searchQ
     ? (ang.projects || []).filter(p => p.nm_pekerjaan?.toLowerCase().includes(searchQ.toLowerCase()))
     : [];
 
@@ -3108,7 +3132,7 @@ function OpexCard({ ang, onSelect, onDelete, searchQ, onDirectProject }) {
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
             {matchedProjects.map(p => (
-              <button 
+              <button
                 key={p.id}
                 onClick={(e) => { e.stopPropagation(); onDirectProject(p); }}
                 style={{
@@ -3262,14 +3286,14 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
   const isOpex = !anggaran.thn_rkap_awal;
   const totalRealisasiEdit = isOpex
     ? (anggaran.realisasi_tahunan || []).reduce(
-        (s, r) => s + (r.realisasi_murni || 0) + (r.realisasi_bymhd || 0),
-        0,
-      )
+      (s, r) => s + (r.realisasi_murni || 0) + (r.realisasi_bymhd || 0),
+      0,
+    )
     : 0;
   const hasRevisionEdit = isOpex
     ? (anggaran.realisasi_tahunan || []).some(
-        (r) => (r.history || []).some((h) => !h.is_initial)
-      )
+      (r) => (r.history || []).some((h) => !h.is_initial)
+    )
     : false;
   const updatedNilaiKadEdit = isOpex && hasRevisionEdit
     ? totalRealisasiEdit
@@ -3489,25 +3513,25 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
                 />
                 <span className="hfld-hint">hari kerja</span>
               </div>
-              
+
               <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "4px" }}>
                 <span style={{ fontSize: "0.75rem", color: "#475569", fontWeight: 600 }}>Hitung dari:</span>
                 <label style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "0.75rem", cursor: "pointer" }}>
-                  <input 
-                    type="radio" 
-                    name="edit_patokan" 
-                    value="sp3" 
-                    checked={patokanWaktu === "sp3"} 
-                    onChange={() => setPatokanWaktu("sp3")} 
+                  <input
+                    type="radio"
+                    name="edit_patokan"
+                    value="sp3"
+                    checked={patokanWaktu === "sp3"}
+                    onChange={() => setPatokanWaktu("sp3")}
                   /> SP3
                 </label>
                 <label style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "0.75rem", cursor: "pointer" }}>
-                  <input 
-                    type="radio" 
-                    name="edit_patokan" 
-                    value="bamk" 
-                    checked={patokanWaktu === "bamk"} 
-                    onChange={() => setPatokanWaktu("bamk")} 
+                  <input
+                    type="radio"
+                    name="edit_patokan"
+                    value="bamk"
+                    checked={patokanWaktu === "bamk"}
+                    onChange={() => setPatokanWaktu("bamk")}
                   /> BAMK
                 </label>
               </div>
@@ -3524,10 +3548,10 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
                   Estimasi Selesai: <strong>{sisaHariInfo.tglSelesai}</strong>
                   <br />
                   <span style={{ color: sisaHariInfo.sisa < 0 ? "#b91c1c" : "#1e40af", fontWeight: 600 }}>
-                    {sisaHariInfo.sisa < 0 
-                      ? `Terlewat ${Math.abs(sisaHariInfo.sisa)} hari` 
-                      : sisaHariInfo.sisa === 0 
-                        ? "Hari ini batas akhir!" 
+                    {sisaHariInfo.sisa < 0
+                      ? `Terlewat ${Math.abs(sisaHariInfo.sisa)} hari`
+                      : sisaHariInfo.sisa === 0
+                        ? "Hari ini batas akhir!"
                         : `Sisa ${sisaHariInfo.sisa} hari`}
                   </span>
                 </div>
@@ -3558,7 +3582,7 @@ function EditProjectPage({ project, anggaran, onBack, onSave, showToast }) {
               />
             </HFld>
           ))}
-          
+
           <HFld label="Tgl. BAMK">
             <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
               <input
@@ -4815,11 +4839,16 @@ function AnggaranCard({ ang, onSelect, onShowRkap, onDelete, searchQ, onDirectPr
   });
 
   const isOpexCard = !!ang.kd_opex || !!ang.realisasi_tahunan;
-  const updatedNilaiKad = (ang.nilai_kad || 0) + (isOpexCard ? netPlafonChanges : 0);
+  const rows = isOpexCard ? (ang.realisasi_tahunan || []) : (ang.anggaran_tahunan || []);
+  const dynamicTotalRkap = rows.reduce((s, r) => s + calcDynamicRkap(r), 0);
+  const updatedNilaiKad = ang.nilai_anggaran === undefined 
+    ? (parseFloat(ang.nilai_kad) || 0) + (isOpexCard ? netPlafonChanges : 0)
+    : Math.max(parseFloat(ang.nilai_anggaran) || 0, dynamicTotalRkap);
+
   const serapan = updatedNilaiKad > 0 ? Math.round((assetTotal / updatedNilaiKad) * 100) : 0;
   const meta = pctMeta(serapan);
   const isMulti = ang.thn_rkap_awal !== ang.thn_rkap_akhir;
-  const matchedProjects = searchQ 
+  const matchedProjects = searchQ
     ? (ang.projects || []).filter(p => p.nm_pekerjaan?.toLowerCase().includes(searchQ.toLowerCase()))
     : [];
 
@@ -4897,7 +4926,7 @@ function AnggaranCard({ ang, onSelect, onShowRkap, onDelete, searchQ, onDirectPr
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
             {matchedProjects.map(p => (
-              <button 
+              <button
                 key={p.id}
                 onClick={(e) => { e.stopPropagation(); onDirectProject(p); }}
                 style={{
@@ -4930,8 +4959,52 @@ function AnggaranCard({ ang, onSelect, onShowRkap, onDelete, searchQ, onDirectPr
 }
 // ══════ LEVEL 1.5: DETAIL RKAP TAHUNAN ══════
 function RkapDetailPage({ anggaran, onBack }) {
-  const totalRkap = (anggaran.history_anggaran || []).reduce((s, h) => s + parseIDRNum(h.nilai_rkap), 0);
-  const diff = anggaran.nilai_kad - totalRkap;
+  const parentRkapBase = parseFloat(anggaran?.nilai_rkap) || 0;
+  const masterThn = parseInt(anggaran?.thn_anggaran);
+  const allAngTahunan = anggaran?.anggaran_tahunan || anggaran?.realisasi_tahunan || [];
+  
+  const masterChildRow = allAngTahunan.find(a => parseInt(a.thn || a.tahun || a.thn_anggaran) === masterThn);
+  const masterDelta = masterChildRow ? calcDynamicRkap(masterChildRow) : 0;
+  const masterRkap = parentRkapBase + masterDelta;
+  
+  const otherRows = allAngTahunan.filter(a => parseInt(a.thn || a.tahun || a.thn_anggaran) !== masterThn);
+  
+  const mappedRows = [];
+  if (masterRkap !== 0 || allAngTahunan.length === 0) {
+    mappedRows.push({
+      id: masterChildRow?.id || Math.random().toString(),
+      tahun: masterThn,
+      nilai: masterRkap
+    });
+  }
+  
+  otherRows.forEach(a => {
+    const v = calcDynamicRkap(a);
+    if (v !== 0) {
+      mappedRows.push({
+        id: a.id || Math.random().toString(),
+        tahun: parseInt(a.thn || a.tahun || a.thn_anggaran),
+        nilai: v
+      });
+    }
+  });
+
+  if (mappedRows.length === 0) {
+    (anggaran?.history_anggaran || []).forEach(h => {
+      mappedRows.push({
+        id: h.id || Math.random().toString(),
+        tahun: parseInt(h.tahun || h.thn || h.thn_anggaran || h.thn_rkap_awal),
+        nilai: calcDynamicRkap(h)
+      });
+    });
+  }
+  
+  mappedRows.sort((a, b) => parseInt(a.tahun) - parseInt(b.tahun));
+
+  const totalRkap = mappedRows.reduce((s, h) => s + h.nilai, 0);
+  const updatedNilaiKad = anggaran.nilai_anggaran === undefined 
+    ? (parseFloat(anggaran.nilai_kad) || 0)
+    : Math.max(parseFloat(anggaran.nilai_anggaran) || 0, totalRkap);
 
   return (
     <div style={{ animation: "fadeUp .15s ease-out" }}>
@@ -4951,7 +5024,7 @@ function RkapDetailPage({ anggaran, onBack }) {
             <h2 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#111827', lineHeight: 1.2 }}>{anggaran.nama}</h2>
             <div style={{ display: 'flex', gap: 10, marginTop: 6 }}>
               <span className="badge blue" style={{ fontSize: '0.68rem', fontWeight: 700 }}>{anggaran.kode}</span>
-              <span className="badge capex" style={{ fontSize: '0.68rem', fontWeight: 700 }}>KAD: {fmt(anggaran.nilai_kad)}</span>
+              <span className="badge capex" style={{ fontSize: '0.68rem', fontWeight: 700 }}>KAD: {fmt(updatedNilaiKad)}</span>
             </div>
           </div>
         </div>
@@ -4967,19 +5040,19 @@ function RkapDetailPage({ anggaran, onBack }) {
               </tr>
             </thead>
             <tbody>
-              {(anggaran.history_anggaran || []).map((h, i) => {
-                const percent = (parseIDRNum(h.nilai_rkap) / anggaran.nilai_kad) * 100;
+              {mappedRows.map((h, i) => {
+                const percent = updatedNilaiKad > 0 ? (h.nilai / updatedNilaiKad) * 100 : 0;
                 return (
                   <tr key={h.id}>
                     <td className="td-no">{i + 1}</td>
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         <Icon d={I.calendar} size={13} style={{ color: "#2563eb" }} />
-                        <span style={{ fontWeight: 600 }}>Tahun Anggaran {h.tahun || h.thn || h.thn_anggaran || h.thn_rkap_awal || ""}</span>
+                        <span style={{ fontWeight: 600 }}>Tahun Anggaran {h.tahun}</span>
                       </div>
                     </td>
                     <td style={{ textAlign: 'right', fontWeight: 800, color: '#2563eb', fontFamily: 'monospace' }}>
-                      {fmt(parseIDRNum(h.nilai_rkap))}
+                      {fmt(h.nilai)}
                     </td>
                     <td style={{ textAlign: 'center', fontWeight: 800, color: '#475569' }}>
                       {percent.toFixed(1)}%
@@ -4992,7 +5065,7 @@ function RkapDetailPage({ anggaran, onBack }) {
               <tr style={{ background: '#f8fafc', fontStyle: 'normal' }}>
                 <td colSpan={2} style={{ textAlign: 'right', fontWeight: 800, color: '#475569', padding: '12px' }}>TOTAL TERISI</td>
                 <td style={{ textAlign: 'right', fontWeight: 900, color: '#2563eb', padding: '12px', fontSize: '0.95rem' }}>{fmt(totalRkap)}</td>
-                <td style={{ textAlign: 'center', fontWeight: 800, color: '#111827', padding: '12px' }}>{((totalRkap / anggaran.nilai_kad) * 100).toFixed(1)}%</td>
+                <td style={{ textAlign: 'center', fontWeight: 800, color: '#111827', padding: '12px' }}>{updatedNilaiKad > 0 ? ((totalRkap / updatedNilaiKad) * 100).toFixed(1) : "0.0"}%</td>
               </tr>
             </tfoot>
           </table>
@@ -5029,20 +5102,19 @@ function PekerjaanListPage({
   const projects = anggaran.projects || [];
   const isOpex = anggaran.type === "opex";
   const isMulti = !isOpex && (anggaran.thn_rkap_awal !== anggaran.thn_rkap_akhir);
-  const totalRealisasiDetail = isOpex && anggaran
-    ? (anggaran.realisasi_tahunan || []).reduce(
-        (s, r) => s + (r.realisasi_murni || 0) + (r.realisasi_bymhd || 0),
-        0,
-      )
-    : 0;
-  const hasRevisionDetail = isOpex && anggaran
-    ? (anggaran.realisasi_tahunan || []).some(
-        (r) => (r.history || []).some((h) => !h.is_initial)
-      )
-    : false;
-  const updatedNilaiKadDetail = isOpex && hasRevisionDetail
-    ? totalRealisasiDetail
-    : (anggaran?.nilai_kad || 0);
+
+  const totalRealisasiDetail = (isOpex ? (anggaran.realisasi_tahunan || []) : (anggaran.anggaran_tahunan || [])).reduce(
+    (s, r) => s + calcDynamicRkap(r) + (isOpex ? (parseFloat(r.realisasi_bymhd) || 0) : 0),
+    0,
+  );
+  
+  const currentKad = anggaran?.nilai_anggaran !== undefined 
+    ? parseFloat(anggaran.nilai_anggaran) 
+    : (parseFloat(anggaran?.nilai_kad) || 0);
+
+  const updatedNilaiKadDetail = anggaran?.nilai_anggaran !== undefined 
+    ? Math.max(currentKad, totalRealisasiDetail) 
+    : currentKad;
 
   const itemLabel = isOpex ? "Barang" : "Aset";
 
@@ -5098,11 +5170,7 @@ function PekerjaanListPage({
       }
     }
   }, [highlightedProject, filtered, page, search, setHighlightedProject]);
-  const assetCount = (anggaran.assets || []).length;
-  const assetTotal = (anggaran.assets || []).reduce(
-    (s, a) => s + (a.acquisition_value || 0),
-    0,
-  );
+
   const totalKontrak = filteredByDate.reduce((s, p) => s + (p.nilai_kontrak || 0), 0);
   const totalRab = filteredByDate.reduce((s, p) => s + (p.nilai_rab || 0), 0);
   const totalPercent = totalRab > 0 ? (totalKontrak / totalRab) * 100 : 0;
@@ -5148,7 +5216,7 @@ function PekerjaanListPage({
         {[
           [isOpex ? "Tahun Anggaran" : "Tahun RKAP", isOpex ? anggaran.thn_anggaran : (isMulti ? `${anggaran?.thn_rkap_awal} — ${anggaran?.thn_rkap_akhir}` : (anggaran?.thn_rkap_awal || '—'))],
           "DIV",
-          ["Nilai KAD", fmt(isOpex ? updatedNilaiKadDetail : (anggaran?.nilai_kad || 0)), false, isOpex ? "#16a34a" : "#2563eb"],
+          ["Nilai KAD", fmt(updatedNilaiKadDetail), false, isOpex ? "#16a34a" : "#2563eb"],
           "DIV",
           ...(isMulti
             ? [
@@ -5156,11 +5224,33 @@ function PekerjaanListPage({
                 "Nilai RKAP Per Tahun",
                 (
                   <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                    {(anggaran?.history_anggaran || []).map((h, i) => (
-                      <div key={h.id || h.tahun || h.thn || h.thn_anggaran || i} style={{ fontSize: "0.72rem", whiteSpace: "nowrap", color: "#475569" }}>
-                        RKAP {h.tahun || h.thn || h.thn_anggaran || h.thn_rkap_awal || ""}: <span style={{ fontWeight: 800, color: "#2563eb" }}>{fmt(parseIDRNum(h.nilai_rkap))}</span>
-                      </div>
-                    ))}
+                    {(() => {
+                      // Bangun daftar RKAP per tahun sesuai logika di tabel "Daftar Anggaran CAPEX":
+                      // - Tahun master: nilai_rkap (awal) + perubahan dari anggaran_tahunan tahun master
+                      // - Tahun lain: calcDynamicRkap dari masing-masing anggaran_tahunan
+                      const parentRkapBase = parseFloat(anggaran?.nilai_rkap) || 0;
+                      const masterThn = anggaran?.thn_anggaran;
+                      const allAngTahunan = anggaran?.anggaran_tahunan || [];
+                      const masterChildRow = allAngTahunan.find(a => parseInt(a.thn || a.tahun || a.thn_anggaran) === parseInt(masterThn));
+                      const masterDelta = masterChildRow ? calcDynamicRkap(masterChildRow) : 0;
+                      const masterRkap = parentRkapBase + masterDelta;
+                      const otherRows = allAngTahunan.filter(a => parseInt(a.thn || a.tahun || a.thn_anggaran) !== parseInt(masterThn));
+                      const rkaps = [];
+                      if (masterRkap !== 0) rkaps.push({ thn: masterThn, nilai: masterRkap });
+                      otherRows.forEach(a => {
+                        const v = calcDynamicRkap(a);
+                        if (v !== 0) rkaps.push({ thn: (a.thn || a.tahun || a.thn_anggaran), nilai: v });
+                      });
+                      if (rkaps.length === 0) {
+                        (anggaran?.history_anggaran || []).forEach(h => rkaps.push({ thn: (h.tahun || h.thn || h.thn_anggaran || h.thn_rkap_awal), nilai: calcDynamicRkap(h) }));
+                      }
+                      rkaps.sort((a, b) => a.thn - b.thn);
+                      return rkaps.map((r, i) => (
+                        <div key={i} style={{ fontSize: "0.72rem", whiteSpace: "nowrap", color: "#475569" }}>
+                          RKAP {r.thn || ""}: <span style={{ fontWeight: 800, color: "#2563eb" }}>{fmt(r.nilai)}</span>
+                        </div>
+                      ));
+                    })()}
                   </div>
                 ),
                 true,
@@ -5263,7 +5353,7 @@ function PekerjaanListPage({
               paginated.map((proj, i) => {
                 const percent = proj.nilai_rab > 0 ? (proj.nilai_kontrak / proj.nilai_rab) * 100 : 0;
                 return (
-                  <tr 
+                  <tr
                     key={proj.id}
                     id={`proj-row-${proj.id}`}
                     style={{

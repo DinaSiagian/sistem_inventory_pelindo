@@ -2241,15 +2241,16 @@ const Inventaris = () => {
   const [dbCategories, setDbCategories] = useState(() => {
     try { return JSON.parse(sessionStorage.getItem('SWR_InventarisCats')) || []; } catch(e) { return []; }
   });
-  const [dbLocations, setDbLocations] = useState({ branches: [], zonas: [], subzonas: [] });
+  const [dbLocations, setDbLocations] = useState({ entities: [], branches: [], zonas: [], subzonas: [] });
 
   const fetchAssets = async () => {
     try {
-      const [resAssets, resDevices, resCapex, resOpex, resB, resZ, resS] = await Promise.all([
+      const [resAssets, resDevices, resCapex, resOpex, resE, resB, resZ, resS] = await Promise.all([
         barangAPI.getAll(),
         barangAPI.getDevices(),
         budgetAPI.getCapex(),
         budgetAPI.getOpex(),
+        masterDataAPI.getEntities(),
         masterDataAPI.getBranches(),
         masterDataAPI.getZonas(),
         masterDataAPI.getSubzonas()
@@ -2259,8 +2260,9 @@ const Inventaris = () => {
       setDbCategories(resDevices.data || []);
       sessionStorage.setItem('SWR_InventarisCats', JSON.stringify(resDevices.data || []));
 
-      if (resB.data?.success && resZ.data?.success && resS.data?.success) {
+      if (resE.data?.success && resB.data?.success && resZ.data?.success && resS.data?.success) {
         setDbLocations({
+          entities: resE.data.data || [],
           branches: resB.data.data || [],
           zonas: resZ.data.data || [],
           subzonas: resS.data.data || []
@@ -2420,7 +2422,7 @@ const Inventaris = () => {
   const [showLocationBuilder, setShowLocationBuilder] = useState(false);
 
   const availableBranches = formData.entitasCode
-    ? BRANCH_BY_ENTITY[formData.entitasCode] || []
+    ? (dbLocations.branches || []).filter((b) => b.entity_code === formData.entitasCode)
     : [];
   const dropdownRef = useRef(null);
 
@@ -2716,11 +2718,11 @@ const Inventaris = () => {
   };
 
   const handleEntitasChange = (e) => {
-    const f = ENTITAS_LIST.find((en) => en.code === e.target.value);
+    const f = (dbLocations.entities || []).find((en) => en.entity_code === e.target.value);
     setFormData((p) => ({
       ...p,
       entitas: f?.name || "",
-      entitasCode: f?.code || "",
+      entitasCode: f?.entity_code || "",
       branch: "",
       branchCode: "",
       nomorAset: "",
@@ -2728,11 +2730,11 @@ const Inventaris = () => {
     }));
   };
   const handleBranchChange = (e) => {
-    const f = availableBranches.find((b) => b.code === e.target.value);
+    const f = availableBranches.find((b) => b.branch_code === e.target.value);
     setFormData((p) => ({
       ...p,
       branch: f?.name || "",
-      branchCode: f?.code || "",
+      branchCode: f?.branch_code || "",
       nomorAset: "",
       assetId: "",
     }));
@@ -3121,7 +3123,7 @@ const Inventaris = () => {
       a.id_pekerjaan || "",
       getProjectName(a.id_pekerjaan),
       a.value,
-      a.procurementDate,
+      a.procurement_date || a.procurementDate || a.tahun_pengadaan || "-",
     ]);
     const csv = [headers, ...rows]
       .map((r) => r.map((v) => `"${v}"`).join(","))
@@ -4174,7 +4176,7 @@ const Inventaris = () => {
                       style={{ ...modernSelectStyle, background: "#fff", border: "1px solid #e2e8f0" }}
                     >
                       <option value="">— Entitas —</option>
-                      {ENTITAS_LIST.map((e) => <option key={e.code} value={e.code}>{e.name}</option>)}
+                      {(dbLocations.entities || []).map((e) => <option key={e.entity_code} value={e.entity_code}>{e.name}</option>)}
                     </select>
                     <select
                       value={formData.branchCode}
@@ -4183,7 +4185,7 @@ const Inventaris = () => {
                       style={{ ...modernSelectStyle, background: "#fff", border: "1px solid #e2e8f0" }}
                     >
                       <option value="">— Cabang —</option>
-                      {availableBranches.map((b) => <option key={b.code} value={b.code}>{b.name}</option>)}
+                      {availableBranches.map((b) => <option key={b.branch_code} value={b.branch_code}>{b.name}</option>)}
                     </select>
                     <select
                       value={formData.zonaCode}

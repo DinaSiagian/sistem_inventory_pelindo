@@ -2059,15 +2059,16 @@ const ViewAsset = () => {
   const [assets, setAssets] = useState(() => JSON.parse(sessionStorage.getItem('SWR_assets')) || []);
   const [dbCategories, setDbCategories] = useState(() => JSON.parse(sessionStorage.getItem('SWR_dbCategories')) || []);
   const [masterKatalog, setMasterKatalog] = useState(() => JSON.parse(sessionStorage.getItem('SWR_masterKatalog')) || []);
-  const [dbLocations, setDbLocations] = useState(() => JSON.parse(sessionStorage.getItem('SWR_dbLocations')) || { branches: [], zonas: [], subzonas: [] });
+  const [dbLocations, setDbLocations] = useState(() => JSON.parse(sessionStorage.getItem('SWR_dbLocations')) || { entities: [], branches: [], zonas: [], subzonas: [] });
 
   const fetchAssets = async () => {
     try {
-      const [resAssets, resDevices, resCapex, resOpex, resB, resZ, resS, resKatalog] = await Promise.all([
+      const [resAssets, resDevices, resCapex, resOpex, resE, resB, resZ, resS, resKatalog] = await Promise.all([
         barangAPI.getAll(),
         masterDataAPI.getDevices(),
         budgetAPI.getCapex(),
         budgetAPI.getOpex(),
+        masterDataAPI.getEntities(),
         masterDataAPI.getBranches(),
         masterDataAPI.getZonas(),
         masterDataAPI.getSubzonas(),
@@ -2083,8 +2084,9 @@ const ViewAsset = () => {
       setMasterKatalog(newKatalog);
       sessionStorage.setItem('SWR_masterKatalog', JSON.stringify(newKatalog));
 
-      if (resB.data?.success && resZ.data?.success && resS.data?.success) {
+      if (resE.data?.success && resB.data?.success && resZ.data?.success && resS.data?.success) {
         const locs = {
+          entities: resE.data.data || [],
           branches: resB.data.data || [],
           zonas: resZ.data.data || [],
           subzonas: resS.data.data || []
@@ -2253,7 +2255,7 @@ const ViewAsset = () => {
   const [showLocationBuilder, setShowLocationBuilder] = useState(false);
 
   const availableBranches = formData.entitasCode
-    ? BRANCH_BY_ENTITY[formData.entitasCode] || []
+    ? (dbLocations.branches || []).filter((b) => b.entity_code === formData.entitasCode)
     : [];
   const dropdownRef = useRef(null);
 
@@ -2545,11 +2547,11 @@ const ViewAsset = () => {
   };
 
   const handleEntitasChange = (e) => {
-    const f = ENTITAS_LIST.find((en) => en.code === e.target.value);
+    const f = (dbLocations.entities || []).find((en) => en.entity_code === e.target.value);
     setFormData((p) => ({
       ...p,
       entitas: f?.name || "",
-      entitasCode: f?.code || "",
+      entitasCode: f?.entity_code || "",
       branch: "",
       branchCode: "",
       nomorAset: "",
@@ -2557,11 +2559,11 @@ const ViewAsset = () => {
     }));
   };
   const handleBranchChange = (e) => {
-    const f = availableBranches.find((b) => b.code === e.target.value);
+    const f = availableBranches.find((b) => b.branch_code === e.target.value);
     setFormData((p) => ({
       ...p,
       branch: f?.name || "",
-      branchCode: f?.code || "",
+      branchCode: f?.branch_code || "",
       nomorAset: "",
       assetId: "",
     }));
@@ -2977,7 +2979,7 @@ const ViewAsset = () => {
       "Status",
       "Pemilik Barang",
       "NIP",
-      "Tgl Pengadaan",
+      "Tanggal Pengadaan",
     ];
     const rows = filtered.flatMap((a) => {
       const kategoriFullName = CATEGORY_NAMES[a.category] || a.category;
@@ -3026,12 +3028,12 @@ const ViewAsset = () => {
           kondisiLengkap,
           pemilik,
           nip !== "-" ? `\t${nip}` : "-",
-          a.procurementDate || "-",
+          a.procurement_date || a.procurementDate || a.tahun_pengadaan || "-",
         ];
       });
     });
     const csvContent = [headers, ...rows]
-      .map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(";"))
+      .map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","))
       .join("\n");
     const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
@@ -4151,7 +4153,7 @@ const ViewAsset = () => {
                       style={{ ...modernSelectStyle, background: "#fff", border: "1px solid #e2e8f0" }}
                     >
                       <option value="">— Entitas —</option>
-                      {ENTITAS_LIST.map((e) => <option key={e.code} value={e.code}>{e.name}</option>)}
+                      {(dbLocations.entities || []).map((e) => <option key={e.entity_code} value={e.entity_code}>{e.name}</option>)}
                     </select>
                     <select
                       value={formData.branchCode}
@@ -4160,7 +4162,7 @@ const ViewAsset = () => {
                       style={{ ...modernSelectStyle, background: "#fff", border: "1px solid #e2e8f0" }}
                     >
                       <option value="">— Cabang —</option>
-                      {availableBranches.map((b) => <option key={b.code} value={b.code}>{b.name}</option>)}
+                      {availableBranches.map((b) => <option key={b.branch_code} value={b.branch_code}>{b.name}</option>)}
                     </select>
                     <select
                       value={formData.zonaCode}
@@ -5042,27 +5044,7 @@ const ViewAsset = () => {
               </select>
             </TableRow>
 
-            <TableRow label="Tahun Anggaran" required>
-              <select
-                value={editData.thn_anggaran || ""}
-                onChange={(e) =>
-                  setEditData((p) => ({
-                    ...p,
-                    thn_anggaran: e.target.value,
-                    kd_anggaran: "",
-                    id_pekerjaan: "",
-                  }))
-                }
-                style={modernSelectStyle}
-              >
-                <option value="">— Pilih Tahun —</option>
-                {ALL_TAHUN_LIST.map((t) => (
-                  <option key={t} value={String(t)}>
-                    {t}
-                  </option>
-                ))}
-              </select>
-            </TableRow>
+
             {editData.thn_anggaran && (
               <TableRow label="Nama Anggaran" required>
                 <select

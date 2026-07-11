@@ -110,6 +110,14 @@ class UserController extends Controller
                 ], 422);
             }
 
+            $recoveryCode = null;
+            if ($request->filled('security_question') && $request->filled('security_answer')) {
+                $recoveryCode = json_encode([
+                    'question' => $request->security_question,
+                    'answer' => strtolower(trim($request->security_answer))
+                ]);
+            }
+
             $user = User::create([
                 'name'         => $request->name,
                 'username'     => $request->username,
@@ -122,6 +130,7 @@ class UserController extends Controller
                 'branches_code'=> $request->branch_code,
                 'division_code'=> $request->division_code ?: null,
                 'is_active'    => $request->input('is_active', true),
+                'recovery_code'=> $recoveryCode,
             ]);
 
             $user->load(['role', 'entity', 'branch', 'division']);
