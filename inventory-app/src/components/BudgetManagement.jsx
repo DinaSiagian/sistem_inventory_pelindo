@@ -3060,17 +3060,17 @@ function OpexCard({ ang, onSelect, onDelete, searchQ, onDirectProject }) {
   );
 
   const totalPengeluaran = assetTotal + projectTotal;
-  
+
   const isOpexCard = !!ang.kd_opex || !!ang.realisasi_tahunan;
   const rows = isOpexCard ? (ang.realisasi_tahunan || []) : (ang.anggaran_tahunan || []);
   const dynamicTotalRkap = rows.reduce((s, r) => s + calcDynamicRkap(r), 0);
-  const updatedNilaiKad = ang.nilai_anggaran === undefined 
+  const updatedNilaiKad = ang.nilai_anggaran === undefined
     ? (parseFloat(ang.nilai_kad) || 0) + (isOpexCard ? netPlafonChanges : 0)
     : Math.max(parseFloat(ang.nilai_anggaran) || 0, dynamicTotalRkap);
 
   const isOverbudget = projectTotal > updatedNilaiKad;
   const usagePercent = updatedNilaiKad > 0 ? Math.round((assetTotal / updatedNilaiKad) * 100) : 0;
-  
+
   let meta = { label: "Tersedia", bg: "#f0fdf4", fg: "#15803d", border: "#bbf7d0" };
   let ringColor = "#22c55e"; // green
   if (usagePercent >= 100) {
@@ -3127,9 +3127,9 @@ function OpexCard({ ang, onSelect, onDelete, searchQ, onDirectProject }) {
           <div className="ang-card-actions" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               {isOverbudget && (
-                 <span className="status-pill" style={{ background: "#fef2f2", color: "#b91c1c", borderColor: "#fecaca", fontSize: '0.6rem', padding: '1px 6px', fontWeight: 800, marginRight: 4 }}>
-                   OVERBUDGET
-                 </span>
+                <span className="status-pill" style={{ background: "#fef2f2", color: "#b91c1c", borderColor: "#fecaca", fontSize: '0.6rem', padding: '1px 6px', fontWeight: 800, marginRight: 4 }}>
+                  OVERBUDGET
+                </span>
               )}
               <div className="ring-wrap" title={`Penggunaan KAD: ${fmt(assetTotal)} / ${fmt(updatedNilaiKad)}`}>
                 <div className="ring">
@@ -4877,14 +4877,14 @@ function AnggaranCard({ ang, onSelect, onShowRkap, onDelete, searchQ, onDirectPr
   const isOpexCard = !!ang.kd_opex || !!ang.realisasi_tahunan;
   const rows = isOpexCard ? (ang.realisasi_tahunan || []) : (ang.anggaran_tahunan || []);
   const dynamicTotalRkap = rows.reduce((s, r) => s + calcDynamicRkap(r), 0);
-  const updatedNilaiKad = ang.nilai_anggaran === undefined 
+  const updatedNilaiKad = ang.nilai_anggaran === undefined
     ? (parseFloat(ang.nilai_kad) || 0) + (isOpexCard ? netPlafonChanges : 0)
     : Math.max(parseFloat(ang.nilai_anggaran) || 0, dynamicTotalRkap);
 
   const projectTotal = (ang.projects || []).reduce((s, p) => s + (p.nilai_kontrak || 0), 0);
   const isOverbudget = projectTotal > updatedNilaiKad;
   const usagePercent = updatedNilaiKad > 0 ? Math.round((assetTotal / updatedNilaiKad) * 100) : 0;
-  
+
   let meta = { label: "Tersedia", bg: "#f0fdf4", fg: "#15803d", border: "#bbf7d0" };
   let ringColor = "#22c55e"; // green
   if (usagePercent >= 100) {
@@ -4951,9 +4951,9 @@ function AnggaranCard({ ang, onSelect, onShowRkap, onDelete, searchQ, onDirectPr
           <div className="ang-card-actions" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               {isOverbudget && (
-                 <span className="status-pill" style={{ background: "#fef2f2", color: "#b91c1c", borderColor: "#fecaca", fontSize: '0.6rem', padding: '1px 6px', fontWeight: 800, marginRight: 4 }}>
-                   OVERBUDGET
-                 </span>
+                <span className="status-pill" style={{ background: "#fef2f2", color: "#b91c1c", borderColor: "#fecaca", fontSize: '0.6rem', padding: '1px 6px', fontWeight: 800, marginRight: 4 }}>
+                  OVERBUDGET
+                </span>
               )}
               <div className="ring-wrap" title={`Penggunaan KAD: ${fmt(assetTotal)} / ${fmt(updatedNilaiKad)}`}>
                 <div className="ring">
@@ -5026,13 +5026,13 @@ function RkapDetailPage({ anggaran, onBack }) {
   const parentRkapBase = parseFloat(anggaran?.nilai_rkap) || 0;
   const masterThn = parseInt(anggaran?.thn_anggaran);
   const allAngTahunan = anggaran?.anggaran_tahunan || anggaran?.realisasi_tahunan || [];
-  
+
   const masterChildRow = allAngTahunan.find(a => parseInt(a.thn || a.tahun || a.thn_anggaran) === masterThn);
   const masterDelta = masterChildRow ? calcDynamicRkap(masterChildRow) : 0;
   const masterRkap = parentRkapBase + masterDelta;
-  
+
   const otherRows = allAngTahunan.filter(a => parseInt(a.thn || a.tahun || a.thn_anggaran) !== masterThn);
-  
+
   const mappedRows = [];
   if (masterRkap !== 0 || allAngTahunan.length === 0) {
     mappedRows.push({
@@ -5041,7 +5041,7 @@ function RkapDetailPage({ anggaran, onBack }) {
       nilai: masterRkap
     });
   }
-  
+
   otherRows.forEach(a => {
     const v = calcDynamicRkap(a);
     if (v !== 0) {
@@ -5062,11 +5062,11 @@ function RkapDetailPage({ anggaran, onBack }) {
       });
     });
   }
-  
+
   mappedRows.sort((a, b) => parseInt(a.tahun) - parseInt(b.tahun));
 
   const totalRkap = mappedRows.reduce((s, h) => s + h.nilai, 0);
-  const updatedNilaiKad = anggaran.nilai_anggaran === undefined 
+  const updatedNilaiKad = anggaran.nilai_anggaran === undefined
     ? (parseFloat(anggaran.nilai_kad) || 0)
     : Math.max(parseFloat(anggaran.nilai_anggaran) || 0, totalRkap);
 
@@ -5171,13 +5171,13 @@ function PekerjaanListPage({
     (s, r) => s + calcDynamicRkap(r) + (isOpex ? (parseFloat(r.realisasi_bymhd) || 0) : 0),
     0,
   );
-  
-  const currentKad = anggaran?.nilai_anggaran !== undefined 
-    ? parseFloat(anggaran.nilai_anggaran) 
+
+  const currentKad = anggaran?.nilai_anggaran !== undefined
+    ? parseFloat(anggaran.nilai_anggaran)
     : (parseFloat(anggaran?.nilai_kad) || 0);
 
-  const updatedNilaiKadDetail = anggaran?.nilai_anggaran !== undefined 
-    ? Math.max(currentKad, totalRealisasiDetail) 
+  const updatedNilaiKadDetail = anggaran?.nilai_anggaran !== undefined
+    ? Math.max(currentKad, totalRealisasiDetail)
     : currentKad;
 
   const itemLabel = isOpex ? "Barang" : "Aset";
@@ -5707,8 +5707,10 @@ export default function BudgetManagement({ forcedType }) {
     const s = (opexPage - 1) * PAGE_SIZE;
     return filteredOpex.slice(s, s + PAGE_SIZE);
   }, [filteredOpex, opexPage]);
-  const getLatestAnggaran = (id) =>
-    capexData.find((a) => a.id === id) || opexData.find((o) => o.id === id);
+  const getLatestAnggaran = (id, isOpx) => {
+    if (isOpx) return opexData.find((o) => String(o.id) === String(id));
+    return capexData.find((a) => String(a.id) === String(id)) || opexData.find((o) => String(o.id) === String(id));
+  };
   const kpiCards = useMemo(() => {
     const capexFiltered = capexData.filter((a) => {
       if (capexThnFrom !== "all" && String(a.thn_rkap_awal) !== capexThnFrom) return false;
@@ -5854,7 +5856,7 @@ export default function BudgetManagement({ forcedType }) {
     });
 
   const saveProject = async (id, u) => {
-    const isOpx = opexData.some(a => (a.projects || []).some(p => p.id === id));
+    const isOpx = opexData.some(a => (a.projects || []).some(p => String(p.id) === String(id)));
     const setter = isOpx ? setOpexData : setCapexData;
     const selectedSetter = isOpx ? setSelectedOpex : setSelectedAnggaran;
 
@@ -5907,7 +5909,7 @@ export default function BudgetManagement({ forcedType }) {
     };
 
     const mergedAssets = mergeDuplicateAssets(assets);
-    const isOpx = opexData.some(a => a.id === anggaranId);
+    const isOpx = opexData.some(a => String(a.id) === String(anggaranId));
     const setter = isOpx ? setOpexData : setCapexData;
     const selectedSetter = isOpx ? setSelectedOpex : setSelectedAnggaran;
 
@@ -5933,7 +5935,7 @@ export default function BudgetManagement({ forcedType }) {
     }
   };
   const deleteProject = async (projId, angId) => {
-    const isOpx = opexData.some(a => a.id === angId);
+    const isOpx = opexData.some(a => String(a.id) === String(angId));
     const setter = isOpx ? setOpexData : setCapexData;
     const selectedSetter = isOpx ? setSelectedOpex : setSelectedAnggaran;
 
@@ -5977,7 +5979,7 @@ export default function BudgetManagement({ forcedType }) {
     }
   };
   const deleteAnggaran = (id) => {
-    const isOpx = opexData.some(a => a.id === id);
+    const isOpx = opexData.some(a => String(a.id) === String(id));
     const label = isOpx ? "OPEX" : "CAPEX";
     const setter = isOpx ? setOpexData : setCapexData;
 
@@ -5996,13 +5998,13 @@ export default function BudgetManagement({ forcedType }) {
   };
   useEffect(() => {
     if (selectedAnggaran) {
-      const latest = capexData.find((a) => a.id === selectedAnggaran.id);
+      const latest = capexData.find((a) => String(a.id) === String(selectedAnggaran.id));
       if (latest) setSelectedAnggaran(latest);
     }
   }, [capexData]);
   useEffect(() => {
     if (selectedOpex) {
-      const latest = opexData.find((o) => o.id === selectedOpex.id);
+      const latest = opexData.find((o) => String(o.id) === String(selectedOpex.id));
       if (latest) setSelectedOpex(latest);
     }
   }, [opexData]);
@@ -6046,7 +6048,7 @@ export default function BudgetManagement({ forcedType }) {
       />,
     );
   if (page?.type === "assetTable") {
-    const latestAng = getLatestAnggaran(page.anggaranId) || page.anggaran;
+    const latestAng = getLatestAnggaran(page.anggaranId, page.anggaran?.type === 'opex') || page.anggaran;
     return sharedWrap(
       <AssetTablePage
         anggaran={latestAng}
@@ -6077,7 +6079,7 @@ export default function BudgetManagement({ forcedType }) {
     );
   }
   if (page?.type === "assetEntry") {
-    const latestAng = getLatestAnggaran(page.anggaranId) || page.anggaran;
+    const latestAng = getLatestAnggaran(page.anggaranId, page.anggaran?.type === 'opex') || page.anggaran;
     return sharedWrap(
       <AssetEntryPage
         anggaran={latestAng}
@@ -6091,7 +6093,7 @@ export default function BudgetManagement({ forcedType }) {
     );
   }
   if (page?.type === "assetEdit") {
-    const latestAng = getLatestAnggaran(page.anggaranId) || page.anggaran;
+    const latestAng = getLatestAnggaran(page.anggaranId, page.anggaran?.type === 'opex') || page.anggaran;
     return sharedWrap(
       <EditAssetPage
         anggaran={latestAng}
@@ -6110,7 +6112,7 @@ export default function BudgetManagement({ forcedType }) {
     (typeFilter === "capex" || typeFilter === "all")
   ) {
     const latestAng =
-      getLatestAnggaran(selectedAnggaran.id) || selectedAnggaran;
+      getLatestAnggaran(selectedAnggaran.id, selectedAnggaran?.type === 'opex') || selectedAnggaran;
     return sharedWrap(
       <>
 

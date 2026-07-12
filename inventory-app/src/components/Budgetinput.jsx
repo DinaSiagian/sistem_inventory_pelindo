@@ -1510,7 +1510,8 @@ function RealisasiSection({ master, masters, setMasters, toast_ }) {
           nextMasters = nextMasters.map((m) => {
             if (m.id !== targetId) return m;
             let targetRows = m.realisasi_tahunan || [];
-            let targetRowIdx = targetRows.findIndex(r => parseInt(r.thn) === parseInt(thn));
+            let targetThn = targetRows.length > 0 ? targetRows[0].thn : thn;
+            let targetRowIdx = targetRows.findIndex(r => parseInt(r.thn) === parseInt(targetThn));
             if (targetRowIdx === -1) {
               const newTargetRow = {
                 id: uid(),
@@ -1683,15 +1684,20 @@ function RealisasiSection({ master, masters, setMasters, toast_ }) {
         if (recordToDelete && recordToDelete.tipe === "switch_out" && m.id === recordToDelete.target_id) {
           let targetMatched = false;
           updatedM.realisasi_tahunan = (m.realisasi_tahunan || []).map((r) => {
-            if (parseInt(r.thn) === parseInt(sourceRowThn)) {
-              const targetHistory = (r.history || []).filter(h => {
-                if (!targetMatched && h.tipe === "switch_in_kad" && (h.linked_out_id === recordToDelete.id || (h.source_id === master.id && h.nilai === recordToDelete.nilai && h.tgl === recordToDelete.tgl))) {
-                  targetMatched = true;
-                  return false;
-                }
-                return true;
-              });
-              
+            let rowHasTarget = false;
+            const targetHistory = (r.history || []).filter(h => {
+              if (!targetMatched && h.tipe === "switch_in_kad" && (h.linked_out_id === recordToDelete.id || (h.source_id === master.id && h.nilai === recordToDelete.nilai && h.tgl === recordToDelete.tgl))) {
+                targetMatched = true;
+                rowHasTarget = true;
+                return false;
+              }
+              return true;
+            });
+            
+            if (rowHasTarget) {
+              if (targetHistory.length === 0) {
+                 return null;
+              }
               let newMurni = 0;
               let newBymhd = 0;
               targetHistory.forEach((h) => {
@@ -1705,7 +1711,7 @@ function RealisasiSection({ master, masters, setMasters, toast_ }) {
               return { ...r, history: targetHistory, realisasi_murni: Math.max(0, newMurni), realisasi_bymhd: Math.max(0, newBymhd) };
             }
             return r;
-          });
+          }).filter(r => r !== null);
           
           if (targetMatched) {
             updatedM.nilai_anggaran = Math.max(0, (parseFloat(updatedM.nilai_anggaran) || 0) - recordToDelete.nilai);
@@ -4048,7 +4054,7 @@ function OpexModule({ masterList, setMasterList }) {
   const [showAddAnggaranTahunan, setShowAddAnggaranTahunan] = useState(false);
   const [formTahunan, setFormTahunan] = useState({
     masterNama: "",
-    thn: new Date().getFullYear(),
+    thn: "",
     realisasi_murni: "",
     nilai_anggaran: "",
   });
@@ -4100,8 +4106,8 @@ function OpexModule({ masterList, setMasterList }) {
   };
 
   const handleAddAnggaranTahunanForm = () => {
-    if (!formTahunan.masterNama || !formTahunan.nilai_anggaran) {
-      toast_("Nama anggaran dan nilai anggaran harus diisi.");
+    if (!formTahunan.masterNama || !formTahunan.nilai_anggaran || !formTahunan.thn) {
+      toast_("Nama anggaran, tahun, dan nilai anggaran harus diisi.");
       return;
     }
     const selectedMaster = masters.find((m) => m.nama === formTahunan.masterNama);
@@ -4137,6 +4143,7 @@ function OpexModule({ masterList, setMasterList }) {
         m.id === selectedMaster.id
           ? {
             ...m,
+            thn_anggaran: (!m.realisasi_tahunan || m.realisasi_tahunan.length === 0) ? thnInput : m.thn_anggaran,
             nilai_anggaran: (parseFloat(m.nilai_anggaran) || 0) + realMurni,
             realisasi_tahunan: [...(m.realisasi_tahunan || []), payload],
           }
@@ -4147,7 +4154,7 @@ function OpexModule({ masterList, setMasterList }) {
     setShowAddAnggaranTahunan(false);
     setFormTahunan({
       masterNama: "",
-      thn: new Date().getFullYear(),
+      thn: "",
       realisasi_murni: "",
       nilai_anggaran: "",
     });
@@ -4377,6 +4384,7 @@ function OpexModule({ masterList, setMasterList }) {
                     setFormTahunan((f) => ({ ...f, thn: e.target.value }))
                   }
                 >
+                  <option value="">— Pilih Tahun —</option>
                   {yearOpts.map((y) => (
                     <option key={y} value={y}>
                       {y}
@@ -5157,7 +5165,7 @@ function OpexModule({ masterList, setMasterList }) {
                                 fontWeight: 600,
                               }}
                             >
-                              {m.thn_anggaran}
+                              {(m.realisasi_tahunan && m.realisasi_tahunan.length > 0) ? m.thn_anggaran : "—"}
                             </td>
                             <td style={{ ...S.td, textAlign: "right" }}>
                               <span
