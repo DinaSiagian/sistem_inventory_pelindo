@@ -3498,6 +3498,12 @@ function OpexMasterListPage({ masters, onBack, onAdd, onEdit, onDelete }) {
 
   const handleSubmit = () => {
     if (!formNama) return;
+
+    if (!editingMaster && (!formKd || formKd.trim() === "")) {
+      alert("Kode Anggaran belum Anda masukkan.");
+      return;
+    }
+
     if (editingMaster) {
       // Mode edit: panggil onEdit dengan data baru
       onEdit({ ...editingMaster, kd: formKd, nama: formNama });
