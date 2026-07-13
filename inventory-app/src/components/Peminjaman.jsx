@@ -761,7 +761,7 @@ const generateBAST = (itemOrItems, type = "borrow", assetsList = []) => {
   </div>
   <div class="subjudul">
     TENTANG<br/>
-    ${isBorrow ? `SERAH TERIMA PERANGKAT KERJA A.N. ${receiver.name.toUpperCase()}` : `BAST PENGEMBALIAN ATAS ${giver.name.toUpperCase()}`}
+    ${isBorrow ? 'SERAH TERIMA PERANGKAT KERJA' : 'PENGEMBALIAN PERANGKAT KERJA'}
   </div>
   <div class="intro">
     Pada hari ini, ${tglDokumen}, yang bertanda tangan di bawah ini:
