@@ -3385,9 +3385,7 @@ function DetailUserView({
           <h1 className="um-title">Detail User</h1>
         </div>
         <div style={{ display: "flex", gap: ".5rem" }}>
-          <button className="um-btn um-btn-warning" onClick={onReset}>
-            <Ico n="key" size={12} /> Reset Password
-          </button>
+
           <button className="um-btn um-btn-primary" onClick={onEdit}>
             <Ico n="edit" size={12} /> Edit User
           </button>
@@ -3642,15 +3640,7 @@ function ActionDropdown({ user, onDetail, onEdit, onReset, onDelete }) {
           >
             <Ico n="edit" size={12} /> Edit
           </div>
-          <div
-            className="um-dd-item"
-            onClick={() => {
-              setOpen(false);
-              onReset(user);
-            }}
-          >
-            <Ico n="key" size={12} /> Reset Password
-          </div>
+
           <div className="um-dd-sep" />
           <div
             className="um-dd-item um-dd-item--danger"

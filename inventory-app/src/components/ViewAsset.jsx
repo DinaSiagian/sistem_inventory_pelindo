@@ -2252,7 +2252,7 @@ const ViewAsset = () => {
   const [customSpecs, setCustomSpecs] = useState([]);
   const [isEditingUnit, setIsEditingUnit] = useState({});
   const [isSaving, setIsSaving] = useState(false);
-  const [showLocationBuilder, setShowLocationBuilder] = useState(false);
+  const [showLocationBuilder, setShowLocationBuilder] = useState(true);
 
   const availableBranches = formData.entitasCode
     ? (dbLocations.branches || []).filter((b) => b.entity_code === formData.entitasCode)
@@ -4101,48 +4101,19 @@ const ViewAsset = () => {
                     type="text"
                     value={formData.assetId}
                     onChange={(e) => setFormData((p) => ({ ...p, assetId: e.target.value }))}
+                    onClick={() => setShowLocationBuilder(true)}
                     placeholder="Pilih kategori & nama barang terlebih dahulu"
+                    title="Klik untuk membuka pilihan lokasi"
                     style={{
                       ...modernInputStyle,
                       width: "100%",
-                      paddingRight: "36px",
+                      paddingRight: "12px",
                       background: "#f8fafc",
                       color: "#64748b",
                       fontFamily: "monospace",
+                      cursor: "pointer",
                     }}
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowLocationBuilder(!showLocationBuilder)}
-                    style={{
-                      position: "absolute",
-                      right: "6px",
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      width: "28px",
-                      height: "28px",
-                      background: "transparent",
-                      border: "none",
-                      color: showLocationBuilder ? "#94a3b8" : "#cbd5e1",
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      transition: "all 0.2s",
-                      opacity: 0.6
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.color = "#94a3b8";
-                      e.currentTarget.style.opacity = 1;
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.color = showLocationBuilder ? "#94a3b8" : "#cbd5e1";
-                      e.currentTarget.style.opacity = showLocationBuilder ? 1 : 0.6;
-                    }}
-                    title="Pengaturan ID"
-                  >
-                    <Icon.Cogs />
-                  </button>
                 </div>
 
                 {showLocationBuilder && (
